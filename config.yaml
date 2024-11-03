@@ -850,7 +850,7 @@ params:
   utterances:
     # Github 仓库地址，格式：用户名/仓库名称
     # Github repository owner and name
-    repo: daemon365/daemon365.github.io
+    repo: daemon365/blog
     # 问题标题的模式，可选值：pathname | url | title | og:title
     # Available values: pathname | url | title | og:title
     issueTerm: pathname
