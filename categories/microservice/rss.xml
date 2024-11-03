@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Microservice on Daemon</title><link>https://daemon365.dev/categories/microservice/</link><description>Recent content in Microservice on Daemon</description><generator>Hugo</generator><language>zh-CN</language><lastBuildDate>Sun, 25 Dec 2022 00:00:00 +0800</lastBuildDate><atom:link href="https://daemon365.dev/categories/microservice/rss.xml" rel="self" type="application/rss+xml"/><item><title>隔离</title><link>https://daemon365.dev/post/microservice/isolation/</link><pubDate>Sun, 25 Dec 2022 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/microservice/isolation/</guid><description>&lt;h2 id="什么是隔离">什么是隔离？
+&lt;a class="header-anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e9%9a%94%e7%a6%bb">&lt;/a>
+&lt;/h2>&lt;p>隔离，本质上是对系统或资源进行分割，从而实现当系统发生故障时能限定传播范围和影响范围，即发生故障后只有出问题的服务不可用，保证其他服务仍然可用。&lt;/p></description></item><item><title>限流</title><link>https://daemon365.dev/post/microservice/current_limitation/</link><pubDate>Sat, 24 Dec 2022 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/microservice/current_limitation/</guid><description>&lt;h2 id="令牌桶算法">令牌桶算法
+&lt;a class="header-anchor" href="#%e4%bb%a4%e7%89%8c%e6%a1%b6%e7%ae%97%e6%b3%95">&lt;/a>
+&lt;/h2>&lt;p>是一个存放固定容量令牌的桶，按照固定速率往桶里添加令牌。令牌桶算法的描述如下：&lt;/p>
+&lt;ul>
+&lt;li>假设限制2r/s，则按照500毫秒的固定速率往桶中添加令牌。&lt;/li>
+&lt;li>桶中最多存放 b 个令牌，当桶满时，新添加的令牌被丢弃或拒绝。&lt;/li>
+&lt;li>当一个 n 个字节大小的数据包到达，将从桶中删除n 个令牌，接着数据包被发送到网络上。&lt;/li>
+&lt;li>如果桶中的令牌不足 n 个，则不会删除令牌，且该数据包将被限流（要么丢弃，要么缓冲区等待）。&lt;/li>
+&lt;/ul>
+&lt;p>令牌桶速率限制算法: &lt;code>golang.org/x/time/rate&lt;/code>&lt;/p></description></item><item><title>超时控制</title><link>https://daemon365.dev/post/microservice/timeout_control/</link><pubDate>Fri, 23 Dec 2022 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/microservice/timeout_control/</guid><description>&lt;h2 id="什么是超时控制">什么是超时控制？
+&lt;a class="header-anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e8%b6%85%e6%97%b6%e6%8e%a7%e5%88%b6">&lt;/a>
+&lt;/h2>&lt;p>超时控制，使我们的服务之间调用可以快速抛错。比如API接口设置1s超时API调用A服务用了500ms，服务A调用和服务B用了600ms，n那么现在已经超时，还要调用服务C等等，再返回超时错误吗？这回事使服务C后面的链路做了无用功，浪费服务器资源。&lt;/p></description></item><item><title>微服务架构及raft协议</title><link>https://daemon365.dev/post/microservice/microservice_architecture_and_raft_protocol/</link><pubDate>Sun, 30 May 2021 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/microservice/microservice_architecture_and_raft_protocol/</guid><description>&lt;h2 id="微服务架构全景图">微服务架构全景图
+&lt;a class="header-anchor" href="#%e5%be%ae%e6%9c%8d%e5%8a%a1%e6%9e%b6%e6%9e%84%e5%85%a8%e6%99%af%e5%9b%be">&lt;/a>
+&lt;/h2>&lt;p>&lt;img src="https://daemon365.dev/imgs/img-lazy-loading.gif" data-src="https://daemon365.dev/images/7cea65ba-1cb6-4a94-b327-65110aaaeb4b.png" alt="" />&lt;/p>
+&lt;p>&lt;img src="https://daemon365.dev/imgs/img-lazy-loading.gif" data-src="https://daemon365.dev/images/936e7894-ae71-41b9-b2d4-032af51c0540.png" alt="" />&lt;/p>
+&lt;p>&lt;img src="https://daemon365.dev/imgs/img-lazy-loading.gif" data-src="https://daemon365.dev/images/076f5cc6-d5ac-496e-a4cd-ae74e3756d61.png" alt="" />&lt;/p>
+&lt;h2 id="服务注册和发现">服务注册和发现
+&lt;a class="header-anchor" href="#%e6%9c%8d%e5%8a%a1%e6%b3%a8%e5%86%8c%e5%92%8c%e5%8f%91%e7%8e%b0">&lt;/a>
+&lt;/h2>&lt;ol>
+&lt;li>
+&lt;p>Client side implement&lt;/p>
+&lt;ul>
+&lt;li>调用需要维护所有调用服务的地址&lt;/li>
+&lt;li>有一定的技术难度，需要rpc框架支持&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>Server side implement&lt;/p>
+&lt;ul>
+&lt;li>架构简单&lt;/li>
+&lt;li>有单点故障&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ol>
+&lt;p>&lt;img src="https://daemon365.dev/imgs/img-lazy-loading.gif" data-src="https://daemon365.dev/images/6ce70812-c612-49e4-b60a-50c267b228e1.png" alt="" />&lt;/p>
+&lt;h2 id="注册中心">注册中心
+&lt;a class="header-anchor" href="#%e6%b3%a8%e5%86%8c%e4%b8%ad%e5%bf%83">&lt;/a>
+&lt;/h2>&lt;ol>
+&lt;li>
+&lt;p>etcd注册中心&lt;/p></description></item><item><title>分布式ID生成器及redis，etcd分布式锁</title><link>https://daemon365.dev/post/microservice/distributed_id_generator_and_redis__etcd_distributed_lock/</link><pubDate>Fri, 30 Apr 2021 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/microservice/distributed_id_generator_and_redis__etcd_distributed_lock/</guid><description>&lt;h2 id="分布式id生成器">分布式id生成器
+&lt;a class="header-anchor" href="#%e5%88%86%e5%b8%83%e5%bc%8fid%e7%94%9f%e6%88%90%e5%99%a8">&lt;/a>
+&lt;/h2>&lt;p>有时我们需要能够生成类似MySQL自增ID这样不断增大，同时又不会重复的id。以支持业务中的高并发场景。比较典型的，电商促销时，短时间内会有大量的订单涌入到系统，比如每秒10w+。明星出轨时，会有大量热情的粉丝发微博以表心意，同样会在短时间内产生大量的消息。&lt;/p></description></item><item><title>thrift的介绍及其使用</title><link>https://daemon365.dev/post/microservice/introduction_and_use_of_thrift/</link><pubDate>Wed, 30 Dec 2020 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/microservice/introduction_and_use_of_thrift/</guid><description>&lt;h2 id="什么是thrift">什么是thrift
+&lt;a class="header-anchor" href="#%e4%bb%80%e4%b9%88%e6%98%afthrift">&lt;/a>
+&lt;/h2>&lt;p>Thrift是Facebook于2007年开发的跨语言的rpc服框架，提供多语言的编译功能，并提供多种服务器工作模式；用户通过Thrift的IDL（接口定义语言）来描述接口函数及数据类型，然后通过Thrift的编译环境生成各种语言类型的接口文件，用户可以根据自己的需要采用不同的语言开发客户端代码和服务器端代码。&lt;/p></description></item><item><title>grpc服务发现与负载均衡</title><link>https://daemon365.dev/post/microservice/grpc_service_discovery_and_load_balancing/</link><pubDate>Sun, 20 Dec 2020 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/microservice/grpc_service_discovery_and_load_balancing/</guid><description>&lt;h2 id="前言">前言
+&lt;a class="header-anchor" href="#%e5%89%8d%e8%a8%80">&lt;/a>
+&lt;/h2>&lt;p>   在后台服务开发中，高可用性是构建中核心且重要的一环。服务发现（Service discovery）和负载均衡（Load Balance）一直都是我关注的话题。今天来谈一下我在实际中是如何理解及落地的。&lt;/p></description></item><item><title>grpc基础</title><link>https://daemon365.dev/post/microservice/grpc_basics/</link><pubDate>Thu, 10 Dec 2020 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/microservice/grpc_basics/</guid><description>&lt;h2 id="rpc-框架原理">RPC 框架原理
+&lt;a class="header-anchor" href="#rpc-%e6%a1%86%e6%9e%b6%e5%8e%9f%e7%90%86">&lt;/a>
+&lt;/h2>&lt;p>RPC 框架的目标就是让远程服务调用更加简单、透明，RPC 框架负责屏蔽底层的传输方式（TCP 或者 UDP）、序列化方式（XML/Json/ 二进制）和通信细节。服务调用者可以像调用本地接口一样调用远程的服务提供者，而不需要关心底层通信细节和调用过程。&lt;/p></description></item><item><title>proto buffer</title><link>https://daemon365.dev/post/microservice/protocol_buffer/</link><pubDate>Sun, 01 Dec 2019 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/microservice/protocol_buffer/</guid><description>&lt;p>protobuf是一种高效的数据格式，平台无关、语言无关、可扩展，可用于 RPC 系统和持续数据存储系统。&lt;/p>
+&lt;h2 id="protobuf介绍">protobuf介绍
+&lt;a class="header-anchor" href="#protobuf%e4%bb%8b%e7%bb%8d">&lt;/a>
+&lt;/h2>&lt;p>Protobuf是Protocol Buffer的简称，它是Google公司于2008年开源的一种高效的平台无关、语言无关、可扩展的数据格式，目前Protobuf作为接口规范的描述语言，可以作为Go语言RPC接口的基础工具。&lt;/p></description></item></channel></rss>
