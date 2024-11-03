@@ -1,0 +1,28 @@
+<mxfile host="65bd71144e">
+    <diagram id="Rda52s8wLIwcwzm5G4XN" name="Page-1">
+        <mxGraphModel dx="1408" dy="858" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" background="#ffffff" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="2" value="" style="swimlane;startSize=0;" parent="1" vertex="1">
+                    <mxGeometry x="50" y="130" width="460" height="630" as="geometry"/>
+                </mxCell>
+                <mxCell id="3" value="应用层（http websocket ...）" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="2" vertex="1">
+                    <mxGeometry x="20" y="40" width="370" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="4" value="传输层(tcp udp)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="2" vertex="1">
+                    <mxGeometry x="20" y="160" width="370" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="5" value="网络层(ip,...)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="2" vertex="1">
+                    <mxGeometry x="20" y="280" width="370" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="6" value="数据链路层(arp....)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="2" vertex="1">
+                    <mxGeometry x="20" y="400" width="370" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="7" value="物理层" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="2" vertex="1">
+                    <mxGeometry x="20" y="520" width="370" height="90" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
