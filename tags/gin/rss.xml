@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Gin on Daemon</title><link>https://daemon365.dev/tags/gin/</link><description>Recent content in Gin on Daemon</description><generator>Hugo</generator><language>zh-CN</language><lastBuildDate>Mon, 23 Dec 2019 00:00:00 +0800</lastBuildDate><atom:link href="https://daemon365.dev/tags/gin/rss.xml" rel="self" type="application/rss+xml"/><item><title>nethttp和gin 路由</title><link>https://daemon365.dev/post/go/nethttp_and_gin_routing/</link><pubDate>Mon, 23 Dec 2019 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/go/nethttp_and_gin_routing/</guid><description>&lt;h2 id="nethttp-路由注册">net/http 路由注册
+&lt;a class="header-anchor" href="#nethttp-%e8%b7%af%e7%94%b1%e6%b3%a8%e5%86%8c">&lt;/a>
+&lt;/h2>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2;">&lt;code class="language-go" data-lang="go">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">func&lt;/span> &lt;span style="color:#a6e22e">test1&lt;/span>() {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">http&lt;/span>.&lt;span style="color:#a6e22e">HandleFunc&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;/&amp;#34;&lt;/span>, &lt;span style="color:#66d9ef">func&lt;/span>(&lt;span style="color:#a6e22e">w&lt;/span> &lt;span style="color:#a6e22e">http&lt;/span>.&lt;span style="color:#a6e22e">ResponseWriter&lt;/span>, &lt;span style="color:#a6e22e">r&lt;/span> &lt;span style="color:#f92672">*&lt;/span>&lt;span style="color:#a6e22e">http&lt;/span>.&lt;span style="color:#a6e22e">Request&lt;/span>) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Fprintf&lt;/span>(&lt;span style="color:#a6e22e">w&lt;/span>, &lt;span style="color:#e6db74">&amp;#34;Hello world!&amp;#34;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> })
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">http&lt;/span>.&lt;span style="color:#a6e22e">ListenAndServe&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;:9001&amp;#34;&lt;/span>, &lt;span style="color:#66d9ef">nil&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">!=&lt;/span> &lt;span style="color:#66d9ef">nil&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">log&lt;/span>.&lt;span style="color:#a6e22e">Fatal&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;ListenAndServer:&amp;#34;&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>在使用&lt;code>ListenAndServe&lt;/code>这个方法时，系统就会给我们指派一个路由器，&lt;code>DefaultServeMux&lt;/code>是系统默认使用的路由器，如果&lt;code>ListenAndServe&lt;/code>这个方法的第2个参数传入nil，系统就会默认使用&lt;code>DefaultServeMux&lt;/code>。当然，这里也可以传入自定义的路由器。&lt;/p></description></item><item><title>Gin框架介绍及使用</title><link>https://daemon365.dev/post/go/introduction_and_use_of_gin_framework/</link><pubDate>Sun, 30 Jun 2019 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/go/introduction_and_use_of_gin_framework/</guid><description>&lt;h2 id="gin框架介绍">Gin框架介绍
+&lt;a class="header-anchor" href="#gin%e6%a1%86%e6%9e%b6%e4%bb%8b%e7%bb%8d">&lt;/a>
+&lt;/h2>&lt;ul>
+&lt;li>基于
+&lt;a href="https://github.com/julienschmidt/httprouter" title="httprouter" rel="noopener external nofollow noreferrer" target="_blank" class=" exturl">
+ httprouter
+ 
+ &lt;i class="fa fa-external-link-alt">&lt;/i>
+ 
+&lt;/a>开发的Web框架。&lt;/li>
+&lt;li>
+&lt;a href="https://gin-gonic.com/zh-cn/docs/" title="中文文档" rel="noopener external nofollow noreferrer" target="_blank" class=" exturl">
+ 中文文档
+ 
+ &lt;i class="fa fa-external-link-alt">&lt;/i>
+ 
+&lt;/a>，齐全。&lt;/li>
+&lt;li>简单易用的轻量级框架。&lt;/li>
+&lt;/ul>
+&lt;h2 id="gin框架安装">Gin框架安装
+&lt;a class="header-anchor" href="#gin%e6%a1%86%e6%9e%b6%e5%ae%89%e8%a3%85">&lt;/a>
+&lt;/h2>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>go get -u github.com/gin-gonic/gin
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;strong>实例:&lt;/strong>&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2;">&lt;code class="language-go" data-lang="go">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">package&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">import&lt;/span> (
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#e6db74">&amp;#34;fmt&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#e6db74">&amp;#34;github.com/gin-gonic/gin&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">func&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>() {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#a6e22e">r&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">gin&lt;/span>.&lt;span style="color:#a6e22e">Default&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">// 创建一个默认的路由引擎
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">// 也可以用gin.New() gin.Default()多用了日志和panic的recover中间件
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#a6e22e">r&lt;/span>.&lt;span style="color:#a6e22e">GET&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;/helloworld&amp;#34;&lt;/span>, &lt;span style="color:#66d9ef">func&lt;/span>(&lt;span style="color:#a6e22e">c&lt;/span> &lt;span style="color:#f92672">*&lt;/span>&lt;span style="color:#a6e22e">gin&lt;/span>.&lt;span style="color:#a6e22e">Context&lt;/span>) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#a6e22e">c&lt;/span>.&lt;span style="color:#a6e22e">JSON&lt;/span>(&lt;span style="color:#ae81ff">200&lt;/span>, &lt;span style="color:#a6e22e">gin&lt;/span>.&lt;span style="color:#a6e22e">H&lt;/span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#75715e">// c.JSON：返回JSON格式的数据
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			&lt;span style="color:#e6db74">&amp;#34;msg&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;Hello world!&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		})
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	})
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">r&lt;/span>.&lt;span style="color:#a6e22e">Run&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;127.0.0.1:8001&amp;#34;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">// 启动HTTP服务，默认在127.0.0.1:8001启动服务
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">!=&lt;/span> &lt;span style="color:#66d9ef">nil&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Println&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;run gin field&amp;#34;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">return&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;img src="https://daemon365.dev/imgs/img-lazy-loading.gif" data-src="https://daemon365.dev/images/a78c08f7-e35f-41f2-bc49-9388ef405408.png" alt="" />&lt;/p></description></item></channel></rss>

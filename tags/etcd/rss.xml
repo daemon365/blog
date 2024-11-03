@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Etcd on Daemon</title><link>https://daemon365.dev/tags/etcd/</link><description>Recent content in Etcd on Daemon</description><generator>Hugo</generator><language>zh-CN</language><lastBuildDate>Sat, 15 Jun 2024 16:14:00 +0800</lastBuildDate><atom:link href="https://daemon365.dev/tags/etcd/rss.xml" rel="self" type="application/rss+xml"/><item><title>boltdb 原理</title><link>https://daemon365.dev/post/cloud/boltdb_principles/</link><pubDate>Sat, 15 Jun 2024 16:14:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/boltdb_principles/</guid><description>&lt;h2 id="简介">简介
+&lt;a class="header-anchor" href="#%e7%ae%80%e4%bb%8b">&lt;/a>
+&lt;/h2>&lt;p>介绍及简单使用：https://www.cnblogs.com/daemon365/p/17690167.html
+源码地址：https://github.com/etcd-io/bbolt&lt;/p></description></item><item><title>etcd watch 实现原理</title><link>https://daemon365.dev/post/cloud/etcd_watch_implementation_principle/</link><pubDate>Mon, 10 Jun 2024 14:16:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/etcd_watch_implementation_principle/</guid><description>&lt;h2 id="介绍">介绍
+&lt;a class="header-anchor" href="#%e4%bb%8b%e7%bb%8d">&lt;/a>
+&lt;/h2>&lt;p>在 etcd 中，watch 是一个非常重要的特性，它可以让客户端监控 etcd 中的 key 或者一组 key，当 key 发生变化时，etcd 会通知客户端。本文将介绍 etcd watch 的实现原理。&lt;/p></description></item><item><title>etcd MVCC 存储结构及流程</title><link>https://daemon365.dev/post/cloud/etcd_mvcc_storage_structure_and_process/</link><pubDate>Sun, 26 May 2024 18:00:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/etcd_mvcc_storage_structure_and_process/</guid><description>&lt;h2 id="什么是-mvcc">什么是 MVCC
+&lt;a class="header-anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af-mvcc">&lt;/a>
+&lt;/h2>&lt;p>MVCC 是 Multi-Version Concurrency Control 的缩写，即多版本并发控制。它是一种并发控制的方法，用于在数据库系统中实现事务的隔离性。MVCC 是一种乐观锁机制，它通过保存数据的多个版本来实现事务的隔禽性。在 etcd 中，MVCC 是用于实现数据的版本控制的。而且可以查看历史版本的数据。&lt;/p></description></item><item><title>boltdb 介绍</title><link>https://daemon365.dev/post/cloud/boltdb_basics/</link><pubDate>Wed, 08 May 2024 20:56:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/boltdb_basics/</guid><description>&lt;h2 id="介绍">介绍
+&lt;a class="header-anchor" href="#%e4%bb%8b%e7%bb%8d">&lt;/a>
+&lt;/h2>&lt;p>&lt;code>BoltDB&lt;/code> 是一个用 Go 语言编写的嵌入式键/值数据库。以下是关于 BoltDB 的一些基本介绍：&lt;/p>
+&lt;ul>
+&lt;li>&lt;strong>键/值存储&lt;/strong>: BoltDB 为应用程序提供了简单的键/值存储接口。&lt;/li>
+&lt;li>&lt;strong>事务&lt;/strong>: BoltDB 支持完整的 ACID 事务。&lt;/li>
+&lt;li>&lt;strong>嵌入式&lt;/strong>: 与像 MySQL 或 PostgreSQL 这样的数据库系统不同，BoltDB 不运行在单独的服务器进程中。它作为一个库被直接嵌入到你的应用程序中。&lt;/li>
+&lt;li>&lt;strong>单文件存储&lt;/strong>: 所有的数据都存储在一个文件中，这使得备份和迁移变得简单。&lt;/li>
+&lt;li>&lt;strong>高效的二进制存储&lt;/strong>: 数据在磁盘上使用 B+ 树结构存储，这为随机读取提供了高性能。&lt;/li>
+&lt;li>&lt;strong>前缀扫描&lt;/strong>: 可以很容易地按键的前缀进行扫描，这使得它适用于范围查询。&lt;/li>
+&lt;li>&lt;strong>没有外部依赖&lt;/strong>: BoltDB 不依赖于任何外部系统或库。&lt;/li>
+&lt;li>&lt;strong>线程安全&lt;/strong>: BoltDB 是线程安全的，可以在多个 goroutines 中并发地使用。&lt;/li>
+&lt;/ul>
+&lt;p>BoltDB 特别适用于需要一个轻量级、高性能、易于部署和维护的数据库解决方案的场景。&lt;/p></description></item><item><title>golang操作etcd</title><link>https://daemon365.dev/post/go/golang_operates_etcd/</link><pubDate>Sun, 08 Jan 2023 20:56:00 +0800</pubDate><guid>https://daemon365.dev/post/go/golang_operates_etcd/</guid><description>&lt;p>etcd是近几年比较火热的一个开源的、分布式的键值对数据存储系统，提供共享配置、服务的注册和发现，本文主要介绍etcd的安装和使用。&lt;/p>
+&lt;h2 id="etcd介绍">etcd介绍
+&lt;a class="header-anchor" href="#etcd%e4%bb%8b%e7%bb%8d">&lt;/a>
+&lt;/h2>&lt;p>
+&lt;a href="https://etcd.io/" title="etcd" rel="noopener external nofollow noreferrer" target="_blank" class=" exturl">
+ etcd
+ 
+ &lt;i class="fa fa-external-link-alt">&lt;/i>
+ 
+&lt;/a>是使用Go语言开发的一个开源的、高可用的分布式key-value存储系统，可以用于配置共享和服务的注册和发现。&lt;/p></description></item><item><title>微服务架构及raft协议</title><link>https://daemon365.dev/post/microservice/microservice_architecture_and_raft_protocol/</link><pubDate>Sun, 30 May 2021 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/microservice/microservice_architecture_and_raft_protocol/</guid><description>&lt;h2 id="微服务架构全景图">微服务架构全景图
+&lt;a class="header-anchor" href="#%e5%be%ae%e6%9c%8d%e5%8a%a1%e6%9e%b6%e6%9e%84%e5%85%a8%e6%99%af%e5%9b%be">&lt;/a>
+&lt;/h2>&lt;p>&lt;img src="https://daemon365.dev/imgs/img-lazy-loading.gif" data-src="https://daemon365.dev/images/7cea65ba-1cb6-4a94-b327-65110aaaeb4b.png" alt="" />&lt;/p>
+&lt;p>&lt;img src="https://daemon365.dev/imgs/img-lazy-loading.gif" data-src="https://daemon365.dev/images/936e7894-ae71-41b9-b2d4-032af51c0540.png" alt="" />&lt;/p>
+&lt;p>&lt;img src="https://daemon365.dev/imgs/img-lazy-loading.gif" data-src="https://daemon365.dev/images/076f5cc6-d5ac-496e-a4cd-ae74e3756d61.png" alt="" />&lt;/p>
+&lt;h2 id="服务注册和发现">服务注册和发现
+&lt;a class="header-anchor" href="#%e6%9c%8d%e5%8a%a1%e6%b3%a8%e5%86%8c%e5%92%8c%e5%8f%91%e7%8e%b0">&lt;/a>
+&lt;/h2>&lt;ol>
+&lt;li>
+&lt;p>Client side implement&lt;/p>
+&lt;ul>
+&lt;li>调用需要维护所有调用服务的地址&lt;/li>
+&lt;li>有一定的技术难度，需要rpc框架支持&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>Server side implement&lt;/p>
+&lt;ul>
+&lt;li>架构简单&lt;/li>
+&lt;li>有单点故障&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ol>
+&lt;p>&lt;img src="https://daemon365.dev/imgs/img-lazy-loading.gif" data-src="https://daemon365.dev/images/6ce70812-c612-49e4-b60a-50c267b228e1.png" alt="" />&lt;/p>
+&lt;h2 id="注册中心">注册中心
+&lt;a class="header-anchor" href="#%e6%b3%a8%e5%86%8c%e4%b8%ad%e5%bf%83">&lt;/a>
+&lt;/h2>&lt;ol>
+&lt;li>
+&lt;p>etcd注册中心&lt;/p></description></item><item><title>分布式ID生成器及redis，etcd分布式锁</title><link>https://daemon365.dev/post/microservice/distributed_id_generator_and_redis__etcd_distributed_lock/</link><pubDate>Fri, 30 Apr 2021 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/microservice/distributed_id_generator_and_redis__etcd_distributed_lock/</guid><description>&lt;h2 id="分布式id生成器">分布式id生成器
+&lt;a class="header-anchor" href="#%e5%88%86%e5%b8%83%e5%bc%8fid%e7%94%9f%e6%88%90%e5%99%a8">&lt;/a>
+&lt;/h2>&lt;p>有时我们需要能够生成类似MySQL自增ID这样不断增大，同时又不会重复的id。以支持业务中的高并发场景。比较典型的，电商促销时，短时间内会有大量的订单涌入到系统，比如每秒10w+。明星出轨时，会有大量热情的粉丝发微博以表心意，同样会在短时间内产生大量的消息。&lt;/p></description></item></channel></rss>

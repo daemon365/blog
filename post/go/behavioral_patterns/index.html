@@ -1,0 +1,936 @@
+<!doctype html><html lang=zh-CN data-theme=light><head><meta charset=UTF-8><meta name=viewport content="width=device-width"><meta name=theme-color content="#222" media="(prefers-color-scheme: light)"><meta name=generator content="Hugo 0.136.5"><link rel="shortcut icon" type=image/x-icon href=/imgs/icons/favicon.ico><link rel=icon type=image/x-icon href=/imgs/icons/favicon.ico><link rel=icon type=image/png sizes=16x16 href=/imgs/icons/favicon.ico><link rel=icon type=image/png sizes=32x32 href=/imgs/icons/favicon.ico><link rel=apple-touch-icon sizes=180x180 href=/imgs/icons/favicon.ico><meta itemprop=name content="行为模式"><meta itemprop=description content="Don't let yourself stop."><meta name=description content="Don't let yourself stop."><meta itemprop=datePublished zgotmplz><meta itemprop=dateModified zgotmplz><meta itemprop=image content="https://daemon365.dev/imgs/daemon365.png"><meta itemprop=keywords content="go,设计模式"><meta property="og:type" content="article"><meta property="og:title" content="行为模式"><meta property="og:description" content="Don't let yourself stop."><meta property="og:image" content="/imgs/daemon365.png"><meta property="og:image:width" content="312"><meta property="og:image:height" content="312"><meta property="og:image:type" content="image/jpeg/png/svg/jpg"><meta property="og:url" content="https://daemon365.dev/post/go/behavioral_patterns/"><meta property="og:site_name" content="Daemon"><meta property="og:locale" content="zh-CN"><meta property="article:author" content="daemon365"><meta property="article:published_time" content="2023-09-25 00:00:00 +0800 +0800"><meta property="article:modified_time" content="2023-09-25 00:00:00 +0800 +0800"><link type=text/css rel=stylesheet href=https://daemon365.dev/3rd/font-awesome/6.6.0/css/all.min.css><link type=text/css rel=stylesheet href=https://daemon365.dev/3rd/animate.css/4.1.1/animate.min.css><link type=text/css rel=stylesheet href=https://daemon365.dev/3rd/viewerjs/1.11.6/viewer.min.css><link rel=stylesheet href=/css/main.min.d676189b0ac4b63b254e222668b8bedd7d6ba28666e76077ff3b7e23522b4a6d.css><script type=text/javascript>(function(){localDB={set:function(e,t,n){if(n===0)return;const s=new Date,o=n*864e5,i={value:t,expiry:s.getTime()+o};localStorage.setItem(e,JSON.stringify(i))},get:function(e){const t=localStorage.getItem(e);if(!t)return void 0;const n=JSON.parse(t),s=new Date;return s.getTime()>n.expiry?(localStorage.removeItem(e),void 0):n.value}},theme={active:function(){const e=localDB.get("theme");if(e==null)return;theme.toggle(e),window.matchMedia("(prefers-color-scheme: dark)").addListener(function(e){theme.toggle(e.matches?"dark":"light")})},toggle:function(e){document.documentElement.setAttribute("data-theme",e),localDB.set("theme",e,2);const t=document.querySelector("iframe.giscus-frame");if(t){const n={setConfig:{theme:e}};t.contentWindow.postMessage({giscus:n},"https://giscus.app")}}},theme.active()})(window)</script><script class=next-config data-name=page type=application/json>{"comments":true,"isHome":false,"isPage":true,"path":"behavioral_patterns","permalink":"https://daemon365.dev/post/go/behavioral_patterns/","title":"行为模式","waline":{"js":[{"alias":"@waline/client","alias_name":"waline","file":"dist/pageview.js","name":"pageview","version":"2.15.8"},{"alias":"@waline/client","alias_name":"waline","file":"dist/comment.js","name":"comment","version":"2.15.8"}]}}</script><script type=text/javascript>document.addEventListener("DOMContentLoaded",()=>{var e=document.createElement("script");e.charset="UTF-8",e.id="LA_COLLECT",e.src="https://sdk.51.la/js-sdk-pro.min.js",e.async="true",e.onload=function(){LA.init({id:"JmAHxEAUVgyS8B1c",ck:"JmAHxEAUVgyS8B1c",autoTrack:!0})},document.head.appendChild(e)})</script><script type=text/javascript>document.addEventListener("DOMContentLoaded",()=>{var e=document.createElement("script");e.charset="UTF-8",e.src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js",e.async=!1,e.defer=!0,document.head.appendChild(e),e.onload=function(){NexT.utils.fmtBusuanzi()}})</script><title>行为模式 - Daemon</title><noscript><link rel=stylesheet href=/css/noscript.css></noscript></head><body itemscope itemtype=http://schema.org/WebPage class=use-motion><div class=headband></div><main class=main><header class=header itemscope itemtype=http://schema.org/WPHeader><div class=header-inner><div class=site-brand-container><div class=site-nav-toggle><div class=toggle aria-label role=button><span class=toggle-line></span>
+<span class=toggle-line></span>
+<span class=toggle-line></span></div></div><div class=site-meta><a href=/ class=brand rel=start><i class=logo-line></i><h1 class=site-title>Daemon</h1><i class=logo-line></i></a><p class=site-subtitle itemprop=description>Don't let yourself stop.</p></div><div class=site-nav-right><div class="toggle popup-trigger"><i class="fa fa-search fa-fw fa-lg"></i></div></div></div><nav class=site-nav><ul class="main-menu menu"><li class="menu-item menu-item-home"><a href=/ class=hvr-icon-pulse rel=section><i class="fa fa-home hvr-icon"></i>Home</a></li><li class="menu-item menu-item-about"><a href=/about/ class=hvr-icon-pulse rel=section><i class="fa fa-user hvr-icon"></i>About</a></li><li class="menu-item menu-item-archives"><a href=/archives/ class=hvr-icon-pulse rel=section><i class="fa fa-archive hvr-icon"></i>Archives
+<span class=badge>93</span></a></li><li class="menu-item menu-item-commonweal"><a href=/404.html class=hvr-icon-pulse rel=section><i class="fa fa-heartbeat hvr-icon"></i>Commonweal</a></li><li class="menu-item menu-item-search"><a role=button class="popup-trigger hvr-icon-pulse"><i class="fa fa-search fa-fw hvr-icon"></i>搜索</a></li></ul></nav><div class=search-pop-overlay><div class="popup search-popup"><div class=search-header><span class=search-icon><i class="fa fa-search"></i></span><div class=search-input-container><input autocomplete=off autocapitalize=off maxlength=80 placeholder=搜索... spellcheck=false type=search class=search-input></div><span class=popup-btn-close role=button><i class="fa fa-times-circle"></i></span></div><div class="search-result-container no-result"><div class=search-result-icon><i class="fa fa-spinner fa-pulse fa-5x"></i></div></div></div></div></div><div class="toggle sidebar-toggle" role=button><span class=toggle-line></span>
+<span class=toggle-line></span>
+<span class=toggle-line></span></div><aside class=sidebar><div class="sidebar-inner sidebar-nav-active sidebar-toc-active"><ul class=sidebar-nav><li class=sidebar-nav-toc>文章目录</li><li class=sidebar-nav-overview>站点概览</li></ul><div class=sidebar-panel-container><div class="post-toc-wrap sidebar-panel"><div class="post-toc animated"><nav id=TableOfContents><ul><li><a href=#责任链模式>责任链模式</a><ul><li><a href=#代码实现>代码实现</a></li></ul></li><li><a href=#观察者模式>观察者模式</a><ul><li><a href=#代码实现-1>代码实现</a></li></ul></li><li><a href=#模板方法模式>模板方法模式</a><ul><li><a href=#代码实现-2>代码实现</a></li></ul></li><li><a href=#命令模式>命令模式</a><ul><li><a href=#代码实现-3>代码实现</a></li></ul></li><li><a href=#策略模式>策略模式</a><ul><li><a href=#代码实现-4>代码实现</a></li></ul></li><li><a href=#状态模式>状态模式</a><ul><li><a href=#代码实现-5>代码实现</a></li></ul></li><li><a href=#迭代器模式>迭代器模式</a><ul><li><a href=#代码实现-6>代码实现</a></li></ul></li><li><a href=#访问者模式>访问者模式</a><ul><li><a href=#代码实现-7>代码实现</a></li></ul></li><li><a href=#备忘录模式>备忘录模式</a><ul><li><a href=#代码实现-8>代码实现</a></li></ul></li><li><a href=#解释器模式>解释器模式</a><ul><li><a href=#代码实现-9>代码实现</a></li></ul></li><li><a href=#中介模式>中介模式</a><ul><li><a href=#代码实现-10>代码实现</a></li></ul></li><li><a href=#references>References</a></li></ul></nav></div></div><div class="site-overview-wrap sidebar-panel"><div class="site-author site-overview-item animated" itemprop=author itemscope itemtype=http://schema.org/Person><img class=site-author-image itemprop=image alt=daemon365 src=/imgs/img-lazy-loading.gif data-src=/imgs/daemon365.png><p class=site-author-name itemprop=name>daemon365</p><div class=site-description itemprop=description>Don't let yourself stop.</div></div><div class="site-state-wrap site-overview-item animated"><nav class=site-state><div class="site-state-item site-state-posts"><a href=/archives/><span class=site-state-item-count>93</span>
+<span class=site-state-item-name>日志</span></a></div><div class="site-state-item site-state-categories"><a href=/categories/><span class=site-state-item-count>1</span>
+<span class=site-state-item-name>分类</span></a></div><div class="site-state-item site-state-tags"><a href=/tags/><span class=site-state-item-count>52</span>
+<span class=site-state-item-name>标签</span></a></div></nav></div><div class="links-of-social site-overview-item animated"><span class=links-of-social-item><a href=https://github.com/daemon365 title="Github → https://github.com/daemon365" rel=noopener class=hvr-icon-pulse target=_blank><i class="fab fa-github fa-fw hvr-icon"></i>
+Github</a></span></div><div class="cc-license animated" itemprop=license><a href=https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh class=cc-opacity rel=noopener target=_blank title=共享知识><img src=/imgs/img-lazy-loading.gif data-src=/imgs/cc/big/by_nc_sa.svg alt=共享知识></a></div><div class="links-of-blogroll site-overview-item animated"><div class=links-of-blogroll-title><i class="fa fa-globe fa-fw"></i>
+友情链接</div><ul class=links-of-blogroll-list><li class=links-of-blogroll-item><a href=https://go-kratos.dev title=https://go-kratos.dev target=_blank>kratos</a></li></ul></div></div></div></div></aside><div class=sidebar-dimmer></div></header><div class=tool-buttons><div id=goto-comments class="button goto-comments" title=直达评论><i class="fas fa-comments"></i></div><div id=toggle-theme class=button title=深浅模式切换><i class="fas fa-adjust"></i></div><div class=back-to-top role=button title=返回顶部><i class="fa fa-arrow-up"></i>
+<span>0%</span></div></div><div class=reading-progress-bar></div><a role=button class="book-mark-link book-mark-link-fixed"></a><script type=text/javascript src=//sidecar.gitter.im/dist/sidecar.v1.js async></script><script type=text/javascript>((window.gitter={}).chat={}).options={room:"hugo-next/community"}</script><noscript><div class=noscript-warning>Theme NexT works best with JavaScript enabled</div></noscript><div class="main-inner post posts-expand"><div class=post-block><article itemscope itemtype=http://schema.org/Article class=post-content lang><link itemprop=mainEntityOfPage href=https://daemon365.dev/post/go/behavioral_patterns/><span hidden itemprop=author itemscope itemtype=http://schema.org/Person><meta itemprop=image content="/imgs/daemon365.png"><meta itemprop=name content="daemon365"></span><span hidden itemprop=publisher itemscope itemtype=http://schema.org/Organization><meta itemprop=name content="daemon365"><meta itemprop=description content="Don't let yourself stop."></span><span hidden itemprop=post itemscope itemtype=http://schema.org/CreativeWork><meta itemprop=name content="行为模式"><meta itemprop=description content="责任链模式
+
+责任链模式是一种行为设计模式， 允许你将请求沿着处理者链进行发送。 收到请求后， 每个处理者均可对请求进行处理， 或将其传递给链上的下个处理者。比如 kratos,gin等开源库的中间件实现。"></span><header class=post-header><h1 class=post-title itemprop="name headline">行为模式</h1><div class=post-meta-container><div class=post-meta-items><span class=post-meta-item><span class=post-meta-item-icon><i class="fas fa-solid fa-calendar"></i>
+</span><span class=post-meta-item-text title=发表于>发表于：
+</span><time title="创建时间：2023-09-25 00:00:00 +0800 +0800" itemprop="dateCreated datePublished" datetime="2023-09-25 00:00:00 +0800 +0800">2023-09-25</time></span></div><div class=post-meta-items><span class=post-meta-item title=字数><span class=post-meta-item-icon><i class="fas fa-solid fa-file-word"></i>
+</span><span class=post-meta-item-text>字数：</span>
+<span>3254</span>
+</span><span class=post-meta-item title=阅读><span class=post-meta-item-icon><i class="fas fa-solid fa-clock"></i>
+</span><span class=post-meta-item-text>阅读：&ap;</span>
+<span>7分钟</span>
+</span><span class=post-meta-item title=浏览><span class=post-meta-item-icon><i class="fas fa-solid fa-eye"></i>
+</span><span class=post-meta-item-text>浏览：
+</span><span id=busuanzi_value_page_pv data-path=/post/go/behavioral_patterns/><i class="fa fa-sync fa-spin"></i></span></span></div></div></header><div class="post-body autonumber" itemprop=articleBody><h2 id=责任链模式>责任链模式
+<a class=header-anchor href=#%e8%b4%a3%e4%bb%bb%e9%93%be%e6%a8%a1%e5%bc%8f></a></h2><p><strong>责任链模式</strong>是一种行为设计模式， 允许你将请求沿着处理者链进行发送。 收到请求后， 每个处理者均可对请求进行处理， 或将其传递给链上的下个处理者。比如 <code>kratos</code>,<code>gin</code>等开源库的中间件实现。</p><h3 id=代码实现>代码实现
+<a class=header-anchor href=#%e4%bb%a3%e7%a0%81%e5%ae%9e%e7%8e%b0></a></h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> (
+</span></span><span style=display:flex><span>	<span style=color:#e6db74>&#34;context&#34;</span>
+</span></span><span style=display:flex><span>	<span style=color:#e6db74>&#34;fmt&#34;</span>
+</span></span><span style=display:flex><span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>Handler</span> <span style=color:#66d9ef>func</span>(<span style=color:#a6e22e>ctx</span> <span style=color:#a6e22e>context</span>.<span style=color:#a6e22e>Context</span>, <span style=color:#a6e22e>req</span> <span style=color:#66d9ef>interface</span>{}) (<span style=color:#a6e22e>resp</span> <span style=color:#66d9ef>interface</span>{}, <span style=color:#a6e22e>err</span> <span style=color:#66d9ef>error</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>Middleware</span> <span style=color:#66d9ef>func</span>(<span style=color:#a6e22e>next</span> <span style=color:#a6e22e>Handler</span>) <span style=color:#a6e22e>Handler</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>Chain</span>(<span style=color:#a6e22e>middlewares</span> <span style=color:#f92672>...</span><span style=color:#a6e22e>Middleware</span>) <span style=color:#a6e22e>Middleware</span> {
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>return</span> <span style=color:#66d9ef>func</span>(<span style=color:#a6e22e>next</span> <span style=color:#a6e22e>Handler</span>) <span style=color:#a6e22e>Handler</span> {
+</span></span><span style=display:flex><span>		<span style=color:#66d9ef>for</span> <span style=color:#a6e22e>i</span> <span style=color:#f92672>:=</span> len(<span style=color:#a6e22e>middlewares</span>) <span style=color:#f92672>-</span> <span style=color:#ae81ff>1</span>; <span style=color:#a6e22e>i</span> <span style=color:#f92672>&gt;=</span> <span style=color:#ae81ff>0</span>; <span style=color:#a6e22e>i</span><span style=color:#f92672>--</span> {
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>next</span> = <span style=color:#a6e22e>middlewares</span>[<span style=color:#a6e22e>i</span>](<span style=color:#a6e22e>next</span>)
+</span></span><span style=display:flex><span>		}
+</span></span><span style=display:flex><span>		<span style=color:#66d9ef>return</span> <span style=color:#a6e22e>next</span>
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>c</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>Chain</span>(<span style=color:#66d9ef>func</span>(<span style=color:#a6e22e>next</span> <span style=color:#a6e22e>Handler</span>) <span style=color:#a6e22e>Handler</span> {
+</span></span><span style=display:flex><span>		<span style=color:#66d9ef>return</span> <span style=color:#66d9ef>func</span>(<span style=color:#a6e22e>ctx</span> <span style=color:#a6e22e>context</span>.<span style=color:#a6e22e>Context</span>, <span style=color:#a6e22e>req</span> <span style=color:#66d9ef>interface</span>{}) (<span style=color:#a6e22e>resp</span> <span style=color:#66d9ef>interface</span>{}, <span style=color:#a6e22e>err</span> <span style=color:#66d9ef>error</span>) {
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;handler 1 before&#34;</span>)
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>resp</span>, <span style=color:#a6e22e>err</span> = <span style=color:#a6e22e>next</span>(<span style=color:#a6e22e>ctx</span>, <span style=color:#a6e22e>req</span>)
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;handler 1 after&#34;</span>)
+</span></span><span style=display:flex><span>			<span style=color:#66d9ef>return</span> <span style=color:#a6e22e>resp</span>, <span style=color:#a6e22e>err</span>
+</span></span><span style=display:flex><span>		}
+</span></span><span style=display:flex><span>	}, <span style=color:#66d9ef>func</span>(<span style=color:#a6e22e>next</span> <span style=color:#a6e22e>Handler</span>) <span style=color:#a6e22e>Handler</span> {
+</span></span><span style=display:flex><span>		<span style=color:#66d9ef>return</span> <span style=color:#66d9ef>func</span>(<span style=color:#a6e22e>ctx</span> <span style=color:#a6e22e>context</span>.<span style=color:#a6e22e>Context</span>, <span style=color:#a6e22e>req</span> <span style=color:#66d9ef>interface</span>{}) (<span style=color:#a6e22e>resp</span> <span style=color:#66d9ef>interface</span>{}, <span style=color:#a6e22e>err</span> <span style=color:#66d9ef>error</span>) {
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;handler 2 before&#34;</span>)
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>resp</span>, <span style=color:#a6e22e>err</span> = <span style=color:#a6e22e>next</span>(<span style=color:#a6e22e>ctx</span>, <span style=color:#a6e22e>req</span>)
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;handler 2 after&#34;</span>)
+</span></span><span style=display:flex><span>			<span style=color:#66d9ef>return</span> <span style=color:#a6e22e>resp</span>, <span style=color:#a6e22e>err</span>
+</span></span><span style=display:flex><span>		}
+</span></span><span style=display:flex><span>	})
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>resp</span>, <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>c</span>(<span style=color:#66d9ef>func</span>(<span style=color:#a6e22e>ctx</span> <span style=color:#a6e22e>context</span>.<span style=color:#a6e22e>Context</span>, <span style=color:#a6e22e>req</span> <span style=color:#66d9ef>interface</span>{}) (<span style=color:#a6e22e>resp</span> <span style=color:#66d9ef>interface</span>{}, <span style=color:#a6e22e>err</span> <span style=color:#66d9ef>error</span>) {
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;handler req:&#34;</span>, <span style=color:#a6e22e>req</span>)
+</span></span><span style=display:flex><span>		<span style=color:#66d9ef>return</span> <span style=color:#a6e22e>req</span>, <span style=color:#66d9ef>nil</span>
+</span></span><span style=display:flex><span>	})(<span style=color:#a6e22e>context</span>.<span style=color:#a6e22e>Background</span>(), <span style=color:#e6db74>&#34;hello&#34;</span>)
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#a6e22e>resp</span>, <span style=color:#a6e22e>err</span>)
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>/*
+</span></span></span><span style=display:flex><span><span style=color:#75715e>handler 1 before
+</span></span></span><span style=display:flex><span><span style=color:#75715e>handler 2 before
+</span></span></span><span style=display:flex><span><span style=color:#75715e>handler req: hello
+</span></span></span><span style=display:flex><span><span style=color:#75715e>handler 2 after
+</span></span></span><span style=display:flex><span><span style=color:#75715e>handler 1 after
+</span></span></span><span style=display:flex><span><span style=color:#75715e>hello &lt;nil&gt;
+</span></span></span><span style=display:flex><span><span style=color:#75715e>*/</span>
+</span></span></code></pre></div><h2 id=观察者模式>观察者模式
+<a class=header-anchor href=#%e8%a7%82%e5%af%9f%e8%80%85%e6%a8%a1%e5%bc%8f></a></h2><p>观察者模式用于触发联动。一个对象的改变会触发其它观察者的相关动作，而此对象无需关心连动对象的具体实现。</p><h3 id=代码实现-1>代码实现
+<a class=header-anchor href=#%e4%bb%a3%e7%a0%81%e5%ae%9e%e7%8e%b0-1></a></h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> <span style=color:#e6db74>&#34;fmt&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>subject</span> <span style=color:#66d9ef>interface</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>register</span>(<span style=color:#a6e22e>Observer</span> <span style=color:#a6e22e>observer</span>)
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>deregister</span>(<span style=color:#a6e22e>Observer</span> <span style=color:#a6e22e>observer</span>)
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>notifyAll</span>()
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>observer</span> <span style=color:#66d9ef>interface</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>update</span>(<span style=color:#66d9ef>string</span>)
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>getID</span>() <span style=color:#66d9ef>string</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>item</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>observerList</span> []<span style=color:#a6e22e>observer</span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>name</span>         <span style=color:#66d9ef>string</span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>inStock</span>      <span style=color:#66d9ef>bool</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>newItem</span>(<span style=color:#a6e22e>name</span> <span style=color:#66d9ef>string</span>) <span style=color:#f92672>*</span><span style=color:#a6e22e>item</span> {
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>return</span> <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>item</span>{
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>name</span>: <span style=color:#a6e22e>name</span>,
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>i</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>item</span>) <span style=color:#a6e22e>updateAvailability</span>() {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Printf</span>(<span style=color:#e6db74>&#34;Item %s is now in stock\n&#34;</span>, <span style=color:#a6e22e>i</span>.<span style=color:#a6e22e>name</span>)
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>i</span>.<span style=color:#a6e22e>inStock</span> = <span style=color:#66d9ef>true</span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>i</span>.<span style=color:#a6e22e>notifyAll</span>()
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>i</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>item</span>) <span style=color:#a6e22e>register</span>(<span style=color:#a6e22e>o</span> <span style=color:#a6e22e>observer</span>) {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>i</span>.<span style=color:#a6e22e>observerList</span> = append(<span style=color:#a6e22e>i</span>.<span style=color:#a6e22e>observerList</span>, <span style=color:#a6e22e>o</span>)
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>i</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>item</span>) <span style=color:#a6e22e>deregister</span>(<span style=color:#a6e22e>o</span> <span style=color:#a6e22e>observer</span>) {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>i</span>.<span style=color:#a6e22e>observerList</span> = <span style=color:#a6e22e>removeFromslice</span>(<span style=color:#a6e22e>i</span>.<span style=color:#a6e22e>observerList</span>, <span style=color:#a6e22e>o</span>)
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>i</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>item</span>) <span style=color:#a6e22e>notifyAll</span>() {
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>for</span> <span style=color:#a6e22e>_</span>, <span style=color:#a6e22e>observer</span> <span style=color:#f92672>:=</span> <span style=color:#66d9ef>range</span> <span style=color:#a6e22e>i</span>.<span style=color:#a6e22e>observerList</span> {
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>observer</span>.<span style=color:#a6e22e>update</span>(<span style=color:#a6e22e>i</span>.<span style=color:#a6e22e>name</span>)
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>removeFromslice</span>(<span style=color:#a6e22e>observerList</span> []<span style=color:#a6e22e>observer</span>, <span style=color:#a6e22e>observerToRemove</span> <span style=color:#a6e22e>observer</span>) []<span style=color:#a6e22e>observer</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>observerListLength</span> <span style=color:#f92672>:=</span> len(<span style=color:#a6e22e>observerList</span>)
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>for</span> <span style=color:#a6e22e>i</span>, <span style=color:#a6e22e>observer</span> <span style=color:#f92672>:=</span> <span style=color:#66d9ef>range</span> <span style=color:#a6e22e>observerList</span> {
+</span></span><span style=display:flex><span>		<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>observerToRemove</span>.<span style=color:#a6e22e>getID</span>() <span style=color:#f92672>==</span> <span style=color:#a6e22e>observer</span>.<span style=color:#a6e22e>getID</span>() {
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>observerList</span>[<span style=color:#a6e22e>observerListLength</span><span style=color:#f92672>-</span><span style=color:#ae81ff>1</span>], <span style=color:#a6e22e>observerList</span>[<span style=color:#a6e22e>i</span>] = <span style=color:#a6e22e>observerList</span>[<span style=color:#a6e22e>i</span>], <span style=color:#a6e22e>observerList</span>[<span style=color:#a6e22e>observerListLength</span><span style=color:#f92672>-</span><span style=color:#ae81ff>1</span>]
+</span></span><span style=display:flex><span>			<span style=color:#66d9ef>return</span> <span style=color:#a6e22e>observerList</span>[:<span style=color:#a6e22e>observerListLength</span><span style=color:#f92672>-</span><span style=color:#ae81ff>1</span>]
+</span></span><span style=display:flex><span>		}
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>return</span> <span style=color:#a6e22e>observerList</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>customer</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>id</span> <span style=color:#66d9ef>string</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>c</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>customer</span>) <span style=color:#a6e22e>update</span>(<span style=color:#a6e22e>itemName</span> <span style=color:#66d9ef>string</span>) {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Printf</span>(<span style=color:#e6db74>&#34;Sending email to customer %s for item %s\n&#34;</span>, <span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>id</span>, <span style=color:#a6e22e>itemName</span>)
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>c</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>customer</span>) <span style=color:#a6e22e>getID</span>() <span style=color:#66d9ef>string</span> {
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>return</span> <span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>id</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>shirtItem</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>newItem</span>(<span style=color:#e6db74>&#34;Nike Shirt&#34;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>observerFirst</span> <span style=color:#f92672>:=</span> <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>customer</span>{<span style=color:#a6e22e>id</span>: <span style=color:#e6db74>&#34;abc@gmail.com&#34;</span>}
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>observerSecond</span> <span style=color:#f92672>:=</span> <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>customer</span>{<span style=color:#a6e22e>id</span>: <span style=color:#e6db74>&#34;xyz@gmail.com&#34;</span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>shirtItem</span>.<span style=color:#a6e22e>register</span>(<span style=color:#a6e22e>observerFirst</span>)
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>shirtItem</span>.<span style=color:#a6e22e>register</span>(<span style=color:#a6e22e>observerSecond</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>shirtItem</span>.<span style=color:#a6e22e>updateAvailability</span>()
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>/*
+</span></span></span><span style=display:flex><span><span style=color:#75715e>Item Nike Shirt is now in stock
+</span></span></span><span style=display:flex><span><span style=color:#75715e>Sending email to customer abc@gmail.com for item Nike Shirt
+</span></span></span><span style=display:flex><span><span style=color:#75715e>Sending email to customer xyz@gmail.com for item Nike Shirt
+</span></span></span><span style=display:flex><span><span style=color:#75715e>*/</span>
+</span></span></code></pre></div><h2 id=模板方法模式>模板方法模式
+<a class=header-anchor href=#%e6%a8%a1%e6%9d%bf%e6%96%b9%e6%b3%95%e6%a8%a1%e5%bc%8f></a></h2><p>模版方法模式使用继承机制，把通用步骤和通用方法放到父类中，把具体实现延迟到子类中实现。使得实现符合开闭原则。</p><p>如实例代码中通用步骤在父类中实现（<code>准备</code>、<code>下载</code>、<code>保存</code>、<code>收尾</code>）下载和保存的具体实现留到子类中，并且提供 <code>保存</code>方法的默认实现。</p><p>因为Golang不提供继承机制，需要使用匿名组合模拟实现继承。</p><p>此处需要注意：因为父类需要调用子类方法，所以子类需要匿名组合父类的同时，父类需要持有子类的引用。</p><h3 id=代码实现-2>代码实现
+<a class=header-anchor href=#%e4%bb%a3%e7%a0%81%e5%ae%9e%e7%8e%b0-2></a></h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> <span style=color:#e6db74>&#34;fmt&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>Downloader</span> <span style=color:#66d9ef>interface</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>Download</span>(<span style=color:#a6e22e>uri</span> <span style=color:#66d9ef>string</span>)
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>template</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>implement</span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>uri</span> <span style=color:#66d9ef>string</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>implement</span> <span style=color:#66d9ef>interface</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>download</span>()
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>save</span>()
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>newTemplate</span>(<span style=color:#a6e22e>impl</span> <span style=color:#a6e22e>implement</span>) <span style=color:#f92672>*</span><span style=color:#a6e22e>template</span> {
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>return</span> <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>template</span>{
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>implement</span>: <span style=color:#a6e22e>impl</span>,
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>t</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>template</span>) <span style=color:#a6e22e>Download</span>(<span style=color:#a6e22e>uri</span> <span style=color:#66d9ef>string</span>) {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>t</span>.<span style=color:#a6e22e>uri</span> = <span style=color:#a6e22e>uri</span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Print</span>(<span style=color:#e6db74>&#34;prepare downloading\n&#34;</span>)
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>t</span>.<span style=color:#a6e22e>implement</span>.<span style=color:#a6e22e>download</span>()
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>t</span>.<span style=color:#a6e22e>implement</span>.<span style=color:#a6e22e>save</span>()
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Print</span>(<span style=color:#e6db74>&#34;finish downloading\n&#34;</span>)
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>t</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>template</span>) <span style=color:#a6e22e>save</span>() {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Print</span>(<span style=color:#e6db74>&#34;default save\n&#34;</span>)
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>HTTPDownloader</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>	<span style=color:#f92672>*</span><span style=color:#a6e22e>template</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>NewHTTPDownloader</span>() <span style=color:#a6e22e>Downloader</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>downloader</span> <span style=color:#f92672>:=</span> <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>HTTPDownloader</span>{}
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>template</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>newTemplate</span>(<span style=color:#a6e22e>downloader</span>)
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>downloader</span>.<span style=color:#a6e22e>template</span> = <span style=color:#a6e22e>template</span>
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>return</span> <span style=color:#a6e22e>downloader</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>d</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>HTTPDownloader</span>) <span style=color:#a6e22e>download</span>() {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Printf</span>(<span style=color:#e6db74>&#34;download %s via http\n&#34;</span>, <span style=color:#a6e22e>d</span>.<span style=color:#a6e22e>uri</span>)
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#f92672>*</span><span style=color:#a6e22e>HTTPDownloader</span>) <span style=color:#a6e22e>save</span>() {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Printf</span>(<span style=color:#e6db74>&#34;http save\n&#34;</span>)
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>FTPDownloader</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>	<span style=color:#f92672>*</span><span style=color:#a6e22e>template</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>NewFTPDownloader</span>() <span style=color:#a6e22e>Downloader</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>downloader</span> <span style=color:#f92672>:=</span> <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>FTPDownloader</span>{}
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>template</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>newTemplate</span>(<span style=color:#a6e22e>downloader</span>)
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>downloader</span>.<span style=color:#a6e22e>template</span> = <span style=color:#a6e22e>template</span>
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>return</span> <span style=color:#a6e22e>downloader</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>d</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>FTPDownloader</span>) <span style=color:#a6e22e>download</span>() {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Printf</span>(<span style=color:#e6db74>&#34;download %s via ftp\n&#34;</span>, <span style=color:#a6e22e>d</span>.<span style=color:#a6e22e>uri</span>)
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>downloader</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>NewHTTPDownloader</span>()
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>downloader</span>.<span style=color:#a6e22e>Download</span>(<span style=color:#e6db74>&#34;http://example.com/abc.zip&#34;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>downloader</span> = <span style=color:#a6e22e>NewFTPDownloader</span>()
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>downloader</span>.<span style=color:#a6e22e>Download</span>(<span style=color:#e6db74>&#34;ftp://example.com/abc.zip&#34;</span>)
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>/*
+</span></span></span><span style=display:flex><span><span style=color:#75715e>prepare downloading
+</span></span></span><span style=display:flex><span><span style=color:#75715e>download http://example.com/abc.zip via http
+</span></span></span><span style=display:flex><span><span style=color:#75715e>http save
+</span></span></span><span style=display:flex><span><span style=color:#75715e>finish downloading
+</span></span></span><span style=display:flex><span><span style=color:#75715e>prepare downloading
+</span></span></span><span style=display:flex><span><span style=color:#75715e>download ftp://example.com/abc.zip via ftp
+</span></span></span><span style=display:flex><span><span style=color:#75715e>default save
+</span></span></span><span style=display:flex><span><span style=color:#75715e>finish downloading
+</span></span></span><span style=display:flex><span><span style=color:#75715e>*/</span>
+</span></span></code></pre></div><h2 id=命令模式>命令模式
+<a class=header-anchor href=#%e5%91%bd%e4%bb%a4%e6%a8%a1%e5%bc%8f></a></h2><p><strong>命令模式</strong>是一种行为设计模式， 它可将请求转换为一个包含与请求相关的所有信息的独立对象。 该转换让你能根据不同的请求将方法参数化、 延迟请求执行或将其放入队列中， 且能实现可撤销操作。</p><p>命令模式本质是把某个对象的方法调用封装到对象中，方便传递、存储、调用。</p><p>示例中把主板单中的启动(start)方法和重启(reboot)方法封装为命令对象，再传递到主机(box)对象中。于两个按钮进行绑定：</p><ul><li>第一个机箱(box1)设置按钮1(button1) 为开机按钮2(button2)为重启。</li><li>第二个机箱(box1)设置按钮2(button2) 为开机按钮1(button1)为重启。</li></ul><p>从而得到配置灵活性。</p><p>除了配置灵活外，使用命令模式还可以用作：</p><ul><li>批处理</li><li>任务队列</li><li>undo, redo</li></ul><p>等把具体命令封装到对象中使用的场合</p><h3 id=代码实现-3>代码实现
+<a class=header-anchor href=#%e4%bb%a3%e7%a0%81%e5%ae%9e%e7%8e%b0-3></a></h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>command</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> <span style=color:#e6db74>&#34;fmt&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>Command</span> <span style=color:#66d9ef>interface</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>Execute</span>()
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>StartCommand</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>mb</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>MotherBoard</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>NewStartCommand</span>(<span style=color:#a6e22e>mb</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>MotherBoard</span>) <span style=color:#f92672>*</span><span style=color:#a6e22e>StartCommand</span> {
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>return</span> <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>StartCommand</span>{
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>mb</span>: <span style=color:#a6e22e>mb</span>,
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>c</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>StartCommand</span>) <span style=color:#a6e22e>Execute</span>() {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>mb</span>.<span style=color:#a6e22e>Start</span>()
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>RebootCommand</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>mb</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>MotherBoard</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>NewRebootCommand</span>(<span style=color:#a6e22e>mb</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>MotherBoard</span>) <span style=color:#f92672>*</span><span style=color:#a6e22e>RebootCommand</span> {
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>return</span> <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>RebootCommand</span>{
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>mb</span>: <span style=color:#a6e22e>mb</span>,
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>c</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>RebootCommand</span>) <span style=color:#a6e22e>Execute</span>() {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>mb</span>.<span style=color:#a6e22e>Reboot</span>()
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>MotherBoard</span> <span style=color:#66d9ef>struct</span>{}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#f92672>*</span><span style=color:#a6e22e>MotherBoard</span>) <span style=color:#a6e22e>Start</span>() {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Print</span>(<span style=color:#e6db74>&#34;system starting\n&#34;</span>)
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#f92672>*</span><span style=color:#a6e22e>MotherBoard</span>) <span style=color:#a6e22e>Reboot</span>() {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Print</span>(<span style=color:#e6db74>&#34;system rebooting\n&#34;</span>)
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>Box</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>button1</span> <span style=color:#a6e22e>Command</span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>button2</span> <span style=color:#a6e22e>Command</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>NewBox</span>(<span style=color:#a6e22e>button1</span>, <span style=color:#a6e22e>button2</span> <span style=color:#a6e22e>Command</span>) <span style=color:#f92672>*</span><span style=color:#a6e22e>Box</span> {
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>return</span> <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>Box</span>{
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>button1</span>: <span style=color:#a6e22e>button1</span>,
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>button2</span>: <span style=color:#a6e22e>button2</span>,
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>b</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>Box</span>) <span style=color:#a6e22e>PressButton1</span>() {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>b</span>.<span style=color:#a6e22e>button1</span>.<span style=color:#a6e22e>Execute</span>()
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>b</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>Box</span>) <span style=color:#a6e22e>PressButton2</span>() {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>b</span>.<span style=color:#a6e22e>button2</span>.<span style=color:#a6e22e>Execute</span>()
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><h2 id=策略模式>策略模式
+<a class=header-anchor href=#%e7%ad%96%e7%95%a5%e6%a8%a1%e5%bc%8f></a></h2><p>它能让你定义一系列算法， 并将每种算法分别放入独立的类中， 以使算法的对象能够相互替换。</p><h3 id=代码实现-4>代码实现
+<a class=header-anchor href=#%e4%bb%a3%e7%a0%81%e5%ae%9e%e7%8e%b0-4></a></h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> <span style=color:#e6db74>&#34;fmt&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>Payment</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>context</span>  <span style=color:#f92672>*</span><span style=color:#a6e22e>PaymentContext</span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>strategy</span> <span style=color:#a6e22e>PaymentStrategy</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>PaymentContext</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>Name</span>, <span style=color:#a6e22e>CardID</span> <span style=color:#66d9ef>string</span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>Money</span>        <span style=color:#66d9ef>int</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>NewPayment</span>(<span style=color:#a6e22e>name</span>, <span style=color:#a6e22e>cardid</span> <span style=color:#66d9ef>string</span>, <span style=color:#a6e22e>money</span> <span style=color:#66d9ef>int</span>, <span style=color:#a6e22e>strategy</span> <span style=color:#a6e22e>PaymentStrategy</span>) <span style=color:#f92672>*</span><span style=color:#a6e22e>Payment</span> {
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>return</span> <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>Payment</span>{
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>context</span>: <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>PaymentContext</span>{
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>Name</span>:   <span style=color:#a6e22e>name</span>,
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>CardID</span>: <span style=color:#a6e22e>cardid</span>,
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>Money</span>:  <span style=color:#a6e22e>money</span>,
+</span></span><span style=display:flex><span>		},
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>strategy</span>: <span style=color:#a6e22e>strategy</span>,
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>p</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>Payment</span>) <span style=color:#a6e22e>Pay</span>() {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>p</span>.<span style=color:#a6e22e>strategy</span>.<span style=color:#a6e22e>Pay</span>(<span style=color:#a6e22e>p</span>.<span style=color:#a6e22e>context</span>)
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>PaymentStrategy</span> <span style=color:#66d9ef>interface</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>Pay</span>(<span style=color:#f92672>*</span><span style=color:#a6e22e>PaymentContext</span>)
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>Cash</span> <span style=color:#66d9ef>struct</span>{}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#f92672>*</span><span style=color:#a6e22e>Cash</span>) <span style=color:#a6e22e>Pay</span>(<span style=color:#a6e22e>ctx</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>PaymentContext</span>) {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Printf</span>(<span style=color:#e6db74>&#34;Pay $%d to %s by cash\n&#34;</span>, <span style=color:#a6e22e>ctx</span>.<span style=color:#a6e22e>Money</span>, <span style=color:#a6e22e>ctx</span>.<span style=color:#a6e22e>Name</span>)
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>Bank</span> <span style=color:#66d9ef>struct</span>{}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#f92672>*</span><span style=color:#a6e22e>Bank</span>) <span style=color:#a6e22e>Pay</span>(<span style=color:#a6e22e>ctx</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>PaymentContext</span>) {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Printf</span>(<span style=color:#e6db74>&#34;Pay $%d to %s by bank account %s\n&#34;</span>, <span style=color:#a6e22e>ctx</span>.<span style=color:#a6e22e>Money</span>, <span style=color:#a6e22e>ctx</span>.<span style=color:#a6e22e>Name</span>, <span style=color:#a6e22e>ctx</span>.<span style=color:#a6e22e>CardID</span>)
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>payment</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>NewPayment</span>(<span style=color:#e6db74>&#34;Ada&#34;</span>, <span style=color:#e6db74>&#34;&#34;</span>, <span style=color:#ae81ff>123</span>, <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>Cash</span>{})
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>payment</span>.<span style=color:#a6e22e>Pay</span>()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>payment</span> = <span style=color:#a6e22e>NewPayment</span>(<span style=color:#e6db74>&#34;Bob&#34;</span>, <span style=color:#e6db74>&#34;0002&#34;</span>, <span style=color:#ae81ff>888</span>, <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>Bank</span>{})
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>payment</span>.<span style=color:#a6e22e>Pay</span>()
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>/*
+</span></span></span><span style=display:flex><span><span style=color:#75715e>Pay $123 to Ada by cash
+</span></span></span><span style=display:flex><span><span style=color:#75715e>Pay $888 to Bob by bank account 0002
+</span></span></span><span style=display:flex><span><span style=color:#75715e>*/</span>
+</span></span></code></pre></div><h2 id=状态模式>状态模式
+<a class=header-anchor href=#%e7%8a%b6%e6%80%81%e6%a8%a1%e5%bc%8f></a></h2><p>让你能在一个对象的内部状态变化时改变其行为， 使其看上去就像改变了自身所属的类一样。</p><h3 id=代码实现-5>代码实现
+<a class=header-anchor href=#%e4%bb%a3%e7%a0%81%e5%ae%9e%e7%8e%b0-5></a></h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> (
+</span></span><span style=display:flex><span>	<span style=color:#e6db74>&#34;fmt&#34;</span>
+</span></span><span style=display:flex><span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// Machine 状态机
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>Machine</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>state</span> <span style=color:#a6e22e>IState</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// SetState 更新状态
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>m</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>Machine</span>) <span style=color:#a6e22e>SetState</span>(<span style=color:#a6e22e>state</span> <span style=color:#a6e22e>IState</span>) {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>m</span>.<span style=color:#a6e22e>state</span> = <span style=color:#a6e22e>state</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// GetStateName 获取当前状态
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>m</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>Machine</span>) <span style=color:#a6e22e>GetStateName</span>() <span style=color:#66d9ef>string</span> {
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>return</span> <span style=color:#a6e22e>m</span>.<span style=color:#a6e22e>state</span>.<span style=color:#a6e22e>GetName</span>()
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>m</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>Machine</span>) <span style=color:#a6e22e>Approval</span>() {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>m</span>.<span style=color:#a6e22e>state</span>.<span style=color:#a6e22e>Approval</span>(<span style=color:#a6e22e>m</span>)
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>m</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>Machine</span>) <span style=color:#a6e22e>Reject</span>() {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>m</span>.<span style=color:#a6e22e>state</span>.<span style=color:#a6e22e>Reject</span>(<span style=color:#a6e22e>m</span>)
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// IState 状态
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>IState</span> <span style=color:#66d9ef>interface</span> {
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// 审批通过
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>Approval</span>(<span style=color:#a6e22e>m</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>Machine</span>)
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// 驳回
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>Reject</span>(<span style=color:#a6e22e>m</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>Machine</span>)
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// 获取当前状态名称
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>GetName</span>() <span style=color:#66d9ef>string</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// leaderApproveState 直属领导审批
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>leaderApproveState</span> <span style=color:#66d9ef>struct</span>{}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// Approval 获取状态名字
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>leaderApproveState</span>) <span style=color:#a6e22e>Approval</span>(<span style=color:#a6e22e>m</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>Machine</span>) {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;leader 审批成功&#34;</span>)
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>m</span>.<span style=color:#a6e22e>SetState</span>(<span style=color:#a6e22e>GetFinanceApproveState</span>())
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// GetName 获取状态名字
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>leaderApproveState</span>) <span style=color:#a6e22e>GetName</span>() <span style=color:#66d9ef>string</span> {
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>return</span> <span style=color:#e6db74>&#34;LeaderApproveState&#34;</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// Reject 获取状态名字
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>leaderApproveState</span>) <span style=color:#a6e22e>Reject</span>(<span style=color:#a6e22e>m</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>Machine</span>) {}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>GetLeaderApproveState</span>() <span style=color:#a6e22e>IState</span> {
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>return</span> <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>leaderApproveState</span>{}
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// financeApproveState 财务审批
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>financeApproveState</span> <span style=color:#66d9ef>struct</span>{}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// Approval 审批通过
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>f</span> <span style=color:#a6e22e>financeApproveState</span>) <span style=color:#a6e22e>Approval</span>(<span style=color:#a6e22e>m</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>Machine</span>) {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;财务审批成功&#34;</span>)
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;出发打款操作&#34;</span>)
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// 拒绝
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>f</span> <span style=color:#a6e22e>financeApproveState</span>) <span style=color:#a6e22e>Reject</span>(<span style=color:#a6e22e>m</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>Machine</span>) {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>m</span>.<span style=color:#a6e22e>SetState</span>(<span style=color:#a6e22e>GetLeaderApproveState</span>())
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// GetName 获取名字
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>f</span> <span style=color:#a6e22e>financeApproveState</span>) <span style=color:#a6e22e>GetName</span>() <span style=color:#66d9ef>string</span> {
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>return</span> <span style=color:#e6db74>&#34;FinanceApproveState&#34;</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// GetFinanceApproveState GetFinanceApproveState
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>GetFinanceApproveState</span>() <span style=color:#a6e22e>IState</span> {
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>return</span> <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>financeApproveState</span>{}
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>m</span> <span style=color:#f92672>:=</span> <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>Machine</span>{<span style=color:#a6e22e>state</span>: <span style=color:#a6e22e>GetLeaderApproveState</span>()}
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;LeaderApproveState&#34;</span>, <span style=color:#a6e22e>m</span>.<span style=color:#a6e22e>GetStateName</span>())
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>m</span>.<span style=color:#a6e22e>Approval</span>()
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;FinanceApproveState&#34;</span>, <span style=color:#a6e22e>m</span>.<span style=color:#a6e22e>GetStateName</span>())
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>m</span>.<span style=color:#a6e22e>Reject</span>()
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;LeaderApproveState&#34;</span>, <span style=color:#a6e22e>m</span>.<span style=color:#a6e22e>GetStateName</span>())
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>m</span>.<span style=color:#a6e22e>Approval</span>()
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;FinanceApproveState&#34;</span>, <span style=color:#a6e22e>m</span>.<span style=color:#a6e22e>GetStateName</span>())
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>m</span>.<span style=color:#a6e22e>Approval</span>()
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>/*
+</span></span></span><span style=display:flex><span><span style=color:#75715e>LeaderApproveState LeaderApproveState
+</span></span></span><span style=display:flex><span><span style=color:#75715e>leader 审批成功
+</span></span></span><span style=display:flex><span><span style=color:#75715e>FinanceApproveState FinanceApproveState
+</span></span></span><span style=display:flex><span><span style=color:#75715e>LeaderApproveState LeaderApproveState
+</span></span></span><span style=display:flex><span><span style=color:#75715e>leader 审批成功
+</span></span></span><span style=display:flex><span><span style=color:#75715e>FinanceApproveState FinanceApproveState
+</span></span></span><span style=display:flex><span><span style=color:#75715e>财务审批成功
+</span></span></span><span style=display:flex><span><span style=color:#75715e>出发打款操作
+</span></span></span><span style=display:flex><span><span style=color:#75715e>*/</span>
+</span></span></code></pre></div><h2 id=迭代器模式>迭代器模式
+<a class=header-anchor href=#%e8%bf%ad%e4%bb%a3%e5%99%a8%e6%a8%a1%e5%bc%8f></a></h2><p>让你能在不暴露集合底层表现形式 （列表、 栈和树等） 的情况下遍历集合中所有的元素。</p><h3 id=代码实现-6>代码实现
+<a class=header-anchor href=#%e4%bb%a3%e7%a0%81%e5%ae%9e%e7%8e%b0-6></a></h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> <span style=color:#e6db74>&#34;fmt&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>collection</span> <span style=color:#66d9ef>interface</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>createIterator</span>() <span style=color:#a6e22e>iterator</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>userCollection</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>users</span> []<span style=color:#f92672>*</span><span style=color:#a6e22e>user</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>u</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>userCollection</span>) <span style=color:#a6e22e>createIterator</span>() <span style=color:#a6e22e>iterator</span> {
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>return</span> <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>userIterator</span>{
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>users</span>: <span style=color:#a6e22e>u</span>.<span style=color:#a6e22e>users</span>,
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>iterator</span> <span style=color:#66d9ef>interface</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>hasNext</span>() <span style=color:#66d9ef>bool</span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>getNext</span>() <span style=color:#f92672>*</span><span style=color:#a6e22e>user</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>userIterator</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>index</span> <span style=color:#66d9ef>int</span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>users</span> []<span style=color:#f92672>*</span><span style=color:#a6e22e>user</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>u</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>userIterator</span>) <span style=color:#a6e22e>hasNext</span>() <span style=color:#66d9ef>bool</span> {
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>u</span>.<span style=color:#a6e22e>index</span> &lt; len(<span style=color:#a6e22e>u</span>.<span style=color:#a6e22e>users</span>) {
+</span></span><span style=display:flex><span>		<span style=color:#66d9ef>return</span> <span style=color:#66d9ef>true</span>
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>return</span> <span style=color:#66d9ef>false</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>u</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>userIterator</span>) <span style=color:#a6e22e>getNext</span>() <span style=color:#f92672>*</span><span style=color:#a6e22e>user</span> {
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>u</span>.<span style=color:#a6e22e>hasNext</span>() {
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>user</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>u</span>.<span style=color:#a6e22e>users</span>[<span style=color:#a6e22e>u</span>.<span style=color:#a6e22e>index</span>]
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>u</span>.<span style=color:#a6e22e>index</span><span style=color:#f92672>++</span>
+</span></span><span style=display:flex><span>		<span style=color:#66d9ef>return</span> <span style=color:#a6e22e>user</span>
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>return</span> <span style=color:#66d9ef>nil</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>user</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>name</span> <span style=color:#66d9ef>string</span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>age</span>  <span style=color:#66d9ef>int</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>user1</span> <span style=color:#f92672>:=</span> <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>user</span>{
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>name</span>: <span style=color:#e6db74>&#34;a&#34;</span>,
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>age</span>:  <span style=color:#ae81ff>30</span>,
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>user2</span> <span style=color:#f92672>:=</span> <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>user</span>{
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>name</span>: <span style=color:#e6db74>&#34;b&#34;</span>,
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>age</span>:  <span style=color:#ae81ff>20</span>,
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>userCollection</span> <span style=color:#f92672>:=</span> <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>userCollection</span>{
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>users</span>: []<span style=color:#f92672>*</span><span style=color:#a6e22e>user</span>{<span style=color:#a6e22e>user1</span>, <span style=color:#a6e22e>user2</span>},
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>iterator</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>userCollection</span>.<span style=color:#a6e22e>createIterator</span>()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>for</span> <span style=color:#a6e22e>iterator</span>.<span style=color:#a6e22e>hasNext</span>() {
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>user</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>iterator</span>.<span style=color:#a6e22e>getNext</span>()
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Printf</span>(<span style=color:#e6db74>&#34;User is %+v\n&#34;</span>, <span style=color:#a6e22e>user</span>)
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>/*
+</span></span></span><span style=display:flex><span><span style=color:#75715e>User is &amp;{name:a age:30}
+</span></span></span><span style=display:flex><span><span style=color:#75715e>User is &amp;{name:b age:20}
+</span></span></span><span style=display:flex><span><span style=color:#75715e>*/</span>
+</span></span></code></pre></div><h2 id=访问者模式>访问者模式
+<a class=header-anchor href=#%e8%ae%bf%e9%97%ae%e8%80%85%e6%a8%a1%e5%bc%8f></a></h2><p>访问者模式可以给一系列对象透明的添加功能，并且把相关代码封装到一个类中。</p><p>对象只要预留访问者接口<code>Accept</code>则后期为对象添加功能的时候就不需要改动对象。</p><h3 id=代码实现-7>代码实现
+<a class=header-anchor href=#%e4%bb%a3%e7%a0%81%e5%ae%9e%e7%8e%b0-7></a></h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> <span style=color:#e6db74>&#34;fmt&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>Customer</span> <span style=color:#66d9ef>interface</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>Accept</span>(<span style=color:#a6e22e>Visitor</span>)
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>Visitor</span> <span style=color:#66d9ef>interface</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>Visit</span>(<span style=color:#a6e22e>Customer</span>)
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>EnterpriseCustomer</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>name</span> <span style=color:#66d9ef>string</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>CustomerCol</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>customers</span> []<span style=color:#a6e22e>Customer</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>c</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>CustomerCol</span>) <span style=color:#a6e22e>Add</span>(<span style=color:#a6e22e>customer</span> <span style=color:#a6e22e>Customer</span>) {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>customers</span> = append(<span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>customers</span>, <span style=color:#a6e22e>customer</span>)
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>c</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>CustomerCol</span>) <span style=color:#a6e22e>Accept</span>(<span style=color:#a6e22e>visitor</span> <span style=color:#a6e22e>Visitor</span>) {
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>for</span> <span style=color:#a6e22e>_</span>, <span style=color:#a6e22e>customer</span> <span style=color:#f92672>:=</span> <span style=color:#66d9ef>range</span> <span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>customers</span> {
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>customer</span>.<span style=color:#a6e22e>Accept</span>(<span style=color:#a6e22e>visitor</span>)
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>NewEnterpriseCustomer</span>(<span style=color:#a6e22e>name</span> <span style=color:#66d9ef>string</span>) <span style=color:#f92672>*</span><span style=color:#a6e22e>EnterpriseCustomer</span> {
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>return</span> <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>EnterpriseCustomer</span>{
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>name</span>: <span style=color:#a6e22e>name</span>,
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>c</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>EnterpriseCustomer</span>) <span style=color:#a6e22e>Accept</span>(<span style=color:#a6e22e>visitor</span> <span style=color:#a6e22e>Visitor</span>) {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>visitor</span>.<span style=color:#a6e22e>Visit</span>(<span style=color:#a6e22e>c</span>)
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>IndividualCustomer</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>name</span> <span style=color:#66d9ef>string</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>NewIndividualCustomer</span>(<span style=color:#a6e22e>name</span> <span style=color:#66d9ef>string</span>) <span style=color:#f92672>*</span><span style=color:#a6e22e>IndividualCustomer</span> {
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>return</span> <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>IndividualCustomer</span>{
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>name</span>: <span style=color:#a6e22e>name</span>,
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>c</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>IndividualCustomer</span>) <span style=color:#a6e22e>Accept</span>(<span style=color:#a6e22e>visitor</span> <span style=color:#a6e22e>Visitor</span>) {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>visitor</span>.<span style=color:#a6e22e>Visit</span>(<span style=color:#a6e22e>c</span>)
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>ServiceRequestVisitor</span> <span style=color:#66d9ef>struct</span>{}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#f92672>*</span><span style=color:#a6e22e>ServiceRequestVisitor</span>) <span style=color:#a6e22e>Visit</span>(<span style=color:#a6e22e>customer</span> <span style=color:#a6e22e>Customer</span>) {
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>switch</span> <span style=color:#a6e22e>c</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>customer</span>.(<span style=color:#66d9ef>type</span>) {
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>case</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>EnterpriseCustomer</span>:
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Printf</span>(<span style=color:#e6db74>&#34;serving enterprise customer %s\n&#34;</span>, <span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>name</span>)
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>case</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>IndividualCustomer</span>:
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Printf</span>(<span style=color:#e6db74>&#34;serving individual customer %s\n&#34;</span>, <span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>name</span>)
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// only for enterprise
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>AnalysisVisitor</span> <span style=color:#66d9ef>struct</span>{}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#f92672>*</span><span style=color:#a6e22e>AnalysisVisitor</span>) <span style=color:#a6e22e>Visit</span>(<span style=color:#a6e22e>customer</span> <span style=color:#a6e22e>Customer</span>) {
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>switch</span> <span style=color:#a6e22e>c</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>customer</span>.(<span style=color:#66d9ef>type</span>) {
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>case</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>EnterpriseCustomer</span>:
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Printf</span>(<span style=color:#e6db74>&#34;analysis enterprise customer %s\n&#34;</span>, <span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>name</span>)
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>c</span> <span style=color:#f92672>:=</span> <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>CustomerCol</span>{}
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>Add</span>(<span style=color:#a6e22e>NewEnterpriseCustomer</span>(<span style=color:#e6db74>&#34;A company&#34;</span>))
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>Add</span>(<span style=color:#a6e22e>NewEnterpriseCustomer</span>(<span style=color:#e6db74>&#34;B company&#34;</span>))
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>Add</span>(<span style=color:#a6e22e>NewIndividualCustomer</span>(<span style=color:#e6db74>&#34;bob&#34;</span>))
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>Accept</span>(<span style=color:#f92672>&amp;</span><span style=color:#a6e22e>ServiceRequestVisitor</span>{})
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>c</span> = <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>CustomerCol</span>{}
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>Add</span>(<span style=color:#a6e22e>NewEnterpriseCustomer</span>(<span style=color:#e6db74>&#34;A company&#34;</span>))
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>Add</span>(<span style=color:#a6e22e>NewIndividualCustomer</span>(<span style=color:#e6db74>&#34;bob&#34;</span>))
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>Add</span>(<span style=color:#a6e22e>NewEnterpriseCustomer</span>(<span style=color:#e6db74>&#34;B company&#34;</span>))
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>Accept</span>(<span style=color:#f92672>&amp;</span><span style=color:#a6e22e>AnalysisVisitor</span>{})
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>/*
+</span></span></span><span style=display:flex><span><span style=color:#75715e>serving enterprise customer A company
+</span></span></span><span style=display:flex><span><span style=color:#75715e>serving enterprise customer B company
+</span></span></span><span style=display:flex><span><span style=color:#75715e>serving individual customer bob
+</span></span></span><span style=display:flex><span><span style=color:#75715e>analysis enterprise customer A company
+</span></span></span><span style=display:flex><span><span style=color:#75715e>analysis enterprise customer B company
+</span></span></span><span style=display:flex><span><span style=color:#75715e>*/</span>
+</span></span></code></pre></div><h2 id=备忘录模式>备忘录模式
+<a class=header-anchor href=#%e5%a4%87%e5%bf%98%e5%bd%95%e6%a8%a1%e5%bc%8f></a></h2><p>备忘录模式用于保存程序内部状态到外部，又不希望暴露内部状态的情形。</p><p>程序内部状态使用窄接口传递给外部进行存储，从而不暴露程序实现细节。</p><p>备忘录模式同时可以离线保存内部状态，如保存到数据库，文件等。</p><h3 id=代码实现-8>代码实现
+<a class=header-anchor href=#%e4%bb%a3%e7%a0%81%e5%ae%9e%e7%8e%b0-8></a></h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> <span style=color:#e6db74>&#34;fmt&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>Memento</span> <span style=color:#66d9ef>interface</span>{}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>Game</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>hp</span>, <span style=color:#a6e22e>mp</span> <span style=color:#66d9ef>int</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>gameMemento</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>hp</span>, <span style=color:#a6e22e>mp</span> <span style=color:#66d9ef>int</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>g</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>Game</span>) <span style=color:#a6e22e>Play</span>(<span style=color:#a6e22e>mpDelta</span>, <span style=color:#a6e22e>hpDelta</span> <span style=color:#66d9ef>int</span>) {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>g</span>.<span style=color:#a6e22e>mp</span> <span style=color:#f92672>+=</span> <span style=color:#a6e22e>mpDelta</span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>g</span>.<span style=color:#a6e22e>hp</span> <span style=color:#f92672>+=</span> <span style=color:#a6e22e>hpDelta</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>g</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>Game</span>) <span style=color:#a6e22e>Save</span>() <span style=color:#a6e22e>Memento</span> {
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>return</span> <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>gameMemento</span>{
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>hp</span>: <span style=color:#a6e22e>g</span>.<span style=color:#a6e22e>hp</span>,
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>mp</span>: <span style=color:#a6e22e>g</span>.<span style=color:#a6e22e>mp</span>,
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>g</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>Game</span>) <span style=color:#a6e22e>Load</span>(<span style=color:#a6e22e>m</span> <span style=color:#a6e22e>Memento</span>) {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>gm</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>m</span>.(<span style=color:#f92672>*</span><span style=color:#a6e22e>gameMemento</span>)
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>g</span>.<span style=color:#a6e22e>mp</span> = <span style=color:#a6e22e>gm</span>.<span style=color:#a6e22e>mp</span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>g</span>.<span style=color:#a6e22e>hp</span> = <span style=color:#a6e22e>gm</span>.<span style=color:#a6e22e>hp</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>g</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>Game</span>) <span style=color:#a6e22e>Status</span>() {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Printf</span>(<span style=color:#e6db74>&#34;Current HP:%d, MP:%d\n&#34;</span>, <span style=color:#a6e22e>g</span>.<span style=color:#a6e22e>hp</span>, <span style=color:#a6e22e>g</span>.<span style=color:#a6e22e>mp</span>)
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>game</span> <span style=color:#f92672>:=</span> <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>Game</span>{
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>hp</span>: <span style=color:#ae81ff>10</span>,
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>mp</span>: <span style=color:#ae81ff>10</span>,
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>game</span>.<span style=color:#a6e22e>Status</span>()
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>progress</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>game</span>.<span style=color:#a6e22e>Save</span>()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>game</span>.<span style=color:#a6e22e>Play</span>(<span style=color:#f92672>-</span><span style=color:#ae81ff>2</span>, <span style=color:#f92672>-</span><span style=color:#ae81ff>3</span>)
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>game</span>.<span style=color:#a6e22e>Status</span>()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>game</span>.<span style=color:#a6e22e>Load</span>(<span style=color:#a6e22e>progress</span>)
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>game</span>.<span style=color:#a6e22e>Status</span>()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>/*
+</span></span></span><span style=display:flex><span><span style=color:#75715e>Current HP:10, MP:10
+</span></span></span><span style=display:flex><span><span style=color:#75715e>Current HP:7, MP:8
+</span></span></span><span style=display:flex><span><span style=color:#75715e>Current HP:10, MP:10
+</span></span></span><span style=display:flex><span><span style=color:#75715e>*/</span>
+</span></span></code></pre></div><h2 id=解释器模式>解释器模式
+<a class=header-anchor href=#%e8%a7%a3%e9%87%8a%e5%99%a8%e6%a8%a1%e5%bc%8f></a></h2><p>解释器模式定义一套语言文法，并设计该语言解释器，使用户能使用特定文法控制解释器行为。</p><p>解释器模式的意义在于，它分离多种复杂功能的实现，每个功能只需关注自身的解释。</p><p>对于调用者不用关心内部的解释器的工作，只需要用简单的方式组合命令就可以。</p><h3 id=代码实现-9>代码实现
+<a class=header-anchor href=#%e4%bb%a3%e7%a0%81%e5%ae%9e%e7%8e%b0-9></a></h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> (
+</span></span><span style=display:flex><span>	<span style=color:#e6db74>&#34;fmt&#34;</span>
+</span></span><span style=display:flex><span>	<span style=color:#e6db74>&#34;strconv&#34;</span>
+</span></span><span style=display:flex><span>	<span style=color:#e6db74>&#34;strings&#34;</span>
+</span></span><span style=display:flex><span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>Node</span> <span style=color:#66d9ef>interface</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>Interpret</span>() <span style=color:#66d9ef>int</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>ValNode</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>val</span> <span style=color:#66d9ef>int</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>n</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>ValNode</span>) <span style=color:#a6e22e>Interpret</span>() <span style=color:#66d9ef>int</span> {
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>return</span> <span style=color:#a6e22e>n</span>.<span style=color:#a6e22e>val</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>AddNode</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>left</span>, <span style=color:#a6e22e>right</span> <span style=color:#a6e22e>Node</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>n</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>AddNode</span>) <span style=color:#a6e22e>Interpret</span>() <span style=color:#66d9ef>int</span> {
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>return</span> <span style=color:#a6e22e>n</span>.<span style=color:#a6e22e>left</span>.<span style=color:#a6e22e>Interpret</span>() <span style=color:#f92672>+</span> <span style=color:#a6e22e>n</span>.<span style=color:#a6e22e>right</span>.<span style=color:#a6e22e>Interpret</span>()
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>MinNode</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>left</span>, <span style=color:#a6e22e>right</span> <span style=color:#a6e22e>Node</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>n</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>MinNode</span>) <span style=color:#a6e22e>Interpret</span>() <span style=color:#66d9ef>int</span> {
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>return</span> <span style=color:#a6e22e>n</span>.<span style=color:#a6e22e>left</span>.<span style=color:#a6e22e>Interpret</span>() <span style=color:#f92672>-</span> <span style=color:#a6e22e>n</span>.<span style=color:#a6e22e>right</span>.<span style=color:#a6e22e>Interpret</span>()
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>Parser</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>exp</span>   []<span style=color:#66d9ef>string</span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>index</span> <span style=color:#66d9ef>int</span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>prev</span>  <span style=color:#a6e22e>Node</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>p</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>Parser</span>) <span style=color:#a6e22e>Parse</span>(<span style=color:#a6e22e>exp</span> <span style=color:#66d9ef>string</span>) {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>p</span>.<span style=color:#a6e22e>exp</span> = <span style=color:#a6e22e>strings</span>.<span style=color:#a6e22e>Split</span>(<span style=color:#a6e22e>exp</span>, <span style=color:#e6db74>&#34; &#34;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>for</span> {
+</span></span><span style=display:flex><span>		<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>p</span>.<span style=color:#a6e22e>index</span> <span style=color:#f92672>&gt;=</span> len(<span style=color:#a6e22e>p</span>.<span style=color:#a6e22e>exp</span>) {
+</span></span><span style=display:flex><span>			<span style=color:#66d9ef>return</span>
+</span></span><span style=display:flex><span>		}
+</span></span><span style=display:flex><span>		<span style=color:#66d9ef>switch</span> <span style=color:#a6e22e>p</span>.<span style=color:#a6e22e>exp</span>[<span style=color:#a6e22e>p</span>.<span style=color:#a6e22e>index</span>] {
+</span></span><span style=display:flex><span>		<span style=color:#66d9ef>case</span> <span style=color:#e6db74>&#34;+&#34;</span>:
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>p</span>.<span style=color:#a6e22e>prev</span> = <span style=color:#a6e22e>p</span>.<span style=color:#a6e22e>newAddNode</span>()
+</span></span><span style=display:flex><span>		<span style=color:#66d9ef>case</span> <span style=color:#e6db74>&#34;-&#34;</span>:
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>p</span>.<span style=color:#a6e22e>prev</span> = <span style=color:#a6e22e>p</span>.<span style=color:#a6e22e>newMinNode</span>()
+</span></span><span style=display:flex><span>		<span style=color:#66d9ef>default</span>:
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>p</span>.<span style=color:#a6e22e>prev</span> = <span style=color:#a6e22e>p</span>.<span style=color:#a6e22e>newValNode</span>()
+</span></span><span style=display:flex><span>		}
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>p</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>Parser</span>) <span style=color:#a6e22e>newAddNode</span>() <span style=color:#a6e22e>Node</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>p</span>.<span style=color:#a6e22e>index</span><span style=color:#f92672>++</span>
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>return</span> <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>AddNode</span>{
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>left</span>:  <span style=color:#a6e22e>p</span>.<span style=color:#a6e22e>prev</span>,
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>right</span>: <span style=color:#a6e22e>p</span>.<span style=color:#a6e22e>newValNode</span>(),
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>p</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>Parser</span>) <span style=color:#a6e22e>newMinNode</span>() <span style=color:#a6e22e>Node</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>p</span>.<span style=color:#a6e22e>index</span><span style=color:#f92672>++</span>
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>return</span> <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>MinNode</span>{
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>left</span>:  <span style=color:#a6e22e>p</span>.<span style=color:#a6e22e>prev</span>,
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>right</span>: <span style=color:#a6e22e>p</span>.<span style=color:#a6e22e>newValNode</span>(),
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>p</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>Parser</span>) <span style=color:#a6e22e>newValNode</span>() <span style=color:#a6e22e>Node</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>v</span>, <span style=color:#a6e22e>_</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>strconv</span>.<span style=color:#a6e22e>Atoi</span>(<span style=color:#a6e22e>p</span>.<span style=color:#a6e22e>exp</span>[<span style=color:#a6e22e>p</span>.<span style=color:#a6e22e>index</span>])
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>p</span>.<span style=color:#a6e22e>index</span><span style=color:#f92672>++</span>
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>return</span> <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>ValNode</span>{
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>val</span>: <span style=color:#a6e22e>v</span>,
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>p</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>Parser</span>) <span style=color:#a6e22e>Result</span>() <span style=color:#a6e22e>Node</span> {
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>return</span> <span style=color:#a6e22e>p</span>.<span style=color:#a6e22e>prev</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>p</span> <span style=color:#f92672>:=</span> <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>Parser</span>{}
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>p</span>.<span style=color:#a6e22e>Parse</span>(<span style=color:#e6db74>&#34;1 + 2 + 3 - 4 + 5 - 6&#34;</span>)
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>res</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>p</span>.<span style=color:#a6e22e>Result</span>().<span style=color:#a6e22e>Interpret</span>()
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>expect</span> <span style=color:#f92672>:=</span> <span style=color:#ae81ff>1</span>
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>res</span> <span style=color:#f92672>!=</span> <span style=color:#a6e22e>expect</span> {
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#a6e22e>res</span>,<span style=color:#a6e22e>expect</span>)
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><h2 id=中介模式>中介模式
+<a class=header-anchor href=#%e4%b8%ad%e4%bb%8b%e6%a8%a1%e5%bc%8f></a></h2><p>中介者模式封装对象之间互交，使依赖变的简单，并且使复杂互交简单化，封装在中介者中。</p><p>例子中的中介者使用单例模式生成中介者。</p><p>中介者的change使用switch判断类型。</p><h3 id=代码实现-10>代码实现
+<a class=header-anchor href=#%e4%bb%a3%e7%a0%81%e5%ae%9e%e7%8e%b0-10></a></h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> (
+</span></span><span style=display:flex><span>	<span style=color:#e6db74>&#34;fmt&#34;</span>
+</span></span><span style=display:flex><span>	<span style=color:#e6db74>&#34;strings&#34;</span>
+</span></span><span style=display:flex><span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>CDDriver</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>Data</span> <span style=color:#66d9ef>string</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>c</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>CDDriver</span>) <span style=color:#a6e22e>ReadData</span>() {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>Data</span> = <span style=color:#e6db74>&#34;music,image&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Printf</span>(<span style=color:#e6db74>&#34;CDDriver: reading data %s\n&#34;</span>, <span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>Data</span>)
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>GetMediatorInstance</span>().<span style=color:#a6e22e>changed</span>(<span style=color:#a6e22e>c</span>)
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>CPU</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>Video</span> <span style=color:#66d9ef>string</span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>Sound</span> <span style=color:#66d9ef>string</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>c</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>CPU</span>) <span style=color:#a6e22e>Process</span>(<span style=color:#a6e22e>data</span> <span style=color:#66d9ef>string</span>) {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>sp</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>strings</span>.<span style=color:#a6e22e>Split</span>(<span style=color:#a6e22e>data</span>, <span style=color:#e6db74>&#34;,&#34;</span>)
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>Sound</span> = <span style=color:#a6e22e>sp</span>[<span style=color:#ae81ff>0</span>]
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>Video</span> = <span style=color:#a6e22e>sp</span>[<span style=color:#ae81ff>1</span>]
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Printf</span>(<span style=color:#e6db74>&#34;CPU: split data with Sound %s, Video %s\n&#34;</span>, <span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>Sound</span>, <span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>Video</span>)
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>GetMediatorInstance</span>().<span style=color:#a6e22e>changed</span>(<span style=color:#a6e22e>c</span>)
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>VideoCard</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>Data</span> <span style=color:#66d9ef>string</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>v</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>VideoCard</span>) <span style=color:#a6e22e>Display</span>(<span style=color:#a6e22e>data</span> <span style=color:#66d9ef>string</span>) {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>v</span>.<span style=color:#a6e22e>Data</span> = <span style=color:#a6e22e>data</span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Printf</span>(<span style=color:#e6db74>&#34;VideoCard: display %s\n&#34;</span>, <span style=color:#a6e22e>v</span>.<span style=color:#a6e22e>Data</span>)
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>GetMediatorInstance</span>().<span style=color:#a6e22e>changed</span>(<span style=color:#a6e22e>v</span>)
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>SoundCard</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>Data</span> <span style=color:#66d9ef>string</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>s</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>SoundCard</span>) <span style=color:#a6e22e>Play</span>(<span style=color:#a6e22e>data</span> <span style=color:#66d9ef>string</span>) {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>Data</span> = <span style=color:#a6e22e>data</span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Printf</span>(<span style=color:#e6db74>&#34;SoundCard: play %s\n&#34;</span>, <span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>Data</span>)
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>GetMediatorInstance</span>().<span style=color:#a6e22e>changed</span>(<span style=color:#a6e22e>s</span>)
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>Mediator</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>CD</span>    <span style=color:#f92672>*</span><span style=color:#a6e22e>CDDriver</span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>CPU</span>   <span style=color:#f92672>*</span><span style=color:#a6e22e>CPU</span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>Video</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>VideoCard</span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>Sound</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>SoundCard</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>var</span> <span style=color:#a6e22e>mediator</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>Mediator</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>GetMediatorInstance</span>() <span style=color:#f92672>*</span><span style=color:#a6e22e>Mediator</span> {
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>mediator</span> <span style=color:#f92672>==</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>mediator</span> = <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>Mediator</span>{}
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>return</span> <span style=color:#a6e22e>mediator</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>m</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>Mediator</span>) <span style=color:#a6e22e>changed</span>(<span style=color:#a6e22e>i</span> <span style=color:#66d9ef>interface</span>{}) {
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>switch</span> <span style=color:#a6e22e>inst</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>i</span>.(<span style=color:#66d9ef>type</span>) {
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>case</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>CDDriver</span>:
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>m</span>.<span style=color:#a6e22e>CPU</span>.<span style=color:#a6e22e>Process</span>(<span style=color:#a6e22e>inst</span>.<span style=color:#a6e22e>Data</span>)
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>case</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>CPU</span>:
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>m</span>.<span style=color:#a6e22e>Sound</span>.<span style=color:#a6e22e>Play</span>(<span style=color:#a6e22e>inst</span>.<span style=color:#a6e22e>Sound</span>)
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>m</span>.<span style=color:#a6e22e>Video</span>.<span style=color:#a6e22e>Display</span>(<span style=color:#a6e22e>inst</span>.<span style=color:#a6e22e>Video</span>)
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>mediator</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>GetMediatorInstance</span>()
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>mediator</span>.<span style=color:#a6e22e>CD</span> = <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>CDDriver</span>{}
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>mediator</span>.<span style=color:#a6e22e>CPU</span> = <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>CPU</span>{}
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>mediator</span>.<span style=color:#a6e22e>Video</span> = <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>VideoCard</span>{}
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>mediator</span>.<span style=color:#a6e22e>Sound</span> = <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>SoundCard</span>{}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>//Tiggle
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>mediator</span>.<span style=color:#a6e22e>CD</span>.<span style=color:#a6e22e>ReadData</span>()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Printf</span>(<span style=color:#e6db74>&#34;%#v\n&#34;</span>, <span style=color:#a6e22e>mediator</span>)
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>/*
+</span></span></span><span style=display:flex><span><span style=color:#75715e>CDDriver: reading data music,image
+</span></span></span><span style=display:flex><span><span style=color:#75715e>CPU: split data with Sound music, Video image
+</span></span></span><span style=display:flex><span><span style=color:#75715e>SoundCard: play music
+</span></span></span><span style=display:flex><span><span style=color:#75715e>VideoCard: display image
+</span></span></span><span style=display:flex><span><span style=color:#75715e>&amp;main.Mediator{CD:(*main.CDDriver)(0xc000010250), CPU:(*main.CPU)(0xc000060040), Video:(*main.VideoCard)(0xc000010260), Sound:(*main.SoundCard)(0xc000010270)}
+</span></span></span><span style=display:flex><span><span style=color:#75715e>*/</span>
+</span></span></code></pre></div><h2 id=references>References
+<a class=header-anchor href=#references></a></h2><p><a href=https://github.com/senghoo/golang-design-pattern title=https://github.com/senghoo/golang-design-pattern rel="noopener external nofollow noreferrer" target=_blank class=exturl>https://github.com/senghoo/golang-design-pattern
+<i class="fa fa-external-link-alt"></i></a></p><p><a href=https://refactoringguru.cn/design-patterns title=https://refactoringguru.cn/design-patterns rel="noopener external nofollow noreferrer" target=_blank class=exturl>https://refactoringguru.cn/design-patterns
+<i class="fa fa-external-link-alt"></i></a></p><p><a href=https://lailin.xyz/post/singleton.html title=https://lailin.xyz/post/singleton.html rel="noopener external nofollow noreferrer" target=_blank class=exturl>https://lailin.xyz/post/singleton.html
+<i class="fa fa-external-link-alt"></i></a></p></div><footer class=post-footer><div class=post-tags><a href=/tags/go>go
+</a><a href=/tags/%e8%ae%be%e8%ae%a1%e6%a8%a1%e5%bc%8f>设计模式</a></div><div class=addthis_inline_share_toolbox style=text-align:center></div><hr><div class=post-copyright><img src=/imgs/cc/cc.svg width=75 height=75 align=right alt=共享知识><ul><li class=post-copyright-title><strong>文章标题：</strong>
+行为模式</li><li class=post-copyright-author><strong>本文作者： </strong>daemon365</li><li class=post-copyright-link><strong>本文链接：</strong>
+<a id=post-cr-link href=https://daemon365.dev/post/go/behavioral_patterns/ title=行为模式>https://daemon365.dev/post/go/behavioral_patterns/</a></li><li class=post-copyright-license><strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <i class="fab fa-fw fa-creative-commons"></i><a target=_blank href=https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh>BY-NC-SA</a> 许可协议。转载请注明出处！</li></ul></div><div class=post-nav><div class="post-nav-next post-nav-item"><a href=/post/cloud/kubernetes_container_device_interface_cdi/ rel=next title="kubernetes container device interface (CDI)"><i class="fa fa-chevron-left"></i> kubernetes container device interface (CDI)</a></div><div class="post-nav-prev post-nav-item"><a href=/post/go/structural_patterns/ rel=prev title=结构型模式>结构型模式
+<i class="fa fa-chevron-right"></i></a></div></div></footer></article></div><div id=comments class=post-comments><div class=comment-head><div class=comment-headline><i class="fas fa-comments fa-fw"></i>
+<span>评论交流</span></div></div><div class=comment-wrap><div><div class=comment-loading><i class="fa fa-sync fa-spin"></i></div><div class=utterances-container></div></div></div></div></div></main><footer class=footer><div class=footer-inner><div class=copyright>&copy;
+<span itemprop=copyrightYear>2019 - 2024
+</span><span class=with-love><i class="fa fa-heart"></i>
+</span><span class=author itemprop=copyrightHolder>daemon365</span></div><div class=powered-by>由 <a href=https://gohugo.io title=0.136.5 target=_blank>Hugo</a> & <a href=https://github.com/hugo-next/hugo-theme-next title=4.6.3 target=_blank>Hugo NexT.Gemini</a> 强力驱动</div></div></footer><script type=text/javascript src=https://daemon365.dev/3rd/animejs/3.2.2/anime.min.js crossorigin=anonymous defer></script><script type=text/javascript src=https://daemon365.dev/3rd/viewerjs/1.11.6/viewer.min.js crossorigin=anonymous defer></script><script class=next-config data-name=main type=application/json>{"bookmark":{"color":"#222","enable":true,"save":"manual"},"copybtn":true,"darkmode":false,"hostname":"https://daemon365.dev/","i18n":{"ds_day":" 天前","ds_days":" 天 ","ds_hour":" 小时前","ds_hours":" 小时 ","ds_just":"刚刚","ds_min":" 分钟前","ds_mins":" 分钟","ds_month":" 个月前","ds_years":" 年 ","empty":"没有找到任何搜索结果：${query}","hits":"找到 ${hits} 个搜索结果","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","placeholder":"搜索..."},"lang":"zh-CN","lawidget":{"id":"JmAHxEAUVgyS8B1c","js":"https://v6-widget.51.la/v6/laId/quote.js?theme=0\u0026col=true\u0026f=12\u0026display=0,0,0,1,0,1,1,1"},"lazyload":false,"localSearch":{"enable":true,"limit":1e3,"path":"/searchindexes.xml","preload":false,"topnperarticle":-1,"trigger":"auto","unescape":false},"motion":{"async":true,"enable":true,"transition":{"collheader":"fadeInLeft","postblock":"fadeIn","postbody":"fadeInDown","postheader":"fadeInDown","sidebar":"fadeInUp"}},"postmeta":{"comments":{"enable":false,"plugin":"waline"},"views":{"enable":true,"plugin":"busuanzi"}},"root":"/","scheme":"Gemini","sidebar":{"display":"post","offset":12,"padding":18,"position":"left","width":256},"utterances":{"cfg":{"issueterm":"pathname","label":"comments","repo":"daemon365/daemon365.github.io","theme":"preferred-color-scheme"},"js":"https://utteranc.es/client.js"},"vendor":{"plugins":"local","router":{"name":"local","type":"modern","url":"https://daemon365.dev/3rd"}},"version":"4.6.3"}</script><script type=text/javascript src=/js/main.min.44e8f3a116669418a0551fcbff81fe26c85707505ea0b87a42f2d4116994b442.js defer></script></body></html>

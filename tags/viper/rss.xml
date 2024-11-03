@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Viper on Daemon</title><link>https://daemon365.dev/tags/viper/</link><description>Recent content in Viper on Daemon</description><generator>Hugo</generator><language>zh-CN</language><lastBuildDate>Sat, 23 Jan 2021 00:00:00 +0800</lastBuildDate><atom:link href="https://daemon365.dev/tags/viper/rss.xml" rel="self" type="application/rss+xml"/><item><title>viper配置管理</title><link>https://daemon365.dev/post/go/viper_configuration_management/</link><pubDate>Sat, 23 Jan 2021 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/go/viper_configuration_management/</guid><description>&lt;h2 id="安装">安装
+&lt;a class="header-anchor" href="#%e5%ae%89%e8%a3%85">&lt;/a>
+&lt;/h2>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>go get github.com/spf13/viper
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="viper支持的功能">viper支持的功能
+&lt;a class="header-anchor" href="#viper%e6%94%af%e6%8c%81%e7%9a%84%e5%8a%9f%e8%83%bd">&lt;/a>
+&lt;/h2>&lt;p>1、可以设置默认值
+2、可以加载多种格式的配置文件，如JSON，TOML，YAML，HCL和Java属性配置文件
+3、应用程序运行过程中，保持监听和重新读取配置文件
+4、可以从环境变量读取配置
+5、可以从远程配置系统读取配置
+6、可以读取命令行标志作为配置
+7、可以从缓冲区中读取
+8、设置显式的值&lt;/p></description></item></channel></rss>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>设计模式 on Daemon</title><link>https://daemon365.dev/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/</link><description>Recent content in 设计模式 on Daemon</description><generator>Hugo</generator><language>zh-CN</language><lastBuildDate>Mon, 25 Sep 2023 00:00:00 +0800</lastBuildDate><atom:link href="https://daemon365.dev/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/rss.xml" rel="self" type="application/rss+xml"/><item><title>行为模式</title><link>https://daemon365.dev/post/go/behavioral_patterns/</link><pubDate>Mon, 25 Sep 2023 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/go/behavioral_patterns/</guid><description>&lt;h2 id="责任链模式">责任链模式
+&lt;a class="header-anchor" href="#%e8%b4%a3%e4%bb%bb%e9%93%be%e6%a8%a1%e5%bc%8f">&lt;/a>
+&lt;/h2>&lt;p>&lt;strong>责任链模式&lt;/strong>是一种行为设计模式， 允许你将请求沿着处理者链进行发送。 收到请求后， 每个处理者均可对请求进行处理， 或将其传递给链上的下个处理者。比如 &lt;code>kratos&lt;/code>,&lt;code>gin&lt;/code>等开源库的中间件实现。&lt;/p></description></item><item><title>结构型模式</title><link>https://daemon365.dev/post/go/structural_patterns/</link><pubDate>Sun, 24 Sep 2023 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/go/structural_patterns/</guid><description>&lt;h2 id="适配器模式">适配器模式
+&lt;a class="header-anchor" href="#%e9%80%82%e9%85%8d%e5%99%a8%e6%a8%a1%e5%bc%8f">&lt;/a>
+&lt;/h2>&lt;p>适配器模式用于转换一种接口适配另一种接口。比如，现在有个借口是对&lt;code>json&lt;/code>字符串进行分析等，现在有一些&lt;code>yaml&lt;/code>文件也要分析，这时候我我们就应该给&lt;code>yaml&lt;/code>字符串就个适配器，转换成&lt;code>json&lt;/code>字符串，然后就行分析。&lt;/p></description></item><item><title>创建者模式</title><link>https://daemon365.dev/post/go/creator_mode/</link><pubDate>Sat, 23 Sep 2023 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/go/creator_mode/</guid><description>&lt;h2 id="单例模式">单例模式
+&lt;a class="header-anchor" href="#%e5%8d%95%e4%be%8b%e6%a8%a1%e5%bc%8f">&lt;/a>
+&lt;/h2>&lt;h3 id="为什么要用单例模式">为什么要用单例模式
+&lt;a class="header-anchor" href="#%e4%b8%ba%e4%bb%80%e4%b9%88%e8%a6%81%e7%94%a8%e5%8d%95%e4%be%8b%e6%a8%a1%e5%bc%8f">&lt;/a>
+&lt;/h3>&lt;p>&lt;strong>保证一个对象只有一个实例&lt;/strong> ，减少内存开销。比如一些可以复用一个连接的网络，比如&lt;code>http2 client&lt;/code>等，而且可以减少网络开销。&lt;/p>
+&lt;h3 id="为什么不用个全局变量控制">为什么不用个全局变量控制
+&lt;a class="header-anchor" href="#%e4%b8%ba%e4%bb%80%e4%b9%88%e4%b8%8d%e7%94%a8%e4%b8%aa%e5%85%a8%e5%b1%80%e5%8f%98%e9%87%8f%e6%8e%a7%e5%88%b6">&lt;/a>
+&lt;/h3>&lt;p>因为任何代码都有可能覆盖掉那些变量的内容， 从而引发程序崩溃。&lt;/p></description></item></channel></rss>

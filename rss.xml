@@ -1,0 +1,1003 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Daemon</title><link>https://daemon365.dev/</link><description>Recent content on Daemon</description><generator>Hugo</generator><language>zh-CN</language><lastBuildDate>Sat, 02 Nov 2024 17:42:54 +0800</lastBuildDate><atom:link href="https://daemon365.dev/rss.xml" rel="self" type="application/rss+xml"/><item><title>kube-apiserver 高可用，keepalived + haproxy</title><link>https://daemon365.dev/post/cloud/keepalived_haproxy/</link><pubDate>Sat, 02 Nov 2024 17:42:54 +0800</pubDate><guid>https://daemon365.dev/post/cloud/keepalived_haproxy/</guid><description>&lt;h2 id="为什么要做高可用">为什么要做高可用
+&lt;a class="header-anchor" href="#%e4%b8%ba%e4%bb%80%e4%b9%88%e8%a6%81%e5%81%9a%e9%ab%98%e5%8f%af%e7%94%a8">&lt;/a>
+&lt;/h2>&lt;p>在生产环境中，kubernetes 集群中会多多个 master 节点，每个 master 节点上都会部署 kube-apiserver 服务，实现高可用。但是 client 访问 kube-apiserver 时，需要指定 ip 或者域名，这样会出现单点故障。官方推荐的做法是使用一个负载均衡器，将多个 kube-apiserver 服务负载均衡，实现高可用，但很多时候我们是没有这个条件的。这时候就得想想办法了，比如 nignx 转发，但是 nginx 也是单点。域名的方式，但是这种方式生效时间较长，不太适合紧急情况。所以这里介绍一种使用 keepalived + haproxy 的方式实现 kube-apiserver 的高可用。这是一共公用 IP 的方式，当主节点宕机时，VIP 会自动切换到备节点，实现高可用。&lt;/p></description></item><item><title>boltdb 原理</title><link>https://daemon365.dev/post/cloud/boltdb_principles/</link><pubDate>Sat, 15 Jun 2024 16:14:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/boltdb_principles/</guid><description>&lt;h2 id="简介">简介
+&lt;a class="header-anchor" href="#%e7%ae%80%e4%bb%8b">&lt;/a>
+&lt;/h2>&lt;p>介绍及简单使用：https://www.cnblogs.com/daemon365/p/17690167.html
+源码地址：https://github.com/etcd-io/bbolt&lt;/p></description></item><item><title>etcd watch 实现原理</title><link>https://daemon365.dev/post/cloud/etcd_watch_implementation_principle/</link><pubDate>Mon, 10 Jun 2024 14:16:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/etcd_watch_implementation_principle/</guid><description>&lt;h2 id="介绍">介绍
+&lt;a class="header-anchor" href="#%e4%bb%8b%e7%bb%8d">&lt;/a>
+&lt;/h2>&lt;p>在 etcd 中，watch 是一个非常重要的特性，它可以让客户端监控 etcd 中的 key 或者一组 key，当 key 发生变化时，etcd 会通知客户端。本文将介绍 etcd watch 的实现原理。&lt;/p></description></item><item><title>etcd MVCC 存储结构及流程</title><link>https://daemon365.dev/post/cloud/etcd_mvcc_storage_structure_and_process/</link><pubDate>Sun, 26 May 2024 18:00:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/etcd_mvcc_storage_structure_and_process/</guid><description>&lt;h2 id="什么是-mvcc">什么是 MVCC
+&lt;a class="header-anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af-mvcc">&lt;/a>
+&lt;/h2>&lt;p>MVCC 是 Multi-Version Concurrency Control 的缩写，即多版本并发控制。它是一种并发控制的方法，用于在数据库系统中实现事务的隔离性。MVCC 是一种乐观锁机制，它通过保存数据的多个版本来实现事务的隔禽性。在 etcd 中，MVCC 是用于实现数据的版本控制的。而且可以查看历史版本的数据。&lt;/p></description></item><item><title>istio sidecar 工作方式</title><link>https://daemon365.dev/post/cloud/how_istio_sidecar_works/</link><pubDate>Sun, 12 May 2024 17:40:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/how_istio_sidecar_works/</guid><description>&lt;h2 id="istio-是什么">istio 是什么
+&lt;a class="header-anchor" href="#istio-%e6%98%af%e4%bb%80%e4%b9%88">&lt;/a>
+&lt;/h2>&lt;p>Istio 是一个开放源代码的服务网格，它为基于微服务的应用程序提供了一种统一的方式来连接、保护、监控和管理服务。Istio 主要解决的是在微服务架构中的服务间通信的复杂性问题，它通过提供服务间的负载均衡、服务到服务的认证、监控以及服务的弹性（例如重试、熔断等）来实现。&lt;/p></description></item><item><title>docker containerd runc containerd-shim等组件的关系</title><link>https://daemon365.dev/post/cloud/the_relationship_between_docker_containerd_runc_containerd_shim_and_other_components/</link><pubDate>Thu, 09 May 2024 20:56:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/the_relationship_between_docker_containerd_runc_containerd_shim_and_other_components/</guid><description>&lt;h2 id="早期-kubelet-创建容器工作原理">早期 kubelet 创建容器工作原理
+&lt;a class="header-anchor" href="#%e6%97%a9%e6%9c%9f-kubelet-%e5%88%9b%e5%bb%ba%e5%ae%b9%e5%99%a8%e5%b7%a5%e4%bd%9c%e5%8e%9f%e7%90%86">&lt;/a>
+&lt;/h2>&lt;p>因为 docker 出生的比 k8s 早，所以 k8s 早期的容器运行时都是基于 docker 的，kubelet 通过 docker 的 api 创建容器。后来，k8s 官方不想绑死在 docker 这架马车上，就把容器运行时抽象出来，定义了一个接口，叫 CRI (
+&lt;a href="https://github.com/kubernetes/cri-api" title="container runtime interface" rel="noopener external nofollow noreferrer" target="_blank" class=" exturl">
+ container runtime interface
+ 
+ &lt;i class="fa fa-external-link-alt">&lt;/i>
+ 
+&lt;/a>)，容器运行时接口, 通过这个接口，kubelet 可以和任何容器运行时交互。但是，docker 并没有实现这个接口，k8s 也不想直接失去 docker 的用户，所以 k8s 官方在 kubelet 中实现了一个叫 docker-shim 的组件，这个组件简单来说就是把 cri 接口转换成 docker 的 api，这样 kubelet 就可以和 docker 交互了, 这个组件在 kuberbetes 1.24 版本中已经被移除了。至于实现了 cri 接口的容器运行时，比如 containerd，cri-o 等，kubelet 可以直接和它们交互。&lt;/p></description></item><item><title>boltdb 介绍</title><link>https://daemon365.dev/post/cloud/boltdb_basics/</link><pubDate>Wed, 08 May 2024 20:56:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/boltdb_basics/</guid><description>&lt;h2 id="介绍">介绍
+&lt;a class="header-anchor" href="#%e4%bb%8b%e7%bb%8d">&lt;/a>
+&lt;/h2>&lt;p>&lt;code>BoltDB&lt;/code> 是一个用 Go 语言编写的嵌入式键/值数据库。以下是关于 BoltDB 的一些基本介绍：&lt;/p>
+&lt;ul>
+&lt;li>&lt;strong>键/值存储&lt;/strong>: BoltDB 为应用程序提供了简单的键/值存储接口。&lt;/li>
+&lt;li>&lt;strong>事务&lt;/strong>: BoltDB 支持完整的 ACID 事务。&lt;/li>
+&lt;li>&lt;strong>嵌入式&lt;/strong>: 与像 MySQL 或 PostgreSQL 这样的数据库系统不同，BoltDB 不运行在单独的服务器进程中。它作为一个库被直接嵌入到你的应用程序中。&lt;/li>
+&lt;li>&lt;strong>单文件存储&lt;/strong>: 所有的数据都存储在一个文件中，这使得备份和迁移变得简单。&lt;/li>
+&lt;li>&lt;strong>高效的二进制存储&lt;/strong>: 数据在磁盘上使用 B+ 树结构存储，这为随机读取提供了高性能。&lt;/li>
+&lt;li>&lt;strong>前缀扫描&lt;/strong>: 可以很容易地按键的前缀进行扫描，这使得它适用于范围查询。&lt;/li>
+&lt;li>&lt;strong>没有外部依赖&lt;/strong>: BoltDB 不依赖于任何外部系统或库。&lt;/li>
+&lt;li>&lt;strong>线程安全&lt;/strong>: BoltDB 是线程安全的，可以在多个 goroutines 中并发地使用。&lt;/li>
+&lt;/ul>
+&lt;p>BoltDB 特别适用于需要一个轻量级、高性能、易于部署和维护的数据库解决方案的场景。&lt;/p></description></item><item><title>kube-proxy 流量流转方式</title><link>https://daemon365.dev/post/cloud/kube_proxy_traffic_flow_mode/</link><pubDate>Wed, 08 May 2024 17:40:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/kube_proxy_traffic_flow_mode/</guid><description>&lt;h2 id="简介">简介
+&lt;a class="header-anchor" href="#%e7%ae%80%e4%bb%8b">&lt;/a>
+&lt;/h2>&lt;p>&lt;code>kube-proxy&lt;/code> 是 Kubernetes 集群中负责服务发现和负载均衡的组件之一。它是一个网络代理，运行在每个节点上, 用于 service 资源的负载均衡。它有两种模式：&lt;code>iptables&lt;/code> 和 &lt;code>ipvs&lt;/code>。&lt;/p></description></item><item><title>kubernetes 存储流程</title><link>https://daemon365.dev/post/cloud/kubernetes_storage_process/</link><pubDate>Fri, 03 May 2024 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/kubernetes_storage_process/</guid><description>&lt;h2 id="pv-与-pvc">PV 与 PVC
+&lt;a class="header-anchor" href="#pv-%e4%b8%8e-pvc">&lt;/a>
+&lt;/h2>&lt;p>PVC (PersistentVolumeClaim)，命名空间（namespace）级别的资源，由 用户 or StatefulSet 控制器（根据VolumeClaimTemplate） 创建。PVC 类似于 Pod，Pod 消耗 Node 资源，PVC 消耗 PV 资源。Pod 可以请求特定级别的资源（CPU 和内存），而 PVC 可以请求特定存储卷的大小及访问模式（Access Mode
+PV（PersistentVolume）是集群中的一块存储资源，可以是 NFS、iSCSI、Ceph、GlusterFS 等存储卷，PV 由集群管理员创建，然后由开发者使用 PVC 来申请 PV，PVC 是对 PV 的申请，类似于 Pod 对 Node 的申请。&lt;/p></description></item><item><title>kubelet 原理分析</title><link>https://daemon365.dev/post/cloud/analysis_of_kubelet_principles/</link><pubDate>Wed, 01 May 2024 12:40:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/analysis_of_kubelet_principles/</guid><description>&lt;h2 id="reference">Reference
+&lt;a class="header-anchor" href="#reference">&lt;/a>
+&lt;/h2>&lt;ul>
+&lt;li>
+&lt;a href="https://atbug.com/kubelet-source-code-analysis/" title="https://atbug.com/kubelet-source-code-analysis/" rel="noopener external nofollow noreferrer" target="_blank" class=" exturl">
+ https://atbug.com/kubelet-source-code-analysis/
+ 
+ &lt;i class="fa fa-external-link-alt">&lt;/i>
+ 
+&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;h2 id="kubelet-简介">kubelet 简介
+&lt;a class="header-anchor" href="#kubelet-%e7%ae%80%e4%bb%8b">&lt;/a>
+&lt;/h2>&lt;p>kubernetes 分为控制面和数据面，kubelet 就是数据面最主要的组件，在每个节点上启动，主要负责容器的创建、启停、监控、日志收集等工作。它是一个在每个集群节点上运行的代理，负责确保节点上的容器根据PodSpec（Pod定义文件）正确运行。&lt;/p></description></item><item><title>kubernetes CNI(Container Network Inferface)</title><link>https://daemon365.dev/post/cloud/kubernetes_cni_container_network_inferface/</link><pubDate>Sat, 20 Apr 2024 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/kubernetes_cni_container_network_inferface/</guid><description>&lt;h2 id="为什么需要-cni">为什么需要 CNI
+&lt;a class="header-anchor" href="#%e4%b8%ba%e4%bb%80%e4%b9%88%e9%9c%80%e8%a6%81-cni">&lt;/a>
+&lt;/h2>&lt;p>在 kubernetes 中，pod 的网络是使用 network namespace 隔离的，但是我们有时又需要互相访问网络，这就需要一个网络插件来实现 pod 之间的网络通信。CNI 就是为了解决这个问题而诞生的。CNI 是 container network interface 的缩写，它是一个规范，定义了容器运行时如何配置网络。CNI 插件是实现了 CNI 规范的二进制文件，它可以被容器运行时调用，来配置容器的网络。&lt;/p></description></item><item><title>kubernetes client-go功能介绍</title><link>https://daemon365.dev/post/cloud/kubernetes_client_go_function_introduction/</link><pubDate>Fri, 08 Mar 2024 17:11:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/kubernetes_client_go_function_introduction/</guid><description>&lt;h2 id="原文地址">原文地址
+&lt;a class="header-anchor" href="#%e5%8e%9f%e6%96%87%e5%9c%b0%e5%9d%80">&lt;/a>
+&lt;/h2>&lt;p>
+&lt;a href="https://haiyux.cc/2023/02/26/k8s-client-go/" title="https://haiyux.cc/2023/02/26/k8s-client-go/" rel="noopener external nofollow noreferrer" target="_blank" class=" exturl">
+ https://haiyux.cc/2023/02/26/k8s-client-go/
+ 
+ &lt;i class="fa fa-external-link-alt">&lt;/i>
+ 
+&lt;/a>&lt;/p>
+&lt;h2 id="client-go是什么">client-go是什么？
+&lt;a class="header-anchor" href="#client-go%e6%98%af%e4%bb%80%e4%b9%88">&lt;/a>
+&lt;/h2>&lt;p>client-go是Kubernetes官方提供的Go语言客户端库，用于与Kubernetes API服务器交互。使用client-go，您可以编写Go语言程序来创建、修改和删除Kubernetes对象，如Pod、Deployment、Service等。&lt;/p></description></item><item><title>容器启动流程（containerd 和 runc）</title><link>https://daemon365.dev/post/cloud/container_startup_process_containerd_and_runc/</link><pubDate>Thu, 07 Dec 2023 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/container_startup_process_containerd_and_runc/</guid><description>&lt;h2 id="启动流程">启动流程
+&lt;a class="header-anchor" href="#%e5%90%af%e5%8a%a8%e6%b5%81%e7%a8%8b">&lt;/a>
+&lt;/h2>&lt;p>containerd 作为一个 api 服务，提供了一系列的接口供外部调用，比如创建容器、删除容器、创建镜像、删除镜像等等。使用 docker 和 ctr 等工具，都是通过调用 containerd 的 api 来实现的。
+kubelet 通过 cri 调用 containerd 和这些不一样，后续我会介绍到。&lt;/p></description></item><item><title>kubernetes container device interface (CDI)</title><link>https://daemon365.dev/post/cloud/kubernetes_container_device_interface_cdi/</link><pubDate>Sun, 19 Nov 2023 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/kubernetes_container_device_interface_cdi/</guid><description>&lt;h2 id="cdi-是什么">CDI 是什么？
+&lt;a class="header-anchor" href="#cdi-%e6%98%af%e4%bb%80%e4%b9%88">&lt;/a>
+&lt;/h2>&lt;p>Container Device Interface (CDI) 是一个提议的标准，它定义了如何在容器运行时环境中向容器提供设备。这个提议的目的是使得设备供应商能够更容易地将其设备集成到 Kubernetes 集群中，而不必修改 Kubernetes 核心代码。&lt;/p></description></item><item><title>行为模式</title><link>https://daemon365.dev/post/go/behavioral_patterns/</link><pubDate>Mon, 25 Sep 2023 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/go/behavioral_patterns/</guid><description>&lt;h2 id="责任链模式">责任链模式
+&lt;a class="header-anchor" href="#%e8%b4%a3%e4%bb%bb%e9%93%be%e6%a8%a1%e5%bc%8f">&lt;/a>
+&lt;/h2>&lt;p>&lt;strong>责任链模式&lt;/strong>是一种行为设计模式， 允许你将请求沿着处理者链进行发送。 收到请求后， 每个处理者均可对请求进行处理， 或将其传递给链上的下个处理者。比如 &lt;code>kratos&lt;/code>,&lt;code>gin&lt;/code>等开源库的中间件实现。&lt;/p></description></item><item><title>结构型模式</title><link>https://daemon365.dev/post/go/structural_patterns/</link><pubDate>Sun, 24 Sep 2023 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/go/structural_patterns/</guid><description>&lt;h2 id="适配器模式">适配器模式
+&lt;a class="header-anchor" href="#%e9%80%82%e9%85%8d%e5%99%a8%e6%a8%a1%e5%bc%8f">&lt;/a>
+&lt;/h2>&lt;p>适配器模式用于转换一种接口适配另一种接口。比如，现在有个借口是对&lt;code>json&lt;/code>字符串进行分析等，现在有一些&lt;code>yaml&lt;/code>文件也要分析，这时候我我们就应该给&lt;code>yaml&lt;/code>字符串就个适配器，转换成&lt;code>json&lt;/code>字符串，然后就行分析。&lt;/p></description></item><item><title>创建者模式</title><link>https://daemon365.dev/post/go/creator_mode/</link><pubDate>Sat, 23 Sep 2023 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/go/creator_mode/</guid><description>&lt;h2 id="单例模式">单例模式
+&lt;a class="header-anchor" href="#%e5%8d%95%e4%be%8b%e6%a8%a1%e5%bc%8f">&lt;/a>
+&lt;/h2>&lt;h3 id="为什么要用单例模式">为什么要用单例模式
+&lt;a class="header-anchor" href="#%e4%b8%ba%e4%bb%80%e4%b9%88%e8%a6%81%e7%94%a8%e5%8d%95%e4%be%8b%e6%a8%a1%e5%bc%8f">&lt;/a>
+&lt;/h3>&lt;p>&lt;strong>保证一个对象只有一个实例&lt;/strong> ，减少内存开销。比如一些可以复用一个连接的网络，比如&lt;code>http2 client&lt;/code>等，而且可以减少网络开销。&lt;/p>
+&lt;h3 id="为什么不用个全局变量控制">为什么不用个全局变量控制
+&lt;a class="header-anchor" href="#%e4%b8%ba%e4%bb%80%e4%b9%88%e4%b8%8d%e7%94%a8%e4%b8%aa%e5%85%a8%e5%b1%80%e5%8f%98%e9%87%8f%e6%8e%a7%e5%88%b6">&lt;/a>
+&lt;/h3>&lt;p>因为任何代码都有可能覆盖掉那些变量的内容， 从而引发程序崩溃。&lt;/p></description></item><item><title>redis主从同步</title><link>https://daemon365.dev/post/database/redis_master_slave_synchronization/</link><pubDate>Sun, 20 Aug 2023 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/database/redis_master_slave_synchronization/</guid><description>&lt;h2 id="redis主从同步">redis主从同步
+&lt;a class="header-anchor" href="#redis%e4%b8%bb%e4%bb%8e%e5%90%8c%e6%ad%a5">&lt;/a>
+&lt;/h2>&lt;p>&lt;img src="https://daemon365.dev/imgs/img-lazy-loading.gif" data-src="https://daemon365.dev/images/a9aeda50-50ab-4fe3-b94c-572cadf14613.png" alt="" />&lt;/p>
+&lt;p>原理：&lt;/p>
+&lt;ol>
+&lt;li>
+&lt;p>从服务器向主服务器发送 SYNC 命令。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>接到 SYNC 命令的主服务器会调用BGSAVE 命令，创建一个 RDB 文件，并使用缓冲区记录接下来执行的所有写命令。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>当主服务器执行完 BGSAVE 命令时，它会向从服务器发送 RDB 文件，而从服务器则会接收并载入这个文件。&lt;/p></description></item><item><title>kratos http原理</title><link>https://daemon365.dev/post/kratos/kratos_http_principle/</link><pubDate>Thu, 29 Jun 2023 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/kratos/kratos_http_principle/</guid><description>&lt;h2 id="概念">概念
+&lt;a class="header-anchor" href="#%e6%a6%82%e5%bf%b5">&lt;/a>
+&lt;/h2>&lt;p>
+&lt;a href="https://github.com/go-kratos/kratos" title="kratos" rel="noopener external nofollow noreferrer" target="_blank" class=" exturl">
+ kratos
+ 
+ &lt;i class="fa fa-external-link-alt">&lt;/i>
+ 
+&lt;/a> 为了使http协议的逻辑代码和grpc的逻辑代码使用同一份，选择了基于protobuf的IDL文件使用proto插件生成辅助代码的方式。&lt;/p></description></item><item><title>容器基础-- namespace,Cgroup 和 UnionFS</title><link>https://daemon365.dev/post/cloud/container_basics___namespace__cgroup_and_unionfs/</link><pubDate>Sat, 24 Jun 2023 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/container_basics___namespace__cgroup_and_unionfs/</guid><description>&lt;h2 id="namespace">Namespace
+&lt;a class="header-anchor" href="#namespace">&lt;/a>
+&lt;/h2>&lt;h3 id="什么是-namespace-">什么是 Namespace ？
+&lt;a class="header-anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af-namespace-">&lt;/a>
+&lt;/h3>&lt;p>这里的 &amp;ldquo;namespace&amp;rdquo; 指的是 Linux namespace 技术，它是 Linux 内核实现的一种隔离方案。简而言之，Linux 操作系统能够为不同的进程分配不同的 namespace，每个 namespace 都具有独立的资源分配，从而实现了进程间的隔离。如果你的 Linux 安装了 GCC，可以通过运行 &lt;code>man namespaces&lt;/code> 命令来查看相关文档，或者你也可以访问
+&lt;a href="http://man7.org/linux/man-pages/man7/namespaces.7.html" title="在线手册" rel="noopener external nofollow noreferrer" target="_blank" class=" exturl">
+ 在线手册
+ 
+ &lt;i class="fa fa-external-link-alt">&lt;/i>
+ 
+&lt;/a>获取更多信息。&lt;/p></description></item><item><title>RabbitMQ消息队列</title><link>https://daemon365.dev/post/database/rabbitmq_message_queue/</link><pubDate>Sat, 20 May 2023 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/database/rabbitmq_message_queue/</guid><description>&lt;h2 id="消息队列">消息队列
+&lt;a class="header-anchor" href="#%e6%b6%88%e6%81%af%e9%98%9f%e5%88%97">&lt;/a>
+&lt;/h2>&lt;p>本篇文章主要介绍了 RabbitMQ 这种消息队列，从消息队列的概念、应用场景、安装方式到它的核心概念、五种工作模式。在安装的时候推荐使用 Docker 方式进行安装。重点需要理解的就是消息队列的应用场景、核心概念和 RabbitMQ 的五种工作模式，其中用的比较多的就是发布订阅模式、主题模式。&lt;/p></description></item><item><title>http和https</title><link>https://daemon365.dev/post/network/http_and_https/</link><pubDate>Wed, 25 Jan 2023 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/network/http_and_https/</guid><description>&lt;h2 id="http协议是什么">HTTP协议是什么？
+&lt;a class="header-anchor" href="#http%e5%8d%8f%e8%ae%ae%e6%98%af%e4%bb%80%e4%b9%88">&lt;/a>
+&lt;/h2>&lt;ul>
+&lt;li>HTTP协议是&lt;strong>超文本传输协议&lt;/strong>的缩写，英文是Hyper Text Transfer Protocol。它是从WEB服务器传输超文本标记语言(HTML)到本地浏览器的传送协议。&lt;/li>
+&lt;li>设计HTTP最初的目的是为了提供一种发布和接收HTML页面的方法。&lt;/li>
+&lt;li>HTPP有多个版本，目前广泛使用的是HTTP/1.1版本。&lt;/li>
+&lt;/ul>
+&lt;h2 id="http原理">HTTP原理
+&lt;a class="header-anchor" href="#http%e5%8e%9f%e7%90%86">&lt;/a>
+&lt;/h2>&lt;p>HTTP是一个基于TCP/IP通信协议来传递数据的协议，传输的数据类型为HTML 文件,、图片文件, 查询结果等。&lt;/p></description></item><item><title>golang操作etcd</title><link>https://daemon365.dev/post/go/golang_operates_etcd/</link><pubDate>Sun, 08 Jan 2023 20:56:00 +0800</pubDate><guid>https://daemon365.dev/post/go/golang_operates_etcd/</guid><description>&lt;p>etcd是近几年比较火热的一个开源的、分布式的键值对数据存储系统，提供共享配置、服务的注册和发现，本文主要介绍etcd的安装和使用。&lt;/p>
+&lt;h2 id="etcd介绍">etcd介绍
+&lt;a class="header-anchor" href="#etcd%e4%bb%8b%e7%bb%8d">&lt;/a>
+&lt;/h2>&lt;p>
+&lt;a href="https://etcd.io/" title="etcd" rel="noopener external nofollow noreferrer" target="_blank" class=" exturl">
+ etcd
+ 
+ &lt;i class="fa fa-external-link-alt">&lt;/i>
+ 
+&lt;/a>是使用Go语言开发的一个开源的、高可用的分布式key-value存储系统，可以用于配置共享和服务的注册和发现。&lt;/p></description></item><item><title>隔离</title><link>https://daemon365.dev/post/microservice/isolation/</link><pubDate>Sun, 25 Dec 2022 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/microservice/isolation/</guid><description>&lt;h2 id="什么是隔离">什么是隔离？
+&lt;a class="header-anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e9%9a%94%e7%a6%bb">&lt;/a>
+&lt;/h2>&lt;p>隔离，本质上是对系统或资源进行分割，从而实现当系统发生故障时能限定传播范围和影响范围，即发生故障后只有出问题的服务不可用，保证其他服务仍然可用。&lt;/p></description></item><item><title>限流</title><link>https://daemon365.dev/post/microservice/current_limitation/</link><pubDate>Sat, 24 Dec 2022 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/microservice/current_limitation/</guid><description>&lt;h2 id="令牌桶算法">令牌桶算法
+&lt;a class="header-anchor" href="#%e4%bb%a4%e7%89%8c%e6%a1%b6%e7%ae%97%e6%b3%95">&lt;/a>
+&lt;/h2>&lt;p>是一个存放固定容量令牌的桶，按照固定速率往桶里添加令牌。令牌桶算法的描述如下：&lt;/p>
+&lt;ul>
+&lt;li>假设限制2r/s，则按照500毫秒的固定速率往桶中添加令牌。&lt;/li>
+&lt;li>桶中最多存放 b 个令牌，当桶满时，新添加的令牌被丢弃或拒绝。&lt;/li>
+&lt;li>当一个 n 个字节大小的数据包到达，将从桶中删除n 个令牌，接着数据包被发送到网络上。&lt;/li>
+&lt;li>如果桶中的令牌不足 n 个，则不会删除令牌，且该数据包将被限流（要么丢弃，要么缓冲区等待）。&lt;/li>
+&lt;/ul>
+&lt;p>令牌桶速率限制算法: &lt;code>golang.org/x/time/rate&lt;/code>&lt;/p></description></item><item><title>超时控制</title><link>https://daemon365.dev/post/microservice/timeout_control/</link><pubDate>Fri, 23 Dec 2022 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/microservice/timeout_control/</guid><description>&lt;h2 id="什么是超时控制">什么是超时控制？
+&lt;a class="header-anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e8%b6%85%e6%97%b6%e6%8e%a7%e5%88%b6">&lt;/a>
+&lt;/h2>&lt;p>超时控制，使我们的服务之间调用可以快速抛错。比如API接口设置1s超时API调用A服务用了500ms，服务A调用和服务B用了600ms，n那么现在已经超时，还要调用服务C等等，再返回超时错误吗？这回事使服务C后面的链路做了无用功，浪费服务器资源。&lt;/p></description></item><item><title>Go命令行工具cobra</title><link>https://daemon365.dev/post/go/go_command_line_tool_cobra/</link><pubDate>Wed, 21 Dec 2022 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/go/go_command_line_tool_cobra/</guid><description>&lt;h2 id="关于">关于
+&lt;a class="header-anchor" href="#%e5%85%b3%e4%ba%8e">&lt;/a>
+&lt;/h2>&lt;p>Cobra 是 Go 的 CLI 框架。它包含一个用于创建功能强大的现代 CLI 应用程序的库，以及一个用于快速生成基于 Cobra 的应用程序和命令文件的工具。&lt;/p>
+&lt;p>Cobra 由 Go 项目成员和 hugo 作者 
+&lt;a href="https://github.com/spf13" title="spf13" rel="noopener external nofollow noreferrer" target="_blank" class=" exturl">
+ spf13
+ 
+ &lt;i class="fa fa-external-link-alt">&lt;/i>
+ 
+&lt;/a> 创建，已经被许多流行的 Go 项目采用，比如 kubernetes、docker等&lt;/p></description></item><item><title>lua基础</title><link>https://daemon365.dev/post/others/lua_basics/</link><pubDate>Tue, 25 Oct 2022 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/others/lua_basics/</guid><description>&lt;h2 id="什么是lua">什么是lua
+&lt;a class="header-anchor" href="#%e4%bb%80%e4%b9%88%e6%98%aflua">&lt;/a>
+&lt;/h2>&lt;p>
+&lt;a href="https://www.lua.org/" title="Lua" rel="noopener external nofollow noreferrer" target="_blank" class=" exturl">
+ Lua
+ 
+ &lt;i class="fa fa-external-link-alt">&lt;/i>
+ 
+&lt;/a>是一个小巧的
+&lt;a href="https://baike.baidu.com/item/%e8%84%9a%e6%9c%ac%e8%af%ad%e8%a8%80" title="脚本语言" rel="noopener external nofollow noreferrer" target="_blank" class=" exturl">
+ 脚本语言
+ 
+ &lt;i class="fa fa-external-link-alt">&lt;/i>
+ 
+&lt;/a>。它是
+&lt;a href="https://baike.baidu.com/item/%e5%b7%b4%e8%a5%bf/5422" title="巴西" rel="noopener external nofollow noreferrer" target="_blank" class=" exturl">
+ 巴西
+ 
+ &lt;i class="fa fa-external-link-alt">&lt;/i>
+ 
+&lt;/a>
+&lt;a href="https://baike.baidu.com/item/%e9%87%8c%e7%ba%a6%e7%83%ad%e5%86%85%e5%8d%a2%e5%a4%a9%e4%b8%bb%e6%95%99%e5%a4%a7%e5%ad%a6/1050607" title="里约热内卢天主教大学" rel="noopener external nofollow noreferrer" target="_blank" class=" exturl">
+ 里约热内卢天主教大学
+ 
+ &lt;i class="fa fa-external-link-alt">&lt;/i>
+ 
+&lt;/a>（Pontifical Catholic University of Rio de Janeiro）里的一个由Roberto Ierusalimschy、Waldemar Celes 和 Luiz Henrique de Figueiredo三人所组成的研究小组于1993年开发的。 其设计目的是为了通过灵活嵌入应用程序中从而为应用程序提供灵活的扩展和定制功能。Lua由标准C编写而成，几乎在所有操作系统和平台上都可以编译，运行。Lua并没有提供强大的库，这是由它的定位决定的。所以Lua不适合作为开发独立应用程序的语言。Lua 有一个同时进行的JIT项目，提供在特定平台上的即时编译功能。&lt;/p></description></item><item><title>kubernetes集群最新版安装</title><link>https://daemon365.dev/post/cloud/kubernetes_cluster_latest_version_installation/</link><pubDate>Thu, 22 Sep 2022 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/kubernetes_cluster_latest_version_installation/</guid><description>&lt;h2 id="原文地址httpshaiyuxcc20220921k8s-install">原文地址：https://haiyux.cc/2022/09/21/k8s-install/
+&lt;a class="header-anchor" href="#%e5%8e%9f%e6%96%87%e5%9c%b0%e5%9d%80httpshaiyuxcc20220921k8s-install">&lt;/a>
+&lt;/h2>&lt;h2 id="虚拟机准备">虚拟机准备
+&lt;a class="header-anchor" href="#%e8%99%9a%e6%8b%9f%e6%9c%ba%e5%87%86%e5%a4%87">&lt;/a>
+&lt;/h2>&lt;p>我这里准备了三台虚拟机，分别部署一个master和两个node，操作系统位ubuntu 20.04。&lt;strong>以下为特殊说明为三台机器都要做此操作&lt;/strong>&lt;/p>
+&lt;h2 id="安装容器runtime">安装容器runtime
+&lt;a class="header-anchor" href="#%e5%ae%89%e8%a3%85%e5%ae%b9%e5%99%a8runtime">&lt;/a>
+&lt;/h2>&lt;p>之前，我们用的容器runtime基本都是docker，但是docker并没有实现k8s的CRI，是在kubelet的有一个组件叫docker-shim做转化，在kubernetes v1.24版本以上这个组件已经废弃，这里选择containerd做容器runtime。当然，containerd是可以使用docker的镜像的。如果非要使用docker的话，被kubernetes废弃的docker-shim被docker自己维护起来了，可以试试看。但是不建议纯纯的浪费资源。&lt;/p></description></item><item><title>redis发布订阅</title><link>https://daemon365.dev/post/database/redis_publish_subscribe/</link><pubDate>Sat, 20 Aug 2022 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/database/redis_publish_subscribe/</guid><description>&lt;h2 id="什么是发布和订阅">什么是发布和订阅
+&lt;a class="header-anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e5%8f%91%e5%b8%83%e5%92%8c%e8%ae%a2%e9%98%85">&lt;/a>
+&lt;/h2>&lt;p>Redis 发布订阅 (pub/sub) 是一种消息通信模式：发送者 (pub) 发送消息，订阅者 (sub) 接收消息。&lt;/p>
+&lt;p>Redis 客户端可以订阅任意数量的频道。&lt;/p>
+&lt;h2 id="发布和订阅">发布和订阅
+&lt;a class="header-anchor" href="#%e5%8f%91%e5%b8%83%e5%92%8c%e8%ae%a2%e9%98%85">&lt;/a>
+&lt;/h2>&lt;p>1、客户端可以订阅频道如下图&lt;/p>
+&lt;p>&lt;img src="https://daemon365.dev/imgs/img-lazy-loading.gif" data-src="https://daemon365.dev/images/96a0c4ca-666f-475e-8dd0-bfbd37f4dbb6.png" alt="" />&lt;/p>
+&lt;p>2、当给这个频道发布消息后，消息就会发送给订阅的客户端&lt;/p></description></item><item><title>vscode常用快捷键及插件</title><link>https://daemon365.dev/post/others/vscode_commonly_used_shortcut_keys_and_plug_ins/</link><pubDate>Fri, 25 Mar 2022 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/others/vscode_commonly_used_shortcut_keys_and_plug_ins/</guid><description>&lt;h2 id="macos">macOS
+&lt;a class="header-anchor" href="#macos">&lt;/a>
+&lt;/h2>&lt;h3 id="全局">全局
+&lt;a class="header-anchor" href="#%e5%85%a8%e5%b1%80">&lt;/a>
+&lt;/h3>&lt;ul>
+&lt;li>&lt;code>Command + Shift + P / F1&lt;/code> 显示命令面板&lt;/li>
+&lt;li>&lt;code>Command + P&lt;/code> 快速打开&lt;/li>
+&lt;li>&lt;code>Command + Shift + N&lt;/code> 打开新窗口&lt;/li>
+&lt;li>&lt;code>Command + W &lt;/code>关闭窗口&lt;/li>
+&lt;/ul>
+&lt;h3 id="基本">基本
+&lt;a class="header-anchor" href="#%e5%9f%ba%e6%9c%ac">&lt;/a>
+&lt;/h3>&lt;ul>
+&lt;li>&lt;code>Command + X&lt;/code> 剪切（未选中文本的情况下，剪切光标所在行）&lt;/li>
+&lt;li>&lt;code>Command + C&lt;/code> 复制（未选中文本的情况下，复制光标所在行）&lt;/li>
+&lt;li>``Option + Up` 向上移动行&lt;/li>
+&lt;li>&lt;code>Option + Down&lt;/code> 向下移动行&lt;/li>
+&lt;li>&lt;code>Option + Shift + Up&lt;/code> 向上复制行&lt;/li>
+&lt;li>&lt;code>Option + Shift + Down&lt;/code> 向下复制行&lt;/li>
+&lt;li>&lt;code>Command + Shift + K &lt;/code>删除行&lt;/li>
+&lt;li>&lt;code>Command + Enter&lt;/code> 下一行插入&lt;/li>
+&lt;li>&lt;code>Command + Shift + Enter&lt;/code> 上一行插入&lt;/li>
+&lt;li>&lt;code>Command + Shift + \&lt;/code> 跳转到匹配的括号&lt;/li>
+&lt;li>&lt;code>Command + [ &lt;/code>减少缩进&lt;/li>
+&lt;li>&lt;code>Command + ] &lt;/code>增加缩进&lt;/li>
+&lt;li>&lt;code>Home&lt;/code> 跳转至行首&lt;/li>
+&lt;li>&lt;code>End&lt;/code> 跳转到行尾&lt;/li>
+&lt;li>&lt;code>Command + Up&lt;/code> 跳转至文件开头&lt;/li>
+&lt;li>&lt;code>Command + Down&lt;/code> 跳转至文件结尾&lt;/li>
+&lt;li>&lt;code>Ctrl + PgUp&lt;/code> 按行向上滚动&lt;/li>
+&lt;li>&lt;code>Ctrl + PgDown&lt;/code> 按行向下滚动&lt;/li>
+&lt;li>&lt;code>Command + PgDown&lt;/code> 按屏向下滚动&lt;/li>
+&lt;li>&lt;code>Command + PgUp &lt;/code>按屏向上滚动&lt;/li>
+&lt;li>&lt;code>Command + Shift + [&lt;/code> 折叠代码块&lt;/li>
+&lt;li>&lt;code>Command + Shift + ]&lt;/code> 展开代码块&lt;/li>
+&lt;li>&lt;code>Command + K Command + [&lt;/code> 折叠全部子代码块&lt;/li>
+&lt;li>&lt;code>Command + K Command + ]&lt;/code> 展开全部子代码块&lt;/li>
+&lt;li>&lt;code>Command + K Command + 0&lt;/code> 折叠全部代码块&lt;/li>
+&lt;li>&lt;code>Command + K Command + J&lt;/code> 展开全部代码块&lt;/li>
+&lt;li>&lt;code>Command + K Command + C&lt;/code> 添加行注释&lt;/li>
+&lt;li>&lt;code>Command + K Command + U&lt;/code> 移除行注释&lt;/li>
+&lt;li>&lt;code>Command + /&lt;/code> 添加、移除行注释&lt;/li>
+&lt;li>&lt;code>Option + Shift + A&lt;/code> 添加、移除块注释&lt;/li>
+&lt;li>&lt;code>Option + Z&lt;/code> 自动换行、取消自动换行&lt;/li>
+&lt;/ul>
+&lt;h3 id="多光标与选择">多光标与选择
+&lt;a class="header-anchor" href="#%e5%a4%9a%e5%85%89%e6%a0%87%e4%b8%8e%e9%80%89%e6%8b%a9">&lt;/a>
+&lt;/h3>&lt;ul>
+&lt;li>&lt;code>Option + 点击&lt;/code> 插入多个光标&lt;/li>
+&lt;li>&lt;code>Command + Option + Up&lt;/code> 向上插入光标&lt;/li>
+&lt;li>&lt;code>Command + Option + Down&lt;/code> 向下插入光标&lt;/li>
+&lt;li>&lt;code>Command + U&lt;/code> 撤销上一个光标操作&lt;/li>
+&lt;li>&lt;code>Option + Shift + I&lt;/code> 在所选行的行尾插入光标&lt;/li>
+&lt;li>&lt;code>Command + I&lt;/code> 选中当前行&lt;/li>
+&lt;li>&lt;code>Command + Shift + L&lt;/code> 选中所有与当前选中内容相同部分&lt;/li>
+&lt;li>&lt;code>Command + F2&lt;/code> 选中所有与当前选中单词相同的单词&lt;/li>
+&lt;li>&lt;code>Command + Ctrl + Shift + Left&lt;/code> 折叠选中&lt;/li>
+&lt;li>&lt;code>Command + Ctrl + Shift + Right&lt;/code> 展开选中&lt;/li>
+&lt;li>&lt;code>Alt + Shift + 拖动鼠标&lt;/code> 选中代码块&lt;/li>
+&lt;li>&lt;code>Command + Shift + Option + Up&lt;/code> 列选择 向上&lt;/li>
+&lt;li>&lt;code>Command + Shift + Option + Down&lt;/code> 列选择 向下&lt;/li>
+&lt;li>&lt;code>Command + Shift + Option + Left&lt;/code> 列选择 向左&lt;/li>
+&lt;li>&lt;code>Command + Shift + Option + Right&lt;/code> 列选择 向右&lt;/li>
+&lt;li>&lt;code>Command + Shift + Option + PgUp&lt;/code> 列选择 向上翻页&lt;/li>
+&lt;li>&lt;code>Command + Shift + Option + PgDown&lt;/code> 列选择 向下翻页&lt;/li>
+&lt;/ul>
+&lt;h3 id="查找替换">查找替换
+&lt;a class="header-anchor" href="#%e6%9f%a5%e6%89%be%e6%9b%bf%e6%8d%a2">&lt;/a>
+&lt;/h3>&lt;ul>
+&lt;li>&lt;code>Command + F&lt;/code> 查找&lt;/li>
+&lt;li>&lt;code>Command + Option + F&lt;/code> 替换&lt;/li>
+&lt;li>&lt;code>Command + G&lt;/code> 查找下一个&lt;/li>
+&lt;li>&lt;code>Command + Shift + G&lt;/code> 查找上一个&lt;/li>
+&lt;li>&lt;code>Option + Enter&lt;/code> 选中所有匹配项&lt;/li>
+&lt;li>&lt;code>Command + D&lt;/code> 向下选中相同内容&lt;/li>
+&lt;li>&lt;code>Command + K Command + D&lt;/code> 移除前一个向下选中相同内容&lt;/li>
+&lt;/ul>
+&lt;h3 id="进阶">进阶
+&lt;a class="header-anchor" href="#%e8%bf%9b%e9%98%b6">&lt;/a>
+&lt;/h3>&lt;ul>
+&lt;li>&lt;code>Ctrl + Space&lt;/code> 打开建议&lt;/li>
+&lt;li>&lt;code>Command + Shift + Space&lt;/code> 参数提示&lt;/li>
+&lt;li>&lt;code>Tab&lt;/code> Emmet插件缩写补全&lt;/li>
+&lt;li>&lt;code>Option + Shift + F&lt;/code> 格式化&lt;/li>
+&lt;li>&lt;code>Command + K Command + F &lt;/code>格式化选中内容&lt;/li>
+&lt;li>&lt;code>F12&lt;/code> 跳转到声明位置&lt;/li>
+&lt;li>&lt;code>Option + F12&lt;/code> 查看具体声明内容&lt;/li>
+&lt;li>&lt;code>Command + K F12&lt;/code> 分屏查看具体声明内容&lt;/li>
+&lt;li>&lt;code>Command + .&lt;/code> 快速修复&lt;/li>
+&lt;li>&lt;code>Shift + F12&lt;/code> 显示引用&lt;/li>
+&lt;li>&lt;code>F2&lt;/code> 重命名符号&lt;/li>
+&lt;li>&lt;code>Command + Shift + .&lt;/code> 替换为上一个值&lt;/li>
+&lt;li>&lt;code>Command + Shift + ,&lt;/code> 替换为下一个值&lt;/li>
+&lt;li>&lt;code>Command + K Command + X&lt;/code> 删除行尾多余空格&lt;/li>
+&lt;li>&lt;code>Command + K M&lt;/code> 更改文件语言&lt;/li>
+&lt;/ul>
+&lt;h3 id="导航">导航
+&lt;a class="header-anchor" href="#%e5%af%bc%e8%88%aa">&lt;/a>
+&lt;/h3>&lt;ul>
+&lt;li>&lt;code>Command + T&lt;/code> 显示所有符号&lt;/li>
+&lt;li>&lt;code>Ctrl + G&lt;/code> 跳转至某行&lt;/li>
+&lt;li>&lt;code>Command + P&lt;/code> 跳转到某个文件&lt;/li>
+&lt;li>&lt;code>Command + Shift + O&lt;/code> 跳转到某个符号&lt;/li>
+&lt;li>&lt;code>Command + Shift + M&lt;/code> 打开问题面板&lt;/li>
+&lt;li>&lt;code>F8&lt;/code>下一个错误或警告位置&lt;/li>
+&lt;li>&lt;code>Shift + F8&lt;/code> 上一个错误或警告位置&lt;/li>
+&lt;li>&lt;code>Ctrl + Shift + Tab&lt;/code> 编辑器历史记录&lt;/li>
+&lt;li>&lt;code>Ctrl + -&lt;/code>后退&lt;/li>
+&lt;li>&lt;code>Ctrl + Shift + -&lt;/code> 前进&lt;/li>
+&lt;li>&lt;code>Ctrl + Shift + M Tab&lt;/code> 切换焦点&lt;/li>
+&lt;/ul>
+&lt;h3 id="编辑器管理">编辑器管理
+&lt;a class="header-anchor" href="#%e7%bc%96%e8%be%91%e5%99%a8%e7%ae%a1%e7%90%86">&lt;/a>
+&lt;/h3>&lt;ul>
+&lt;li>&lt;code>Command + W&lt;/code> 关闭编辑器&lt;/li>
+&lt;li>&lt;code>Command + K F&lt;/code> 关闭文件夹&lt;/li>
+&lt;li>&lt;code>Command + \&lt;/code> 编辑器分屏&lt;/li>
+&lt;li>&lt;code>Command + 1&lt;/code> 切换到第一分组&lt;/li>
+&lt;li>&lt;code>Command + 2&lt;/code> 切换到第二分组&lt;/li>
+&lt;li>&lt;code>Command + 3&lt;/code> 切换到第三分组&lt;/li>
+&lt;li>&lt;code>Command + K Command + Left&lt;/code> 切换到上一分组&lt;/li>
+&lt;li>&lt;code>Command + K Command + Right&lt;/code> 切换到下一分组&lt;/li>
+&lt;li>&lt;code>Command + K Command + Shift + Left&lt;/code> 左移编辑器&lt;/li>
+&lt;li>&lt;code>Command + K Command + Shift + Right&lt;/code> 右移编辑器&lt;/li>
+&lt;li>&lt;code>Command + K Left&lt;/code> 激活左侧编辑组&lt;/li>
+&lt;li>&lt;code>Command + K Right&lt;/code> 激活右侧编辑组&lt;/li>
+&lt;/ul>
+&lt;h3 id="文件管理">文件管理
+&lt;a class="header-anchor" href="#%e6%96%87%e4%bb%b6%e7%ae%a1%e7%90%86">&lt;/a>
+&lt;/h3>&lt;ul>
+&lt;li>&lt;code>Command + N&lt;/code> 新建文件&lt;/li>
+&lt;li>&lt;code>Command + O&lt;/code> 打开文件&lt;/li>
+&lt;li>&lt;code>Command + S&lt;/code> 保存文件&lt;/li>
+&lt;li>&lt;code>Command + Shift + S&lt;/code> 另存为&lt;/li>
+&lt;li>&lt;code>Command + Option + S&lt;/code> 全部保存&lt;/li>
+&lt;li>&lt;code>Command + W&lt;/code> 关闭&lt;/li>
+&lt;li>&lt;code>Command + K Command + W&lt;/code> 全部关闭&lt;/li>
+&lt;li>&lt;code>Command + Shift + T&lt;/code> 重新打开被关闭的编辑器&lt;/li>
+&lt;li>&lt;code>Command + K Enter&lt;/code> 保持打开&lt;/li>
+&lt;li>&lt;code>Ctrl + Tab&lt;/code> 打开下一个&lt;/li>
+&lt;li>&lt;code>Ctrl + Shift + Tab&lt;/code> 打开上一个&lt;/li>
+&lt;li>&lt;code>Command + K P&lt;/code> 复制当前文件路径&lt;/li>
+&lt;li>&lt;code>Command + K R&lt;/code> 在资源管理器中查看当前文件&lt;/li>
+&lt;li>&lt;code>Command + K O&lt;/code> 新窗口打开当前文件&lt;/li>
+&lt;/ul>
+&lt;h3 id="显示">显示
+&lt;a class="header-anchor" href="#%e6%98%be%e7%a4%ba">&lt;/a>
+&lt;/h3>&lt;ul>
+&lt;li>&lt;code>Command + Ctrl + F&lt;/code> 全屏、退出全屏&lt;/li>
+&lt;li>&lt;code>Command + Option + 1&lt;/code> 切换编辑器分屏方式（横、竖）&lt;/li>
+&lt;li>&lt;code>Command + +&lt;/code> 放大&lt;/li>
+&lt;li>&lt;code>Command + -&lt;/code> 缩小&lt;/li>
+&lt;li>&lt;code>Command + B&lt;/code> 显示、隐藏侧边栏&lt;/li>
+&lt;li>&lt;code>Command + Shift + E&lt;/code> 显示资源管理器 或 切换焦点&lt;/li>
+&lt;li>&lt;code>Command + Shift + F&lt;/code> 显示搜索框&lt;/li>
+&lt;li>&lt;code>Ctrl + Shift + G&lt;/code> 显示Git面板&lt;/li>
+&lt;li>&lt;code>Command + Shift + D&lt;/code> 显示调试面板&lt;/li>
+&lt;li>&lt;code>Command + Shift + X&lt;/code> 显示插件面板&lt;/li>
+&lt;li>&lt;code>Command + Shift + H&lt;/code> 全局搜索替换&lt;/li>
+&lt;li>&lt;code>Command + Shift + J&lt;/code> 显示、隐藏高级搜索&lt;/li>
+&lt;li>&lt;code>Command + Shift + C&lt;/code> 打开新终端&lt;/li>
+&lt;li>&lt;code>Command + Shift + U&lt;/code> 显示输出面板&lt;/li>
+&lt;li>&lt;code>Command + Shift + V&lt;/code> Markdown预览窗口&lt;/li>
+&lt;li>&lt;code>Command + K V&lt;/code> 分屏显示 Markdown预览窗口&lt;/li>
+&lt;/ul>
+&lt;h3 id="调试">调试
+&lt;a class="header-anchor" href="#%e8%b0%83%e8%af%95">&lt;/a>
+&lt;/h3>&lt;ul>
+&lt;li>&lt;code>F9&lt;/code> 设置 或 取消断点&lt;/li>
+&lt;li>&lt;code>F5&lt;/code> 开始 或 继续&lt;/li>
+&lt;li>&lt;code>F11&lt;/code> 进入&lt;/li>
+&lt;li>&lt;code>Shift + F11&lt;/code> 跳出&lt;/li>
+&lt;li>&lt;code>F10&lt;/code> 跳过&lt;/li>
+&lt;li>&lt;code>Command + K Command + I&lt;/code> 显示悬停信息&lt;/li>
+&lt;/ul>
+&lt;h3 id="集成终端">集成终端
+&lt;a class="header-anchor" href="#%e9%9b%86%e6%88%90%e7%bb%88%e7%ab%af">&lt;/a>
+&lt;/h3>&lt;ul>
+&lt;li>Ctrl +显示终端 Ctrl + Shift +新建终端&lt;/li>
+&lt;li>&lt;code>Command + Up&lt;/code> 向上滚动&lt;/li>
+&lt;li>&lt;code>Command + Down&lt;/code> 向下滚动&lt;/li>
+&lt;li>&lt;code>PgUp&lt;/code> 向上翻页&lt;/li>
+&lt;li>&lt;code>PgDown&lt;/code> 向下翻页&lt;/li>
+&lt;li>&lt;code>Command + Home&lt;/code> 滚动到顶部&lt;/li>
+&lt;li>&lt;code>Command + End&lt;/code> 滚动到底部&lt;/li>
+&lt;/ul>
+&lt;h2 id="windows--linux">windows &amp;amp; linux
+&lt;a class="header-anchor" href="#windows--linux">&lt;/a>
+&lt;/h2>&lt;p>注释:&lt;/p></description></item><item><title>makefile</title><link>https://daemon365.dev/post/cloud/makefile/</link><pubDate>Wed, 15 Dec 2021 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/makefile/</guid><description>&lt;h2 id="make">make
+&lt;a class="header-anchor" href="#make">&lt;/a>
+&lt;/h2>&lt;p>make是一个构建自动化工具，会在当前目录下寻找Makefile或makefile文件。如果存在相应的文件，它就会依据其中定义好的规则完成构建任务。&lt;/p></description></item><item><title>Go工程化 - 依赖注入</title><link>https://daemon365.dev/post/kratos/go_engineering___dependency_injection/</link><pubDate>Thu, 30 Sep 2021 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/kratos/go_engineering___dependency_injection/</guid><description>&lt;p>我们在微服务框架
+&lt;a href="https://github.com/go-kratos/kratos" title="kratos v2" rel="noopener external nofollow noreferrer" target="_blank" class=" exturl">
+ kratos v2
+ 
+ &lt;i class="fa fa-external-link-alt">&lt;/i>
+ 
+&lt;/a>的默认项目模板中
+&lt;a href="https://github.com/go-kratos/kratos-layout" title="kratos-layout" rel="noopener external nofollow noreferrer" target="_blank" class=" exturl">
+ kratos-layout
+ 
+ &lt;i class="fa fa-external-link-alt">&lt;/i>
+ 
+&lt;/a>使用了
+&lt;a href="https://github.com/google/wire" title="google/wire" rel="noopener external nofollow noreferrer" target="_blank" class=" exturl">
+ google/wire
+ 
+ &lt;i class="fa fa-external-link-alt">&lt;/i>
+ 
+&lt;/a>进行依赖注入，也建议开发者在维护项目时使用该工具。&lt;/p>
+&lt;p>wire 乍看起来比较违反直觉，导致很多同学不理解为什么要用或不清楚如何用（也包括曾经的我），本文来帮助大家理解 wire 的使用。&lt;/p></description></item><item><title>kratos v2版本命令行工具使用</title><link>https://daemon365.dev/post/kratos/kratos_v2_command_line_tool_usage/</link><pubDate>Sun, 12 Sep 2021 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/kratos/kratos_v2_command_line_tool_usage/</guid><description>&lt;h2 id="使用">使用
+&lt;a class="header-anchor" href="#%e4%bd%bf%e7%94%a8">&lt;/a>
+&lt;/h2>&lt;h3 id="下载">下载
+&lt;a class="header-anchor" href="#%e4%b8%8b%e8%bd%bd">&lt;/a>
+&lt;/h3>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>go install github.com/go-kratos/kratos/cmd/kratos/v2@latest
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>查看是否安装成功&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>kratos -v
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>kratos version v2.1.3
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="升级">升级
+&lt;a class="header-anchor" href="#%e5%8d%87%e7%ba%a7">&lt;/a>
+&lt;/h3>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>kratos upgrade
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="查看帮助">查看帮助
+&lt;a class="header-anchor" href="#%e6%9f%a5%e7%9c%8b%e5%b8%ae%e5%8a%a9">&lt;/a>
+&lt;/h2>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2;">&lt;code class="language-go" data-lang="go">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">kratos&lt;/span> &lt;span style="color:#f92672">--&lt;/span>&lt;span style="color:#a6e22e">help&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2;">&lt;code class="language-gdscript3" data-lang="gdscript3">&lt;span style="display:flex;">&lt;span>Kratos: An elegant toolkit &lt;span style="color:#66d9ef">for&lt;/span> Go microservices&lt;span style="color:#f92672">.&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Usage:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> kratos [command]
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Available Commands:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> changelog Get a kratos change log
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> completion generate the autocompletion script &lt;span style="color:#66d9ef">for&lt;/span> the specified shell
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> help Help about any command
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> new Create a service template
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> proto Generate the proto files
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> run Run project
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> upgrade Upgrade the kratos tools
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Flags:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">-&lt;/span>h, &lt;span style="color:#f92672">--&lt;/span>help help &lt;span style="color:#66d9ef">for&lt;/span> kratos
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">-&lt;/span>v, &lt;span style="color:#f92672">--&lt;/span>version version &lt;span style="color:#66d9ef">for&lt;/span> kratos
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Use &lt;span style="color:#e6db74">&amp;#34;kratos [command] --help&amp;#34;&lt;/span> &lt;span style="color:#66d9ef">for&lt;/span> more information about a command&lt;span style="color:#f92672">.&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="new命令">new命令
+&lt;a class="header-anchor" href="#new%e5%91%bd%e4%bb%a4">&lt;/a>
+&lt;/h2>&lt;p>kratos new 命令为创建一个kratos项目&lt;/p></description></item><item><title>从kratos分析breaker熔断器源码实现</title><link>https://daemon365.dev/post/kratos/analyzing_the_breaker_fuse_source_code_implementation_from_kratos/</link><pubDate>Sat, 04 Sep 2021 17:55:01 +0800</pubDate><guid>https://daemon365.dev/post/kratos/analyzing_the_breaker_fuse_source_code_implementation_from_kratos/</guid><description>&lt;h2 id="为什么要用熔断">为什么要用熔断
+&lt;a class="header-anchor" href="#%e4%b8%ba%e4%bb%80%e4%b9%88%e8%a6%81%e7%94%a8%e7%86%94%e6%96%ad">&lt;/a>
+&lt;/h2>&lt;p>前面我们讲过限流保证服务的可用性，不被突如其来的流量打爆。但是两种情况是限流解决不了的。&lt;/p>
+&lt;ol>
+&lt;li>如果我们服务只能处理1000QPS，但是有10wQPS打过来，服务还是会炸。因为拒绝请求也需要成本。&lt;/li>
+&lt;li>服务但是io型的，会把mysql，redis，mq等中间件打挂。&lt;/li>
+&lt;/ol>
+&lt;p>所以，我们遵循一个思路，可不可以client端在失败的多的时候就不调用了，直接返回错误呢？&lt;/p></description></item><item><title>从kratos分析BBR限流源码实现</title><link>https://daemon365.dev/post/kratos/analyzing_the_implementation_of_bbr_current_limiting_source_code_from_kratos/</link><pubDate>Sat, 04 Sep 2021 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/kratos/analyzing_the_implementation_of_bbr_current_limiting_source_code_from_kratos/</guid><description>&lt;h2 id="什么是自适应限流">什么是自适应限流
+&lt;a class="header-anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e8%87%aa%e9%80%82%e5%ba%94%e9%99%90%e6%b5%81">&lt;/a>
+&lt;/h2>&lt;p>自适应限流从整体维度对应用入口流量进行控制，结合应用的 Load、CPU 使用率、总体平均 RT、入口 QPS 和并发线程数等几个维度的监控指标，通过自适应的流控策略，让系统的入口流量和系统的负载达到一个平衡，让系统尽可能跑在最大吞吐量的同时保证系统整体的稳定性。&lt;/p></description></item><item><title>Kratos漫游指南 1 - 概览</title><link>https://daemon365.dev/post/kratos/the_hitchhikers_guide_to_kratos_1___overview/</link><pubDate>Thu, 02 Sep 2021 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/kratos/the_hitchhikers_guide_to_kratos_1___overview/</guid><description>&lt;p>您好，地球人，欢迎来到Kratos漫游指南。&lt;/p>
+&lt;p>对于刚开始研究Kratos框架的开发者来说，目前的文档有些零散，这与我们的模块化设计有一些关系，不过Don&amp;rsquo;t panic，从这篇文章开始，我将试图打破这一现状，漫游指南系列将循序渐进地介绍Kratos框架，理顺框架的使用思路，使您更快上手Kratos。&lt;/p></description></item><item><title>基于 OpenTelemetry 的链路追踪</title><link>https://daemon365.dev/post/kratos/link_tracing_based_on_opentelemetry/</link><pubDate>Mon, 23 Aug 2021 18:11:50 +0800</pubDate><guid>https://daemon365.dev/post/kratos/link_tracing_based_on_opentelemetry/</guid><description>&lt;h2 id="链路追踪的前世今生">链路追踪的前世今生
+&lt;a class="header-anchor" href="#%e9%93%be%e8%b7%af%e8%bf%bd%e8%b8%aa%e7%9a%84%e5%89%8d%e4%b8%96%e4%bb%8a%e7%94%9f">&lt;/a>
+&lt;/h2>&lt;blockquote>
+&lt;p>分布式跟踪（也称为分布式请求跟踪）是一种用于分析和监控应用程序的方法，尤其是使用微服务架构构建的应用程序。分布式跟踪有助于精确定位故障发生的位置以及导致性能差的原因。&lt;/p></description></item><item><title>通过 layout 探索 kratos 运行原理</title><link>https://daemon365.dev/post/kratos/explore_the_working_principle_of_kratos_through_layout/</link><pubDate>Fri, 20 Aug 2021 18:11:50 +0800</pubDate><guid>https://daemon365.dev/post/kratos/explore_the_working_principle_of_kratos_through_layout/</guid><description>&lt;h2 id="创建项目">创建项目
+&lt;a class="header-anchor" href="#%e5%88%9b%e5%bb%ba%e9%a1%b9%e7%9b%ae">&lt;/a>
+&lt;/h2>&lt;p>首先需要安装好对应的依赖环境，以及工具：&lt;/p>
+&lt;ol>
+&lt;li>go
+&lt;ul>
+&lt;li>
+&lt;a href="https://studygolang.com/dl" title="下载" rel="noopener external nofollow noreferrer" target="_blank" class=" exturl">
+ 下载
+ 
+ &lt;i class="fa fa-external-link-alt">&lt;/i>
+ 
+&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>protoc
+&lt;ul>
+&lt;li>&lt;code>go install google.golang.org/protobuf/cmd/protoc-gen-go@latest&lt;/code>&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>protoc-gen-go
+&lt;ul>
+&lt;li>&lt;code>go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest&lt;/code>&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ol>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># 创建项目模板&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>kratos new helloworld
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>cd helloworld
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># 拉取项目依赖&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>go mod download
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># 生成proto模板&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>kratos proto add api/helloworld/helloworld.proto
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># 生成proto源码&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>kratos proto client api/helloworld/helloworld.proto
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># 生成server模板&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>kratos proto server api/helloworld/helloworld.proto -t internal/service
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>执行命令后,会在当前目录下生成一个 service 工程,工程骨架如下,具体的工程骨架说明可以访问 
+&lt;a href="https://go-kratos.dev/docs/intro/layout" title="layout" rel="noopener external nofollow noreferrer" target="_blank" class=" exturl">
+ layout
+ 
+ &lt;i class="fa fa-external-link-alt">&lt;/i>
+ 
+&lt;/a>&lt;/p></description></item><item><title>Prometheus</title><link>https://daemon365.dev/post/cloud/prometheus/</link><pubDate>Fri, 20 Aug 2021 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/prometheus/</guid><description>&lt;h2 id="prometheus简介">Prometheus简介
+&lt;a class="header-anchor" href="#prometheus%e7%ae%80%e4%bb%8b">&lt;/a>
+&lt;/h2>&lt;h3 id="什么是-prometheus">什么是 Prometheus
+&lt;a class="header-anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af-prometheus">&lt;/a>
+&lt;/h3>&lt;p>
+&lt;a href="https://github.com/prometheus" title="Prometheus" rel="noopener external nofollow noreferrer" target="_blank" class=" exturl">
+ Prometheus
+ 
+ &lt;i class="fa fa-external-link-alt">&lt;/i>
+ 
+&lt;/a> 是在 
+&lt;a href="http://soundcloud.com/" title="Soundcloud" rel="noopener external nofollow noreferrer" target="_blank" class=" exturl">
+ Soundcloud
+ 
+ &lt;i class="fa fa-external-link-alt">&lt;/i>
+ 
+&lt;/a> 以开源软件的形式进行研发的系统监控和告警工具包，自此以后，许多公司和组织都采用了 Prometheus 作为监控告警工具。Prometheus 的开发者和用户社区非常活跃，它现在是一个独立的开源项目，可以独立于任何公司进行维护。Prometheus 于 2016 年 5 月加入 
+&lt;a href="https://cncf.io/" title="CNCF" rel="noopener external nofollow noreferrer" target="_blank" class=" exturl">
+ CNCF
+ 
+ &lt;i class="fa fa-external-link-alt">&lt;/i>
+ 
+&lt;/a> 基金会，成为继 
+&lt;a href="http://kubernetes.io/" title="Kubernetes" rel="noopener external nofollow noreferrer" target="_blank" class=" exturl">
+ Kubernetes
+ 
+ &lt;i class="fa fa-external-link-alt">&lt;/i>
+ 
+&lt;/a> 之后的第二个 CNCF 托管项目。&lt;/p></description></item><item><title>kratos 日志库的使用姿势</title><link>https://daemon365.dev/post/kratos/how_to_use_the_log_library/</link><pubDate>Thu, 19 Aug 2021 18:11:50 +0800</pubDate><guid>https://daemon365.dev/post/kratos/how_to_use_the_log_library/</guid><description>&lt;h2 id="什么是日志">什么是日志
+&lt;a class="header-anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e6%97%a5%e5%bf%97">&lt;/a>
+&lt;/h2>&lt;blockquote>
+&lt;p>所谓日志（Log）是指系统所指定对象的某些操作和其操作结果按时间有序的集合。log文件就是日志文件，log文件记录了系统和系统的用户之间交互的信息，是自动捕获人与系统终端之间交互的类型、内容或时间的数据收集方法。&lt;/p></description></item><item><title>Linux基础系统优化</title><link>https://daemon365.dev/post/cloud/linux_basic_system_optimization/</link><pubDate>Thu, 19 Aug 2021 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/linux_basic_system_optimization/</guid><description>&lt;h2 id="linux基础系统优化">Linux基础系统优化
+&lt;a class="header-anchor" href="#linux%e5%9f%ba%e7%a1%80%e7%b3%bb%e7%bb%9f%e4%bc%98%e5%8c%96">&lt;/a>
+&lt;/h2>&lt;p>Linux的网络功能相当强悍，一时之间我们无法了解所有的网络命令，在配置服务器基础环境时，先了解下网络参数设定命令。&lt;/p>
+&lt;ul>
+&lt;li>ifconfig　　查询、设置网卡和ip等参数&lt;/li>
+&lt;li>ifup,ifdown 脚本命令，更简单的方式启动关闭网络&lt;/li>
+&lt;li>ip　　符合指令，直接修改上述功能&lt;/li>
+&lt;/ul>
+&lt;p>在我们刚装好linux的时候，需要用xshell进行远程连接，那就得获取ip地址，有时候网卡默认是没启动的，Linux也就拿不到ip地址，因此我们得手动启动网卡&lt;/p></description></item><item><title>Linux核心知识</title><link>https://daemon365.dev/post/cloud/linux_core_knowledge/</link><pubDate>Sun, 15 Aug 2021 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/linux_core_knowledge/</guid><description>&lt;h2 id="电脑辅助人脑的工具">电脑：辅助人脑的工具
+&lt;a class="header-anchor" href="#%e7%94%b5%e8%84%91%e8%be%85%e5%8a%a9%e4%ba%ba%e8%84%91%e7%9a%84%e5%b7%a5%e5%85%b7">&lt;/a>
+&lt;/h2>&lt;p>现在的人们几乎无时无刻都会碰电脑！不管是桌上型电脑(桌机)、笔记型电脑(笔电)、平板电脑、智慧型手机等等，这些东西都算是电脑。虽然接触的这么多，但是，你了解电脑里面的元件有什么吗？以桌机来说，电脑的机壳里面含有什么元件？不同的电脑可以应用在哪些工作？你生活周遭有哪些电器用品内部是含有电脑相关元件的？底下我们就来谈一谈这些东西呢！&lt;/p></description></item><item><title>Linux常用命令</title><link>https://daemon365.dev/post/cloud/common_linux_commands/</link><pubDate>Wed, 11 Aug 2021 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/common_linux_commands/</guid><description>&lt;h2 id="常用指令">常用指令
+&lt;a class="header-anchor" href="#%e5%b8%b8%e7%94%a8%e6%8c%87%e4%bb%a4">&lt;/a>
+&lt;/h2>&lt;ol>
+&lt;li>
+&lt;p>&lt;code>ls&lt;/code>	显示文件或目录&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>-l&lt;/code> 	列出文件详细信息l(list)&lt;/li>
+&lt;li>&lt;code>-a&lt;/code> 列出当前目录下所有文件及目录，包括隐藏的a(all)&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;code>mkdir&lt;/code> 创建目录&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>-p&lt;/code> 创建目录，若无父目录，则创建p(parent)&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;code>cd&lt;/code> 切换目录&lt;/p></description></item><item><title>微服务架构及raft协议</title><link>https://daemon365.dev/post/microservice/microservice_architecture_and_raft_protocol/</link><pubDate>Sun, 30 May 2021 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/microservice/microservice_architecture_and_raft_protocol/</guid><description>&lt;h2 id="微服务架构全景图">微服务架构全景图
+&lt;a class="header-anchor" href="#%e5%be%ae%e6%9c%8d%e5%8a%a1%e6%9e%b6%e6%9e%84%e5%85%a8%e6%99%af%e5%9b%be">&lt;/a>
+&lt;/h2>&lt;p>&lt;img src="https://daemon365.dev/imgs/img-lazy-loading.gif" data-src="https://daemon365.dev/images/7cea65ba-1cb6-4a94-b327-65110aaaeb4b.png" alt="" />&lt;/p>
+&lt;p>&lt;img src="https://daemon365.dev/imgs/img-lazy-loading.gif" data-src="https://daemon365.dev/images/936e7894-ae71-41b9-b2d4-032af51c0540.png" alt="" />&lt;/p>
+&lt;p>&lt;img src="https://daemon365.dev/imgs/img-lazy-loading.gif" data-src="https://daemon365.dev/images/076f5cc6-d5ac-496e-a4cd-ae74e3756d61.png" alt="" />&lt;/p>
+&lt;h2 id="服务注册和发现">服务注册和发现
+&lt;a class="header-anchor" href="#%e6%9c%8d%e5%8a%a1%e6%b3%a8%e5%86%8c%e5%92%8c%e5%8f%91%e7%8e%b0">&lt;/a>
+&lt;/h2>&lt;ol>
+&lt;li>
+&lt;p>Client side implement&lt;/p>
+&lt;ul>
+&lt;li>调用需要维护所有调用服务的地址&lt;/li>
+&lt;li>有一定的技术难度，需要rpc框架支持&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>Server side implement&lt;/p>
+&lt;ul>
+&lt;li>架构简单&lt;/li>
+&lt;li>有单点故障&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ol>
+&lt;p>&lt;img src="https://daemon365.dev/imgs/img-lazy-loading.gif" data-src="https://daemon365.dev/images/6ce70812-c612-49e4-b60a-50c267b228e1.png" alt="" />&lt;/p>
+&lt;h2 id="注册中心">注册中心
+&lt;a class="header-anchor" href="#%e6%b3%a8%e5%86%8c%e4%b8%ad%e5%bf%83">&lt;/a>
+&lt;/h2>&lt;ol>
+&lt;li>
+&lt;p>etcd注册中心&lt;/p></description></item><item><title>golang map实现原理</title><link>https://daemon365.dev/post/go/golang_map_implementation_principle/</link><pubDate>Sat, 22 May 2021 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/go/golang_map_implementation_principle/</guid><description>&lt;p>这篇文章主要讲 map 的赋值、删除、查询、扩容的具体执行过程，仍然是从底层的角度展开。结合源码，看完本文一定会彻底明白 map 底层原理。&lt;/p>
+&lt;p>我要说明的是，这里对 map 的基本用法涉及比较少，我相信可以通过阅读其他入门书籍了解。本文的内容比较深入，但是由于我画了各种图，我相信很容易看懂。&lt;/p></description></item><item><title>分布式ID生成器及redis，etcd分布式锁</title><link>https://daemon365.dev/post/microservice/distributed_id_generator_and_redis__etcd_distributed_lock/</link><pubDate>Fri, 30 Apr 2021 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/microservice/distributed_id_generator_and_redis__etcd_distributed_lock/</guid><description>&lt;h2 id="分布式id生成器">分布式id生成器
+&lt;a class="header-anchor" href="#%e5%88%86%e5%b8%83%e5%bc%8fid%e7%94%9f%e6%88%90%e5%99%a8">&lt;/a>
+&lt;/h2>&lt;p>有时我们需要能够生成类似MySQL自增ID这样不断增大，同时又不会重复的id。以支持业务中的高并发场景。比较典型的，电商促销时，短时间内会有大量的订单涌入到系统，比如每秒10w+。明星出轨时，会有大量热情的粉丝发微博以表心意，同样会在短时间内产生大量的消息。&lt;/p></description></item><item><title>zap高性能日志</title><link>https://daemon365.dev/post/go/zap_high_performance_log/</link><pubDate>Tue, 23 Mar 2021 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/go/zap_high_performance_log/</guid><description>&lt;h2 id="摘要">摘要
+&lt;a class="header-anchor" href="#%e6%91%98%e8%a6%81">&lt;/a>
+&lt;/h2>&lt;p>日志在整个工程实践中的重要性不言而喻，在选择日志组件的时候也有多方面的考量。详细、正确和及时的反馈是必不可少的，但是整个性能表现是否也是必要考虑的点呢？在长期的实践中发现有的日志组件对于计算资源的消耗十分巨大，这将导致整个服务成本的居高不下。此文从设计原理深度分析了 zap 的设计与实现上的权衡，也希望整个的选择、考量的过程能给其他的技术团队在开发高性能的 Go 组件时带来一定的借鉴意义。&lt;/p></description></item><item><title>golang channel原理</title><link>https://daemon365.dev/post/go/golang_channel_principle/</link><pubDate>Sun, 21 Feb 2021 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/go/golang_channel_principle/</guid><description>&lt;h2 id="channel介绍">channel介绍
+&lt;a class="header-anchor" href="#channel%e4%bb%8b%e7%bb%8d">&lt;/a>
+&lt;/h2>&lt;p>channel一个类型管道，通过它可以在goroutine之间发送和接收消息。它是Golang在语言层面提供的goroutine间的通信方式。&lt;/p></description></item><item><title>golang GC 垃圾回收机制</title><link>https://daemon365.dev/post/go/golang_gc_garbage_collection_mechanism/</link><pubDate>Sat, 20 Feb 2021 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/go/golang_gc_garbage_collection_mechanism/</guid><description>&lt;p>垃圾回收(Garbage Collection，简称GC)是编程语言中提供的自动的内存管理机制，自动释放不需要的对象，让出存储器资源，无需程序员手动执行。&lt;/p></description></item><item><title>viper配置管理</title><link>https://daemon365.dev/post/go/viper_configuration_management/</link><pubDate>Sat, 23 Jan 2021 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/go/viper_configuration_management/</guid><description>&lt;h2 id="安装">安装
+&lt;a class="header-anchor" href="#%e5%ae%89%e8%a3%85">&lt;/a>
+&lt;/h2>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>go get github.com/spf13/viper
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="viper支持的功能">viper支持的功能
+&lt;a class="header-anchor" href="#viper%e6%94%af%e6%8c%81%e7%9a%84%e5%8a%9f%e8%83%bd">&lt;/a>
+&lt;/h2>&lt;p>1、可以设置默认值
+2、可以加载多种格式的配置文件，如JSON，TOML，YAML，HCL和Java属性配置文件
+3、应用程序运行过程中，保持监听和重新读取配置文件
+4、可以从环境变量读取配置
+5、可以从远程配置系统读取配置
+6、可以读取命令行标志作为配置
+7、可以从缓冲区中读取
+8、设置显式的值&lt;/p></description></item><item><title>docker</title><link>https://daemon365.dev/post/cloud/docker/</link><pubDate>Sun, 10 Jan 2021 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/docker/</guid><description>&lt;h2 id="docker的定义">docker的定义
+&lt;a class="header-anchor" href="#docker%e7%9a%84%e5%ae%9a%e4%b9%89">&lt;/a>
+&lt;/h2>&lt;p>Docker 最初是 dotCloud 公司创始人 Solomon Hykes 在法国期间发起的一个公司内部项目，于 2013 年 3 月以 Apache 2.0 授权协议开源，主要项目代码在 GitHub 上进行维护。
+Docker 使用 Google 公司推出的 Go 语言 进行开发实现。
+docker是linux容器的一种封装，提供简单易用的容器使用接口。它是最流行的Linux容器解决方案。
+docker的接口相当简单，用户可以方便的创建、销毁容器。
+docker将应用程序与程序的依赖，打包在一个文件里面。运行这个文件就会生成一个虚拟容器。
+程序运行在虚拟容器里，如同在真实物理机上运行一样，有了docker，就不用担心环境问题了。&lt;/p></description></item><item><title>golangHTML标签提取器soup</title><link>https://daemon365.dev/post/go/golanghtml_tag_extractor_soup/</link><pubDate>Tue, 05 Jan 2021 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/go/golanghtml_tag_extractor_soup/</guid><description>&lt;h2 id="什么是soup">什么是soup
+&lt;a class="header-anchor" href="#%e4%bb%80%e4%b9%88%e6%98%afsoup">&lt;/a>
+&lt;/h2>&lt;p>类似python中beatifulsoup，用于提取html标签提取，多用于爬虫。它可以很好的处理不规范标记并生成剖析树(parse tree)。 它提供简单又常用的导航，搜索以及修改剖析树的操作。利用它我们不在需要编写正则表达式就可以方便的实现网页信息的提取。soup是一个小型的网页提取包，其接口与beauthoulsoup非常相似。&lt;/p></description></item><item><title>thrift的介绍及其使用</title><link>https://daemon365.dev/post/microservice/introduction_and_use_of_thrift/</link><pubDate>Wed, 30 Dec 2020 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/microservice/introduction_and_use_of_thrift/</guid><description>&lt;h2 id="什么是thrift">什么是thrift
+&lt;a class="header-anchor" href="#%e4%bb%80%e4%b9%88%e6%98%afthrift">&lt;/a>
+&lt;/h2>&lt;p>Thrift是Facebook于2007年开发的跨语言的rpc服框架，提供多语言的编译功能，并提供多种服务器工作模式；用户通过Thrift的IDL（接口定义语言）来描述接口函数及数据类型，然后通过Thrift的编译环境生成各种语言类型的接口文件，用户可以根据自己的需要采用不同的语言开发客户端代码和服务器端代码。&lt;/p></description></item><item><title>grpc服务发现与负载均衡</title><link>https://daemon365.dev/post/microservice/grpc_service_discovery_and_load_balancing/</link><pubDate>Sun, 20 Dec 2020 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/microservice/grpc_service_discovery_and_load_balancing/</guid><description>&lt;h2 id="前言">前言
+&lt;a class="header-anchor" href="#%e5%89%8d%e8%a8%80">&lt;/a>
+&lt;/h2>&lt;p>   在后台服务开发中，高可用性是构建中核心且重要的一环。服务发现（Service discovery）和负载均衡（Load Balance）一直都是我关注的话题。今天来谈一下我在实际中是如何理解及落地的。&lt;/p></description></item><item><title>grpc基础</title><link>https://daemon365.dev/post/microservice/grpc_basics/</link><pubDate>Thu, 10 Dec 2020 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/microservice/grpc_basics/</guid><description>&lt;h2 id="rpc-框架原理">RPC 框架原理
+&lt;a class="header-anchor" href="#rpc-%e6%a1%86%e6%9e%b6%e5%8e%9f%e7%90%86">&lt;/a>
+&lt;/h2>&lt;p>RPC 框架的目标就是让远程服务调用更加简单、透明，RPC 框架负责屏蔽底层的传输方式（TCP 或者 UDP）、序列化方式（XML/Json/ 二进制）和通信细节。服务调用者可以像调用本地接口一样调用远程的服务提供者，而不需要关心底层通信细节和调用过程。&lt;/p></description></item><item><title>SQL查询语句执行流程</title><link>https://daemon365.dev/post/database/sql_query_statement_execution_process/</link><pubDate>Thu, 21 May 2020 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/database/sql_query_statement_execution_process/</guid><description>&lt;h2 id="msyql执行流程">msyql执行流程
+&lt;a class="header-anchor" href="#msyql%e6%89%a7%e8%a1%8c%e6%b5%81%e7%a8%8b">&lt;/a>
+&lt;/h2>&lt;p>你有个最简单的表，表里只有一个 ID 字段，在执行下面这个查询语句时：：&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2;">&lt;code class="language-sql" data-lang="sql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">select&lt;/span> &lt;span style="color:#f92672">*&lt;/span> &lt;span style="color:#66d9ef">from&lt;/span> T &lt;span style="color:#66d9ef">where&lt;/span> ID&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">10&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">；&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>我们看到的只是输入一条语句，返回一个结果，却不知道这条语句在 MySQL 内部的执行过程。&lt;/p></description></item><item><title>golang jwt</title><link>https://daemon365.dev/post/go/golang_jwt/</link><pubDate>Wed, 20 May 2020 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/go/golang_jwt/</guid><description>&lt;h2 id="什么是jwt">什么是JWT？
+&lt;a class="header-anchor" href="#%e4%bb%80%e4%b9%88%e6%98%afjwt">&lt;/a>
+&lt;/h2>&lt;p>JWT全称JSON Web Token是一种跨域认证解决方案，属于一个开放的标准，它规定了一种Token实现方式，目前多用于前后端分离项目和OAuth2.0业务场景下。&lt;/p></description></item><item><title>mysql索引</title><link>https://daemon365.dev/post/database/mysql_index/</link><pubDate>Mon, 20 Apr 2020 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/database/mysql_index/</guid><description>&lt;h2 id="什么是索引">什么是索引
+&lt;a class="header-anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e7%b4%a2%e5%bc%95">&lt;/a>
+&lt;/h2>&lt;p>一般的应用系统，都是读多写少。而且插入操作和一般的更新操作很少出现性能问题（因为有redo log锁cache缓存）。在生产环境中，我们遇到最多的，也是最容易出问题的，还是一些复杂的查询操作，因此对查询语句的优化显然是重中之重。说起加速查询，就不得不提到索引了。索引的核心思想就是&lt;strong>加速查询&lt;/strong>。&lt;/p></description></item><item><title>mysql事务</title><link>https://daemon365.dev/post/database/mysql_transaction/</link><pubDate>Fri, 03 Apr 2020 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/database/mysql_transaction/</guid><description>&lt;h2 id="事务是什么">事务是什么
+&lt;a class="header-anchor" href="#%e4%ba%8b%e5%8a%a1%e6%98%af%e4%bb%80%e4%b9%88">&lt;/a>
+&lt;/h2>&lt;p>&lt;strong>事务就是指逻辑上的一组SQL语句操作，组成这组操作的各个SQL语句，执行时要么全成功要么全失败。&lt;/strong>&lt;/p>
+&lt;p>在 MySQL 中，事务支持是在引擎层实现的。MySQL 是一个支持多引擎的系统，但并不是所有的引擎都支持事务。&lt;/p></description></item><item><title>mysql 锁</title><link>https://daemon365.dev/post/database/mysql_lock/</link><pubDate>Thu, 02 Apr 2020 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/database/mysql_lock/</guid><description>&lt;h2 id="mysql中的锁">MySQL中的锁
+&lt;a class="header-anchor" href="#mysql%e4%b8%ad%e7%9a%84%e9%94%81">&lt;/a>
+&lt;/h2>&lt;p>数据库锁设计的初衷是处理并发问题。作为多用户共享的资源，当出现并发访问的时候，数据库需要合理地控制资源的访问规则。而锁就是用来实现这些访问规则的重要数据结构。&lt;/p></description></item><item><title>msyql redo log和binlog</title><link>https://daemon365.dev/post/database/msyql_redo_log_and_binlog/</link><pubDate>Wed, 01 Apr 2020 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/database/msyql_redo_log_and_binlog/</guid><description>&lt;h2 id="更新语句执行流程">更新语句执行流程
+&lt;a class="header-anchor" href="#%e6%9b%b4%e6%96%b0%e8%af%ad%e5%8f%a5%e6%89%a7%e8%a1%8c%e6%b5%81%e7%a8%8b">&lt;/a>
+&lt;/h2>&lt;p>下面是这个表的创建语句，这个表有一个主键 ID 和一个整型字段 c：&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2;">&lt;code class="language-sql" data-lang="sql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">create&lt;/span> &lt;span style="color:#66d9ef">table&lt;/span> T(ID int &lt;span style="color:#66d9ef">primary&lt;/span> &lt;span style="color:#66d9ef">key&lt;/span>, &lt;span style="color:#66d9ef">c&lt;/span> int);
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>如果要将 ID=2 这一行的值加 1，SQL 语句就会这么写：&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2;">&lt;code class="language-sql" data-lang="sql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">update&lt;/span> T &lt;span style="color:#66d9ef">set&lt;/span> &lt;span style="color:#66d9ef">c&lt;/span>&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#66d9ef">c&lt;/span>&lt;span style="color:#f92672">+&lt;/span>&lt;span style="color:#ae81ff">1&lt;/span> &lt;span style="color:#66d9ef">where&lt;/span> ID&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">2&lt;/span>;
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>前面我有跟你介绍过 SQL 语句基本的执行链路，这里我再把那张图拿过来，你也可以先简单看看这个图回顾下。首先，可以确定的说，查询语句的那一套流程，更新语句也是同样会走一遍。&lt;/p></description></item><item><title>MySQL基础数据类型</title><link>https://daemon365.dev/post/database/mysql_basic_data_types/</link><pubDate>Tue, 31 Mar 2020 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/database/mysql_basic_data_types/</guid><description>&lt;h2 id="数值类型">数值类型
+&lt;a class="header-anchor" href="#%e6%95%b0%e5%80%bc%e7%b1%bb%e5%9e%8b">&lt;/a>
+&lt;/h2>&lt;p>MySQL支持所有标准SQL数值数据类型。&lt;/p>
+&lt;p>这些类型包括严格数值数据类型(INTEGER、SMALLINT、DECIMAL和NUMERIC)，以及近似数值数据类型(FLOAT、REAL和DOUBLE PRECISION)。&lt;/p></description></item><item><title>MySQL数据完整性约束</title><link>https://daemon365.dev/post/database/mysql_data_integrity_constraints/</link><pubDate>Tue, 31 Mar 2020 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/database/mysql_data_integrity_constraints/</guid><description>&lt;h2 id="主键约束">主键约束
+&lt;a class="header-anchor" href="#%e4%b8%bb%e9%94%ae%e7%ba%a6%e6%9d%9f">&lt;/a>
+&lt;/h2>&lt;p>主键可以是表中的某一列，也可以是表中的多个列所构成的一个组合；其中，由多个列组合而成的主键也称为复合主键。在MySQL中，主键列必须遵守以下规则。&lt;/p></description></item><item><title>golang web源码解析</title><link>https://daemon365.dev/post/go/golang_web_source_code_analysis/</link><pubDate>Sat, 21 Mar 2020 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/go/golang_web_source_code_analysis/</guid><description>&lt;h2 id="go的web工作原理">Go的web工作原理
+&lt;a class="header-anchor" href="#go%e7%9a%84web%e5%b7%a5%e4%bd%9c%e5%8e%9f%e7%90%86">&lt;/a>
+&lt;/h2>&lt;p>在Go中使用及其简单的代码即可开启一个web服务。如下：&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2;">&lt;code class="language-go" data-lang="go">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//开启web服务
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#66d9ef">func&lt;/span> &lt;span style="color:#a6e22e">test&lt;/span>(){
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">http&lt;/span>.&lt;span style="color:#a6e22e">HandleFunc&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;/&amp;#34;&lt;/span>, &lt;span style="color:#a6e22e">sayHello&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">http&lt;/span>.&lt;span style="color:#a6e22e">ListenAndServe&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;:9090&amp;#34;&lt;/span>,&lt;span style="color:#66d9ef">nil&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#a6e22e">err&lt;/span>&lt;span style="color:#f92672">!=&lt;/span>&lt;span style="color:#66d9ef">nil&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">log&lt;/span>.&lt;span style="color:#a6e22e">Fatal&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;ListenAndServer:&amp;#34;&lt;/span>,&lt;span style="color:#a6e22e">err&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">func&lt;/span> &lt;span style="color:#a6e22e">sayHello&lt;/span>(&lt;span style="color:#a6e22e">w&lt;/span> &lt;span style="color:#a6e22e">http&lt;/span>.&lt;span style="color:#a6e22e">ResponseWriter&lt;/span>, &lt;span style="color:#a6e22e">r&lt;/span> &lt;span style="color:#f92672">*&lt;/span>&lt;span style="color:#a6e22e">http&lt;/span>.&lt;span style="color:#a6e22e">Request&lt;/span>){
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">r&lt;/span>.&lt;span style="color:#a6e22e">ParseForm&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Println&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;path&amp;#34;&lt;/span>,&lt;span style="color:#a6e22e">r&lt;/span>.&lt;span style="color:#a6e22e">URL&lt;/span>.&lt;span style="color:#a6e22e">Path&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Println&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;scheme&amp;#34;&lt;/span>,&lt;span style="color:#a6e22e">r&lt;/span>.&lt;span style="color:#a6e22e">URL&lt;/span>.&lt;span style="color:#a6e22e">Scheme&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Fprintf&lt;/span>(&lt;span style="color:#a6e22e">w&lt;/span>, &lt;span style="color:#e6db74">&amp;#34;Hello Guest!&amp;#34;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>在使用&lt;code>ListenAndServe&lt;/code>这个方法时，系统就会给我们指派一个路由器，&lt;code>DefaultServeMux&lt;/code>是系统默认使用的路由器，如果&lt;code>ListenAndServe&lt;/code>这个方法的第2个参数传入nil，系统就会默认使用&lt;code>DefaultServeMux&lt;/code>。当然，这里也可以传入自定义的路由器。&lt;/p></description></item><item><title>redis持久化</title><link>https://daemon365.dev/post/database/redis_persistence/</link><pubDate>Sat, 21 Mar 2020 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/database/redis_persistence/</guid><description>&lt;p>Redis是一种内存型数据库，一旦服务器进程退出，数据库的数据就会丢失，为了解决这个问题，Redis提供了两种持久化的方案，将内存中的数据保存到磁盘中，避免数据的丢失。&lt;/p></description></item><item><title>redis基础</title><link>https://daemon365.dev/post/database/redis_basics/</link><pubDate>Fri, 20 Mar 2020 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/database/redis_basics/</guid><description>&lt;h2 id="redis介绍">redis介绍
+&lt;a class="header-anchor" href="#redis%e4%bb%8b%e7%bb%8d">&lt;/a>
+&lt;/h2>&lt;p>Redis 是完全开源的，遵守 BSD 协议，是一个高性能的 key-value 数据库。&lt;/p>
+&lt;p>Redis 与其他 key - value 缓存产品有以下三个特点：&lt;/p>
+&lt;ul>
+&lt;li>Redis支持数据的持久化，可以将内存中的数据保存在磁盘中，重启的时候可以再次加载进行使用。&lt;/li>
+&lt;li>Redis不仅仅支持简单的key-value类型的数据，同时还提供list，set，zset，hash等数据结构的存储。&lt;/li>
+&lt;li>Redis支持数据的备份，即master-slave模式的数据备份。&lt;/li>
+&lt;/ul>
+&lt;h3 id="redis的安装">redis的安装
+&lt;a class="header-anchor" href="#redis%e7%9a%84%e5%ae%89%e8%a3%85">&lt;/a>
+&lt;/h3>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>brew install redis&lt;span style="color:#f92672">(&lt;/span>mac&lt;span style="color:#f92672">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>yum install redis&lt;span style="color:#f92672">(&lt;/span>centos&lt;span style="color:#f92672">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>apt-get install redis&lt;span style="color:#f92672">(&lt;/span>ubuntu&lt;span style="color:#f92672">)&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="redis的命令网站">redis的命令网站
+&lt;a class="header-anchor" href="#redis%e7%9a%84%e5%91%bd%e4%bb%a4%e7%bd%91%e7%ab%99">&lt;/a>
+&lt;/h2>&lt;p>
+&lt;a href="http://doc.redisfans.com/" title="Redis 命令参考 — Redis 命令参考 (redisfans.com)" rel="noopener external nofollow noreferrer" target="_blank" class=" exturl">
+ Redis 命令参考 — Redis 命令参考 (redisfans.com)
+ 
+ &lt;i class="fa fa-external-link-alt">&lt;/i>
+ 
+&lt;/a>&lt;/p></description></item><item><title>nginx简介,使用</title><link>https://daemon365.dev/post/cloud/introduction_to_nginx__usage/</link><pubDate>Tue, 10 Mar 2020 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/introduction_to_nginx__usage/</guid><description>&lt;h2 id="nginx是什么">nginx是什么
+&lt;a class="header-anchor" href="#nginx%e6%98%af%e4%bb%80%e4%b9%88">&lt;/a>
+&lt;/h2>&lt;p>nginx是一个开源的，支持高性能，高并发的www服务和代理服务软件。&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>支持高并发，能支持几万并发连接&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>资源消耗少，在3万并发连接下开启10个nginx线程消耗的内存不到200M&lt;/p></description></item><item><title>golang sqlx</title><link>https://daemon365.dev/post/go/golang_sqlx/</link><pubDate>Mon, 13 Jan 2020 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/go/golang_sqlx/</guid><description>&lt;p>在项目中我们通常可能会使用&lt;code>database/sql&lt;/code>连接MySQL数据库。本文借助使用&lt;code>sqlx&lt;/code>实现批量插入数据的例子，介绍了&lt;code>sqlx&lt;/code>中可能被你忽视了的&lt;code>sqlx.In&lt;/code>和&lt;code>DB.NamedExec&lt;/code>方法。&lt;/p></description></item><item><title>golang redis</title><link>https://daemon365.dev/post/go/golang_redis/</link><pubDate>Sun, 12 Jan 2020 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/go/golang_redis/</guid><description>&lt;h2 id="安装">安装
+&lt;a class="header-anchor" href="#%e5%ae%89%e8%a3%85">&lt;/a>
+&lt;/h2>&lt;p>下载第三方包:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>go get -u github.com/go-redis/redis/v9
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="连接">连接
+&lt;a class="header-anchor" href="#%e8%bf%9e%e6%8e%a5">&lt;/a>
+&lt;/h2>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2;">&lt;code class="language-go" data-lang="go">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// 定义一个rdis客户端
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#66d9ef">var&lt;/span> &lt;span style="color:#a6e22e">redisdb&lt;/span> &lt;span style="color:#f92672">*&lt;/span>&lt;span style="color:#a6e22e">redis&lt;/span>.&lt;span style="color:#a6e22e">Client&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// 初始化
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#66d9ef">func&lt;/span> &lt;span style="color:#a6e22e">initClient&lt;/span>() (&lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#66d9ef">error&lt;/span>) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#a6e22e">redisdb&lt;/span> = &lt;span style="color:#a6e22e">redis&lt;/span>.&lt;span style="color:#a6e22e">NewClient&lt;/span>(&lt;span style="color:#f92672">&amp;amp;&lt;/span>&lt;span style="color:#a6e22e">redis&lt;/span>.&lt;span style="color:#a6e22e">Options&lt;/span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#a6e22e">Addr&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;localhost:6379&amp;#34;&lt;/span>, &lt;span style="color:#75715e">// post端口
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#a6e22e">Password&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;&amp;#34;&lt;/span>, &lt;span style="color:#75715e">// 密码
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#a6e22e">DB&lt;/span>: &lt;span style="color:#ae81ff">0&lt;/span>, &lt;span style="color:#75715e">// 使用redis的库
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	})
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#a6e22e">_&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span> = &lt;span style="color:#a6e22e">redisdb&lt;/span>.&lt;span style="color:#a6e22e">Ping&lt;/span>(&lt;span style="color:#a6e22e">context&lt;/span>.&lt;span style="color:#a6e22e">Background&lt;/span>()).&lt;span style="color:#a6e22e">Result&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">!=&lt;/span> &lt;span style="color:#66d9ef">nil&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Println&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;连接失败&amp;#34;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">return&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">return&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="使用">使用
+&lt;a class="header-anchor" href="#%e4%bd%bf%e7%94%a8">&lt;/a>
+&lt;/h2>&lt;h3 id="setget示例">set/get示例
+&lt;a class="header-anchor" href="#setget%e7%a4%ba%e4%be%8b">&lt;/a>
+&lt;/h3>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2;">&lt;code class="language-go" data-lang="go">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">func&lt;/span> &lt;span style="color:#a6e22e">redisExample&lt;/span>() {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#a6e22e">ctx&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">context&lt;/span>.&lt;span style="color:#a6e22e">Background&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">redisdb&lt;/span>.&lt;span style="color:#a6e22e">Set&lt;/span>(&lt;span style="color:#a6e22e">ctx&lt;/span>, &lt;span style="color:#e6db74">&amp;#34;score&amp;#34;&lt;/span>, &lt;span style="color:#ae81ff">100&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>).&lt;span style="color:#a6e22e">Err&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">!=&lt;/span> &lt;span style="color:#66d9ef">nil&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Printf&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;set score failed, err:%v\n&amp;#34;&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">return&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#a6e22e">val&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">redisdb&lt;/span>.&lt;span style="color:#a6e22e">Get&lt;/span>(&lt;span style="color:#a6e22e">ctx&lt;/span>, &lt;span style="color:#e6db74">&amp;#34;score&amp;#34;&lt;/span>).&lt;span style="color:#a6e22e">Result&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">!=&lt;/span> &lt;span style="color:#66d9ef">nil&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Printf&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;get score failed, err:%v\n&amp;#34;&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">return&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Println&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;score&amp;#34;&lt;/span>, &lt;span style="color:#a6e22e">val&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#a6e22e">val2&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">redisdb&lt;/span>.&lt;span style="color:#a6e22e">Get&lt;/span>(&lt;span style="color:#a6e22e">ctx&lt;/span>, &lt;span style="color:#e6db74">&amp;#34;name&amp;#34;&lt;/span>).&lt;span style="color:#a6e22e">Result&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">==&lt;/span> &lt;span style="color:#a6e22e">redis&lt;/span>.&lt;span style="color:#a6e22e">Nil&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Println&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;name does not exist&amp;#34;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	} &lt;span style="color:#66d9ef">else&lt;/span> &lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">!=&lt;/span> &lt;span style="color:#66d9ef">nil&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Printf&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;get name failed, err:%v\n&amp;#34;&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">return&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	} &lt;span style="color:#66d9ef">else&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Println&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;name&amp;#34;&lt;/span>, &lt;span style="color:#a6e22e">val2&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="zset示例">zset示例
+&lt;a class="header-anchor" href="#zset%e7%a4%ba%e4%be%8b">&lt;/a>
+&lt;/h3>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2;">&lt;code class="language-go" data-lang="go">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">func&lt;/span> &lt;span style="color:#a6e22e">redisExample2&lt;/span>() {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#a6e22e">ctx&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">context&lt;/span>.&lt;span style="color:#a6e22e">Background&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#a6e22e">zsetKey&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#e6db74">&amp;#34;language_rank&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#a6e22e">languages&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> []&lt;span style="color:#f92672">*&lt;/span>&lt;span style="color:#a6e22e">redis&lt;/span>.&lt;span style="color:#a6e22e">Z&lt;/span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#f92672">&amp;amp;&lt;/span>&lt;span style="color:#a6e22e">redis&lt;/span>.&lt;span style="color:#a6e22e">Z&lt;/span>{&lt;span style="color:#a6e22e">Score&lt;/span>: &lt;span style="color:#ae81ff">90.0&lt;/span>, &lt;span style="color:#a6e22e">Member&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;Golang&amp;#34;&lt;/span>},
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#f92672">&amp;amp;&lt;/span>&lt;span style="color:#a6e22e">redis&lt;/span>.&lt;span style="color:#a6e22e">Z&lt;/span>{&lt;span style="color:#a6e22e">Score&lt;/span>: &lt;span style="color:#ae81ff">98.0&lt;/span>, &lt;span style="color:#a6e22e">Member&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;Java&amp;#34;&lt;/span>},
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#f92672">&amp;amp;&lt;/span>&lt;span style="color:#a6e22e">redis&lt;/span>.&lt;span style="color:#a6e22e">Z&lt;/span>{&lt;span style="color:#a6e22e">Score&lt;/span>: &lt;span style="color:#ae81ff">95.0&lt;/span>, &lt;span style="color:#a6e22e">Member&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;Python&amp;#34;&lt;/span>},
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#f92672">&amp;amp;&lt;/span>&lt;span style="color:#a6e22e">redis&lt;/span>.&lt;span style="color:#a6e22e">Z&lt;/span>{&lt;span style="color:#a6e22e">Score&lt;/span>: &lt;span style="color:#ae81ff">97.0&lt;/span>, &lt;span style="color:#a6e22e">Member&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;JavaScript&amp;#34;&lt;/span>},
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#f92672">&amp;amp;&lt;/span>&lt;span style="color:#a6e22e">redis&lt;/span>.&lt;span style="color:#a6e22e">Z&lt;/span>{&lt;span style="color:#a6e22e">Score&lt;/span>: &lt;span style="color:#ae81ff">99.0&lt;/span>, &lt;span style="color:#a6e22e">Member&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;C/C++&amp;#34;&lt;/span>},
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">// ZADD
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#a6e22e">num&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">redisdb&lt;/span>.&lt;span style="color:#a6e22e">ZAdd&lt;/span>(&lt;span style="color:#a6e22e">ctx&lt;/span>, &lt;span style="color:#a6e22e">zsetKey&lt;/span>, &lt;span style="color:#a6e22e">languages&lt;/span>&lt;span style="color:#f92672">...&lt;/span>).&lt;span style="color:#a6e22e">Result&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">!=&lt;/span> &lt;span style="color:#66d9ef">nil&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Printf&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;zadd failed, err:%v\n&amp;#34;&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">return&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Printf&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;zadd %d succ.\n&amp;#34;&lt;/span>, &lt;span style="color:#a6e22e">num&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">// 把Golang的分数加10
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#a6e22e">newScore&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">redisdb&lt;/span>.&lt;span style="color:#a6e22e">ZIncrBy&lt;/span>(&lt;span style="color:#a6e22e">ctx&lt;/span>, &lt;span style="color:#a6e22e">zsetKey&lt;/span>, &lt;span style="color:#ae81ff">10.0&lt;/span>, &lt;span style="color:#e6db74">&amp;#34;Golang&amp;#34;&lt;/span>).&lt;span style="color:#a6e22e">Result&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">!=&lt;/span> &lt;span style="color:#66d9ef">nil&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Printf&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;zincrby failed, err:%v\n&amp;#34;&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">return&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Printf&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;Golang&amp;#39;s score is %f now.\n&amp;#34;&lt;/span>, &lt;span style="color:#a6e22e">newScore&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">// 取分数最高的3个
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#a6e22e">ret&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">redisdb&lt;/span>.&lt;span style="color:#a6e22e">ZRevRangeWithScores&lt;/span>(&lt;span style="color:#a6e22e">ctx&lt;/span>, &lt;span style="color:#a6e22e">zsetKey&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>, &lt;span style="color:#ae81ff">2&lt;/span>).&lt;span style="color:#a6e22e">Result&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">!=&lt;/span> &lt;span style="color:#66d9ef">nil&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Printf&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;zrevrange failed, err:%v\n&amp;#34;&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">return&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">for&lt;/span> &lt;span style="color:#a6e22e">_&lt;/span>, &lt;span style="color:#a6e22e">z&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#66d9ef">range&lt;/span> &lt;span style="color:#a6e22e">ret&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Println&lt;/span>(&lt;span style="color:#a6e22e">z&lt;/span>.&lt;span style="color:#a6e22e">Member&lt;/span>, &lt;span style="color:#a6e22e">z&lt;/span>.&lt;span style="color:#a6e22e">Score&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">// 取95~100分的
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#a6e22e">op&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#f92672">&amp;amp;&lt;/span>&lt;span style="color:#a6e22e">redis&lt;/span>.&lt;span style="color:#a6e22e">ZRangeBy&lt;/span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#a6e22e">Min&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;95&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#a6e22e">Max&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;100&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#a6e22e">ret&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span> = &lt;span style="color:#a6e22e">redisdb&lt;/span>.&lt;span style="color:#a6e22e">ZRangeByScoreWithScores&lt;/span>(&lt;span style="color:#a6e22e">ctx&lt;/span>, &lt;span style="color:#a6e22e">zsetKey&lt;/span>, &lt;span style="color:#a6e22e">op&lt;/span>).&lt;span style="color:#a6e22e">Result&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">!=&lt;/span> &lt;span style="color:#66d9ef">nil&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Printf&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;zrangebyscore failed, err:%v\n&amp;#34;&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">return&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">for&lt;/span> &lt;span style="color:#a6e22e">_&lt;/span>, &lt;span style="color:#a6e22e">z&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#66d9ef">range&lt;/span> &lt;span style="color:#a6e22e">ret&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Println&lt;/span>(&lt;span style="color:#a6e22e">z&lt;/span>.&lt;span style="color:#a6e22e">Member&lt;/span>, &lt;span style="color:#a6e22e">z&lt;/span>.&lt;span style="color:#a6e22e">Score&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>输出结果如下：&lt;/p></description></item><item><title>golang nethttp包</title><link>https://daemon365.dev/post/go/golang_nethttp_package/</link><pubDate>Sat, 11 Jan 2020 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/go/golang_nethttp_package/</guid><description>&lt;h2 id="http协议">http协议
+&lt;a class="header-anchor" href="#http%e5%8d%8f%e8%ae%ae">&lt;/a>
+&lt;/h2>&lt;p>超文本传输协议（HTTP，HyperText Transfer Protocol)是互联网上应用最为广泛的一种网络传输协议，所有的WWW文件都必须遵守这个标准。设计HTTP最初的目的是为了提供一种发布和接收HTML页面的方法。&lt;/p></description></item><item><title>nethttp和gin 路由</title><link>https://daemon365.dev/post/go/nethttp_and_gin_routing/</link><pubDate>Mon, 23 Dec 2019 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/go/nethttp_and_gin_routing/</guid><description>&lt;h2 id="nethttp-路由注册">net/http 路由注册
+&lt;a class="header-anchor" href="#nethttp-%e8%b7%af%e7%94%b1%e6%b3%a8%e5%86%8c">&lt;/a>
+&lt;/h2>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2;">&lt;code class="language-go" data-lang="go">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">func&lt;/span> &lt;span style="color:#a6e22e">test1&lt;/span>() {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">http&lt;/span>.&lt;span style="color:#a6e22e">HandleFunc&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;/&amp;#34;&lt;/span>, &lt;span style="color:#66d9ef">func&lt;/span>(&lt;span style="color:#a6e22e">w&lt;/span> &lt;span style="color:#a6e22e">http&lt;/span>.&lt;span style="color:#a6e22e">ResponseWriter&lt;/span>, &lt;span style="color:#a6e22e">r&lt;/span> &lt;span style="color:#f92672">*&lt;/span>&lt;span style="color:#a6e22e">http&lt;/span>.&lt;span style="color:#a6e22e">Request&lt;/span>) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Fprintf&lt;/span>(&lt;span style="color:#a6e22e">w&lt;/span>, &lt;span style="color:#e6db74">&amp;#34;Hello world!&amp;#34;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> })
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">http&lt;/span>.&lt;span style="color:#a6e22e">ListenAndServe&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;:9001&amp;#34;&lt;/span>, &lt;span style="color:#66d9ef">nil&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">!=&lt;/span> &lt;span style="color:#66d9ef">nil&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">log&lt;/span>.&lt;span style="color:#a6e22e">Fatal&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;ListenAndServer:&amp;#34;&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>在使用&lt;code>ListenAndServe&lt;/code>这个方法时，系统就会给我们指派一个路由器，&lt;code>DefaultServeMux&lt;/code>是系统默认使用的路由器，如果&lt;code>ListenAndServe&lt;/code>这个方法的第2个参数传入nil，系统就会默认使用&lt;code>DefaultServeMux&lt;/code>。当然，这里也可以传入自定义的路由器。&lt;/p></description></item><item><title>网络编程</title><link>https://daemon365.dev/post/network/network_programming/</link><pubDate>Sat, 21 Dec 2019 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/network/network_programming/</guid><description>&lt;h2 id="网络层次划分">网络层次划分
+&lt;a class="header-anchor" href="#%e7%bd%91%e7%bb%9c%e5%b1%82%e6%ac%a1%e5%88%92%e5%88%86">&lt;/a>
+&lt;/h2>&lt;p>为了使不同计算机厂家生产的计算机能够相互通信，以便在更大的范围内建立计算机网络，国际标准化组织（ISO）在1978年提出了&amp;quot;开放系统互联参考模型&amp;quot;，即著名的OSI/RM模型（Open System Interconnection/Reference Model）。它将计算机网络体系结构的通信协议划分为七层，自下而上依次为：物理层（Physics Layer）、数据链路层（Data Link Layer）、网络层（Network Layer）、传输层（Transport Layer）、会话层（Session Layer）、表示层（Presentation Layer）、应用层（Application Layer）。其中第四层完成数据传送服务，上面三层面向用户。&lt;/p></description></item><item><title>proto buffer</title><link>https://daemon365.dev/post/microservice/protocol_buffer/</link><pubDate>Sun, 01 Dec 2019 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/microservice/protocol_buffer/</guid><description>&lt;p>protobuf是一种高效的数据格式，平台无关、语言无关、可扩展，可用于 RPC 系统和持续数据存储系统。&lt;/p>
+&lt;h2 id="protobuf介绍">protobuf介绍
+&lt;a class="header-anchor" href="#protobuf%e4%bb%8b%e7%bb%8d">&lt;/a>
+&lt;/h2>&lt;p>Protobuf是Protocol Buffer的简称，它是Google公司于2008年开源的一种高效的平台无关、语言无关、可扩展的数据格式，目前Protobuf作为接口规范的描述语言，可以作为Go语言RPC接口的基础工具。&lt;/p></description></item><item><title>go mod</title><link>https://daemon365.dev/post/go/go_mod/</link><pubDate>Tue, 01 Oct 2019 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/go/go_mod/</guid><description>&lt;p>go module是 Go1.11版本之后官方推出的版本管理工具，并且从Go1.13版本开始，go module将是Go语言默认的依赖管理工具。&lt;/p>
+&lt;h2 id="go111module">GO111MODULE
+&lt;a class="header-anchor" href="#go111module">&lt;/a>
+&lt;/h2>&lt;p>要启用go module支持首先要设置环境变量GO111MODULE，通过它可以开启或关闭模块支持，它有三个可选值：off、on、auto，默认值是auto。&lt;/p></description></item><item><title>golang 模板 htmltemplate与texttemplate</title><link>https://daemon365.dev/post/go/golang_template_htmltemplate_and_texttemplate/</link><pubDate>Sat, 13 Jul 2019 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/go/golang_template_htmltemplate_and_texttemplate/</guid><description>&lt;h2 id="html模板生成">html模板生成:
+&lt;a class="header-anchor" href="#html%e6%a8%a1%e6%9d%bf%e7%94%9f%e6%88%90">&lt;/a>
+&lt;/h2>&lt;ul>
+&lt;li>html/template包实现了数据驱动的模板，用于生成可对抗代码注入的安全HTML输出。它提供了和text/template包相同的接口，Go语言中输出HTML的场景都应使用text/template包。&lt;/li>
+&lt;/ul>
+&lt;h2 id="模板语法">模板语法
+&lt;a class="header-anchor" href="#%e6%a8%a1%e6%9d%bf%e8%af%ad%e6%b3%95">&lt;/a>
+&lt;/h2>&lt;h3 id="heading">{{.}}
+&lt;a class="header-anchor" href="#heading">&lt;/a>
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>模板语法都包含在{{和}}中间，其中{{.}}中的点表示当前对象。&lt;/p></description></item><item><title>golang 反射</title><link>https://daemon365.dev/post/go/golang_reflection/</link><pubDate>Fri, 12 Jul 2019 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/go/golang_reflection/</guid><description>&lt;h2 id="变量的内在机制">变量的内在机制
+&lt;a class="header-anchor" href="#%e5%8f%98%e9%87%8f%e7%9a%84%e5%86%85%e5%9c%a8%e6%9c%ba%e5%88%b6">&lt;/a>
+&lt;/h2>&lt;p>Go语言中的变量是分为两部分的:&lt;/p>
+&lt;ul>
+&lt;li>类型信息：预先定义好的元信息。&lt;/li>
+&lt;li>值信息：程序运行过程中可动态变化的。&lt;/li>
+&lt;/ul>
+&lt;h2 id="反射介绍">反射介绍
+&lt;a class="header-anchor" href="#%e5%8f%8d%e5%b0%84%e4%bb%8b%e7%bb%8d">&lt;/a>
+&lt;/h2>&lt;p>反射是指在程序运行期对程序本身进行访问和修改的能力。程序在编译时，变量被转换为内存地址，变量名不会被编译器写入到可执行部分。在运行程序时，程序无法获取自身的信息。&lt;/p></description></item><item><title>Gin框架介绍及使用</title><link>https://daemon365.dev/post/go/introduction_and_use_of_gin_framework/</link><pubDate>Sun, 30 Jun 2019 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/go/introduction_and_use_of_gin_framework/</guid><description>&lt;h2 id="gin框架介绍">Gin框架介绍
+&lt;a class="header-anchor" href="#gin%e6%a1%86%e6%9e%b6%e4%bb%8b%e7%bb%8d">&lt;/a>
+&lt;/h2>&lt;ul>
+&lt;li>基于
+&lt;a href="https://github.com/julienschmidt/httprouter" title="httprouter" rel="noopener external nofollow noreferrer" target="_blank" class=" exturl">
+ httprouter
+ 
+ &lt;i class="fa fa-external-link-alt">&lt;/i>
+ 
+&lt;/a>开发的Web框架。&lt;/li>
+&lt;li>
+&lt;a href="https://gin-gonic.com/zh-cn/docs/" title="中文文档" rel="noopener external nofollow noreferrer" target="_blank" class=" exturl">
+ 中文文档
+ 
+ &lt;i class="fa fa-external-link-alt">&lt;/i>
+ 
+&lt;/a>，齐全。&lt;/li>
+&lt;li>简单易用的轻量级框架。&lt;/li>
+&lt;/ul>
+&lt;h2 id="gin框架安装">Gin框架安装
+&lt;a class="header-anchor" href="#gin%e6%a1%86%e6%9e%b6%e5%ae%89%e8%a3%85">&lt;/a>
+&lt;/h2>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>go get -u github.com/gin-gonic/gin
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;strong>实例:&lt;/strong>&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2;">&lt;code class="language-go" data-lang="go">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">package&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">import&lt;/span> (
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#e6db74">&amp;#34;fmt&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#e6db74">&amp;#34;github.com/gin-gonic/gin&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">func&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>() {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#a6e22e">r&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">gin&lt;/span>.&lt;span style="color:#a6e22e">Default&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">// 创建一个默认的路由引擎
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">// 也可以用gin.New() gin.Default()多用了日志和panic的recover中间件
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#a6e22e">r&lt;/span>.&lt;span style="color:#a6e22e">GET&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;/helloworld&amp;#34;&lt;/span>, &lt;span style="color:#66d9ef">func&lt;/span>(&lt;span style="color:#a6e22e">c&lt;/span> &lt;span style="color:#f92672">*&lt;/span>&lt;span style="color:#a6e22e">gin&lt;/span>.&lt;span style="color:#a6e22e">Context&lt;/span>) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#a6e22e">c&lt;/span>.&lt;span style="color:#a6e22e">JSON&lt;/span>(&lt;span style="color:#ae81ff">200&lt;/span>, &lt;span style="color:#a6e22e">gin&lt;/span>.&lt;span style="color:#a6e22e">H&lt;/span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#75715e">// c.JSON：返回JSON格式的数据
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			&lt;span style="color:#e6db74">&amp;#34;msg&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;Hello world!&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		})
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	})
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">r&lt;/span>.&lt;span style="color:#a6e22e">Run&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;127.0.0.1:8001&amp;#34;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">// 启动HTTP服务，默认在127.0.0.1:8001启动服务
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">!=&lt;/span> &lt;span style="color:#66d9ef">nil&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Println&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;run gin field&amp;#34;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">return&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;img src="https://daemon365.dev/imgs/img-lazy-loading.gif" data-src="https://daemon365.dev/images/a78c08f7-e35f-41f2-bc49-9388ef405408.png" alt="" />&lt;/p></description></item><item><title>goalng包和命令工具</title><link>https://daemon365.dev/post/go/goalng_package_and_command_tools/</link><pubDate>Sat, 29 Jun 2019 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/go/goalng_package_and_command_tools/</guid><description>&lt;h2 id="包简介">包简介
+&lt;a class="header-anchor" href="#%e5%8c%85%e7%ae%80%e4%bb%8b">&lt;/a>
+&lt;/h2>&lt;p>任何包系统设计的目的都是为了简化大型程序的设计和维护工作，通过将一组相关的特性放进一个独立的单元以便于理解和更新，在每个单元更新的同时保持和程序中其它单元的相对独立性。这种模块化的特性允许每个包可以被其它的不同项目共享和重用，在项目范围内、甚至全球范围统一的分发和复用。&lt;/p></description></item><item><title>golang 单元测试</title><link>https://daemon365.dev/post/go/golang_unit_testing/</link><pubDate>Sat, 29 Jun 2019 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/go/golang_unit_testing/</guid><description>&lt;h2 id="go-test">go test
+&lt;a class="header-anchor" href="#go-test">&lt;/a>
+&lt;/h2>&lt;p>go test命令是一个按照一定的约定和组织来测试代码的程序。在包目录内，所有以_test.go为后缀名的源文件在执行go build时不会被构建成包的一部分，它们是go test测试的一部分。&lt;/p></description></item><item><title>golang context包</title><link>https://daemon365.dev/post/go/golang_context_package/</link><pubDate>Fri, 28 Jun 2019 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/go/golang_context_package/</guid><description>&lt;h2 id="go-context标准库">go context标准库
+&lt;a class="header-anchor" href="#go-context%e6%a0%87%e5%87%86%e5%ba%93">&lt;/a>
+&lt;/h2>&lt;p>context包在Go1.7版本时加入到标准库中。其设计目标是给Golang提供一个标准接口来给其他任务发送取消信号和传递数据。其具体作用为：&lt;/p></description></item><item><title>golang channel</title><link>https://daemon365.dev/post/go/golang_channel/</link><pubDate>Wed, 26 Jun 2019 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/go/golang_channel/</guid><description>&lt;h2 id="什么是channel">什么是channel
+&lt;a class="header-anchor" href="#%e4%bb%80%e4%b9%88%e6%98%afchannel">&lt;/a>
+&lt;/h2>&lt;p>channels 是一种类型安全的消息队列，充当两个 goroutine 之间的管道，将通过它同步的进行任意资源的交换。chan 控制 goroutines 交互的能力从而创建了 Go 同步机制。当创建的 chan 没有容量时，称为无缓冲通道。反过来，使用容量创建的 chan 称为缓冲通道。&lt;/p></description></item><item><title>golang并发</title><link>https://daemon365.dev/post/go/golang_concurrency/</link><pubDate>Wed, 26 Jun 2019 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/go/golang_concurrency/</guid><description>&lt;h2 id="goroutine">goroutine
+&lt;a class="header-anchor" href="#goroutine">&lt;/a>
+&lt;/h2>&lt;p>goroutine是Go并行设计的核心。goroutine说到底其实就是线程，但是它比线程更小，十几个goroutine可能体现在底层就是五六个线程，Go语言内部帮你实现了这些goroutine之间的内存共享。执行goroutine只需极少的栈内存(大概是4~5KB)，当然会根据相应的数据伸缩。也正因为如此，可同时运行成千上万个并发任务。goroutine比thread更易用、更高效、更轻便。&lt;/p></description></item><item><title>go语言文件系统</title><link>https://daemon365.dev/post/go/go_language_file_system/</link><pubDate>Sun, 23 Jun 2019 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/go/go_language_file_system/</guid><description>&lt;h2 id="检测文件是否存在">检测文件是否存在
+&lt;a class="header-anchor" href="#%e6%a3%80%e6%b5%8b%e6%96%87%e4%bb%b6%e6%98%af%e5%90%a6%e5%ad%98%e5%9c%a8">&lt;/a>
+&lt;/h2>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2;">&lt;code class="language-go" data-lang="go">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//存在返回 true，不存在返回 false
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#66d9ef">func&lt;/span> &lt;span style="color:#a6e22e">fileIfExist&lt;/span>(&lt;span style="color:#a6e22e">filename&lt;/span> &lt;span style="color:#66d9ef">string&lt;/span>) &lt;span style="color:#66d9ef">bool&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">_&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">os&lt;/span>.&lt;span style="color:#a6e22e">Stat&lt;/span>(&lt;span style="color:#a6e22e">filename&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#66d9ef">nil&lt;/span> &lt;span style="color:#f92672">!=&lt;/span> &lt;span style="color:#a6e22e">err&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Println&lt;/span>(&lt;span style="color:#a6e22e">filename&lt;/span>, &lt;span style="color:#e6db74">&amp;#34;is not exist!&amp;#34;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#66d9ef">false&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#a6e22e">os&lt;/span>.&lt;span style="color:#a6e22e">IsNotExist&lt;/span>(&lt;span style="color:#a6e22e">err&lt;/span>) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#66d9ef">false&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#66d9ef">true&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="打开文件">打开文件
+&lt;a class="header-anchor" href="#%e6%89%93%e5%bc%80%e6%96%87%e4%bb%b6">&lt;/a>
+&lt;/h2>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2;">&lt;code class="language-go" data-lang="go">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">f&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">os&lt;/span>.&lt;span style="color:#a6e22e">Open&lt;/span>(&lt;span style="color:#a6e22e">filename&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#66d9ef">nil&lt;/span> &lt;span style="color:#f92672">!=&lt;/span> &lt;span style="color:#a6e22e">err&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Println&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;open&amp;#34;&lt;/span>, &lt;span style="color:#a6e22e">filename&lt;/span>, &lt;span style="color:#e6db74">&amp;#34;failed!&amp;#34;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">defer&lt;/span> &lt;span style="color:#a6e22e">f&lt;/span>.&lt;span style="color:#a6e22e">Close&lt;/span>()
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>如果文件不存在，就会返回错误，如果存在就以只读的方式打开文件。&lt;/p></description></item><item><title>golang方法</title><link>https://daemon365.dev/post/go/golang_method/</link><pubDate>Sat, 22 Jun 2019 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/go/golang_method/</guid><description>&lt;h2 id="方法声明">方法声明
+&lt;a class="header-anchor" href="#%e6%96%b9%e6%b3%95%e5%a3%b0%e6%98%8e">&lt;/a>
+&lt;/h2>&lt;p>在函数声明时，在其名字之前放上一个变量，即是一个方法。这个附加的参数会将该函数附加到这种类型上，即相当于为这种类型定义了一个独占的方法。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2;">&lt;code class="language-go" data-lang="go">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">package&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">import&lt;/span> &lt;span style="color:#e6db74">&amp;#34;fmt&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">type&lt;/span> &lt;span style="color:#a6e22e">People&lt;/span> &lt;span style="color:#66d9ef">struct&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#a6e22e">name&lt;/span> &lt;span style="color:#66d9ef">string&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#a6e22e">age&lt;/span> &lt;span style="color:#66d9ef">uint8&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">func&lt;/span> (&lt;span style="color:#a6e22e">p&lt;/span> &lt;span style="color:#a6e22e">People&lt;/span>) &lt;span style="color:#a6e22e">SayHello&lt;/span>() {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Println&lt;/span>(&lt;span style="color:#a6e22e">p&lt;/span>.&lt;span style="color:#a6e22e">name&lt;/span>, &lt;span style="color:#e6db74">&amp;#34;: hello world&amp;#34;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#a6e22e">p&lt;/span>.&lt;span style="color:#a6e22e">age&lt;/span> = &lt;span style="color:#ae81ff">20&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">func&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>() {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#a6e22e">p&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">People&lt;/span>{&lt;span style="color:#a6e22e">name&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;zhaohaiyu&amp;#34;&lt;/span>, &lt;span style="color:#a6e22e">age&lt;/span>: &lt;span style="color:#ae81ff">18&lt;/span>} 
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#a6e22e">p&lt;/span>.&lt;span style="color:#a6e22e">SayHello&lt;/span>() &lt;span style="color:#75715e">// zhaohaiyu : hello world
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Println&lt;/span>(&lt;span style="color:#a6e22e">p&lt;/span>.&lt;span style="color:#a6e22e">age&lt;/span>)	&lt;span style="color:#75715e">//18
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="基于指针对象的方法">基于指针对象的方法
+&lt;a class="header-anchor" href="#%e5%9f%ba%e4%ba%8e%e6%8c%87%e9%92%88%e5%af%b9%e8%b1%a1%e7%9a%84%e6%96%b9%e6%b3%95">&lt;/a>
+&lt;/h2>&lt;p>当调用一个函数时，会对其每一个参数值进行拷贝，如果一个函数需要更新一个变量，或者函数的其中一个参数实在太大我们希望能够避免进行这种默认的拷贝，这种情况下我们就需要用到指针了。&lt;/p></description></item><item><title>golang复杂数据结构</title><link>https://daemon365.dev/post/go/golang_complex_data_structure/</link><pubDate>Sat, 22 Jun 2019 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/go/golang_complex_data_structure/</guid><description>&lt;h2 id="数组">数组
+&lt;a class="header-anchor" href="#%e6%95%b0%e7%bb%84">&lt;/a>
+&lt;/h2>&lt;p>**数组是一个由固定长度的特定类型元素组成的序列，一个数组可以由零个或多个元素组成。**因为数组的长度是固定的，因此在Go语言中很少直接使用数组。&lt;/p></description></item><item><title>golang函数</title><link>https://daemon365.dev/post/go/golang_function/</link><pubDate>Sat, 22 Jun 2019 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/go/golang_function/</guid><description>&lt;h2 id="函数声明">函数声明
+&lt;a class="header-anchor" href="#%e5%87%bd%e6%95%b0%e5%a3%b0%e6%98%8e">&lt;/a>
+&lt;/h2>&lt;p>&lt;strong>函数声明包括函数名、形式参数列表、返回值列表（可省略）以及函数体。&lt;/strong>&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2;">&lt;code class="language-go" data-lang="go">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">func&lt;/span> &lt;span style="color:#a6e22e">function&lt;/span>&lt;span style="color:#f92672">-&lt;/span>&lt;span style="color:#a6e22e">name&lt;/span>(&lt;span style="color:#a6e22e">param&lt;/span>&lt;span style="color:#f92672">...&lt;/span>) (&lt;span style="color:#a6e22e">result&lt;/span>&lt;span style="color:#f92672">...&lt;/span>) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">body&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>形式参数列表描述了函数的参数名以及参数类型。这些参数作为局部变量，其值由参数调用者提供。返回值列表描述了函数返回值的变量名以及类型。如果函数返回一个无名变量或者没有返回值，返回值列表的括号是可以省略的。如果一个函数声明不包括返回值列表，那么函数体执行完毕后，不会返回任何值。&lt;/p></description></item><item><title>golang基础结构</title><link>https://daemon365.dev/post/go/golang_infrastructure/</link><pubDate>Sat, 22 Jun 2019 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/go/golang_infrastructure/</guid><description>&lt;h2 id="命名">命名
+&lt;a class="header-anchor" href="#%e5%91%bd%e5%90%8d">&lt;/a>
+&lt;/h2>&lt;p>Go语言中的&lt;strong>函数名&lt;/strong>、&lt;strong>变量名&lt;/strong>、&lt;strong>常量名&lt;/strong>、&lt;strong>类型名&lt;/strong>、&lt;strong>语句标号&lt;/strong>和&lt;strong>包名&lt;/strong>等所有的命名,都遵循一个简单的命名规则：一个名字必须以一个字母（Unicode字母）或下划线开头,后面可以跟任意数量的&lt;strong>字母&lt;/strong>、&lt;strong>数字&lt;/strong>或&lt;strong>下划线&lt;/strong>.大写字母和小写字母是不同的：heapSort和Heapsort是两个不同的名字.&lt;/p></description></item><item><title>golang基础类型</title><link>https://daemon365.dev/post/go/golang_basic_types/</link><pubDate>Sat, 22 Jun 2019 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/go/golang_basic_types/</guid><description>&lt;h2 id="整型">整型
+&lt;a class="header-anchor" href="#%e6%95%b4%e5%9e%8b">&lt;/a>
+&lt;/h2>&lt;p>Go语言同时提供了有符号和无符号类型的整数运算。这里有&lt;strong>int8&lt;/strong>、&lt;strong>int16&lt;/strong>、&lt;strong>int32&lt;/strong>和&lt;strong>int64&lt;/strong>四种截然不同大小的有符号整数类型，分别对应8、16、32、64bit大小的有符号整数，与此对应的是&lt;strong>uint8&lt;/strong>、&lt;strong>uint16&lt;/strong>、&lt;strong>uint32&lt;/strong>和&lt;strong>uint64&lt;/strong>四种无符号整数类型。&lt;/p></description></item><item><title>golang接口</title><link>https://daemon365.dev/post/go/golang_interface/</link><pubDate>Sat, 22 Jun 2019 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/go/golang_interface/</guid><description>&lt;h2 id="接口的定义">接口的定义
+&lt;a class="header-anchor" href="#%e6%8e%a5%e5%8f%a3%e7%9a%84%e5%ae%9a%e4%b9%89">&lt;/a>
+&lt;/h2>&lt;p>接口类型是对其它类型行为的抽象和概括；因为接口类型不会和特定的实现细节绑定在一起，通过这种抽象的方式我们可以让我们的函数更加灵活和更具有适应能力。&lt;/p></description></item><item><title>golang time包</title><link>https://daemon365.dev/post/go/golang_time_package/</link><pubDate>Fri, 21 Jun 2019 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/go/golang_time_package/</guid><description>&lt;h2 id="时间类型">时间类型
+&lt;a class="header-anchor" href="#%e6%97%b6%e9%97%b4%e7%b1%bb%e5%9e%8b">&lt;/a>
+&lt;/h2>&lt;p>time.Time类型表示时间。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2;">&lt;code class="language-go" data-lang="go">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">func&lt;/span> &lt;span style="color:#a6e22e">demo&lt;/span>() {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#a6e22e">now&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">time&lt;/span>.&lt;span style="color:#a6e22e">Now&lt;/span>() &lt;span style="color:#75715e">//获取当前时间
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Printf&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;Now:%v\n&amp;#34;&lt;/span>, &lt;span style="color:#a6e22e">now&lt;/span>) &lt;span style="color:#75715e">// Now:2020-08-19 21:53:31.1633023 +0800 CST m=+0.003989401
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#a6e22e">year&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">now&lt;/span>.&lt;span style="color:#a6e22e">Year&lt;/span>() &lt;span style="color:#75715e">//年
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#a6e22e">month&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">now&lt;/span>.&lt;span style="color:#a6e22e">Month&lt;/span>() &lt;span style="color:#75715e">//月
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#a6e22e">day&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">now&lt;/span>.&lt;span style="color:#a6e22e">Day&lt;/span>() &lt;span style="color:#75715e">//日
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#a6e22e">hour&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">now&lt;/span>.&lt;span style="color:#a6e22e">Hour&lt;/span>() &lt;span style="color:#75715e">//小时
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#a6e22e">minute&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">now&lt;/span>.&lt;span style="color:#a6e22e">Minute&lt;/span>() &lt;span style="color:#75715e">//分钟
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#a6e22e">second&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">now&lt;/span>.&lt;span style="color:#a6e22e">Second&lt;/span>() &lt;span style="color:#75715e">//秒
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Printf&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;%d-%02d-%02d %02d:%02d:%02d\n&amp;#34;&lt;/span>, &lt;span style="color:#a6e22e">year&lt;/span>, &lt;span style="color:#a6e22e">month&lt;/span>, &lt;span style="color:#a6e22e">day&lt;/span>, &lt;span style="color:#a6e22e">hour&lt;/span>, &lt;span style="color:#a6e22e">minute&lt;/span>, &lt;span style="color:#a6e22e">second&lt;/span>) &lt;span style="color:#75715e">// 2020-08-19 21:53:31
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="时间戳">时间戳
+&lt;a class="header-anchor" href="#%e6%97%b6%e9%97%b4%e6%88%b3">&lt;/a>
+&lt;/h2>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2;">&lt;code class="language-go" data-lang="go">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">func&lt;/span> &lt;span style="color:#a6e22e">stamp&lt;/span>() {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#a6e22e">now&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">time&lt;/span>.&lt;span style="color:#a6e22e">Now&lt;/span>() &lt;span style="color:#75715e">//获取当前时间
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#a6e22e">timestamp1&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">now&lt;/span>.&lt;span style="color:#a6e22e">Unix&lt;/span>() &lt;span style="color:#75715e">//时间戳
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#a6e22e">timestamp2&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">now&lt;/span>.&lt;span style="color:#a6e22e">UnixNano&lt;/span>() &lt;span style="color:#75715e">//纳秒时间戳
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Printf&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;秒时间戳:%v\n&amp;#34;&lt;/span>, &lt;span style="color:#a6e22e">timestamp1&lt;/span>) &lt;span style="color:#75715e">// 秒时间戳:1597845356
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Printf&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;纳秒时间戳:%v\n&amp;#34;&lt;/span>, &lt;span style="color:#a6e22e">timestamp2&lt;/span>) &lt;span style="color:#75715e">// 纳秒时间戳:1597845356562315400
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>使用time.Unix()函数可以将时间戳转为时间格式。&lt;/p></description></item><item><title>About me</title><link>https://daemon365.dev/about/</link><pubDate>Thu, 20 Jun 2019 12:00:00 +0800</pubDate><guid>https://daemon365.dev/about/</guid><description>&lt;h2 id="follow-me">Follow Me
+&lt;a class="header-anchor" href="#follow-me">&lt;/a>
+&lt;/h2>&lt;ul>
+&lt;li>
+&lt;a href="https://github.com/daemon365" title="My Github" rel="noopener external nofollow noreferrer" target="_blank" class=" exturl">
+ My Github
+ 
+ &lt;i class="fa fa-external-link-alt">&lt;/i>
+ 
+&lt;/a>&lt;/li>
+&lt;li>
+&lt;a href="https://space.bilibili.com/437910315" title="My Bilibili" rel="noopener external nofollow noreferrer" target="_blank" class=" exturl">
+ My Bilibili
+ 
+ &lt;i class="fa fa-external-link-alt">&lt;/i>
+ 
+&lt;/a>&lt;/li>
+&lt;li>
+&lt;a href="mailto://daemon365@foxmail.com" title="My Email" >
+ My Email
+ 
+&lt;/a>&lt;/li>
+&lt;/ul></description></item><item><title>golang error错误处理</title><link>https://daemon365.dev/post/go/golang_error_error_handling/</link><pubDate>Thu, 20 Jun 2019 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/go/golang_error_error_handling/</guid><description>&lt;h2 id="error定义">error定义
+&lt;a class="header-anchor" href="#error%e5%ae%9a%e4%b9%89">&lt;/a>
+&lt;/h2>&lt;h3 id="数据结构">数据结构
+&lt;a class="header-anchor" href="#%e6%95%b0%e6%8d%ae%e7%bb%93%e6%9e%84">&lt;/a>
+&lt;/h3>&lt;p>go语言error是一普通的值，实现方式为简单一个接口。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2;">&lt;code class="language-go" data-lang="go">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// The error built-in interface type is the conventional interface for
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// representing an error condition, with the nil value representing no error.
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">type&lt;/span> &lt;span style="color:#66d9ef">error&lt;/span> &lt;span style="color:#66d9ef">interface&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">Error&lt;/span>() &lt;span style="color:#66d9ef">string&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>创建error&lt;/p>
+&lt;p>使用&lt;code>errors.New()&lt;/code>&lt;/p></description></item><item><title>golang fmt包</title><link>https://daemon365.dev/post/go/golang_fmt_package/</link><pubDate>Thu, 20 Jun 2019 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/go/golang_fmt_package/</guid><description>&lt;h2 id="fmt">fmt
+&lt;a class="header-anchor" href="#fmt">&lt;/a>
+&lt;/h2>&lt;p>fmt包实现了类似C语言printf和scanf的格式化I/O。主要分为向外输出内容和获取输入内容两大部分。&lt;/p>
+&lt;h2 id="向外输出">向外输出
+&lt;a class="header-anchor" href="#%e5%90%91%e5%a4%96%e8%be%93%e5%87%ba">&lt;/a>
+&lt;/h2>&lt;p>标准库fmt提供了以下几种输出相关函数。&lt;/p></description></item></channel></rss>

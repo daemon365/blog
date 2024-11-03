@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Boltdb on Daemon</title><link>https://daemon365.dev/tags/boltdb/</link><description>Recent content in Boltdb on Daemon</description><generator>Hugo</generator><language>zh-CN</language><lastBuildDate>Sat, 15 Jun 2024 16:14:00 +0800</lastBuildDate><atom:link href="https://daemon365.dev/tags/boltdb/rss.xml" rel="self" type="application/rss+xml"/><item><title>boltdb 原理</title><link>https://daemon365.dev/post/cloud/boltdb_principles/</link><pubDate>Sat, 15 Jun 2024 16:14:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/boltdb_principles/</guid><description>&lt;h2 id="简介">简介
+&lt;a class="header-anchor" href="#%e7%ae%80%e4%bb%8b">&lt;/a>
+&lt;/h2>&lt;p>介绍及简单使用：https://www.cnblogs.com/daemon365/p/17690167.html
+源码地址：https://github.com/etcd-io/bbolt&lt;/p></description></item><item><title>etcd watch 实现原理</title><link>https://daemon365.dev/post/cloud/etcd_watch_implementation_principle/</link><pubDate>Mon, 10 Jun 2024 14:16:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/etcd_watch_implementation_principle/</guid><description>&lt;h2 id="介绍">介绍
+&lt;a class="header-anchor" href="#%e4%bb%8b%e7%bb%8d">&lt;/a>
+&lt;/h2>&lt;p>在 etcd 中，watch 是一个非常重要的特性，它可以让客户端监控 etcd 中的 key 或者一组 key，当 key 发生变化时，etcd 会通知客户端。本文将介绍 etcd watch 的实现原理。&lt;/p></description></item><item><title>etcd MVCC 存储结构及流程</title><link>https://daemon365.dev/post/cloud/etcd_mvcc_storage_structure_and_process/</link><pubDate>Sun, 26 May 2024 18:00:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/etcd_mvcc_storage_structure_and_process/</guid><description>&lt;h2 id="什么是-mvcc">什么是 MVCC
+&lt;a class="header-anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af-mvcc">&lt;/a>
+&lt;/h2>&lt;p>MVCC 是 Multi-Version Concurrency Control 的缩写，即多版本并发控制。它是一种并发控制的方法，用于在数据库系统中实现事务的隔离性。MVCC 是一种乐观锁机制，它通过保存数据的多个版本来实现事务的隔禽性。在 etcd 中，MVCC 是用于实现数据的版本控制的。而且可以查看历史版本的数据。&lt;/p></description></item><item><title>boltdb 介绍</title><link>https://daemon365.dev/post/cloud/boltdb_basics/</link><pubDate>Wed, 08 May 2024 20:56:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/boltdb_basics/</guid><description>&lt;h2 id="介绍">介绍
+&lt;a class="header-anchor" href="#%e4%bb%8b%e7%bb%8d">&lt;/a>
+&lt;/h2>&lt;p>&lt;code>BoltDB&lt;/code> 是一个用 Go 语言编写的嵌入式键/值数据库。以下是关于 BoltDB 的一些基本介绍：&lt;/p>
+&lt;ul>
+&lt;li>&lt;strong>键/值存储&lt;/strong>: BoltDB 为应用程序提供了简单的键/值存储接口。&lt;/li>
+&lt;li>&lt;strong>事务&lt;/strong>: BoltDB 支持完整的 ACID 事务。&lt;/li>
+&lt;li>&lt;strong>嵌入式&lt;/strong>: 与像 MySQL 或 PostgreSQL 这样的数据库系统不同，BoltDB 不运行在单独的服务器进程中。它作为一个库被直接嵌入到你的应用程序中。&lt;/li>
+&lt;li>&lt;strong>单文件存储&lt;/strong>: 所有的数据都存储在一个文件中，这使得备份和迁移变得简单。&lt;/li>
+&lt;li>&lt;strong>高效的二进制存储&lt;/strong>: 数据在磁盘上使用 B+ 树结构存储，这为随机读取提供了高性能。&lt;/li>
+&lt;li>&lt;strong>前缀扫描&lt;/strong>: 可以很容易地按键的前缀进行扫描，这使得它适用于范围查询。&lt;/li>
+&lt;li>&lt;strong>没有外部依赖&lt;/strong>: BoltDB 不依赖于任何外部系统或库。&lt;/li>
+&lt;li>&lt;strong>线程安全&lt;/strong>: BoltDB 是线程安全的，可以在多个 goroutines 中并发地使用。&lt;/li>
+&lt;/ul>
+&lt;p>BoltDB 特别适用于需要一个轻量级、高性能、易于部署和维护的数据库解决方案的场景。&lt;/p></description></item><item><title>golang操作etcd</title><link>https://daemon365.dev/post/go/golang_operates_etcd/</link><pubDate>Sun, 08 Jan 2023 20:56:00 +0800</pubDate><guid>https://daemon365.dev/post/go/golang_operates_etcd/</guid><description>&lt;p>etcd是近几年比较火热的一个开源的、分布式的键值对数据存储系统，提供共享配置、服务的注册和发现，本文主要介绍etcd的安装和使用。&lt;/p>
+&lt;h2 id="etcd介绍">etcd介绍
+&lt;a class="header-anchor" href="#etcd%e4%bb%8b%e7%bb%8d">&lt;/a>
+&lt;/h2>&lt;p>
+&lt;a href="https://etcd.io/" title="etcd" rel="noopener external nofollow noreferrer" target="_blank" class=" exturl">
+ etcd
+ 
+ &lt;i class="fa fa-external-link-alt">&lt;/i>
+ 
+&lt;/a>是使用Go语言开发的一个开源的、高可用的分布式key-value存储系统，可以用于配置共享和服务的注册和发现。&lt;/p></description></item></channel></rss>

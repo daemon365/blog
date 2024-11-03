@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Linux on Daemon</title><link>https://daemon365.dev/tags/linux/</link><description>Recent content in Linux on Daemon</description><generator>Hugo</generator><language>zh-CN</language><lastBuildDate>Thu, 19 Aug 2021 00:00:00 +0800</lastBuildDate><atom:link href="https://daemon365.dev/tags/linux/rss.xml" rel="self" type="application/rss+xml"/><item><title>Linux基础系统优化</title><link>https://daemon365.dev/post/cloud/linux_basic_system_optimization/</link><pubDate>Thu, 19 Aug 2021 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/linux_basic_system_optimization/</guid><description>&lt;h2 id="linux基础系统优化">Linux基础系统优化
+&lt;a class="header-anchor" href="#linux%e5%9f%ba%e7%a1%80%e7%b3%bb%e7%bb%9f%e4%bc%98%e5%8c%96">&lt;/a>
+&lt;/h2>&lt;p>Linux的网络功能相当强悍，一时之间我们无法了解所有的网络命令，在配置服务器基础环境时，先了解下网络参数设定命令。&lt;/p>
+&lt;ul>
+&lt;li>ifconfig　　查询、设置网卡和ip等参数&lt;/li>
+&lt;li>ifup,ifdown 脚本命令，更简单的方式启动关闭网络&lt;/li>
+&lt;li>ip　　符合指令，直接修改上述功能&lt;/li>
+&lt;/ul>
+&lt;p>在我们刚装好linux的时候，需要用xshell进行远程连接，那就得获取ip地址，有时候网卡默认是没启动的，Linux也就拿不到ip地址，因此我们得手动启动网卡&lt;/p></description></item><item><title>Linux核心知识</title><link>https://daemon365.dev/post/cloud/linux_core_knowledge/</link><pubDate>Sun, 15 Aug 2021 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/linux_core_knowledge/</guid><description>&lt;h2 id="电脑辅助人脑的工具">电脑：辅助人脑的工具
+&lt;a class="header-anchor" href="#%e7%94%b5%e8%84%91%e8%be%85%e5%8a%a9%e4%ba%ba%e8%84%91%e7%9a%84%e5%b7%a5%e5%85%b7">&lt;/a>
+&lt;/h2>&lt;p>现在的人们几乎无时无刻都会碰电脑！不管是桌上型电脑(桌机)、笔记型电脑(笔电)、平板电脑、智慧型手机等等，这些东西都算是电脑。虽然接触的这么多，但是，你了解电脑里面的元件有什么吗？以桌机来说，电脑的机壳里面含有什么元件？不同的电脑可以应用在哪些工作？你生活周遭有哪些电器用品内部是含有电脑相关元件的？底下我们就来谈一谈这些东西呢！&lt;/p></description></item><item><title>Linux常用命令</title><link>https://daemon365.dev/post/cloud/common_linux_commands/</link><pubDate>Wed, 11 Aug 2021 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/common_linux_commands/</guid><description>&lt;h2 id="常用指令">常用指令
+&lt;a class="header-anchor" href="#%e5%b8%b8%e7%94%a8%e6%8c%87%e4%bb%a4">&lt;/a>
+&lt;/h2>&lt;ol>
+&lt;li>
+&lt;p>&lt;code>ls&lt;/code>	显示文件或目录&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>-l&lt;/code> 	列出文件详细信息l(list)&lt;/li>
+&lt;li>&lt;code>-a&lt;/code> 列出当前目录下所有文件及目录，包括隐藏的a(all)&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;code>mkdir&lt;/code> 创建目录&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>-p&lt;/code> 创建目录，若无父目录，则创建p(parent)&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;code>cd&lt;/code> 切换目录&lt;/p></description></item><item><title>nginx简介,使用</title><link>https://daemon365.dev/post/cloud/introduction_to_nginx__usage/</link><pubDate>Tue, 10 Mar 2020 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/introduction_to_nginx__usage/</guid><description>&lt;h2 id="nginx是什么">nginx是什么
+&lt;a class="header-anchor" href="#nginx%e6%98%af%e4%bb%80%e4%b9%88">&lt;/a>
+&lt;/h2>&lt;p>nginx是一个开源的，支持高性能，高并发的www服务和代理服务软件。&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>支持高并发，能支持几万并发连接&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>资源消耗少，在3万并发连接下开启10个nginx线程消耗的内存不到200M&lt;/p></description></item></channel></rss>

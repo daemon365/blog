@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Cri on Daemon</title><link>https://daemon365.dev/tags/cri/</link><description>Recent content in Cri on Daemon</description><generator>Hugo</generator><language>zh-CN</language><lastBuildDate>Thu, 09 May 2024 20:56:00 +0800</lastBuildDate><atom:link href="https://daemon365.dev/tags/cri/rss.xml" rel="self" type="application/rss+xml"/><item><title>docker containerd runc containerd-shim等组件的关系</title><link>https://daemon365.dev/post/cloud/the_relationship_between_docker_containerd_runc_containerd_shim_and_other_components/</link><pubDate>Thu, 09 May 2024 20:56:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/the_relationship_between_docker_containerd_runc_containerd_shim_and_other_components/</guid><description>&lt;h2 id="早期-kubelet-创建容器工作原理">早期 kubelet 创建容器工作原理
+&lt;a class="header-anchor" href="#%e6%97%a9%e6%9c%9f-kubelet-%e5%88%9b%e5%bb%ba%e5%ae%b9%e5%99%a8%e5%b7%a5%e4%bd%9c%e5%8e%9f%e7%90%86">&lt;/a>
+&lt;/h2>&lt;p>因为 docker 出生的比 k8s 早，所以 k8s 早期的容器运行时都是基于 docker 的，kubelet 通过 docker 的 api 创建容器。后来，k8s 官方不想绑死在 docker 这架马车上，就把容器运行时抽象出来，定义了一个接口，叫 CRI (
+&lt;a href="https://github.com/kubernetes/cri-api" title="container runtime interface" rel="noopener external nofollow noreferrer" target="_blank" class=" exturl">
+ container runtime interface
+ 
+ &lt;i class="fa fa-external-link-alt">&lt;/i>
+ 
+&lt;/a>)，容器运行时接口, 通过这个接口，kubelet 可以和任何容器运行时交互。但是，docker 并没有实现这个接口，k8s 也不想直接失去 docker 的用户，所以 k8s 官方在 kubelet 中实现了一个叫 docker-shim 的组件，这个组件简单来说就是把 cri 接口转换成 docker 的 api，这样 kubelet 就可以和 docker 交互了, 这个组件在 kuberbetes 1.24 版本中已经被移除了。至于实现了 cri 接口的容器运行时，比如 containerd，cri-o 等，kubelet 可以直接和它们交互。&lt;/p></description></item></channel></rss>

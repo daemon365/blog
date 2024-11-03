@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Kubernetes on Daemon</title><link>https://daemon365.dev/tags/kubernetes/</link><description>Recent content in Kubernetes on Daemon</description><generator>Hugo</generator><language>zh-CN</language><lastBuildDate>Sat, 02 Nov 2024 17:42:54 +0800</lastBuildDate><atom:link href="https://daemon365.dev/tags/kubernetes/rss.xml" rel="self" type="application/rss+xml"/><item><title>kube-apiserver 高可用，keepalived + haproxy</title><link>https://daemon365.dev/post/cloud/keepalived_haproxy/</link><pubDate>Sat, 02 Nov 2024 17:42:54 +0800</pubDate><guid>https://daemon365.dev/post/cloud/keepalived_haproxy/</guid><description>&lt;h2 id="为什么要做高可用">为什么要做高可用
+&lt;a class="header-anchor" href="#%e4%b8%ba%e4%bb%80%e4%b9%88%e8%a6%81%e5%81%9a%e9%ab%98%e5%8f%af%e7%94%a8">&lt;/a>
+&lt;/h2>&lt;p>在生产环境中，kubernetes 集群中会多多个 master 节点，每个 master 节点上都会部署 kube-apiserver 服务，实现高可用。但是 client 访问 kube-apiserver 时，需要指定 ip 或者域名，这样会出现单点故障。官方推荐的做法是使用一个负载均衡器，将多个 kube-apiserver 服务负载均衡，实现高可用，但很多时候我们是没有这个条件的。这时候就得想想办法了，比如 nignx 转发，但是 nginx 也是单点。域名的方式，但是这种方式生效时间较长，不太适合紧急情况。所以这里介绍一种使用 keepalived + haproxy 的方式实现 kube-apiserver 的高可用。这是一共公用 IP 的方式，当主节点宕机时，VIP 会自动切换到备节点，实现高可用。&lt;/p></description></item><item><title>boltdb 原理</title><link>https://daemon365.dev/post/cloud/boltdb_principles/</link><pubDate>Sat, 15 Jun 2024 16:14:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/boltdb_principles/</guid><description>&lt;h2 id="简介">简介
+&lt;a class="header-anchor" href="#%e7%ae%80%e4%bb%8b">&lt;/a>
+&lt;/h2>&lt;p>介绍及简单使用：https://www.cnblogs.com/daemon365/p/17690167.html
+源码地址：https://github.com/etcd-io/bbolt&lt;/p></description></item><item><title>etcd watch 实现原理</title><link>https://daemon365.dev/post/cloud/etcd_watch_implementation_principle/</link><pubDate>Mon, 10 Jun 2024 14:16:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/etcd_watch_implementation_principle/</guid><description>&lt;h2 id="介绍">介绍
+&lt;a class="header-anchor" href="#%e4%bb%8b%e7%bb%8d">&lt;/a>
+&lt;/h2>&lt;p>在 etcd 中，watch 是一个非常重要的特性，它可以让客户端监控 etcd 中的 key 或者一组 key，当 key 发生变化时，etcd 会通知客户端。本文将介绍 etcd watch 的实现原理。&lt;/p></description></item><item><title>etcd MVCC 存储结构及流程</title><link>https://daemon365.dev/post/cloud/etcd_mvcc_storage_structure_and_process/</link><pubDate>Sun, 26 May 2024 18:00:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/etcd_mvcc_storage_structure_and_process/</guid><description>&lt;h2 id="什么是-mvcc">什么是 MVCC
+&lt;a class="header-anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af-mvcc">&lt;/a>
+&lt;/h2>&lt;p>MVCC 是 Multi-Version Concurrency Control 的缩写，即多版本并发控制。它是一种并发控制的方法，用于在数据库系统中实现事务的隔离性。MVCC 是一种乐观锁机制，它通过保存数据的多个版本来实现事务的隔禽性。在 etcd 中，MVCC 是用于实现数据的版本控制的。而且可以查看历史版本的数据。&lt;/p></description></item><item><title>istio sidecar 工作方式</title><link>https://daemon365.dev/post/cloud/how_istio_sidecar_works/</link><pubDate>Sun, 12 May 2024 17:40:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/how_istio_sidecar_works/</guid><description>&lt;h2 id="istio-是什么">istio 是什么
+&lt;a class="header-anchor" href="#istio-%e6%98%af%e4%bb%80%e4%b9%88">&lt;/a>
+&lt;/h2>&lt;p>Istio 是一个开放源代码的服务网格，它为基于微服务的应用程序提供了一种统一的方式来连接、保护、监控和管理服务。Istio 主要解决的是在微服务架构中的服务间通信的复杂性问题，它通过提供服务间的负载均衡、服务到服务的认证、监控以及服务的弹性（例如重试、熔断等）来实现。&lt;/p></description></item><item><title>docker containerd runc containerd-shim等组件的关系</title><link>https://daemon365.dev/post/cloud/the_relationship_between_docker_containerd_runc_containerd_shim_and_other_components/</link><pubDate>Thu, 09 May 2024 20:56:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/the_relationship_between_docker_containerd_runc_containerd_shim_and_other_components/</guid><description>&lt;h2 id="早期-kubelet-创建容器工作原理">早期 kubelet 创建容器工作原理
+&lt;a class="header-anchor" href="#%e6%97%a9%e6%9c%9f-kubelet-%e5%88%9b%e5%bb%ba%e5%ae%b9%e5%99%a8%e5%b7%a5%e4%bd%9c%e5%8e%9f%e7%90%86">&lt;/a>
+&lt;/h2>&lt;p>因为 docker 出生的比 k8s 早，所以 k8s 早期的容器运行时都是基于 docker 的，kubelet 通过 docker 的 api 创建容器。后来，k8s 官方不想绑死在 docker 这架马车上，就把容器运行时抽象出来，定义了一个接口，叫 CRI (
+&lt;a href="https://github.com/kubernetes/cri-api" title="container runtime interface" rel="noopener external nofollow noreferrer" target="_blank" class=" exturl">
+ container runtime interface
+ 
+ &lt;i class="fa fa-external-link-alt">&lt;/i>
+ 
+&lt;/a>)，容器运行时接口, 通过这个接口，kubelet 可以和任何容器运行时交互。但是，docker 并没有实现这个接口，k8s 也不想直接失去 docker 的用户，所以 k8s 官方在 kubelet 中实现了一个叫 docker-shim 的组件，这个组件简单来说就是把 cri 接口转换成 docker 的 api，这样 kubelet 就可以和 docker 交互了, 这个组件在 kuberbetes 1.24 版本中已经被移除了。至于实现了 cri 接口的容器运行时，比如 containerd，cri-o 等，kubelet 可以直接和它们交互。&lt;/p></description></item><item><title>boltdb 介绍</title><link>https://daemon365.dev/post/cloud/boltdb_basics/</link><pubDate>Wed, 08 May 2024 20:56:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/boltdb_basics/</guid><description>&lt;h2 id="介绍">介绍
+&lt;a class="header-anchor" href="#%e4%bb%8b%e7%bb%8d">&lt;/a>
+&lt;/h2>&lt;p>&lt;code>BoltDB&lt;/code> 是一个用 Go 语言编写的嵌入式键/值数据库。以下是关于 BoltDB 的一些基本介绍：&lt;/p>
+&lt;ul>
+&lt;li>&lt;strong>键/值存储&lt;/strong>: BoltDB 为应用程序提供了简单的键/值存储接口。&lt;/li>
+&lt;li>&lt;strong>事务&lt;/strong>: BoltDB 支持完整的 ACID 事务。&lt;/li>
+&lt;li>&lt;strong>嵌入式&lt;/strong>: 与像 MySQL 或 PostgreSQL 这样的数据库系统不同，BoltDB 不运行在单独的服务器进程中。它作为一个库被直接嵌入到你的应用程序中。&lt;/li>
+&lt;li>&lt;strong>单文件存储&lt;/strong>: 所有的数据都存储在一个文件中，这使得备份和迁移变得简单。&lt;/li>
+&lt;li>&lt;strong>高效的二进制存储&lt;/strong>: 数据在磁盘上使用 B+ 树结构存储，这为随机读取提供了高性能。&lt;/li>
+&lt;li>&lt;strong>前缀扫描&lt;/strong>: 可以很容易地按键的前缀进行扫描，这使得它适用于范围查询。&lt;/li>
+&lt;li>&lt;strong>没有外部依赖&lt;/strong>: BoltDB 不依赖于任何外部系统或库。&lt;/li>
+&lt;li>&lt;strong>线程安全&lt;/strong>: BoltDB 是线程安全的，可以在多个 goroutines 中并发地使用。&lt;/li>
+&lt;/ul>
+&lt;p>BoltDB 特别适用于需要一个轻量级、高性能、易于部署和维护的数据库解决方案的场景。&lt;/p></description></item><item><title>kube-proxy 流量流转方式</title><link>https://daemon365.dev/post/cloud/kube_proxy_traffic_flow_mode/</link><pubDate>Wed, 08 May 2024 17:40:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/kube_proxy_traffic_flow_mode/</guid><description>&lt;h2 id="简介">简介
+&lt;a class="header-anchor" href="#%e7%ae%80%e4%bb%8b">&lt;/a>
+&lt;/h2>&lt;p>&lt;code>kube-proxy&lt;/code> 是 Kubernetes 集群中负责服务发现和负载均衡的组件之一。它是一个网络代理，运行在每个节点上, 用于 service 资源的负载均衡。它有两种模式：&lt;code>iptables&lt;/code> 和 &lt;code>ipvs&lt;/code>。&lt;/p></description></item><item><title>kubernetes 存储流程</title><link>https://daemon365.dev/post/cloud/kubernetes_storage_process/</link><pubDate>Fri, 03 May 2024 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/kubernetes_storage_process/</guid><description>&lt;h2 id="pv-与-pvc">PV 与 PVC
+&lt;a class="header-anchor" href="#pv-%e4%b8%8e-pvc">&lt;/a>
+&lt;/h2>&lt;p>PVC (PersistentVolumeClaim)，命名空间（namespace）级别的资源，由 用户 or StatefulSet 控制器（根据VolumeClaimTemplate） 创建。PVC 类似于 Pod，Pod 消耗 Node 资源，PVC 消耗 PV 资源。Pod 可以请求特定级别的资源（CPU 和内存），而 PVC 可以请求特定存储卷的大小及访问模式（Access Mode
+PV（PersistentVolume）是集群中的一块存储资源，可以是 NFS、iSCSI、Ceph、GlusterFS 等存储卷，PV 由集群管理员创建，然后由开发者使用 PVC 来申请 PV，PVC 是对 PV 的申请，类似于 Pod 对 Node 的申请。&lt;/p></description></item><item><title>kubelet 原理分析</title><link>https://daemon365.dev/post/cloud/analysis_of_kubelet_principles/</link><pubDate>Wed, 01 May 2024 12:40:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/analysis_of_kubelet_principles/</guid><description>&lt;h2 id="reference">Reference
+&lt;a class="header-anchor" href="#reference">&lt;/a>
+&lt;/h2>&lt;ul>
+&lt;li>
+&lt;a href="https://atbug.com/kubelet-source-code-analysis/" title="https://atbug.com/kubelet-source-code-analysis/" rel="noopener external nofollow noreferrer" target="_blank" class=" exturl">
+ https://atbug.com/kubelet-source-code-analysis/
+ 
+ &lt;i class="fa fa-external-link-alt">&lt;/i>
+ 
+&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;h2 id="kubelet-简介">kubelet 简介
+&lt;a class="header-anchor" href="#kubelet-%e7%ae%80%e4%bb%8b">&lt;/a>
+&lt;/h2>&lt;p>kubernetes 分为控制面和数据面，kubelet 就是数据面最主要的组件，在每个节点上启动，主要负责容器的创建、启停、监控、日志收集等工作。它是一个在每个集群节点上运行的代理，负责确保节点上的容器根据PodSpec（Pod定义文件）正确运行。&lt;/p></description></item><item><title>kubernetes CNI(Container Network Inferface)</title><link>https://daemon365.dev/post/cloud/kubernetes_cni_container_network_inferface/</link><pubDate>Sat, 20 Apr 2024 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/kubernetes_cni_container_network_inferface/</guid><description>&lt;h2 id="为什么需要-cni">为什么需要 CNI
+&lt;a class="header-anchor" href="#%e4%b8%ba%e4%bb%80%e4%b9%88%e9%9c%80%e8%a6%81-cni">&lt;/a>
+&lt;/h2>&lt;p>在 kubernetes 中，pod 的网络是使用 network namespace 隔离的，但是我们有时又需要互相访问网络，这就需要一个网络插件来实现 pod 之间的网络通信。CNI 就是为了解决这个问题而诞生的。CNI 是 container network interface 的缩写，它是一个规范，定义了容器运行时如何配置网络。CNI 插件是实现了 CNI 规范的二进制文件，它可以被容器运行时调用，来配置容器的网络。&lt;/p></description></item><item><title>kubernetes client-go功能介绍</title><link>https://daemon365.dev/post/cloud/kubernetes_client_go_function_introduction/</link><pubDate>Fri, 08 Mar 2024 17:11:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/kubernetes_client_go_function_introduction/</guid><description>&lt;h2 id="原文地址">原文地址
+&lt;a class="header-anchor" href="#%e5%8e%9f%e6%96%87%e5%9c%b0%e5%9d%80">&lt;/a>
+&lt;/h2>&lt;p>
+&lt;a href="https://haiyux.cc/2023/02/26/k8s-client-go/" title="https://haiyux.cc/2023/02/26/k8s-client-go/" rel="noopener external nofollow noreferrer" target="_blank" class=" exturl">
+ https://haiyux.cc/2023/02/26/k8s-client-go/
+ 
+ &lt;i class="fa fa-external-link-alt">&lt;/i>
+ 
+&lt;/a>&lt;/p>
+&lt;h2 id="client-go是什么">client-go是什么？
+&lt;a class="header-anchor" href="#client-go%e6%98%af%e4%bb%80%e4%b9%88">&lt;/a>
+&lt;/h2>&lt;p>client-go是Kubernetes官方提供的Go语言客户端库，用于与Kubernetes API服务器交互。使用client-go，您可以编写Go语言程序来创建、修改和删除Kubernetes对象，如Pod、Deployment、Service等。&lt;/p></description></item><item><title>容器启动流程（containerd 和 runc）</title><link>https://daemon365.dev/post/cloud/container_startup_process_containerd_and_runc/</link><pubDate>Thu, 07 Dec 2023 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/container_startup_process_containerd_and_runc/</guid><description>&lt;h2 id="启动流程">启动流程
+&lt;a class="header-anchor" href="#%e5%90%af%e5%8a%a8%e6%b5%81%e7%a8%8b">&lt;/a>
+&lt;/h2>&lt;p>containerd 作为一个 api 服务，提供了一系列的接口供外部调用，比如创建容器、删除容器、创建镜像、删除镜像等等。使用 docker 和 ctr 等工具，都是通过调用 containerd 的 api 来实现的。
+kubelet 通过 cri 调用 containerd 和这些不一样，后续我会介绍到。&lt;/p></description></item><item><title>kubernetes container device interface (CDI)</title><link>https://daemon365.dev/post/cloud/kubernetes_container_device_interface_cdi/</link><pubDate>Sun, 19 Nov 2023 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/kubernetes_container_device_interface_cdi/</guid><description>&lt;h2 id="cdi-是什么">CDI 是什么？
+&lt;a class="header-anchor" href="#cdi-%e6%98%af%e4%bb%80%e4%b9%88">&lt;/a>
+&lt;/h2>&lt;p>Container Device Interface (CDI) 是一个提议的标准，它定义了如何在容器运行时环境中向容器提供设备。这个提议的目的是使得设备供应商能够更容易地将其设备集成到 Kubernetes 集群中，而不必修改 Kubernetes 核心代码。&lt;/p></description></item><item><title>容器基础-- namespace,Cgroup 和 UnionFS</title><link>https://daemon365.dev/post/cloud/container_basics___namespace__cgroup_and_unionfs/</link><pubDate>Sat, 24 Jun 2023 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/container_basics___namespace__cgroup_and_unionfs/</guid><description>&lt;h2 id="namespace">Namespace
+&lt;a class="header-anchor" href="#namespace">&lt;/a>
+&lt;/h2>&lt;h3 id="什么是-namespace-">什么是 Namespace ？
+&lt;a class="header-anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af-namespace-">&lt;/a>
+&lt;/h3>&lt;p>这里的 &amp;ldquo;namespace&amp;rdquo; 指的是 Linux namespace 技术，它是 Linux 内核实现的一种隔离方案。简而言之，Linux 操作系统能够为不同的进程分配不同的 namespace，每个 namespace 都具有独立的资源分配，从而实现了进程间的隔离。如果你的 Linux 安装了 GCC，可以通过运行 &lt;code>man namespaces&lt;/code> 命令来查看相关文档，或者你也可以访问
+&lt;a href="http://man7.org/linux/man-pages/man7/namespaces.7.html" title="在线手册" rel="noopener external nofollow noreferrer" target="_blank" class=" exturl">
+ 在线手册
+ 
+ &lt;i class="fa fa-external-link-alt">&lt;/i>
+ 
+&lt;/a>获取更多信息。&lt;/p></description></item><item><title>golang操作etcd</title><link>https://daemon365.dev/post/go/golang_operates_etcd/</link><pubDate>Sun, 08 Jan 2023 20:56:00 +0800</pubDate><guid>https://daemon365.dev/post/go/golang_operates_etcd/</guid><description>&lt;p>etcd是近几年比较火热的一个开源的、分布式的键值对数据存储系统，提供共享配置、服务的注册和发现，本文主要介绍etcd的安装和使用。&lt;/p>
+&lt;h2 id="etcd介绍">etcd介绍
+&lt;a class="header-anchor" href="#etcd%e4%bb%8b%e7%bb%8d">&lt;/a>
+&lt;/h2>&lt;p>
+&lt;a href="https://etcd.io/" title="etcd" rel="noopener external nofollow noreferrer" target="_blank" class=" exturl">
+ etcd
+ 
+ &lt;i class="fa fa-external-link-alt">&lt;/i>
+ 
+&lt;/a>是使用Go语言开发的一个开源的、高可用的分布式key-value存储系统，可以用于配置共享和服务的注册和发现。&lt;/p></description></item><item><title>kubernetes集群最新版安装</title><link>https://daemon365.dev/post/cloud/kubernetes_cluster_latest_version_installation/</link><pubDate>Thu, 22 Sep 2022 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/kubernetes_cluster_latest_version_installation/</guid><description>&lt;h2 id="原文地址httpshaiyuxcc20220921k8s-install">原文地址：https://haiyux.cc/2022/09/21/k8s-install/
+&lt;a class="header-anchor" href="#%e5%8e%9f%e6%96%87%e5%9c%b0%e5%9d%80httpshaiyuxcc20220921k8s-install">&lt;/a>
+&lt;/h2>&lt;h2 id="虚拟机准备">虚拟机准备
+&lt;a class="header-anchor" href="#%e8%99%9a%e6%8b%9f%e6%9c%ba%e5%87%86%e5%a4%87">&lt;/a>
+&lt;/h2>&lt;p>我这里准备了三台虚拟机，分别部署一个master和两个node，操作系统位ubuntu 20.04。&lt;strong>以下为特殊说明为三台机器都要做此操作&lt;/strong>&lt;/p>
+&lt;h2 id="安装容器runtime">安装容器runtime
+&lt;a class="header-anchor" href="#%e5%ae%89%e8%a3%85%e5%ae%b9%e5%99%a8runtime">&lt;/a>
+&lt;/h2>&lt;p>之前，我们用的容器runtime基本都是docker，但是docker并没有实现k8s的CRI，是在kubelet的有一个组件叫docker-shim做转化，在kubernetes v1.24版本以上这个组件已经废弃，这里选择containerd做容器runtime。当然，containerd是可以使用docker的镜像的。如果非要使用docker的话，被kubernetes废弃的docker-shim被docker自己维护起来了，可以试试看。但是不建议纯纯的浪费资源。&lt;/p></description></item><item><title>Prometheus</title><link>https://daemon365.dev/post/cloud/prometheus/</link><pubDate>Fri, 20 Aug 2021 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/prometheus/</guid><description>&lt;h2 id="prometheus简介">Prometheus简介
+&lt;a class="header-anchor" href="#prometheus%e7%ae%80%e4%bb%8b">&lt;/a>
+&lt;/h2>&lt;h3 id="什么是-prometheus">什么是 Prometheus
+&lt;a class="header-anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af-prometheus">&lt;/a>
+&lt;/h3>&lt;p>
+&lt;a href="https://github.com/prometheus" title="Prometheus" rel="noopener external nofollow noreferrer" target="_blank" class=" exturl">
+ Prometheus
+ 
+ &lt;i class="fa fa-external-link-alt">&lt;/i>
+ 
+&lt;/a> 是在 
+&lt;a href="http://soundcloud.com/" title="Soundcloud" rel="noopener external nofollow noreferrer" target="_blank" class=" exturl">
+ Soundcloud
+ 
+ &lt;i class="fa fa-external-link-alt">&lt;/i>
+ 
+&lt;/a> 以开源软件的形式进行研发的系统监控和告警工具包，自此以后，许多公司和组织都采用了 Prometheus 作为监控告警工具。Prometheus 的开发者和用户社区非常活跃，它现在是一个独立的开源项目，可以独立于任何公司进行维护。Prometheus 于 2016 年 5 月加入 
+&lt;a href="https://cncf.io/" title="CNCF" rel="noopener external nofollow noreferrer" target="_blank" class=" exturl">
+ CNCF
+ 
+ &lt;i class="fa fa-external-link-alt">&lt;/i>
+ 
+&lt;/a> 基金会，成为继 
+&lt;a href="http://kubernetes.io/" title="Kubernetes" rel="noopener external nofollow noreferrer" target="_blank" class=" exturl">
+ Kubernetes
+ 
+ &lt;i class="fa fa-external-link-alt">&lt;/i>
+ 
+&lt;/a> 之后的第二个 CNCF 托管项目。&lt;/p></description></item></channel></rss>

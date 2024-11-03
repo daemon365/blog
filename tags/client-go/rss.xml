@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Client-Go on Daemon</title><link>https://daemon365.dev/tags/client-go/</link><description>Recent content in Client-Go on Daemon</description><generator>Hugo</generator><language>zh-CN</language><lastBuildDate>Fri, 08 Mar 2024 17:11:00 +0800</lastBuildDate><atom:link href="https://daemon365.dev/tags/client-go/rss.xml" rel="self" type="application/rss+xml"/><item><title>kubernetes client-go功能介绍</title><link>https://daemon365.dev/post/cloud/kubernetes_client_go_function_introduction/</link><pubDate>Fri, 08 Mar 2024 17:11:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/kubernetes_client_go_function_introduction/</guid><description>&lt;h2 id="原文地址">原文地址
+&lt;a class="header-anchor" href="#%e5%8e%9f%e6%96%87%e5%9c%b0%e5%9d%80">&lt;/a>
+&lt;/h2>&lt;p>
+&lt;a href="https://haiyux.cc/2023/02/26/k8s-client-go/" title="https://haiyux.cc/2023/02/26/k8s-client-go/" rel="noopener external nofollow noreferrer" target="_blank" class=" exturl">
+ https://haiyux.cc/2023/02/26/k8s-client-go/
+ 
+ &lt;i class="fa fa-external-link-alt">&lt;/i>
+ 
+&lt;/a>&lt;/p>
+&lt;h2 id="client-go是什么">client-go是什么？
+&lt;a class="header-anchor" href="#client-go%e6%98%af%e4%bb%80%e4%b9%88">&lt;/a>
+&lt;/h2>&lt;p>client-go是Kubernetes官方提供的Go语言客户端库，用于与Kubernetes API服务器交互。使用client-go，您可以编写Go语言程序来创建、修改和删除Kubernetes对象，如Pod、Deployment、Service等。&lt;/p></description></item></channel></rss>

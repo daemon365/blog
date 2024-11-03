@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Redis on Daemon</title><link>https://daemon365.dev/tags/redis/</link><description>Recent content in Redis on Daemon</description><generator>Hugo</generator><language>zh-CN</language><lastBuildDate>Sun, 20 Aug 2023 00:00:00 +0800</lastBuildDate><atom:link href="https://daemon365.dev/tags/redis/rss.xml" rel="self" type="application/rss+xml"/><item><title>redis主从同步</title><link>https://daemon365.dev/post/database/redis_master_slave_synchronization/</link><pubDate>Sun, 20 Aug 2023 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/database/redis_master_slave_synchronization/</guid><description>&lt;h2 id="redis主从同步">redis主从同步
+&lt;a class="header-anchor" href="#redis%e4%b8%bb%e4%bb%8e%e5%90%8c%e6%ad%a5">&lt;/a>
+&lt;/h2>&lt;p>&lt;img src="https://daemon365.dev/imgs/img-lazy-loading.gif" data-src="https://daemon365.dev/images/a9aeda50-50ab-4fe3-b94c-572cadf14613.png" alt="" />&lt;/p>
+&lt;p>原理：&lt;/p>
+&lt;ol>
+&lt;li>
+&lt;p>从服务器向主服务器发送 SYNC 命令。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>接到 SYNC 命令的主服务器会调用BGSAVE 命令，创建一个 RDB 文件，并使用缓冲区记录接下来执行的所有写命令。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>当主服务器执行完 BGSAVE 命令时，它会向从服务器发送 RDB 文件，而从服务器则会接收并载入这个文件。&lt;/p></description></item><item><title>redis发布订阅</title><link>https://daemon365.dev/post/database/redis_publish_subscribe/</link><pubDate>Sat, 20 Aug 2022 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/database/redis_publish_subscribe/</guid><description>&lt;h2 id="什么是发布和订阅">什么是发布和订阅
+&lt;a class="header-anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e5%8f%91%e5%b8%83%e5%92%8c%e8%ae%a2%e9%98%85">&lt;/a>
+&lt;/h2>&lt;p>Redis 发布订阅 (pub/sub) 是一种消息通信模式：发送者 (pub) 发送消息，订阅者 (sub) 接收消息。&lt;/p>
+&lt;p>Redis 客户端可以订阅任意数量的频道。&lt;/p>
+&lt;h2 id="发布和订阅">发布和订阅
+&lt;a class="header-anchor" href="#%e5%8f%91%e5%b8%83%e5%92%8c%e8%ae%a2%e9%98%85">&lt;/a>
+&lt;/h2>&lt;p>1、客户端可以订阅频道如下图&lt;/p>
+&lt;p>&lt;img src="https://daemon365.dev/imgs/img-lazy-loading.gif" data-src="https://daemon365.dev/images/96a0c4ca-666f-475e-8dd0-bfbd37f4dbb6.png" alt="" />&lt;/p>
+&lt;p>2、当给这个频道发布消息后，消息就会发送给订阅的客户端&lt;/p></description></item><item><title>分布式ID生成器及redis，etcd分布式锁</title><link>https://daemon365.dev/post/microservice/distributed_id_generator_and_redis__etcd_distributed_lock/</link><pubDate>Fri, 30 Apr 2021 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/microservice/distributed_id_generator_and_redis__etcd_distributed_lock/</guid><description>&lt;h2 id="分布式id生成器">分布式id生成器
+&lt;a class="header-anchor" href="#%e5%88%86%e5%b8%83%e5%bc%8fid%e7%94%9f%e6%88%90%e5%99%a8">&lt;/a>
+&lt;/h2>&lt;p>有时我们需要能够生成类似MySQL自增ID这样不断增大，同时又不会重复的id。以支持业务中的高并发场景。比较典型的，电商促销时，短时间内会有大量的订单涌入到系统，比如每秒10w+。明星出轨时，会有大量热情的粉丝发微博以表心意，同样会在短时间内产生大量的消息。&lt;/p></description></item><item><title>redis持久化</title><link>https://daemon365.dev/post/database/redis_persistence/</link><pubDate>Sat, 21 Mar 2020 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/database/redis_persistence/</guid><description>&lt;p>Redis是一种内存型数据库，一旦服务器进程退出，数据库的数据就会丢失，为了解决这个问题，Redis提供了两种持久化的方案，将内存中的数据保存到磁盘中，避免数据的丢失。&lt;/p></description></item><item><title>redis基础</title><link>https://daemon365.dev/post/database/redis_basics/</link><pubDate>Fri, 20 Mar 2020 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/database/redis_basics/</guid><description>&lt;h2 id="redis介绍">redis介绍
+&lt;a class="header-anchor" href="#redis%e4%bb%8b%e7%bb%8d">&lt;/a>
+&lt;/h2>&lt;p>Redis 是完全开源的，遵守 BSD 协议，是一个高性能的 key-value 数据库。&lt;/p>
+&lt;p>Redis 与其他 key - value 缓存产品有以下三个特点：&lt;/p>
+&lt;ul>
+&lt;li>Redis支持数据的持久化，可以将内存中的数据保存在磁盘中，重启的时候可以再次加载进行使用。&lt;/li>
+&lt;li>Redis不仅仅支持简单的key-value类型的数据，同时还提供list，set，zset，hash等数据结构的存储。&lt;/li>
+&lt;li>Redis支持数据的备份，即master-slave模式的数据备份。&lt;/li>
+&lt;/ul>
+&lt;h3 id="redis的安装">redis的安装
+&lt;a class="header-anchor" href="#redis%e7%9a%84%e5%ae%89%e8%a3%85">&lt;/a>
+&lt;/h3>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>brew install redis&lt;span style="color:#f92672">(&lt;/span>mac&lt;span style="color:#f92672">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>yum install redis&lt;span style="color:#f92672">(&lt;/span>centos&lt;span style="color:#f92672">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>apt-get install redis&lt;span style="color:#f92672">(&lt;/span>ubuntu&lt;span style="color:#f92672">)&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="redis的命令网站">redis的命令网站
+&lt;a class="header-anchor" href="#redis%e7%9a%84%e5%91%bd%e4%bb%a4%e7%bd%91%e7%ab%99">&lt;/a>
+&lt;/h2>&lt;p>
+&lt;a href="http://doc.redisfans.com/" title="Redis 命令参考 — Redis 命令参考 (redisfans.com)" rel="noopener external nofollow noreferrer" target="_blank" class=" exturl">
+ Redis 命令参考 — Redis 命令参考 (redisfans.com)
+ 
+ &lt;i class="fa fa-external-link-alt">&lt;/i>
+ 
+&lt;/a>&lt;/p></description></item><item><title>golang redis</title><link>https://daemon365.dev/post/go/golang_redis/</link><pubDate>Sun, 12 Jan 2020 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/go/golang_redis/</guid><description>&lt;h2 id="安装">安装
+&lt;a class="header-anchor" href="#%e5%ae%89%e8%a3%85">&lt;/a>
+&lt;/h2>&lt;p>下载第三方包:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>go get -u github.com/go-redis/redis/v9
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="连接">连接
+&lt;a class="header-anchor" href="#%e8%bf%9e%e6%8e%a5">&lt;/a>
+&lt;/h2>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2;">&lt;code class="language-go" data-lang="go">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// 定义一个rdis客户端
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#66d9ef">var&lt;/span> &lt;span style="color:#a6e22e">redisdb&lt;/span> &lt;span style="color:#f92672">*&lt;/span>&lt;span style="color:#a6e22e">redis&lt;/span>.&lt;span style="color:#a6e22e">Client&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// 初始化
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#66d9ef">func&lt;/span> &lt;span style="color:#a6e22e">initClient&lt;/span>() (&lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#66d9ef">error&lt;/span>) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#a6e22e">redisdb&lt;/span> = &lt;span style="color:#a6e22e">redis&lt;/span>.&lt;span style="color:#a6e22e">NewClient&lt;/span>(&lt;span style="color:#f92672">&amp;amp;&lt;/span>&lt;span style="color:#a6e22e">redis&lt;/span>.&lt;span style="color:#a6e22e">Options&lt;/span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#a6e22e">Addr&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;localhost:6379&amp;#34;&lt;/span>, &lt;span style="color:#75715e">// post端口
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#a6e22e">Password&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;&amp;#34;&lt;/span>, &lt;span style="color:#75715e">// 密码
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#a6e22e">DB&lt;/span>: &lt;span style="color:#ae81ff">0&lt;/span>, &lt;span style="color:#75715e">// 使用redis的库
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	})
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#a6e22e">_&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span> = &lt;span style="color:#a6e22e">redisdb&lt;/span>.&lt;span style="color:#a6e22e">Ping&lt;/span>(&lt;span style="color:#a6e22e">context&lt;/span>.&lt;span style="color:#a6e22e">Background&lt;/span>()).&lt;span style="color:#a6e22e">Result&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">!=&lt;/span> &lt;span style="color:#66d9ef">nil&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Println&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;连接失败&amp;#34;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">return&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">return&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="使用">使用
+&lt;a class="header-anchor" href="#%e4%bd%bf%e7%94%a8">&lt;/a>
+&lt;/h2>&lt;h3 id="setget示例">set/get示例
+&lt;a class="header-anchor" href="#setget%e7%a4%ba%e4%be%8b">&lt;/a>
+&lt;/h3>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2;">&lt;code class="language-go" data-lang="go">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">func&lt;/span> &lt;span style="color:#a6e22e">redisExample&lt;/span>() {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#a6e22e">ctx&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">context&lt;/span>.&lt;span style="color:#a6e22e">Background&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">redisdb&lt;/span>.&lt;span style="color:#a6e22e">Set&lt;/span>(&lt;span style="color:#a6e22e">ctx&lt;/span>, &lt;span style="color:#e6db74">&amp;#34;score&amp;#34;&lt;/span>, &lt;span style="color:#ae81ff">100&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>).&lt;span style="color:#a6e22e">Err&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">!=&lt;/span> &lt;span style="color:#66d9ef">nil&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Printf&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;set score failed, err:%v\n&amp;#34;&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">return&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#a6e22e">val&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">redisdb&lt;/span>.&lt;span style="color:#a6e22e">Get&lt;/span>(&lt;span style="color:#a6e22e">ctx&lt;/span>, &lt;span style="color:#e6db74">&amp;#34;score&amp;#34;&lt;/span>).&lt;span style="color:#a6e22e">Result&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">!=&lt;/span> &lt;span style="color:#66d9ef">nil&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Printf&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;get score failed, err:%v\n&amp;#34;&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">return&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Println&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;score&amp;#34;&lt;/span>, &lt;span style="color:#a6e22e">val&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#a6e22e">val2&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">redisdb&lt;/span>.&lt;span style="color:#a6e22e">Get&lt;/span>(&lt;span style="color:#a6e22e">ctx&lt;/span>, &lt;span style="color:#e6db74">&amp;#34;name&amp;#34;&lt;/span>).&lt;span style="color:#a6e22e">Result&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">==&lt;/span> &lt;span style="color:#a6e22e">redis&lt;/span>.&lt;span style="color:#a6e22e">Nil&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Println&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;name does not exist&amp;#34;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	} &lt;span style="color:#66d9ef">else&lt;/span> &lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">!=&lt;/span> &lt;span style="color:#66d9ef">nil&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Printf&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;get name failed, err:%v\n&amp;#34;&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">return&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	} &lt;span style="color:#66d9ef">else&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Println&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;name&amp;#34;&lt;/span>, &lt;span style="color:#a6e22e">val2&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="zset示例">zset示例
+&lt;a class="header-anchor" href="#zset%e7%a4%ba%e4%be%8b">&lt;/a>
+&lt;/h3>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2;">&lt;code class="language-go" data-lang="go">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">func&lt;/span> &lt;span style="color:#a6e22e">redisExample2&lt;/span>() {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#a6e22e">ctx&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">context&lt;/span>.&lt;span style="color:#a6e22e">Background&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#a6e22e">zsetKey&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#e6db74">&amp;#34;language_rank&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#a6e22e">languages&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> []&lt;span style="color:#f92672">*&lt;/span>&lt;span style="color:#a6e22e">redis&lt;/span>.&lt;span style="color:#a6e22e">Z&lt;/span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#f92672">&amp;amp;&lt;/span>&lt;span style="color:#a6e22e">redis&lt;/span>.&lt;span style="color:#a6e22e">Z&lt;/span>{&lt;span style="color:#a6e22e">Score&lt;/span>: &lt;span style="color:#ae81ff">90.0&lt;/span>, &lt;span style="color:#a6e22e">Member&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;Golang&amp;#34;&lt;/span>},
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#f92672">&amp;amp;&lt;/span>&lt;span style="color:#a6e22e">redis&lt;/span>.&lt;span style="color:#a6e22e">Z&lt;/span>{&lt;span style="color:#a6e22e">Score&lt;/span>: &lt;span style="color:#ae81ff">98.0&lt;/span>, &lt;span style="color:#a6e22e">Member&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;Java&amp;#34;&lt;/span>},
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#f92672">&amp;amp;&lt;/span>&lt;span style="color:#a6e22e">redis&lt;/span>.&lt;span style="color:#a6e22e">Z&lt;/span>{&lt;span style="color:#a6e22e">Score&lt;/span>: &lt;span style="color:#ae81ff">95.0&lt;/span>, &lt;span style="color:#a6e22e">Member&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;Python&amp;#34;&lt;/span>},
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#f92672">&amp;amp;&lt;/span>&lt;span style="color:#a6e22e">redis&lt;/span>.&lt;span style="color:#a6e22e">Z&lt;/span>{&lt;span style="color:#a6e22e">Score&lt;/span>: &lt;span style="color:#ae81ff">97.0&lt;/span>, &lt;span style="color:#a6e22e">Member&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;JavaScript&amp;#34;&lt;/span>},
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#f92672">&amp;amp;&lt;/span>&lt;span style="color:#a6e22e">redis&lt;/span>.&lt;span style="color:#a6e22e">Z&lt;/span>{&lt;span style="color:#a6e22e">Score&lt;/span>: &lt;span style="color:#ae81ff">99.0&lt;/span>, &lt;span style="color:#a6e22e">Member&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;C/C++&amp;#34;&lt;/span>},
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">// ZADD
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#a6e22e">num&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">redisdb&lt;/span>.&lt;span style="color:#a6e22e">ZAdd&lt;/span>(&lt;span style="color:#a6e22e">ctx&lt;/span>, &lt;span style="color:#a6e22e">zsetKey&lt;/span>, &lt;span style="color:#a6e22e">languages&lt;/span>&lt;span style="color:#f92672">...&lt;/span>).&lt;span style="color:#a6e22e">Result&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">!=&lt;/span> &lt;span style="color:#66d9ef">nil&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Printf&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;zadd failed, err:%v\n&amp;#34;&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">return&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Printf&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;zadd %d succ.\n&amp;#34;&lt;/span>, &lt;span style="color:#a6e22e">num&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">// 把Golang的分数加10
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#a6e22e">newScore&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">redisdb&lt;/span>.&lt;span style="color:#a6e22e">ZIncrBy&lt;/span>(&lt;span style="color:#a6e22e">ctx&lt;/span>, &lt;span style="color:#a6e22e">zsetKey&lt;/span>, &lt;span style="color:#ae81ff">10.0&lt;/span>, &lt;span style="color:#e6db74">&amp;#34;Golang&amp;#34;&lt;/span>).&lt;span style="color:#a6e22e">Result&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">!=&lt;/span> &lt;span style="color:#66d9ef">nil&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Printf&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;zincrby failed, err:%v\n&amp;#34;&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">return&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Printf&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;Golang&amp;#39;s score is %f now.\n&amp;#34;&lt;/span>, &lt;span style="color:#a6e22e">newScore&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">// 取分数最高的3个
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#a6e22e">ret&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">redisdb&lt;/span>.&lt;span style="color:#a6e22e">ZRevRangeWithScores&lt;/span>(&lt;span style="color:#a6e22e">ctx&lt;/span>, &lt;span style="color:#a6e22e">zsetKey&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>, &lt;span style="color:#ae81ff">2&lt;/span>).&lt;span style="color:#a6e22e">Result&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">!=&lt;/span> &lt;span style="color:#66d9ef">nil&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Printf&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;zrevrange failed, err:%v\n&amp;#34;&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">return&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">for&lt;/span> &lt;span style="color:#a6e22e">_&lt;/span>, &lt;span style="color:#a6e22e">z&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#66d9ef">range&lt;/span> &lt;span style="color:#a6e22e">ret&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Println&lt;/span>(&lt;span style="color:#a6e22e">z&lt;/span>.&lt;span style="color:#a6e22e">Member&lt;/span>, &lt;span style="color:#a6e22e">z&lt;/span>.&lt;span style="color:#a6e22e">Score&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">// 取95~100分的
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#a6e22e">op&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#f92672">&amp;amp;&lt;/span>&lt;span style="color:#a6e22e">redis&lt;/span>.&lt;span style="color:#a6e22e">ZRangeBy&lt;/span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#a6e22e">Min&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;95&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#a6e22e">Max&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;100&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#a6e22e">ret&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span> = &lt;span style="color:#a6e22e">redisdb&lt;/span>.&lt;span style="color:#a6e22e">ZRangeByScoreWithScores&lt;/span>(&lt;span style="color:#a6e22e">ctx&lt;/span>, &lt;span style="color:#a6e22e">zsetKey&lt;/span>, &lt;span style="color:#a6e22e">op&lt;/span>).&lt;span style="color:#a6e22e">Result&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">!=&lt;/span> &lt;span style="color:#66d9ef">nil&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Printf&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;zrangebyscore failed, err:%v\n&amp;#34;&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">return&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">for&lt;/span> &lt;span style="color:#a6e22e">_&lt;/span>, &lt;span style="color:#a6e22e">z&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#66d9ef">range&lt;/span> &lt;span style="color:#a6e22e">ret&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Println&lt;/span>(&lt;span style="color:#a6e22e">z&lt;/span>.&lt;span style="color:#a6e22e">Member&lt;/span>, &lt;span style="color:#a6e22e">z&lt;/span>.&lt;span style="color:#a6e22e">Score&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>输出结果如下：&lt;/p></description></item></channel></rss>

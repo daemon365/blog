@@ -1,0 +1,258 @@
+<!doctype html><html lang=zh-CN data-theme=light><head><meta charset=UTF-8><meta name=viewport content="width=device-width"><meta name=theme-color content="#222" media="(prefers-color-scheme: light)"><meta name=generator content="Hugo 0.136.5"><link rel="shortcut icon" type=image/x-icon href=/imgs/icons/favicon.ico><link rel=icon type=image/x-icon href=/imgs/icons/favicon.ico><link rel=icon type=image/png sizes=16x16 href=/imgs/icons/favicon.ico><link rel=icon type=image/png sizes=32x32 href=/imgs/icons/favicon.ico><link rel=apple-touch-icon sizes=180x180 href=/imgs/icons/favicon.ico><meta itemprop=name content="kube-apiserver 高可用，keepalived + haproxy"><meta itemprop=description content="Don't let yourself stop."><meta name=description content="Don't let yourself stop."><meta itemprop=datePublished zgotmplz><meta itemprop=dateModified zgotmplz><meta itemprop=image content="https://daemon365.dev/imgs/daemon365.png"><meta itemprop=keywords content="keepalived,haproxy,kubernetes"><meta property="og:type" content="article"><meta property="og:title" content="kube-apiserver 高可用，keepalived + haproxy"><meta property="og:description" content="Don't let yourself stop."><meta property="og:image" content="/imgs/daemon365.png"><meta property="og:image:width" content="312"><meta property="og:image:height" content="312"><meta property="og:image:type" content="image/jpeg/png/svg/jpg"><meta property="og:url" content="https://daemon365.dev/post/cloud/keepalived_haproxy/"><meta property="og:site_name" content="Daemon"><meta property="og:locale" content="zh-CN"><meta property="article:author" content="daemon365"><meta property="article:published_time" content="2024-11-02 17:42:54 +0800 +0800"><meta property="article:modified_time" content="2024-11-02 17:42:54 +0800 +0800"><link type=text/css rel=stylesheet href=https://daemon365.dev/3rd/font-awesome/6.6.0/css/all.min.css><link type=text/css rel=stylesheet href=https://daemon365.dev/3rd/animate.css/4.1.1/animate.min.css><link type=text/css rel=stylesheet href=https://daemon365.dev/3rd/viewerjs/1.11.6/viewer.min.css><link rel=stylesheet href=/css/main.min.d676189b0ac4b63b254e222668b8bedd7d6ba28666e76077ff3b7e23522b4a6d.css><script type=text/javascript>(function(){localDB={set:function(e,t,n){if(n===0)return;const s=new Date,o=n*864e5,i={value:t,expiry:s.getTime()+o};localStorage.setItem(e,JSON.stringify(i))},get:function(e){const t=localStorage.getItem(e);if(!t)return void 0;const n=JSON.parse(t),s=new Date;return s.getTime()>n.expiry?(localStorage.removeItem(e),void 0):n.value}},theme={active:function(){const e=localDB.get("theme");if(e==null)return;theme.toggle(e),window.matchMedia("(prefers-color-scheme: dark)").addListener(function(e){theme.toggle(e.matches?"dark":"light")})},toggle:function(e){document.documentElement.setAttribute("data-theme",e),localDB.set("theme",e,2);const t=document.querySelector("iframe.giscus-frame");if(t){const n={setConfig:{theme:e}};t.contentWindow.postMessage({giscus:n},"https://giscus.app")}}},theme.active()})(window)</script><script class=next-config data-name=page type=application/json>{"comments":true,"isHome":false,"isPage":true,"path":"keepalived_haproxy","permalink":"https://daemon365.dev/post/cloud/keepalived_haproxy/","title":"kube-apiserver 高可用，keepalived + haproxy","waline":{"js":[{"alias":"@waline/client","alias_name":"waline","file":"dist/pageview.js","name":"pageview","version":"2.15.8"},{"alias":"@waline/client","alias_name":"waline","file":"dist/comment.js","name":"comment","version":"2.15.8"}]}}</script><script type=text/javascript>document.addEventListener("DOMContentLoaded",()=>{var e=document.createElement("script");e.charset="UTF-8",e.id="LA_COLLECT",e.src="https://sdk.51.la/js-sdk-pro.min.js",e.async="true",e.onload=function(){LA.init({id:"JmAHxEAUVgyS8B1c",ck:"JmAHxEAUVgyS8B1c",autoTrack:!0})},document.head.appendChild(e)})</script><script type=text/javascript>document.addEventListener("DOMContentLoaded",()=>{var e=document.createElement("script");e.charset="UTF-8",e.src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js",e.async=!1,e.defer=!0,document.head.appendChild(e),e.onload=function(){NexT.utils.fmtBusuanzi()}})</script><title>kube-apiserver 高可用，keepalived + haproxy - Daemon</title><noscript><link rel=stylesheet href=/css/noscript.css></noscript></head><body itemscope itemtype=http://schema.org/WebPage class=use-motion><div class=headband></div><main class=main><header class=header itemscope itemtype=http://schema.org/WPHeader><div class=header-inner><div class=site-brand-container><div class=site-nav-toggle><div class=toggle aria-label role=button><span class=toggle-line></span>
+<span class=toggle-line></span>
+<span class=toggle-line></span></div></div><div class=site-meta><a href=/ class=brand rel=start><i class=logo-line></i><h1 class=site-title>Daemon</h1><i class=logo-line></i></a><p class=site-subtitle itemprop=description>Don't let yourself stop.</p></div><div class=site-nav-right><div class="toggle popup-trigger"><i class="fa fa-search fa-fw fa-lg"></i></div></div></div><nav class=site-nav><ul class="main-menu menu"><li class="menu-item menu-item-home"><a href=/ class=hvr-icon-pulse rel=section><i class="fa fa-home hvr-icon"></i>Home</a></li><li class="menu-item menu-item-about"><a href=/about/ class=hvr-icon-pulse rel=section><i class="fa fa-user hvr-icon"></i>About</a></li><li class="menu-item menu-item-archives"><a href=/archives/ class=hvr-icon-pulse rel=section><i class="fa fa-archive hvr-icon"></i>Archives
+<span class=badge>93</span></a></li><li class="menu-item menu-item-commonweal"><a href=/404.html class=hvr-icon-pulse rel=section><i class="fa fa-heartbeat hvr-icon"></i>Commonweal</a></li><li class="menu-item menu-item-search"><a role=button class="popup-trigger hvr-icon-pulse"><i class="fa fa-search fa-fw hvr-icon"></i>搜索</a></li></ul></nav><div class=search-pop-overlay><div class="popup search-popup"><div class=search-header><span class=search-icon><i class="fa fa-search"></i></span><div class=search-input-container><input autocomplete=off autocapitalize=off maxlength=80 placeholder=搜索... spellcheck=false type=search class=search-input></div><span class=popup-btn-close role=button><i class="fa fa-times-circle"></i></span></div><div class="search-result-container no-result"><div class=search-result-icon><i class="fa fa-spinner fa-pulse fa-5x"></i></div></div></div></div></div><div class="toggle sidebar-toggle" role=button><span class=toggle-line></span>
+<span class=toggle-line></span>
+<span class=toggle-line></span></div><aside class=sidebar><div class="sidebar-inner sidebar-nav-active sidebar-toc-active"><ul class=sidebar-nav><li class=sidebar-nav-toc>文章目录</li><li class=sidebar-nav-overview>站点概览</li></ul><div class=sidebar-panel-container><div class="post-toc-wrap sidebar-panel"><div class="post-toc animated"><nav id=TableOfContents><ul><li><a href=#为什么要做高可用>为什么要做高可用</a></li><li><a href=#环境准备>环境准备</a></li><li><a href=#安装>安装</a></li><li><a href=#配置-keepalived>配置 keepalived</a><ul><li><a href=#配置文件>配置文件</a></li><li><a href=#测试>测试</a></li><li><a href=#配置-haproxy>配置 haproxy</a></li></ul></li><li><a href=#安装-kubernetes-集群>安装 kubernetes 集群</a></li><li><a href=#测试-1>测试</a></li></ul></nav></div></div><div class="site-overview-wrap sidebar-panel"><div class="site-author site-overview-item animated" itemprop=author itemscope itemtype=http://schema.org/Person><img class=site-author-image itemprop=image alt=daemon365 src=/imgs/img-lazy-loading.gif data-src=/imgs/daemon365.png><p class=site-author-name itemprop=name>daemon365</p><div class=site-description itemprop=description>Don't let yourself stop.</div></div><div class="site-state-wrap site-overview-item animated"><nav class=site-state><div class="site-state-item site-state-posts"><a href=/archives/><span class=site-state-item-count>93</span>
+<span class=site-state-item-name>日志</span></a></div><div class="site-state-item site-state-categories"><a href=/categories/><span class=site-state-item-count>1</span>
+<span class=site-state-item-name>分类</span></a></div><div class="site-state-item site-state-tags"><a href=/tags/><span class=site-state-item-count>52</span>
+<span class=site-state-item-name>标签</span></a></div></nav></div><div class="links-of-social site-overview-item animated"><span class=links-of-social-item><a href=https://github.com/daemon365 title="Github → https://github.com/daemon365" rel=noopener class=hvr-icon-pulse target=_blank><i class="fab fa-github fa-fw hvr-icon"></i>
+Github</a></span></div><div class="cc-license animated" itemprop=license><a href=https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh class=cc-opacity rel=noopener target=_blank title=共享知识><img src=/imgs/img-lazy-loading.gif data-src=/imgs/cc/big/by_nc_sa.svg alt=共享知识></a></div><div class="links-of-blogroll site-overview-item animated"><div class=links-of-blogroll-title><i class="fa fa-globe fa-fw"></i>
+友情链接</div><ul class=links-of-blogroll-list><li class=links-of-blogroll-item><a href=https://go-kratos.dev title=https://go-kratos.dev target=_blank>kratos</a></li></ul></div></div></div></div></aside><div class=sidebar-dimmer></div></header><div class=tool-buttons><div id=goto-comments class="button goto-comments" title=直达评论><i class="fas fa-comments"></i></div><div id=toggle-theme class=button title=深浅模式切换><i class="fas fa-adjust"></i></div><div class=back-to-top role=button title=返回顶部><i class="fa fa-arrow-up"></i>
+<span>0%</span></div></div><div class=reading-progress-bar></div><a role=button class="book-mark-link book-mark-link-fixed"></a><script type=text/javascript src=//sidecar.gitter.im/dist/sidecar.v1.js async></script><script type=text/javascript>((window.gitter={}).chat={}).options={room:"hugo-next/community"}</script><noscript><div class=noscript-warning>Theme NexT works best with JavaScript enabled</div></noscript><div class="main-inner post posts-expand"><div class=post-block><article itemscope itemtype=http://schema.org/Article class=post-content lang><link itemprop=mainEntityOfPage href=https://daemon365.dev/post/cloud/keepalived_haproxy/><span hidden itemprop=author itemscope itemtype=http://schema.org/Person><meta itemprop=image content="/imgs/daemon365.png"><meta itemprop=name content="daemon365"></span><span hidden itemprop=publisher itemscope itemtype=http://schema.org/Organization><meta itemprop=name content="daemon365"><meta itemprop=description content="Don't let yourself stop."></span><span hidden itemprop=post itemscope itemtype=http://schema.org/CreativeWork><meta itemprop=name content="kube-apiserver 高可用，keepalived + haproxy"><meta itemprop=description content="为什么要做高可用
+
+在生产环境中，kubernetes 集群中会多多个 master 节点，每个 master 节点上都会部署 kube-apiserver 服务，实现高可用。但是 client 访问 kube-apiserver 时，需要指定 ip 或者域名，这样会出现单点故障。官方推荐的做法是使用一个负载均衡器，将多个 kube-apiserver 服务负载均衡，实现高可用，但很多时候我们是没有这个条件的。这时候就得想想办法了，比如 nignx 转发，但是 nginx 也是单点。域名的方式，但是这种方式生效时间较长，不太适合紧急情况。所以这里介绍一种使用 keepalived + haproxy 的方式实现 kube-apiserver 的高可用。这是一共公用 IP 的方式，当主节点宕机时，VIP 会自动切换到备节点，实现高可用。"></span><header class=post-header><h1 class=post-title itemprop="name headline">kube-apiserver 高可用，keepalived + haproxy</h1><div class=post-meta-container><div class=post-meta-items><span class=post-meta-item><span class=post-meta-item-icon><i class="fas fa-solid fa-calendar"></i>
+</span><span class=post-meta-item-text title=发表于>发表于：
+</span><time title="创建时间：2024-11-02 17:42:54 +0800 +0800" itemprop="dateCreated datePublished" datetime="2024-11-02 17:42:54 +0800 +0800">2024-11-02
+</time></span><span class=post-meta-item><span class=post-meta-item-icon><i class="fas fa-solid fa-folder-open"></i>
+</span><span class=post-meta-item-text title=分类于>分类于：
+</span><span itemprop=about itemscope itemtype=http://schema.org/Thing><a href=/categories/cloud itemprop=url rel=index><span itemprop=name>cloud</span></a></span></span></div><div class=post-meta-items><span class=post-meta-item title=字数><span class=post-meta-item-icon><i class="fas fa-solid fa-file-word"></i>
+</span><span class=post-meta-item-text>字数：</span>
+<span>1226</span>
+</span><span class=post-meta-item title=阅读><span class=post-meta-item-icon><i class="fas fa-solid fa-clock"></i>
+</span><span class=post-meta-item-text>阅读：&ap;</span>
+<span>3分钟</span>
+</span><span class=post-meta-item title=浏览><span class=post-meta-item-icon><i class="fas fa-solid fa-eye"></i>
+</span><span class=post-meta-item-text>浏览：
+</span><span id=busuanzi_value_page_pv data-path=/post/cloud/keepalived_haproxy/><i class="fa fa-sync fa-spin"></i></span></span></div></div></header><div class="post-body autonumber" itemprop=articleBody><h2 id=为什么要做高可用>为什么要做高可用
+<a class=header-anchor href=#%e4%b8%ba%e4%bb%80%e4%b9%88%e8%a6%81%e5%81%9a%e9%ab%98%e5%8f%af%e7%94%a8></a></h2><p>在生产环境中，kubernetes 集群中会多多个 master 节点，每个 master 节点上都会部署 kube-apiserver 服务，实现高可用。但是 client 访问 kube-apiserver 时，需要指定 ip 或者域名，这样会出现单点故障。官方推荐的做法是使用一个负载均衡器，将多个 kube-apiserver 服务负载均衡，实现高可用，但很多时候我们是没有这个条件的。这时候就得想想办法了，比如 nignx 转发，但是 nginx 也是单点。域名的方式，但是这种方式生效时间较长，不太适合紧急情况。所以这里介绍一种使用 keepalived + haproxy 的方式实现 kube-apiserver 的高可用。这是一共公用 IP 的方式，当主节点宕机时，VIP 会自动切换到备节点，实现高可用。</p><h2 id=环境准备>环境准备
+<a class=header-anchor href=#%e7%8e%af%e5%a2%83%e5%87%86%e5%a4%87></a></h2><ul><li>master1: 192.168.31.203</li><li>master2: 192.168.31.34</li><li>master3: 192.168.31.46</li><li>worker1: 192.168.31.25</li><li>VIP （虚拟IP）: 192.168.31.230</li></ul><h2 id=安装>安装
+<a class=header-anchor href=#%e5%ae%89%e8%a3%85></a></h2><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-bash data-lang=bash><span style=display:flex><span>sudo apt install keepalived haproxy
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>systemctl enable haproxy
+</span></span><span style=display:flex><span>systemctl restart haproxy
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>systemctl enable keepalived
+</span></span><span style=display:flex><span><span style=color:#75715e># 没有配置会出现错误 不用管</span>
+</span></span><span style=display:flex><span>systemctl restart keepalived
+</span></span></code></pre></div><h2 id=配置-keepalived>配置 keepalived
+<a class=header-anchor href=#%e9%85%8d%e7%bd%ae-keepalived></a></h2><h3 id=配置文件>配置文件
+<a class=header-anchor href=#%e9%85%8d%e7%bd%ae%e6%96%87%e4%bb%b6></a></h3><p>编辑 keepalived 配置文件</p><p>编辑 /etc/keepalived/keepalived.conf</p><p>master1：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-fallback data-lang=fallback><span style=display:flex><span># 健康检查 查看 haproxy 的进程在不在
+</span></span><span style=display:flex><span>vrrp_script chk_haproxy {
+</span></span><span style=display:flex><span>  script &#34;killall -0 haproxy&#34;
+</span></span><span style=display:flex><span>  interval 2 # 多少秒教程一次
+</span></span><span style=display:flex><span>  weight 3 # 成功了优先级加多少
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>vrrp_instance haproxy-vip {
+</span></span><span style=display:flex><span>  state MASTER # MASTER / BACKUP 1 MASTER 2 BACKUP
+</span></span><span style=display:flex><span>  priority 100 # 优先级 强的机器高一些 三台master 分别 100 99 98
+</span></span><span style=display:flex><span>  interface enp0s3     # 网卡名称
+</span></span><span style=display:flex><span>  virtual_router_id 51 # 路由 ip 默认就好
+</span></span><span style=display:flex><span>  advert_int 1 # keepalived 之间广播频率 秒
+</span></span><span style=display:flex><span>  authentication {
+</span></span><span style=display:flex><span>    auth_type PASS
+</span></span><span style=display:flex><span>    auth_pass test_k8s 
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>  unicast_src_ip 192.168.31.203 # 自己和其他 keepalived 通信地址
+</span></span><span style=display:flex><span>  unicast_peer { 
+</span></span><span style=display:flex><span>    192.168.31.34                    # master2 的 IP 地址
+</span></span><span style=display:flex><span>    192.168.31.46                     # master3 的 IP 地址                   
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  virtual_ipaddress {
+</span></span><span style=display:flex><span>    192.168.31.230 # 这里必须和其他所有的ip 在一个局域网下
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  track_script {
+</span></span><span style=display:flex><span>    chk_haproxy
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>master2：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-fallback data-lang=fallback><span style=display:flex><span>vrrp_script chk_haproxy {
+</span></span><span style=display:flex><span>  script &#34;killall -0 haproxy&#34;
+</span></span><span style=display:flex><span>  interval 2
+</span></span><span style=display:flex><span>  weight 3
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>vrrp_instance haproxy-vip {
+</span></span><span style=display:flex><span>  state BACKUP
+</span></span><span style=display:flex><span>  priority 99
+</span></span><span style=display:flex><span>  interface enp0s3
+</span></span><span style=display:flex><span>  virtual_router_id 51
+</span></span><span style=display:flex><span>  advert_int 1
+</span></span><span style=display:flex><span>  authentication {
+</span></span><span style=display:flex><span>    auth_type PASS
+</span></span><span style=display:flex><span>    auth_pass test_k8s 
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>  unicast_src_ip 192.168.31.34
+</span></span><span style=display:flex><span>  unicast_peer { 
+</span></span><span style=display:flex><span>    192.168.31.203
+</span></span><span style=display:flex><span>    192.168.31.46
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  virtual_ipaddress {
+</span></span><span style=display:flex><span>    192.168.31.230
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  track_script {
+</span></span><span style=display:flex><span>    chk_haproxy
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>master3：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-fallback data-lang=fallback><span style=display:flex><span>vrrp_script chk_haproxy {
+</span></span><span style=display:flex><span>  script &#34;killall -0 haproxy&#34;
+</span></span><span style=display:flex><span>  interval 2
+</span></span><span style=display:flex><span>  weight 3
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>vrrp_instance haproxy-vip {
+</span></span><span style=display:flex><span>  state BACKUP
+</span></span><span style=display:flex><span>  priority 98
+</span></span><span style=display:flex><span>  interface enp0s3
+</span></span><span style=display:flex><span>  virtual_router_id 51
+</span></span><span style=display:flex><span>  advert_int 1
+</span></span><span style=display:flex><span>  authentication {
+</span></span><span style=display:flex><span>    auth_type PASS
+</span></span><span style=display:flex><span>    auth_pass test_k8s 
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>  unicast_src_ip 192.168.31.46
+</span></span><span style=display:flex><span>  unicast_peer { 
+</span></span><span style=display:flex><span>    192.168.31.203
+</span></span><span style=display:flex><span>    192.168.31.34
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  virtual_ipaddress {
+</span></span><span style=display:flex><span>    192.168.31.230
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  track_script {
+</span></span><span style=display:flex><span>    chk_haproxy
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><h3 id=测试>测试
+<a class=header-anchor href=#%e6%b5%8b%e8%af%95></a></h3><p>重启所有几点的 keepalived ， 虚拟 ip 会在节点 master 上，因为他的优先级高。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#75715e># master 1</span>
+</span></span><span style=display:flex><span>ip a show enp0s3
+</span></span><span style=display:flex><span>2: enp0s3: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu <span style=color:#ae81ff>1500</span> qdisc fq_codel state UP group default qlen <span style=color:#ae81ff>1000</span>
+</span></span><span style=display:flex><span>    link/ether 08:00:27:ca:59:86 brd ff:ff:ff:ff:ff:ff
+</span></span><span style=display:flex><span>    inet 192.168.31.203/24 metric <span style=color:#ae81ff>100</span> brd 192.168.31.255 scope global dynamic enp0s3
+</span></span><span style=display:flex><span>       valid_lft 41983sec preferred_lft 41983sec
+</span></span><span style=display:flex><span>    inet 192.168.31.230/32 scope global enp0s3
+</span></span><span style=display:flex><span>       valid_lft forever preferred_lft forever
+</span></span><span style=display:flex><span>    inet6 fe80::a00:27ff:feca:5986/64 scope link
+</span></span><span style=display:flex><span>       valid_lft forever preferred_lft forever
+</span></span></code></pre></div><p>现在我们关掉 master1 的 haproxy 或者 keepalived</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-bash data-lang=bash><span style=display:flex><span>systemctl stop haproxy
+</span></span><span style=display:flex><span><span style=color:#75715e># 再查看网络信息 发现虚拟ip 没了</span>
+</span></span><span style=display:flex><span>ip a show enp0s3
+</span></span><span style=display:flex><span>2: enp0s3: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu <span style=color:#ae81ff>1500</span> qdisc fq_codel state UP group default qlen <span style=color:#ae81ff>1000</span>
+</span></span><span style=display:flex><span>    link/ether 08:00:27:ca:59:86 brd ff:ff:ff:ff:ff:ff
+</span></span><span style=display:flex><span>    inet 192.168.31.203/24 metric <span style=color:#ae81ff>100</span> brd 192.168.31.255 scope global dynamic enp0s3
+</span></span><span style=display:flex><span>       valid_lft 41925sec preferred_lft 41925sec
+</span></span><span style=display:flex><span>    inet6 fe80::a00:27ff:feca:5986/64 scope link
+</span></span><span style=display:flex><span>       valid_lft forever preferred_lft forever
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 在优先级第二高的 master IP 上看下网络</span>
+</span></span><span style=display:flex><span>ip a show enp0s3
+</span></span><span style=display:flex><span>2: enp0s3: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu <span style=color:#ae81ff>1500</span> qdisc fq_codel state UP group default qlen <span style=color:#ae81ff>1000</span>
+</span></span><span style=display:flex><span>    link/ether 08:00:27:11:af:4f brd ff:ff:ff:ff:ff:ff
+</span></span><span style=display:flex><span>    inet 192.168.31.34/24 metric <span style=color:#ae81ff>100</span> brd 192.168.31.255 scope global dynamic enp0s3
+</span></span><span style=display:flex><span>       valid_lft 41857sec preferred_lft 41857sec
+</span></span><span style=display:flex><span>    inet 192.168.31.230/32 scope global enp0s3
+</span></span><span style=display:flex><span>       valid_lft forever preferred_lft forever
+</span></span><span style=display:flex><span>    inet6 fe80::a00:27ff:fe11:af4f/64 scope link
+</span></span><span style=display:flex><span>       valid_lft forever preferred_lft forever
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 启动 master1 的 haproxy ip就会回来</span>
+</span></span></code></pre></div><h3 id=配置-haproxy>配置 haproxy
+<a class=header-anchor href=#%e9%85%8d%e7%bd%ae-haproxy></a></h3><p>把 16443 端口的请求转发到 6443 端口 （3 master 的 kube-apiserver 对外端口）</p><p>/etc/haproxy/haproxy.cfg</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-gdscript3 data-lang=gdscript3><span style=display:flex><span>global
+</span></span><span style=display:flex><span>    log <span style=color:#f92672>/</span>dev<span style=color:#f92672>/</span>log  local0 warning
+</span></span><span style=display:flex><span>    chroot      <span style=color:#f92672>/</span><span style=color:#66d9ef>var</span><span style=color:#f92672>/</span>lib<span style=color:#f92672>/</span>haproxy
+</span></span><span style=display:flex><span>    pidfile     <span style=color:#f92672>/</span><span style=color:#66d9ef>var</span><span style=color:#f92672>/</span>run<span style=color:#f92672>/</span>haproxy<span style=color:#f92672>.</span>pid
+</span></span><span style=display:flex><span>    maxconn     <span style=color:#ae81ff>4000</span>
+</span></span><span style=display:flex><span>    user        haproxy
+</span></span><span style=display:flex><span>    group       haproxy
+</span></span><span style=display:flex><span>    daemon
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    stats socket <span style=color:#f92672>/</span><span style=color:#66d9ef>var</span><span style=color:#f92672>/</span>lib<span style=color:#f92672>/</span>haproxy<span style=color:#f92672>/</span>stats
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>defaults
+</span></span><span style=display:flex><span>    log global
+</span></span><span style=display:flex><span>    option  httplog
+</span></span><span style=display:flex><span>    option  dontlognull
+</span></span><span style=display:flex><span>    timeout connect <span style=color:#ae81ff>5000</span>
+</span></span><span style=display:flex><span>    timeout client <span style=color:#ae81ff>50000</span>
+</span></span><span style=display:flex><span>    timeout server <span style=color:#ae81ff>50000</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>frontend kube<span style=color:#f92672>-</span>apiserver
+</span></span><span style=display:flex><span>    bind <span style=color:#f92672>*</span>:<span style=color:#ae81ff>16443</span>
+</span></span><span style=display:flex><span>    mode tcp
+</span></span><span style=display:flex><span>    option tcplog
+</span></span><span style=display:flex><span>    default_backend kube<span style=color:#f92672>-</span>apiserver
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>backend kube<span style=color:#f92672>-</span>apiserver
+</span></span><span style=display:flex><span>    mode tcp
+</span></span><span style=display:flex><span>    option tcp<span style=color:#f92672>-</span>check
+</span></span><span style=display:flex><span>    balance roundrobin
+</span></span><span style=display:flex><span>    default<span style=color:#f92672>-</span>server inter <span style=color:#ae81ff>10</span>s downinter <span style=color:#ae81ff>5</span>s rise <span style=color:#ae81ff>2</span> fall <span style=color:#ae81ff>2</span> slowstart <span style=color:#ae81ff>60</span>s maxconn <span style=color:#ae81ff>250</span> maxqueue <span style=color:#ae81ff>256</span> weight <span style=color:#ae81ff>100</span>
+</span></span><span style=display:flex><span>    server kube<span style=color:#f92672>-</span>apiserver<span style=color:#f92672>-</span><span style=color:#ae81ff>1</span> <span style=color:#ae81ff>192.168</span><span style=color:#f92672>.</span><span style=color:#ae81ff>31.203</span>:<span style=color:#ae81ff>6443</span> check
+</span></span><span style=display:flex><span>    server kube<span style=color:#f92672>-</span>apiserver<span style=color:#f92672>-</span><span style=color:#ae81ff>2</span> <span style=color:#ae81ff>192.168</span><span style=color:#f92672>.</span><span style=color:#ae81ff>31.34</span>:<span style=color:#ae81ff>6443</span> check
+</span></span><span style=display:flex><span>    server kube<span style=color:#f92672>-</span>apiserver<span style=color:#f92672>-</span><span style=color:#ae81ff>3</span> <span style=color:#ae81ff>192.168</span><span style=color:#f92672>.</span><span style=color:#ae81ff>31.46</span>:<span style=color:#ae81ff>6443</span> check
+</span></span></code></pre></div><h2 id=安装-kubernetes-集群>安装 kubernetes 集群
+<a class=header-anchor href=#%e5%ae%89%e8%a3%85-kubernetes-%e9%9b%86%e7%be%a4></a></h2><p>master1</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-bash data-lang=bash><span style=display:flex><span>kubeadm init --image-repository registry.aliyuncs.com/google_containers --control-plane-endpoint<span style=color:#f92672>=</span>192.168.31.230:16443 --v<span style=color:#f92672>=</span><span style=color:#ae81ff>10</span>
+</span></span></code></pre></div><p>master2 和 master3 加入集群</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-bash data-lang=bash><span style=display:flex><span>kubeadm join 192.168.31.230:16443 --token rxblci.ddh60vl370wjgtn7         --discovery-token-ca-cert-hash sha256:d712016d5b8ba4ae5c4a1bda8b6ab1944c13a04757d2c488dd0aefcfd1af0157   --certificate-key    c398d693c6ce9b664634c9b670f013da3010580c00bd444caf7d0a5a81e803f5         --control-plane --v<span style=color:#f92672>=</span><span style=color:#ae81ff>10</span>
+</span></span></code></pre></div><p>worker 加入集群</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-bash data-lang=bash><span style=display:flex><span>kubeadm join 192.168.31.230:16443 --token rxblci.ddh60vl370wjgtn7 <span style=color:#ae81ff>\
+</span></span></span><span style=display:flex><span><span style=color:#ae81ff></span>        --discovery-token-ca-cert-hash sha256:d712016d5b8ba4ae5c4a1bda8b6ab1944c13a04757d2c488dd0aefcfd1af0157
+</span></span></code></pre></div><p>查看集群状态</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-bash data-lang=bash><span style=display:flex><span>kubectl get node
+</span></span><span style=display:flex><span>NAME      STATUS     ROLES           AGE     VERSION
+</span></span><span style=display:flex><span>master1   Ready      control-plane   21m     v1.28.2
+</span></span><span style=display:flex><span>master2   Ready      control-plane   3m46s   v1.28.12
+</span></span><span style=display:flex><span>master3   Ready      control-plane   2m12s   v1.28.12
+</span></span><span style=display:flex><span>worker1   Ready      &lt;none&gt;          5s      v1.28.2
+</span></span></code></pre></div><h2 id=测试-1>测试
+<a class=header-anchor href=#%e6%b5%8b%e8%af%95-1></a></h2><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#75715e>#  关闭 master1 的 kubelet 和 apiserver</span>
+</span></span><span style=display:flex><span>systemctl stop kubelet
+</span></span><span style=display:flex><span>sudo kill -9 <span style=color:#66d9ef>$(</span>pgrep kube-apiserver<span style=color:#66d9ef>)</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>kubectl get node
+</span></span><span style=display:flex><span>NAME      STATUS     ROLES           AGE     VERSION
+</span></span><span style=display:flex><span>master1   NotReady   control-plane   25m     v1.28.2
+</span></span><span style=display:flex><span>master2   Ready      control-plane   7m40s   v1.28.12
+</span></span><span style=display:flex><span>master3   Ready      control-plane   6m6s    v1.28.12
+</span></span><span style=display:flex><span>worker1   Ready      &lt;none&gt;          3m59s   v1.28.2
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 关闭 master1 的 haproxy</span>
+</span></span><span style=display:flex><span>systemctl stop haproxy
+</span></span><span style=display:flex><span>root@master1:/home/zhy# kubectl get node
+</span></span><span style=display:flex><span>NAME      STATUS     ROLES           AGE     VERSION
+</span></span><span style=display:flex><span>master1   NotReady   control-plane   26m     v1.28.2
+</span></span><span style=display:flex><span>master2   Ready      control-plane   9m12s   v1.28.12
+</span></span><span style=display:flex><span>master3   Ready      control-plane   7m38s   v1.28.12
+</span></span><span style=display:flex><span>worker1   Ready      &lt;none&gt;          5m31s   v1.28.2
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 关闭 master2 的 keepalived</span>
+</span></span><span style=display:flex><span>kubectl get node
+</span></span><span style=display:flex><span>NAME      STATUS     ROLES           AGE     VERSION
+</span></span><span style=display:flex><span>master1   NotReady   control-plane   28m     v1.28.2
+</span></span><span style=display:flex><span>master2   Ready      control-plane   10m     v1.28.12
+</span></span><span style=display:flex><span>master3   Ready      control-plane   9m12s   v1.28.12
+</span></span><span style=display:flex><span>worker1   Ready      &lt;none&gt;          7m5s    v1.28.2
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 可以看到 虚拟ip 跑到了 master3 上</span>
+</span></span><span style=display:flex><span>ip a show enp0s3
+</span></span><span style=display:flex><span>2: enp0s3: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu <span style=color:#ae81ff>1500</span> qdisc fq_codel state UP group default qlen <span style=color:#ae81ff>1000</span>
+</span></span><span style=display:flex><span>    link/ether 08:00:27:f1:b5:ae brd ff:ff:ff:ff:ff:ff
+</span></span><span style=display:flex><span>    inet 192.168.31.46/24 metric <span style=color:#ae81ff>100</span> brd 192.168.31.255 scope global dynamic enp0s3
+</span></span><span style=display:flex><span>       valid_lft 41021sec preferred_lft 41021sec
+</span></span><span style=display:flex><span>    inet 192.168.31.230/32 scope global enp0s3
+</span></span><span style=display:flex><span>       valid_lft forever preferred_lft forever
+</span></span><span style=display:flex><span>    inet6 fe80::a00:27ff:fef1:b5ae/64 scope link
+</span></span><span style=display:flex><span>       valid_lft forever preferred_lft forever
+</span></span></code></pre></div></div><footer class=post-footer><div class=post-tags><a href=/tags/keepalived>keepalived
+</a><a href=/tags/haproxy>haproxy
+</a><a href=/tags/kubernetes>kubernetes</a></div><div class=addthis_inline_share_toolbox style=text-align:center></div><hr><div class=post-copyright><img src=/imgs/cc/cc.svg width=75 height=75 align=right alt=共享知识><ul><li class=post-copyright-title><strong>文章标题：</strong>
+kube-apiserver 高可用，keepalived + haproxy</li><li class=post-copyright-author><strong>本文作者： </strong>daemon365</li><li class=post-copyright-link><strong>本文链接：</strong>
+<a id=post-cr-link href=https://daemon365.dev/post/cloud/keepalived_haproxy/ title="kube-apiserver 高可用，keepalived + haproxy">https://daemon365.dev/post/cloud/keepalived_haproxy/</a></li><li class=post-copyright-license><strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <i class="fab fa-fw fa-creative-commons"></i><a target=_blank href=https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh>BY-NC-SA</a> 许可协议。转载请注明出处！</li></ul></div><div class=post-nav><div class="post-nav-next post-nav-item"></div><div class="post-nav-prev post-nav-item"><a href=/post/cloud/boltdb_principles/ rel=prev title="boltdb 原理">boltdb 原理
+<i class="fa fa-chevron-right"></i></a></div></div></footer></article></div><div id=comments class=post-comments><div class=comment-head><div class=comment-headline><i class="fas fa-comments fa-fw"></i>
+<span>评论交流</span></div></div><div class=comment-wrap><div><div class=comment-loading><i class="fa fa-sync fa-spin"></i></div><div class=utterances-container></div></div></div></div></div></main><footer class=footer><div class=footer-inner><div class=copyright>&copy;
+<span itemprop=copyrightYear>2019 - 2024
+</span><span class=with-love><i class="fa fa-heart"></i>
+</span><span class=author itemprop=copyrightHolder>daemon365</span></div><div class=powered-by>由 <a href=https://gohugo.io title=0.136.5 target=_blank>Hugo</a> & <a href=https://github.com/hugo-next/hugo-theme-next title=4.6.3 target=_blank>Hugo NexT.Gemini</a> 强力驱动</div></div></footer><script type=text/javascript src=https://daemon365.dev/3rd/animejs/3.2.2/anime.min.js crossorigin=anonymous defer></script><script type=text/javascript src=https://daemon365.dev/3rd/viewerjs/1.11.6/viewer.min.js crossorigin=anonymous defer></script><script class=next-config data-name=main type=application/json>{"bookmark":{"color":"#222","enable":true,"save":"manual"},"copybtn":true,"darkmode":false,"hostname":"https://daemon365.dev/","i18n":{"ds_day":" 天前","ds_days":" 天 ","ds_hour":" 小时前","ds_hours":" 小时 ","ds_just":"刚刚","ds_min":" 分钟前","ds_mins":" 分钟","ds_month":" 个月前","ds_years":" 年 ","empty":"没有找到任何搜索结果：${query}","hits":"找到 ${hits} 个搜索结果","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","placeholder":"搜索..."},"lang":"zh-CN","lawidget":{"id":"JmAHxEAUVgyS8B1c","js":"https://v6-widget.51.la/v6/laId/quote.js?theme=0\u0026col=true\u0026f=12\u0026display=0,0,0,1,0,1,1,1"},"lazyload":false,"localSearch":{"enable":true,"limit":1e3,"path":"/searchindexes.xml","preload":false,"topnperarticle":-1,"trigger":"auto","unescape":false},"motion":{"async":true,"enable":true,"transition":{"collheader":"fadeInLeft","postblock":"fadeIn","postbody":"fadeInDown","postheader":"fadeInDown","sidebar":"fadeInUp"}},"postmeta":{"comments":{"enable":false,"plugin":"waline"},"views":{"enable":true,"plugin":"busuanzi"}},"root":"/","scheme":"Gemini","sidebar":{"display":"post","offset":12,"padding":18,"position":"left","width":256},"utterances":{"cfg":{"issueterm":"pathname","label":"comments","repo":"daemon365/daemon365.github.io","theme":"preferred-color-scheme"},"js":"https://utteranc.es/client.js"},"vendor":{"plugins":"local","router":{"name":"local","type":"modern","url":"https://daemon365.dev/3rd"}},"version":"4.6.3"}</script><script type=text/javascript src=/js/main.min.44e8f3a116669418a0551fcbff81fe26c85707505ea0b87a42f2d4116994b442.js defer></script></body></html>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Breaker on Daemon</title><link>https://daemon365.dev/tags/breaker/</link><description>Recent content in Breaker on Daemon</description><generator>Hugo</generator><language>zh-CN</language><lastBuildDate>Sat, 04 Sep 2021 17:55:01 +0800</lastBuildDate><atom:link href="https://daemon365.dev/tags/breaker/rss.xml" rel="self" type="application/rss+xml"/><item><title>从kratos分析breaker熔断器源码实现</title><link>https://daemon365.dev/post/kratos/analyzing_the_breaker_fuse_source_code_implementation_from_kratos/</link><pubDate>Sat, 04 Sep 2021 17:55:01 +0800</pubDate><guid>https://daemon365.dev/post/kratos/analyzing_the_breaker_fuse_source_code_implementation_from_kratos/</guid><description>&lt;h2 id="为什么要用熔断">为什么要用熔断
+&lt;a class="header-anchor" href="#%e4%b8%ba%e4%bb%80%e4%b9%88%e8%a6%81%e7%94%a8%e7%86%94%e6%96%ad">&lt;/a>
+&lt;/h2>&lt;p>前面我们讲过限流保证服务的可用性，不被突如其来的流量打爆。但是两种情况是限流解决不了的。&lt;/p>
+&lt;ol>
+&lt;li>如果我们服务只能处理1000QPS，但是有10wQPS打过来，服务还是会炸。因为拒绝请求也需要成本。&lt;/li>
+&lt;li>服务但是io型的，会把mysql，redis，mq等中间件打挂。&lt;/li>
+&lt;/ol>
+&lt;p>所以，我们遵循一个思路，可不可以client端在失败的多的时候就不调用了，直接返回错误呢？&lt;/p></description></item></channel></rss>
