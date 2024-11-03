@@ -1,16 +1,16 @@
 ---
-title: "kube-apiserver 高可用，keepalived + haproxy"
-date: 2024-11-02T17:42:54+08:00
-lastmod: 2024-11-02T17:42:54+08:00
+title: kube-apiserver 高可用，keepalived + haproxy
+date: 2024-11-02 17:42:54+08:00
+lastmod: 2024-11-02 17:42:54+08:00
 categories:
-  - "cloud"
+- cloud
 tags:
-  - keepalived
-  - haproxy
-  - kubernetes
-
+- keepalived
+- haproxy
+- kubernetes
 showToc: true
 ---
+
 
 ## 为什么要做高可用
 

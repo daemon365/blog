@@ -1,11 +1,14 @@
 ---
-title: "kratos v2版本命令行工具使用"
-date: "2021-09-12T00:00:00+08:00"
-tags: 
+title: kratos v2版本命令行工具使用
+date: '2021-09-12T00:00:00+08:00'
+tags:
 - go
 - kratos
 showToc: true
+categories:
+- kratos
 ---
+
 
 ## 使用
 

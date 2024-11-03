@@ -1,10 +1,13 @@
 ---
-title: "msyql redo log和binlog"
-date: "2020-04-01T00:00:00+08:00"
-tags: 
+title: msyql redo log和binlog
+date: '2020-04-01T00:00:00+08:00'
+tags:
 - mysql
 showToc: true
+categories:
+- database
 ---
+
 
 ## 更新语句执行流程
 

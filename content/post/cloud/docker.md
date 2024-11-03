@@ -1,10 +1,13 @@
 ---
-title: "docker"
-date: "2021-01-10T00:00:00+08:00"
-tags: 
+title: docker
+date: '2021-01-10T00:00:00+08:00'
+tags:
 - docker
 showToc: true
+categories:
+- cloud
 ---
+
 
 
 ## docker的定义

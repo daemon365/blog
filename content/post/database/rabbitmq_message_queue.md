@@ -1,10 +1,13 @@
 ---
-title: "RabbitMQ消息队列"
-date: "2023-05-20T00:00:00+08:00"
-tags: 
+title: RabbitMQ消息队列
+date: '2023-05-20T00:00:00+08:00'
+tags:
 - RabbitMQ
 showToc: true
+categories:
+- database
 ---
+
 
 
 ## 消息队列

@@ -1,10 +1,13 @@
 ---
-title: "http和https"
-date: "2023-01-25T00:00:00+08:00"
-tags: 
+title: http和https
+date: '2023-01-25T00:00:00+08:00'
+tags:
 - network
 showToc: true
+categories:
+- network
 ---
+
 
 
 ## HTTP协议是什么？

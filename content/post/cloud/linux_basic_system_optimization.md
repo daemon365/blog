@@ -1,10 +1,13 @@
 ---
-title: "Linux基础系统优化"
-date: "2021-08-19T00:00:00+08:00"
-tags: 
+title: Linux基础系统优化
+date: '2021-08-19T00:00:00+08:00'
+tags:
 - linux
 showToc: true
+categories:
+- cloud
 ---
+
 
 
 ## Linux基础系统优化

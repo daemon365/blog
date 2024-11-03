@@ -1,10 +1,13 @@
 ---
-title: "MySQL数据完整性约束"
-date: "2020-03-31T00:00:00+08:00"
-tags: 
+title: MySQL数据完整性约束
+date: '2020-03-31T00:00:00+08:00'
+tags:
 - mysql
 showToc: true
+categories:
+- database
 ---
+
 
 
 ## 主键约束

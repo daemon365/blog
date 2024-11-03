@@ -1,10 +1,13 @@
 ---
-title: "golang 单元测试"
-date: "2019-06-29T00:00:00+08:00"
-tags: 
+title: golang 单元测试
+date: '2019-06-29T00:00:00+08:00'
+tags:
 - go
 showToc: true
+categories:
+- go
 ---
+
 
 
 ## go test

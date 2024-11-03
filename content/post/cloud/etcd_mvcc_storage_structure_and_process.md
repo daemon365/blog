@@ -1,14 +1,17 @@
 ---
-title: "etcd MVCC 存储结构及流程"
-date: "2024-05-26T18:00:00+08:00"
-tags: 
+title: etcd MVCC 存储结构及流程
+date: '2024-05-26T18:00:00+08:00'
+tags:
 - boltdb
 - etcd
 - golang
 - 数据库
 - kubernetes
 showToc: true
+categories:
+- cloud
 ---
+
 
 ## 什么是 MVCC
 

@@ -1,11 +1,14 @@
 ---
-title: "nginx简介,使用"
-date: "2020-03-10T00:00:00+08:00"
-tags: 
+title: nginx简介,使用
+date: '2020-03-10T00:00:00+08:00'
+tags:
 - nginx
 - linux
 showToc: true
+categories:
+- cloud
 ---
+
 
 
 ## nginx是什么

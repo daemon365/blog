@@ -1,10 +1,13 @@
 ---
-title: "mysql索引"
-date: "2020-04-20T00:00:00+08:00"
-tags: 
+title: mysql索引
+date: '2020-04-20T00:00:00+08:00'
+tags:
 - mysql
 showToc: true
+categories:
+- database
 ---
+
 
 ## 什么是索引
 

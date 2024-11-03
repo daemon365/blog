@@ -1,11 +1,14 @@
 ---
-title: "通过 layout 探索 kratos 运行原理"
-date: "2021-08-20T18:11:50+08:00"
-tags: 
+title: 通过 layout 探索 kratos 运行原理
+date: '2021-08-20T18:11:50+08:00'
+tags:
 - go
 - kratos
 showToc: true
+categories:
+- kratos
 ---
+
 
 
 ## 创建项目

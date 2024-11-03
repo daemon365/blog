@@ -1,11 +1,14 @@
 ---
-title: "golang channel原理"
-date: "2021-02-21T00:00:00+08:00"
-tags: 
+title: golang channel原理
+date: '2021-02-21T00:00:00+08:00'
+tags:
 - go
 - 源码分析
 showToc: true
+categories:
+- go
 ---
+
 
 
 ## channel介绍

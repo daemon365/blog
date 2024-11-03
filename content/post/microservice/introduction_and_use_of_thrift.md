@@ -1,11 +1,14 @@
 ---
-title: "thrift的介绍及其使用"
-date: "2020-12-30T00:00:00+08:00"
-tags: 
+title: thrift的介绍及其使用
+date: '2020-12-30T00:00:00+08:00'
+tags:
 - thrift
 - go
 showToc: true
+categories:
+- microservice
 ---
+
 
 
 ## 什么是thrift

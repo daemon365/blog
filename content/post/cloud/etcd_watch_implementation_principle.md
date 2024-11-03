@@ -1,14 +1,17 @@
 ---
-title: "etcd watch 实现原理"
-date: "2024-06-10T14:16:00+08:00"
-tags: 
+title: etcd watch 实现原理
+date: '2024-06-10T14:16:00+08:00'
+tags:
 - boltdb
 - etcd
 - golang
 - 数据库
 - kubernetes
 showToc: true
+categories:
+- cloud
 ---
+
 
 
 ## 介绍

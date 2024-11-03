@@ -1,13 +1,16 @@
 ---
-title: "kube-proxy 流量流转方式"
-date: "2024-05-08T17:40:00+08:00"
-tags: 
+title: kube-proxy 流量流转方式
+date: '2024-05-08T17:40:00+08:00'
+tags:
 - kube-proxy
 - iptables
 - ipvs
 - kubernetes
 showToc: true
+categories:
+- cloud
 ---
+
 
 
 ## 简介

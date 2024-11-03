@@ -1,10 +1,13 @@
 ---
-title: "golang time包"
-date: "2019-06-21T00:00:00+08:00"
-tags: 
+title: golang time包
+date: '2019-06-21T00:00:00+08:00'
+tags:
 - go
 showToc: true
+categories:
+- go
 ---
+
 
 
 ## 时间类型

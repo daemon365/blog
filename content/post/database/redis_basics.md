@@ -1,10 +1,13 @@
 ---
-title: "redis基础"
-date: "2020-03-20T00:00:00+08:00"
-tags: 
+title: redis基础
+date: '2020-03-20T00:00:00+08:00'
+tags:
 - redis
 showToc: true
+categories:
+- database
 ---
+
 
 
 ## redis介绍

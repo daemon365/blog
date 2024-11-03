@@ -1,11 +1,14 @@
 ---
-title: "mysql事务"
-date: "2020-04-03T00:00:00+08:00"
-tags: 
+title: mysql事务
+date: '2020-04-03T00:00:00+08:00'
+tags:
 - mysql
 - 事务
 showToc: true
+categories:
+- database
 ---
+
 
 
 ## 事务是什么

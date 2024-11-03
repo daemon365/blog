@@ -1,10 +1,13 @@
 ---
-title: "Go命令行工具cobra"
-date: "2022-12-21T00:00:00+08:00"
-tags: 
+title: Go命令行工具cobra
+date: '2022-12-21T00:00:00+08:00'
+tags:
 - go
 showToc: true
+categories:
+- go
 ---
+
 
 
 ## 关于

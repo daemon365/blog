@@ -1,11 +1,14 @@
 ---
-title: "golang map实现原理"
-date: "2021-05-22T00:00:00+08:00"
-tags: 
+title: golang map实现原理
+date: '2021-05-22T00:00:00+08:00'
+tags:
 - go
 - 源码分析
 showToc: true
+categories:
+- go
 ---
+
 
 
 这篇文章主要讲 map 的赋值、删除、查询、扩容的具体执行过程，仍然是从底层的角度展开。结合源码，看完本文一定会彻底明白 map 底层原理。

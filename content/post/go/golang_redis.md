@@ -1,11 +1,14 @@
 ---
-title: "golang redis"
-date: "2020-01-12T00:00:00+08:00"
-tags: 
+title: golang redis
+date: '2020-01-12T00:00:00+08:00'
+tags:
 - golang
 - redis
 showToc: true
+categories:
+- go
 ---
+
 
 
 ## 安装

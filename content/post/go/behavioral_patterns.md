@@ -1,11 +1,14 @@
 ---
-title: "行为模式"
-date: "2023-09-25T00:00:00+08:00"
-tags: 
+title: 行为模式
+date: '2023-09-25T00:00:00+08:00'
+tags:
 - go
 - 设计模式
 showToc: true
+categories:
+- go
 ---
+
 
 ## 责任链模式
 

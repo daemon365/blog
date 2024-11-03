@@ -1,10 +1,13 @@
 ---
-title: "Linux核心知识"
-date: "2021-08-15T00:00:00+08:00"
-tags: 
+title: Linux核心知识
+date: '2021-08-15T00:00:00+08:00'
+tags:
 - linux
 showToc: true
+categories:
+- cloud
 ---
+
 
 
 ## 电脑：辅助人脑的工具

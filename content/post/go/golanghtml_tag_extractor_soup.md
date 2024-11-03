@@ -1,10 +1,13 @@
 ---
-title: "golangHTML标签提取器soup"
-date: "2021-01-05T00:00:00+08:00"
-tags: 
+title: golangHTML标签提取器soup
+date: '2021-01-05T00:00:00+08:00'
+tags:
 - go
 showToc: true
+categories:
+- go
 ---
+
 
 
 ## 什么是soup

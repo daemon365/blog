@@ -1,11 +1,14 @@
 ---
-title: "grpc服务发现与负载均衡"
-date: "2020-12-20T00:00:00+08:00"
-tags: 
+title: grpc服务发现与负载均衡
+date: '2020-12-20T00:00:00+08:00'
+tags:
 - grpc
 - go
 showToc: true
+categories:
+- microservice
 ---
+
 
 
 ## 前言

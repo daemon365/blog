@@ -1,12 +1,15 @@
 ---
-title: "kubernetes CNI(Container Network Inferface)"
-date: "2024-04-20T00:00:00+08:00"
-tags: 
+title: kubernetes CNI(Container Network Inferface)
+date: '2024-04-20T00:00:00+08:00'
+tags:
 - cni
 - kubernetes
 - network
 showToc: true
+categories:
+- cloud
 ---
+
 
 
 ## 为什么需要 CNI

@@ -1,12 +1,15 @@
 ---
-title: "基于 OpenTelemetry 的链路追踪"
-date: "2021-08-23T18:11:50+08:00"
-tags: 
+title: 基于 OpenTelemetry 的链路追踪
+date: '2021-08-23T18:11:50+08:00'
+tags:
 - go
 - kratos
 - opentelemetry
 showToc: true
+categories:
+- kratos
 ---
+
 
 
 ## 链路追踪的前世今生

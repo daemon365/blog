@@ -1,10 +1,13 @@
 ---
-title: "mysql 锁"
-date: "2020-04-02T00:00:00+08:00"
-tags: 
+title: mysql 锁
+date: '2020-04-02T00:00:00+08:00'
+tags:
 - mysql
 showToc: true
+categories:
+- database
 ---
+
 
 
 ## MySQL中的锁

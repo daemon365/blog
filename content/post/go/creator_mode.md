@@ -1,11 +1,14 @@
 ---
-title: "创建者模式"
-date: "2023-09-23T00:00:00+08:00"
-tags: 
+title: 创建者模式
+date: '2023-09-23T00:00:00+08:00'
+tags:
 - go
 - 设计模式
 showToc: true
+categories:
+- go
 ---
+
 
 
 

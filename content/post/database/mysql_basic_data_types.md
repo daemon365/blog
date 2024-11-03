@@ -1,10 +1,13 @@
 ---
-title: "MySQL基础数据类型"
-date: "2020-03-31T00:00:00+08:00"
-tags: 
+title: MySQL基础数据类型
+date: '2020-03-31T00:00:00+08:00'
+tags:
 - mysql
 showToc: true
+categories:
+- database
 ---
+
 
 
 ## 数值类型

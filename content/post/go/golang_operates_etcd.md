@@ -1,14 +1,17 @@
 ---
-title: "golang操作etcd"
-date: "2023-01-08T20:56:00+08:00"
-tags: 
+title: golang操作etcd
+date: '2023-01-08T20:56:00+08:00'
+tags:
 - boltdb
 - etcd
 - golang
 - 数据库
 - kubernetes
 showToc: true
+categories:
+- go
 ---
+
 
 
 etcd是近几年比较火热的一个开源的、分布式的键值对数据存储系统，提供共享配置、服务的注册和发现，本文主要介绍etcd的安装和使用。

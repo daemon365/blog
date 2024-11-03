@@ -1,7 +1,7 @@
 ---
-title: "容器启动流程（containerd 和 runc）"
-date: "2023-12-07T00:00:00+08:00"
-tags: 
+title: 容器启动流程（containerd 和 runc）
+date: '2023-12-07T00:00:00+08:00'
+tags:
 - docker
 - containerd
 - runc
@@ -9,7 +9,10 @@ tags:
 - kubernetes
 - 源码分析
 showToc: true
+categories:
+- cloud
 ---
+
 
 
 ## 启动流程

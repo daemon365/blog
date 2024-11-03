@@ -1,10 +1,13 @@
 ---
-title: "SQL查询语句执行流程"
-date: "2020-05-21T00:00:00+08:00"
-tags: 
+title: SQL查询语句执行流程
+date: '2020-05-21T00:00:00+08:00'
+tags:
 - mysql
 showToc: true
+categories:
+- database
 ---
+
 
 ## msyql执行流程
 

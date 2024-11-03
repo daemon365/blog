@@ -1,10 +1,13 @@
 ---
-title: "golang nethttp包"
-date: "2020-01-11T00:00:00+08:00"
-tags: 
+title: golang nethttp包
+date: '2020-01-11T00:00:00+08:00'
+tags:
 - go
 showToc: true
+categories:
+- go
 ---
+
 
 
 ## http协议

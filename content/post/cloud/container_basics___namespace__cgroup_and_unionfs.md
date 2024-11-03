@@ -1,15 +1,18 @@
 ---
-title: "容器基础-- namespace,Cgroup 和 UnionFS"
-date: "2023-06-24T00:00:00+08:00"
-tags: 
+title: 容器基础-- namespace,Cgroup 和 UnionFS
+date: '2023-06-24T00:00:00+08:00'
+tags:
 - docker
 - containerd
 - kubernetes
 - namespace
-- Cgroup 
+- Cgroup
 - UnionFS
 showToc: true
+categories:
+- cloud
 ---
+
 
 ## Namespace
 ### 什么是 Namespace ？

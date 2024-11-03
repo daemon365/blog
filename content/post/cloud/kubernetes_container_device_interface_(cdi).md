@@ -1,11 +1,14 @@
 ---
-title: "kubernetes container device interface (CDI)"
-date: "2023-11-19T00:00:00+08:00"
-tags: 
+title: kubernetes container device interface (CDI)
+date: '2023-11-19T00:00:00+08:00'
+tags:
 - cdi
 - kubernetes
 showToc: true
+categories:
+- cloud
 ---
+
 
 
 ## CDI 是什么？

@@ -1,11 +1,14 @@
 ---
-title: "golang sqlx"
-date: "2020-01-13T00:00:00+08:00"
-tags: 
+title: golang sqlx
+date: '2020-01-13T00:00:00+08:00'
+tags:
 - golang
 - sqlx
 showToc: true
+categories:
+- go
 ---
+
 
 
 在项目中我们通常可能会使用`database/sql`连接MySQL数据库。本文借助使用`sqlx`实现批量插入数据的例子，介绍了`sqlx`中可能被你忽视了的`sqlx.In`和`DB.NamedExec`方法。

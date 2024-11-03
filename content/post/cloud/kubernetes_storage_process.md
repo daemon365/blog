@@ -1,11 +1,14 @@
 ---
-title: "kubernetes 存储流程"
-date: "2024-05-03T00:00:00+08:00"
-tags: 
+title: kubernetes 存储流程
+date: '2024-05-03T00:00:00+08:00'
+tags:
 - csi
 - kubernetes
 showToc: true
+categories:
+- cloud
 ---
+
 
 ## PV 与 PVC
 

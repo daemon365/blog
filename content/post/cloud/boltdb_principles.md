@@ -1,7 +1,7 @@
 ---
-title: "boltdb 原理"
-date: "2024-06-15T16:14:00+08:00"
-tags: 
+title: boltdb 原理
+date: '2024-06-15T16:14:00+08:00'
+tags:
 - boltdb
 - etcd
 - golang
@@ -10,7 +10,10 @@ tags:
 - 源码分析
 - 事务
 showToc: true
+categories:
+- cloud
 ---
+
 
 ## 简介
 

@@ -1,10 +1,13 @@
 ---
-title: "go语言文件系统"
-date: "2019-06-23T00:00:00+08:00"
-tags: 
+title: go语言文件系统
+date: '2019-06-23T00:00:00+08:00'
+tags:
 - go
 showToc: true
+categories:
+- go
 ---
+
 
 
 ## 检测文件是否存在

@@ -1,11 +1,14 @@
 ---
-title: "viper配置管理"
-date: "2021-01-23T00:00:00+08:00"
-tags: 
+title: viper配置管理
+date: '2021-01-23T00:00:00+08:00'
+tags:
 - go
 - viper
 showToc: true
+categories:
+- go
 ---
+
 
 
 ## 安装

@@ -1,10 +1,13 @@
 ---
-title: "golang基础类型"
-date: "2019-06-22T00:00:00+08:00"
-tags: 
+title: golang基础类型
+date: '2019-06-22T00:00:00+08:00'
+tags:
 - go
 showToc: true
+categories:
+- go
 ---
+
 
 
 ## 整型

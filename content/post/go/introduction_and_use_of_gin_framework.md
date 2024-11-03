@@ -1,11 +1,14 @@
 ---
-title: "Gin框架介绍及使用"
-date: "2019-06-30T00:00:00+08:00"
-tags: 
+title: Gin框架介绍及使用
+date: '2019-06-30T00:00:00+08:00'
+tags:
 - go
 - gin
 showToc: true
+categories:
+- go
 ---
+
 
 
 ## Gin框架介绍

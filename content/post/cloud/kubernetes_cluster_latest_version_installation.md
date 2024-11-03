@@ -1,10 +1,13 @@
 ---
-title: "kubernetes集群最新版安装"
-date: "2022-09-22T00:00:00+08:00"
-tags: 
+title: kubernetes集群最新版安装
+date: '2022-09-22T00:00:00+08:00'
+tags:
 - kubernetes
 showToc: true
+categories:
+- cloud
 ---
+
 
 ## 原文地址：https://haiyux.cc/2022/09/21/k8s-install/
 

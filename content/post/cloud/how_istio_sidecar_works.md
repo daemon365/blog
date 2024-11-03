@@ -1,14 +1,17 @@
 ---
-title: "istio sidecar 工作方式"
-date: "2024-05-12T17:40:00+08:00"
-tags: 
+title: istio sidecar 工作方式
+date: '2024-05-12T17:40:00+08:00'
+tags:
 - istio
 - sidecar
 - service mesh
 - kubernetes
 - iptables
 showToc: true
+categories:
+- cloud
 ---
+
 
 ## istio 是什么
 

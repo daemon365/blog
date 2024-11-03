@@ -1,11 +1,14 @@
 ---
-title: "Prometheus"
-date: "2021-08-20T00:00:00+08:00"
-tags: 
+title: Prometheus
+date: '2021-08-20T00:00:00+08:00'
+tags:
 - prometheus
 - kubernetes
 showToc: true
+categories:
+- cloud
 ---
+
 
 
 ## Prometheus简介

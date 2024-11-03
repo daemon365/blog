@@ -1,10 +1,13 @@
 ---
-title: "redis主从同步"
-date: "2023-08-20T00:00:00+08:00"
-tags: 
+title: redis主从同步
+date: '2023-08-20T00:00:00+08:00'
+tags:
 - redis
 showToc: true
+categories:
+- database
 ---
+
 
 
 ## redis主从同步

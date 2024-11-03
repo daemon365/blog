@@ -1,11 +1,14 @@
 ---
-title: "proto buffer"
-date: "2019-12-01T00:00:00+08:00"
-tags: 
+title: proto buffer
+date: '2019-12-01T00:00:00+08:00'
+tags:
 - go
 - protobuf
 showToc: true
+categories:
+- microservice
 ---
+
 
 
 protobuf是一种高效的数据格式，平台无关、语言无关、可扩展，可用于 RPC 系统和持续数据存储系统。

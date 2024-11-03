@@ -1,10 +1,13 @@
 ---
-title: "golang jwt"
-date: "2020-05-20T00:00:00+08:00"
-tags: 
+title: golang jwt
+date: '2020-05-20T00:00:00+08:00'
+tags:
 - go
 showToc: true
+categories:
+- go
 ---
+
 
 
 ## 什么是JWT？

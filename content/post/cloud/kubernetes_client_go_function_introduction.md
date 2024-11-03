@@ -1,12 +1,15 @@
 ---
-title: "kubernetes client-go功能介绍"
-date: "2024-03-08T17:11:00+08:00"
-tags: 
+title: kubernetes client-go功能介绍
+date: '2024-03-08T17:11:00+08:00'
+tags:
 - client-go
 - kubernetes
 - golang
 showToc: true
+categories:
+- cloud
 ---
+
 
 ## 原文地址
   https://haiyux.cc/2023/02/26/k8s-client-go/

@@ -1,11 +1,14 @@
 ---
-title: "grpc基础"
-date: "2020-12-10T00:00:00+08:00"
-tags: 
+title: grpc基础
+date: '2020-12-10T00:00:00+08:00'
+tags:
 - grpc
 - go
 showToc: true
+categories:
+- microservice
 ---
+
 
 
 ## RPC 框架原理

@@ -1,11 +1,14 @@
 ---
-title: "golang web源码解析"
-date: "2020-03-21T00:00:00+08:00"
-tags: 
+title: golang web源码解析
+date: '2020-03-21T00:00:00+08:00'
+tags:
 - go
 - 源码分析
 showToc: true
+categories:
+- go
 ---
+
 
 
 ## Go的web工作原理

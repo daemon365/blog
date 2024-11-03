@@ -1,11 +1,14 @@
 ---
-title: "Kratos漫游指南 1 - 概览"
-date: "2021-09-02T00:00:00+08:00"
-tags: 
+title: Kratos漫游指南 1 - 概览
+date: '2021-09-02T00:00:00+08:00'
+tags:
 - go
 - kratos
 showToc: true
+categories:
+- kratos
 ---
+
 
 
 您好，地球人，欢迎来到Kratos漫游指南。

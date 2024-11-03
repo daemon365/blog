@@ -1,11 +1,14 @@
 ---
-title: "隔离"
-date: "2022-12-25T00:00:00+08:00"
-tags: 
+title: 隔离
+date: '2022-12-25T00:00:00+08:00'
+tags:
 - go
 - grpc
 showToc: true
+categories:
+- microservice
 ---
+
 
 
 

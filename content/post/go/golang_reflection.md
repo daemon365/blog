@@ -1,10 +1,13 @@
 ---
-title: "golang 反射"
-date: "2019-07-12T00:00:00+08:00"
-tags: 
+title: golang 反射
+date: '2019-07-12T00:00:00+08:00'
+tags:
 - go
 showToc: true
+categories:
+- go
 ---
+
 
 
 ## 变量的内在机制

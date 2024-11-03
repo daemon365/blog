@@ -1,10 +1,13 @@
 ---
-title: "go mod"
-date: "2019-10-01T00:00:00+08:00"
-tags: 
+title: go mod
+date: '2019-10-01T00:00:00+08:00'
+tags:
 - go
 showToc: true
+categories:
+- go
 ---
+
 
 
 go module是 Go1.11版本之后官方推出的版本管理工具，并且从Go1.13版本开始，go module将是Go语言默认的依赖管理工具。

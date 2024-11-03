@@ -1,10 +1,13 @@
 ---
-title: "lua基础"
-date: "2022-10-25T00:00:00+08:00"
-tags: 
+title: lua基础
+date: '2022-10-25T00:00:00+08:00'
+tags:
 - lua
 showToc: true
+categories:
+- others
 ---
+
 
 
 ## 什么是lua

@@ -1,10 +1,13 @@
 ---
-title: "redis发布订阅"
-date: "2022-08-20T00:00:00+08:00"
-tags: 
+title: redis发布订阅
+date: '2022-08-20T00:00:00+08:00'
+tags:
 - redis
 showToc: true
+categories:
+- database
 ---
+
 
 
 ## 什么是发布和订阅

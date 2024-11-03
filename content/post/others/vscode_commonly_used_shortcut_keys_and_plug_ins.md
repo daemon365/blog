@@ -1,10 +1,13 @@
 ---
-title: "vscode常用快捷键及插件"
-date: "2022-03-25T00:00:00+08:00"
-tags: 
+title: vscode常用快捷键及插件
+date: '2022-03-25T00:00:00+08:00'
+tags:
 - vscode
 showToc: true
+categories:
+- others
 ---
+
 
 
 ## macOS

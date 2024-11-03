@@ -1,10 +1,13 @@
 ---
-title: "golang error错误处理"
-date: "2019-06-20T00:00:00+08:00"
-tags: 
+title: golang error错误处理
+date: '2019-06-20T00:00:00+08:00'
+tags:
 - go
 showToc: true
+categories:
+- go
 ---
+
 
 
 ## error定义

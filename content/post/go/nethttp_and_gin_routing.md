@@ -1,11 +1,14 @@
 ---
-title: "nethttp和gin 路由"
-date: "2019-12-23T00:00:00+08:00"
-tags: 
+title: nethttp和gin 路由
+date: '2019-12-23T00:00:00+08:00'
+tags:
 - go
 - gin
 showToc: true
+categories:
+- go
 ---
+
 
 ## net/http 路由注册
 

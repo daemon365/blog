@@ -1,10 +1,13 @@
 ---
-title: "微服务架构及raft协议"
-date: "2021-05-30T00:00:00+08:00"
-tags: 
+title: 微服务架构及raft协议
+date: '2021-05-30T00:00:00+08:00'
+tags:
 - etcd
 showToc: true
+categories:
+- microservice
 ---
+
 
 
 ## 微服务架构全景图

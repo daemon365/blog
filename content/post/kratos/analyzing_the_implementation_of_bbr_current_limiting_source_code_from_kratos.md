@@ -1,13 +1,16 @@
 ---
-title: "从kratos分析BBR限流源码实现"
-date: "2021-09-04T00:00:00+08:00"
-tags: 
+title: 从kratos分析BBR限流源码实现
+date: '2021-09-04T00:00:00+08:00'
+tags:
 - go
 - kratos
 - BBR
 - 源码分析
 showToc: true
+categories:
+- kratos
 ---
+
 
 ## 什么是自适应限流
 

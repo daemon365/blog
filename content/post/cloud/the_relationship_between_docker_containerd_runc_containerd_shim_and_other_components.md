@@ -1,7 +1,7 @@
 ---
-title: "docker containerd runc containerd-shim等组件的关系"
-date: "2024-05-09T20:56:00+08:00"
-tags: 
+title: docker containerd runc containerd-shim等组件的关系
+date: '2024-05-09T20:56:00+08:00'
+tags:
 - docker
 - containerd
 - runc
@@ -9,7 +9,10 @@ tags:
 - kubernetes
 - cri
 showToc: true
+categories:
+- cloud
 ---
+
 
 
 ## 早期 kubelet 创建容器工作原理

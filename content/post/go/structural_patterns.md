@@ -1,11 +1,14 @@
 ---
-title: "结构型模式"
-date: "2023-09-24T00:00:00+08:00"
-tags: 
+title: 结构型模式
+date: '2023-09-24T00:00:00+08:00'
+tags:
 - go
 - 设计模式
 showToc: true
+categories:
+- go
 ---
+
 
 ## 适配器模式
 

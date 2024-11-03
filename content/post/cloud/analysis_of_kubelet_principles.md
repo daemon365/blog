@@ -1,13 +1,16 @@
 ---
-title: "kubelet 原理分析"
-date: "2024-05-01T12:40:00+08:00"
-tags: 
+title: kubelet 原理分析
+date: '2024-05-01T12:40:00+08:00'
+tags:
 - kubelet
 - kubernetes
 - 源码分析
 - golang
 showToc: true
+categories:
+- cloud
 ---
+
 
 ## Reference
 - https://atbug.com/kubelet-source-code-analysis/

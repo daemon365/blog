@@ -1,11 +1,14 @@
 ---
-title: "超时控制"
-date: "2022-12-23T00:00:00+08:00"
-tags: 
+title: 超时控制
+date: '2022-12-23T00:00:00+08:00'
+tags:
 - grpc
 - go
 showToc: true
+categories:
+- microservice
 ---
+
 
 
 ## 什么是超时控制？

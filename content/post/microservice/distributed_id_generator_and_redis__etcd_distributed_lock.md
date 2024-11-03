@@ -1,11 +1,14 @@
 ---
-title: "分布式ID生成器及redis，etcd分布式锁"
-date: "2021-04-30T00:00:00+08:00"
-tags: 
+title: 分布式ID生成器及redis，etcd分布式锁
+date: '2021-04-30T00:00:00+08:00'
+tags:
 - redis
 - etcd
 showToc: true
+categories:
+- microservice
 ---
+
 
 
 ## 分布式id生成器

@@ -1,10 +1,13 @@
 ---
-title: "golang 模板 htmltemplate与texttemplate"
-date: "2019-07-13T00:00:00+08:00"
-tags: 
+title: golang 模板 htmltemplate与texttemplate
+date: '2019-07-13T00:00:00+08:00'
+tags:
 - go
 showToc: true
+categories:
+- go
 ---
+
 
 
 ## html模板生成:
