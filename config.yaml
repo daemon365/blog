@@ -361,7 +361,7 @@ params:
     enable: true
     # 自动设置列表的数字
     # Automatically add list number to toc.
-    number: true
+    number: false
     # 开启自动换行显示
     # If true, all words will placed on next lines 
     # if header width longer then sidebar width.
