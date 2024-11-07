@@ -233,8 +233,8 @@ params:
   # 开启菜单的图标及动画效果，数字徽章显示
   # Enable / Disable menu icons & animation / item badges.
   menuSets:
-    icons: false
-    transition: true
+    icons: true
+    transition: false
     badges: false
 
 
@@ -287,7 +287,7 @@ params:
     rounded: true
     # 开启头像随鼠标转动动画
     # If true, the avatar will be rotated with the cursor.
-    rotated: true
+    rotated: false
   siteState: 
     # 是否在侧边栏显示文章、分类、标签信息
     # Posts / Categories / Tags in sidebar.
