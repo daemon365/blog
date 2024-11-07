@@ -331,7 +331,7 @@ params:
     iconsOnly: false
     # 开启动画效果
     # Enable animation
-    transition: true
+    transition: false
 
   # 友情链接设置
   # Friend links setting
@@ -396,7 +396,7 @@ params:
       name: fa fa-heart
       # 开启图标动画效果
       # If you want to animate the icon, set it to true.
-      animated: true
+      animated: fasle
       # 使用16进制设置图标的颜色
       # Change the color of icon, using Hex Code.
       color: "#ff0000"
@@ -1060,8 +1060,8 @@ params:
   # Use Animate.css to animate everything.
   # For more information: https://animate.style
   motion:
-    enable: true
-    async: true
+    enable: false
+    async: false
     transition:
       # All available transition variants: https://theme-next.js.org/animate/
       postBlock: fadeIn
