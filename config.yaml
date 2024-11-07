@@ -233,9 +233,9 @@ params:
   # 开启菜单的图标及动画效果，数字徽章显示
   # Enable / Disable menu icons & animation / item badges.
   menuSets:
-    icons: true
+    icons: false
     transition: true
-    badges: true
+    badges: false
 
 
   # ---------------------------------------------------------------
@@ -509,7 +509,7 @@ params:
     enable: false
     # 是否开启捐赠方式的动画效果
     # If true, the donate type title will with animation.
-    animation: true
+    animation: false
     # 捐赠信息的描述，支持 HTML 语法
     # Comment for donate and suppport HTML syntax
     comment: '<i class="fa-solid fa-mug-hot"></i>请我喝杯咖啡吧 ヾ(^▽^*)))'
