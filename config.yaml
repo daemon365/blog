@@ -617,7 +617,7 @@ params:
   bookmark:
     # 开启书签功能
     # If true, will display bookmark in all page.
-    enable: true
+    enable: false
     # 自定义书签显示颜色
     # Customize the color of the bookmark.
     color: "#222"
