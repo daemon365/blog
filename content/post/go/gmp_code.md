@@ -113,7 +113,7 @@ const (
 
 状态流转:
 
-![](/images/gmp_g_status.png.png)
+![](/images/gmp_g_status.png)
 
 1. 如果 groutine 还未初始化，那么状态是 `_Gidle`
 2. 初始化完毕是 `_Gdead`
