@@ -3,3 +3,6 @@
 resources/
 public/
 config/development/
+
+*:Zone.Identifier
+*.Zone.Identifier
