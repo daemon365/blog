@@ -111,6 +111,23 @@ const (
 )
 ```
 
+```go
+func malg(stacksize int32) *g {
+	newg := new(g)
+	// 分配 runtime 栈
+	if stacksize >= 0 {
+		stacksize = round2(stackSystem + stacksize)
+		systemstack(func() {
+			newg.stack = stackalloc(uint32(stacksize))
+		})
+		newg.stackguard0 = newg.stack.lo + stackGuard
+		newg.stackguard1 = ^uintptr(0)
+		*(*uintptr)(unsafe.Pointer(newg.stack.lo)) = 0
+	}
+	return newg
+}
+```
+
 状态流转:
 
 ![](/images/gmp_g_status.png)
@@ -148,6 +165,124 @@ type m struct {
 	oldp          puintptr
 }
 ```
+
+#### M 的创建
+
+```go
+func newm(fn func(), pp *p, id int64) {
+	// 禁止被抢占
+	acquirem()
+	// 分配 M 结构体 并添加列表中
+	mp := allocm(pp, fn, id)
+	// 设置 nextP m 会尽量与之绑定
+	mp.nextp.set(pp)
+	mp.sigmask = initSigmask
+	// ...
+
+	// 创建 M
+	newm1(mp)
+	// 释放 m 的锁定状态
+	releasem(getg().m)
+}
+
+func allocm(pp *p, fn func(), id int64) *m {	
+	// ... 加锁解锁
+	// 如果当前 M 没有绑定 P，临时借用传入的 P
+	if gp.m.p == 0 {
+		acquirep(pp) // temporarily borrow p for mallocs in this function
+	}
+
+	// 处理空闲的 M 
+	if sched.freem != nil {
+		
+	}
+
+	// 创建 M
+	mp := new(m)
+	mp.mstartfn = fn
+	mcommoninit(mp, id)
+
+	// 对于 cgo 或者特定的操作系统 使用系统分配的栈 否则使用 go runtime 的栈
+	if iscgo || mStackIsSystemAllocated() {
+		mp.g0 = malg(-1)
+	} else {
+		mp.g0 = malg(16384 * sys.StackGuardMultiplier)
+	}
+	mp.g0.m = mp
+	// 清理临时借用的 P
+	if pp == gp.m.p.ptr() {
+		releasep()
+	}
+	return mp
+}
+
+```
+
+```go
+// newm1 -> newosproc 
+func newosproc(mp *m) {
+	// 栈顶指针
+	stk := unsafe.Pointer(mp.g0.stack.hi)
+
+	// 信号屏蔽
+	var oset sigset
+	sigprocmask(_SIG_SETMASK, &sigset_all, &oset)
+	// 重试的系统调用
+	ret := retryOnEAGAIN(func() int32 {
+		// 创建新线程 是汇编代码 可以找去看看
+		r := clone(cloneFlags, stk, unsafe.Pointer(mp), unsafe.Pointer(mp.g0), unsafe.Pointer(abi.FuncPCABI0(mstart)))
+		if r >= 0 {
+			return 0
+		}
+		return -r
+	})
+	// 恢复信号
+	sigprocmask(_SIG_SETMASK, &oset, nil)
+	// ...
+}
+```
+
+```go
+// mstart 启动 M 是一个汇编代码
+TEXT runtime·mstart(SB),NOSPLIT|TOPFRAME|NOFRAME,$0
+	CALL	runtime·mstart0(SB) // 调用 mstart0
+	RET // not reached
+
+// mstart0 -> mstart1
+func mstart1() {
+	gp := getg()
+
+	if gp != gp.m.g0 {
+		throw("bad runtime·mstart")
+	}
+
+	// 保存调度信息
+	gp.sched.g = guintptr(unsafe.Pointer(gp))
+	gp.sched.pc = getcallerpc()
+	gp.sched.sp = getcallersp()
+
+	// 初始化
+	asminit()
+	minit()
+	// 主线程初始一些东西
+	if gp.m == &m0 {
+		mstartm0()
+	}
+
+
+	// 调度
+	schedule()
+}
+
+
+// 初始化信号 之后抢占那块会介绍
+// 只有主线程需要初始化的原因是 其他线程是 clone 而来 而且包括了 _CLONE_SIGHAND 会继承这些
+func mstartm0() {
+	// ...
+	initsig(false)
+}
+```
+
 
 g0： 一个特殊的 g 用于执行调度任务 它未使用 go runtime 的 stack 而是使用 os stack
 流程大概为用户态的 g -> g0 调度 -> 用户的其他 g
@@ -192,6 +327,193 @@ const (
 	_Pdead
 )
 ```
+
+#### P的创建
+
+```go
+// 程序启动
+TEXT main(SB),NOSPLIT,$-8
+	JMP	runtime·rt0_go(SB)
+
+TEXT runtime·rt0_go(SB),NOSPLIT|NOFRAME|TOPFRAME,$0
+// ...
+CALL	runtime·schedinit(SB)
+
+func schedinit() {
+	// ...
+	if procresize(procs) != nil {
+		throw("unknown runnable goroutine during bootstrap")
+	}
+}
+
+// nprocs 是 process 数 默认是 cpu 个数
+func procresize(nprocs int32) *p {
+	// ...
+
+	// 扩容 allp 加入未初始化的 P
+	if nprocs > int32(len(allp)) {
+		// 。。。
+	}
+
+	// 初始化所有新建的 P
+	for i := old; i < nprocs; i++ {
+		pp := allp[i]
+		if pp == nil {
+			pp = new(p)
+		}
+		pp.init(i)
+		atomicstorep(unsafe.Pointer(&allp[i]), unsafe.Pointer(pp))
+	}
+
+	// 处理 p 的状态
+	gp := getg()
+	if gp.m.p != 0 && gp.m.p.ptr().id < nprocs {
+		// continue to use the current P
+		gp.m.p.ptr().status = _Prunning
+		gp.m.p.ptr().mcache.prepareForSweep()
+	} else {
+		// ...
+	}
+
+	// g.m.p is now set, so we no longer need mcache0 for bootstrapping.
+	mcache0 = nil
+
+	// 清理多余的 P
+	for i := nprocs; i < old; i++ {
+		pp := allp[i]
+		pp.destroy()
+		// can't free P itself because it can be referenced by an M in syscall
+	}
+
+	// 裁剪 allp 切片
+	if int32(len(allp)) != nprocs {
+		lock(&allpLock)
+		allp = allp[:nprocs]
+		idlepMask = idlepMask[:maskWords]
+		timerpMask = timerpMask[:maskWords]
+		unlock(&allpLock)
+	}
+
+	// 重新分配 P
+	var runnablePs *p
+	for i := nprocs - 1; i >= 0; i-- {
+		pp := allp[i]
+		if gp.m.p.ptr() == pp {
+			continue
+		}
+		pp.status = _Pidle
+		if runqempty(pp) {
+			pidleput(pp, now)
+		} else {
+			pp.m.set(mget())
+			pp.link.set(runnablePs)
+			runnablePs = pp
+		}
+	}
+	stealOrder.reset(uint32(nprocs))
+	var int32p *int32 = &gomaxprocs // make compiler check that gomaxprocs is an int32
+	atomic.Store((*uint32)(unsafe.Pointer(int32p)), uint32(nprocs))
+	if old != nprocs {
+		// Notify the limiter that the amount of procs has changed.
+		gcCPULimiter.resetCapacity(now, nprocs)
+	}
+	return runnablePs
+}
+
+func (pp *p) init(id int32) {
+	// ...
+	// 分配 cache
+	if pp.mcache == nil {
+		if id == 0 {
+			if mcache0 == nil {
+				throw("missing mcache?")
+			}
+			// Use the bootstrap mcache0. Only one P will get
+			// mcache0: the one with ID 0.
+			pp.mcache = mcache0
+		} else {
+			pp.mcache = allocmcache()
+		}
+	}
+	// ...
+}
+
+func (pp *p) destroy() {
+	// 枷锁 确保 stw
+	assertLockHeld(&sched.lock)
+	assertWorldStopped()
+
+	// 将本地队列中的 goroutine 移到全局队列
+	for pp.runqhead != pp.runqtail {
+		pp.runqtail--
+		gp := pp.runq[pp.runqtail%uint32(len(pp.runq))].ptr()
+		globrunqputhead(gp)
+	}
+	if pp.runnext != 0 {
+		globrunqputhead(pp.runnext.ptr())
+		pp.runnext = 0
+	}
+
+	// ...
+
+	// 清理 span
+	systemstack(func() {
+		for i := 0; i < pp.mspancache.len; i++ {
+			// Safe to call since the world is stopped.
+			mheap_.spanalloc.free(unsafe.Pointer(pp.mspancache.buf[i]))
+		}
+		pp.mspancache.len = 0
+		lock(&mheap_.lock)
+		pp.pcache.flush(&mheap_.pages)
+		unlock(&mheap_.lock)
+	})
+
+	// 释放 mcache
+	freemcache(pp.mcache)
+	pp.mcache = nil
+	
+	// ...
+}
+
+```
+
+
+### 全局队列
+
+```go
+type schedt struct {
+	// 锁
+	lock mutex
+
+	// m 相关配置
+	midle        muintptr
+	// ...
+
+	// p 相关配置 
+	pidle        puintptr // idle p's
+	// ...
+
+	// g 队列
+	runq     gQueue
+	runqsize int32
+
+	// ...
+
+	// G 对象池
+	gFree struct {
+		lock    mutex
+		stack   gList // Gs with stacks
+		noStack gList // Gs without stacks
+		n       int32
+	}
+
+	// ...
+}
+
+```
+
+P 的空闲列表： M 获取 P 的时候拿到
+M 的空闲列表： 线程的创建于销毁代价是很大的 为了复用性
 
 ## 调度
 
@@ -559,8 +881,208 @@ func exitsyscall0(gp *g) {
 
 ```
 
+## goroutine 切换通用寄存器问题
+
+我们知道 goroutine 中的 gobuf 中只保存了 sp pc bp 等寄存器信息，但是 goroutine 切换的时候还有其他通用寄存器，如果中间丢失会引起结果不一致。那么 go 中是怎么保存的呢？
+
+goroutine 切换大体有两种情况
+1. 在编译阶段知道 goroutine 可能交出控制权 比如 读写 channel 等待网络 系统调用等
+2. goroutine 被抢占了 GC 超时等
+
+对于第一种方式，在编译阶段知道后续会使用哪个寄存器和知道在哪里可能会交出控制权，就会在后续保存这些寄存器。
+
+```go
+func test(a chan int, b, c int) int {
+	d := <-a
+	return d + b + c
+}
+
+// go tool compile -S main.go 的汇编代码
+main.test STEXT size=105 args=0x18 locals=0x20 funcid=0x0 align=0x0
+	0x0000 00000 (./main.go:3)	TEXT	main.test(SB), ABIInternal, $32-24
+	// 栈检查
+	0x0000 00000 (./main.go:3)	CMPQ	SP, 16(R14)
+	0x0004 00004 (./main.go:3)	PCDATA	$0, $-2
+	0x0004 00004 (./main.go:3)	JLS	68
+	0x0006 00006 (./main.go:3)	PCDATA	$0, $-1
+	0x0006 00006 (./main.go:3)	PUSHQ	BP
+	0x0007 00007 (./main.go:3)	MOVQ	SP, BP
+	0x000a 00010 (./main.go:3)	SUBQ	$24, SP
+	// 调试使用的
+	0x000e 00014 (./main.go:3)	FUNCDATA	$0, gclocals·wgcWObbY2HYnK2SU/U22lA==(SB)
+	0x000e 00014 (./main.go:3)	FUNCDATA	$1, gclocals·J5F+7Qw7O7ve2QcWC7DpeQ==(SB)
+	0x000e 00014 (./main.go:3)	FUNCDATA	$5, main.test.arginfo1(SB)
+	0x000e 00014 (./main.go:3)	FUNCDATA	$6, main.test.argliveinfo(SB)
+	0x000e 00014 (./main.go:3)	PCDATA	$3, $1
+	// 把 BX CX 保存到栈中
+	0x000e 00014 (./main.go:5)	MOVQ	BX, main.b+48(SP)
+	0x0013 00019 (./main.go:5)	MOVQ	CX, main.c+56(SP)
+	0x0018 00024 (./main.go:5)	PCDATA	$3, $2
+	// 初始化临时变量 并 chanrecv1 接受 chan 数据
+	0x0018 00024 (./main.go:4)	MOVQ	$0, main..autotmp_5+16(SP)
+	0x0021 00033 (./main.go:4)	LEAQ	main..autotmp_5+16(SP), BX
+	0x0026 00038 (./main.go:4)	PCDATA	$1, $1
+	0x0026 00038 (./main.go:4)	CALL	runtime.chanrecv1(SB)
+	// 恢复接受 chan 之前入栈的寄存器 
+	0x002b 00043 (./main.go:5)	MOVQ	main.b+48(SP), CX
+	0x0030 00048 (./main.go:5)	ADDQ	main..autotmp_5+16(SP), CX
+	0x0035 00053 (./main.go:5)	MOVQ	main.c+56(SP), DX
+	0x003a 00058 (./main.go:5)	LEAQ	(DX)(CX*1), AX
+	0x003e 00062 (./main.go:5)	ADDQ	$24, SP
+	0x0042 00066 (./main.go:5)	POPQ	BP
+	0x0043 00067 (./main.go:5)	RET
+	0x0044 00068 (./main.go:5)	NOP
+	// 处理扩容栈相关的代码
+	0x0044 00068 (./main.go:3)	PCDATA	$1, $-1
+	0x0044 00068 (./main.go:3)	PCDATA	$0, $-2
+	0x0044 00068 (./main.go:3)	MOVQ	AX, 8(SP)
+	0x0049 00073 (./main.go:3)	MOVQ	BX, 16(SP)
+	0x004e 00078 (./main.go:3)	MOVQ	CX, 24(SP)
+	0x0053 00083 (./main.go:3)	CALL	runtime.morestack_noctxt(SB)
+	0x0058 00088 (./main.go:3)	PCDATA	$0, $-1
+	0x0058 00088 (./main.go:3)	MOVQ	8(SP), AX
+	0x005d 00093 (./main.go:3)	MOVQ	16(SP), BX
+	0x0062 00098 (./main.go:3)	MOVQ	24(SP), CX
+	0x0067 00103 (./main.go:3)	JMP	0
 
 
+func test2(a int, b, c int) int {
+	return a + b + c
+}
 
+main.test2 STEXT nosplit size=9 args=0x18 locals=0x0 funcid=0x0 align=0x0
+	0x0000 00000 (/home/zhy/code/test1/main.go:8)	TEXT	main.test2(SB), NOSPLIT|NOFRAME|ABIInternal, $0-24
+	0x0000 00000 (/home/zhy/code/test1/main.go:8)	FUNCDATA	$0, gclocals·g2BeySu+wFnoycgXfElmcg==(SB)
+	0x0000 00000 (/home/zhy/code/test1/main.go:8)	FUNCDATA	$1, gclocals·g2BeySu+wFnoycgXfElmcg==(SB)
+	0x0000 00000 (/home/zhy/code/test1/main.go:8)	FUNCDATA	$5, main.test2.arginfo1(SB)
+	0x0000 00000 (/home/zhy/code/test1/main.go:8)	FUNCDATA	$6, main.test2.argliveinfo(SB)
+	0x0000 00000 (/home/zhy/code/test1/main.go:8)	PCDATA	$3, $1
+	0x0000 00000 (/home/zhy/code/test1/main.go:9)	LEAQ	(BX)(AX*1), DX
+	0x0004 00004 (/home/zhy/code/test1/main.go:9)	LEAQ	(CX)(DX*1), AX
+	0x0008 00008 (/home/zhy/code/test1/main.go:9)	RET
+```
 
+***从上方可以看到 test2 函数没有保存 BX CX 寄存器，因为编译器知道这个函数不会交出控制权，所以不需要保存这些寄存器。如果调用函数不做参数入栈的话，只用寄存器的话性能会更好。***
 
+那如果是抢占呢，编译阶段肯定是不知道会在哪被抢占的，是怎么恢复要使用的寄存器呢？
+
+处理信号的逻辑：
+
+```go
+func doSigPreempt(gp *g, ctxt *sigctxt) {
+	// Check if this G wants to be preempted and is safe to
+	// preempt.
+	if wantAsyncPreempt(gp) {
+		if ok, newpc := isAsyncSafePoint(gp, ctxt.sigpc(), ctxt.sigsp(), ctxt.siglr()); ok {
+			// Adjust the PC and inject a call to asyncPreempt.
+			ctxt.pushCall(abi.FuncPCABI0(asyncPreempt), newpc)
+		}
+	}
+
+}
+```
+
+代码在 `src/runtime/preempt_amd64.go` 中
+
+```go
+TEXT ·asyncPreempt(SB),NOSPLIT|NOFRAME,$0-0
+	PUSHQ BP
+	MOVQ SP, BP
+	// Save flags before clobbering them
+	PUSHFQ
+	// obj doesn't understand ADD/SUB on SP, but does understand ADJSP
+	ADJSP $368
+	// But vet doesn't know ADJSP, so suppress vet stack checking
+	NOP SP
+	MOVQ AX, 0(SP)
+	MOVQ CX, 8(SP)
+	MOVQ DX, 16(SP)
+	MOVQ BX, 24(SP)
+	MOVQ SI, 32(SP)
+	MOVQ DI, 40(SP)
+	MOVQ R8, 48(SP)
+	MOVQ R9, 56(SP)
+	MOVQ R10, 64(SP)
+	MOVQ R11, 72(SP)
+	MOVQ R12, 80(SP)
+	MOVQ R13, 88(SP)
+	MOVQ R14, 96(SP)
+	MOVQ R15, 104(SP)
+	#ifdef GOOS_darwin
+	#ifndef hasAVX
+	CMPB internal∕cpu·X86+const_offsetX86HasAVX(SB), $0
+	JE 2(PC)
+	#endif
+	VZEROUPPER
+	#endif
+	MOVUPS X0, 112(SP)
+	MOVUPS X1, 128(SP)
+	MOVUPS X2, 144(SP)
+	MOVUPS X3, 160(SP)
+	MOVUPS X4, 176(SP)
+	MOVUPS X5, 192(SP)
+	MOVUPS X6, 208(SP)
+	MOVUPS X7, 224(SP)
+	MOVUPS X8, 240(SP)
+	MOVUPS X9, 256(SP)
+	MOVUPS X10, 272(SP)
+	MOVUPS X11, 288(SP)
+	MOVUPS X12, 304(SP)
+	MOVUPS X13, 320(SP)
+	MOVUPS X14, 336(SP)
+	MOVUPS X15, 352(SP)
+	CALL ·asyncPreempt2(SB)
+	MOVUPS 352(SP), X15
+	MOVUPS 336(SP), X14
+	MOVUPS 320(SP), X13
+	MOVUPS 304(SP), X12
+	MOVUPS 288(SP), X11
+	MOVUPS 272(SP), X10
+	MOVUPS 256(SP), X9
+	MOVUPS 240(SP), X8
+	MOVUPS 224(SP), X7
+	MOVUPS 208(SP), X6
+	MOVUPS 192(SP), X5
+	MOVUPS 176(SP), X4
+	MOVUPS 160(SP), X3
+	MOVUPS 144(SP), X2
+	MOVUPS 128(SP), X1
+	MOVUPS 112(SP), X0
+	MOVQ 104(SP), R15
+	MOVQ 96(SP), R14
+	MOVQ 88(SP), R13
+	MOVQ 80(SP), R12
+	MOVQ 72(SP), R11
+	MOVQ 64(SP), R10
+	MOVQ 56(SP), R9
+	MOVQ 48(SP), R8
+	MOVQ 40(SP), DI
+	MOVQ 32(SP), SI
+	MOVQ 24(SP), BX
+	MOVQ 16(SP), DX
+	MOVQ 8(SP), CX
+	MOVQ 0(SP), AX
+	ADJSP $-368
+	POPFQ
+	POPQ BP
+	RET
+```
+
+这段汇编代码很简单，把各种寄存器保存到栈中，然后调用 asyncPreempt2 函数，这个函数会恢复这些寋存器。
+
+```go
+func asyncPreempt2() {
+	gp := getg()
+	gp.asyncSafePoint = true
+	if gp.preemptStop {
+		mcall(preemptPark)
+	} else {
+		mcall(gopreempt_m)
+	}
+	gp.asyncSafePoint = false
+}
+```
+
+这个代码就是开始交给 g0 去执行调度任务，当 goroutine 回来可以继续执行的时候，会执行恢复寄存器的代码。
+
+![](/images/gmp_preempt.png)
