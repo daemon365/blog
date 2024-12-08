@@ -1068,7 +1068,7 @@ TEXT ·asyncPreempt(SB),NOSPLIT|NOFRAME,$0-0
 	RET
 ```
 
-这段汇编代码很简单，把各种寄存器保存到栈中，然后调用 asyncPreempt2 函数，这个函数会恢复这些寋存器。
+这段汇编代码很简单，把各种寄存器保存到栈中，然后调用 asyncPreempt2 函数，这个函数会恢复这些寋存器。然后把 BP 弹回去，最后 RET 返回。
 
 ```go
 func asyncPreempt2() {
