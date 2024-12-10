@@ -110,6 +110,7 @@ const (
 	_Gscanpreempted = _Gscan + _Gpreempted // 0x1009
 )
 ```
+#### G 的创建
 
 ```go
 func malg(stacksize int32) *g {
@@ -128,6 +129,7 @@ func malg(stacksize int32) *g {
 }
 ```
 
+
 状态流转:
 
 ![](/images/gmp_g_status.png)
@@ -140,7 +142,7 @@ func malg(stacksize int32) *g {
 6. 如果 goroutine 阻塞，状态变为 `_Gwaiting` 等待阻塞完毕 状态再变为 `_Grunnable` 等待调度
 7. 如果 goroutine 被抢占 （gc 要 STW 时），状态变为 `_Gpreempted` 等待变成 `_Gwaiting` 
 8. 如果发生系统调用，状态变为 `_Gsyscall` 如果很快完成（10ms） 状态会变为 `_Grunning` 继续执行 否则会变为 `_Grunnable` 等待调度
-9. 如果发生栈扩容，状态变为 `_Gcopystack` 等待栈扩容完毕 状态变为 `_Grunnable` 等待调度
+9. 如果发生栈扩容，状态变为 `_Gcopystack` 等待栈扩容完毕 状态变为 `_Grunning` 等待调度
 
 ### M
 
@@ -284,7 +286,10 @@ func mstartm0() {
 ```
 
 
-g0： 一个特殊的 g 用于执行调度任务 它未使用 go runtime 的 stack 而是使用 os stack
+g0： 一个特殊的 g 用于执行调度任务 
+
+![](/images/gmp_g0.png)
+
 流程大概为用户态的 g -> g0 调度 -> 用户的其他 g
 
 ### P
@@ -706,7 +711,7 @@ func findRunnable() (gp *g, inheritTime, tryWakeP bool) {
 2. 每 61 次 从全局队列中获取一个 g 去执行 作用是 防止所有 p 的本地队列谁都非常多 导致全局队列的 g 饿死
 3. 从本地队列中获取一个 g 去执行 有限使用 runnext 
 4. 从全局队列中获取一个 g 去执行 并 load 一些到本地队列
-5. 如果有网络 IO 准备好了 就从网络 IO 中获取一个 g 去执行 （go 中网络 epoll_wait 正常情况下使用的阻塞模式）
+5. 如果有网络 IO 准备好了 就从网络 IO 中获取一个 g 去执行 （go 中网络 epoll_wait 正常情况下使用的非阻塞模式）
 6. 从其他的 p 中偷取 g 去执行 （cas 保证数据安全）
 
 execute：
@@ -1086,3 +1091,45 @@ func asyncPreempt2() {
 这个代码就是开始交给 g0 去执行调度任务，当 goroutine 回来可以继续执行的时候，会执行恢复寄存器的代码。
 
 ![](/images/gmp_preempt.png)
+
+## G0 和 sysmon stack
+
+G0 和 sysmon 使用的是 OS 栈还是 runtime 自己维护的栈呢？
+
+我们看下代码：
+
+```go
+// sysmon
+if haveSysmon {
+	systemstack(func() {
+		newm(sysmon, nil, -1)
+	})
+}
+
+// newm -> allocm
+func allocm(pp *p, fn func(), id int64) *m {
+	// ... 
+	if iscgo || mStackIsSystemAllocated() {
+		mp.g0 = malg(-1)
+	} else {
+		mp.g0 = malg(16384 * sys.StackGuardMultiplier)
+	}
+	// ...
+}
+```
+
+可以看到，sysmon 或者普通的线程都是在 allocm 中创建的栈 上边介绍过了，`malg(-1)` 是 OS stack，`malg(16384 * sys.StackGuardMultiplier)` 是 runtime 自己维护的 16K 栈。
+
+首先 sysmon 和 G0 都一定不是 CGO，根据操作系统来判断是不是 OS stack，linux 是 runtime 自己维护的栈。
+
+```go
+func mStackIsSystemAllocated() bool {
+	switch GOOS {
+	case "aix", "darwin", "plan9", "illumos", "ios", "solaris", "windows":
+		return true
+	case "openbsd":
+		return GOARCH != "mips64"
+	}
+	return false
+}
+```
