@@ -117,7 +117,7 @@ func (sc spanClass) noscan() bool {
 }
 ```
 
-spanClass 是 unint8 类型，一共有 8 位，前 7 位是 sizeclass，也就是上边 table 中的内容，一共有（67 + 1）种类型 0 代表比 67 class 需要的内存还大。最后一位是 noscan，也就是表示这个对象中是否含有指针，用来给 GC 扫描加速用的。
+spanClass 是 unint8 类型，一共有 8 位，前 7 位是 sizeclass，也就是上边 table 中的内容，一共有 `(67 + 1) * 2` 种类型, +1 是 0 代表比 67 class 需要的内存还大。最后一位是 noscan，也就是表示这个对象中是否含有指针，用来给 GC 扫描加速用的，所以要 * 2。
 
 #### mspan 详解
 
@@ -143,6 +143,216 @@ type p struct {
 ```
 
 ```go
+// 每个 P 的本队缓存
+type mcache struct {
+	// 不在 gc 的堆中分配
+	_ sys.NotInHeap
+
+	// The following members are accessed on every malloc,
+	// so they are grouped here for better caching.
+	nextSample uintptr // trigger heap sample after allocating this many bytes
+	scanAlloc  uintptr // bytes of scannable heap allocated
+
+	// 微对象分配器（<=16B 不含指针）
+	tiny       uintptr // 内存的其实地址
+	tinyoffset uintptr // 偏移量
+	tinyAllocs uintptr // 分配了多少个 tiny 对象
 
 
+	// span缓存数组，按大小类别索引
+	alloc [numSpanClasses]*mspan // spans to allocate from, indexed by spanClass
+
+	// 用于不同大小的栈内存分配 go 的 堆上分配栈内存
+	stackcache [_NumStackOrders]stackfreelist
+
+	// 控制 mcache 的刷新
+	flushGen atomic.Uint32
+}
 ```
+
+### mcentral 
+
+mcentral 也是一种缓存，只不过在中心而不是在每个 P 上。mcentral 存在的意义也是减少锁竞争，如果没有 mcentral，那么只要从中心申请 mspan 就需要加锁。现在加上了 mcentral，申请时就需要加特别力度的锁就可以了，比如申请 class = 1 的 mspan 加 class = 1 的锁就可以了，不影响别人申请 class = 2 的 mspan。这样就可以较少锁竞争，提高性能。
+
+```go
+type mcentral struct {
+	_         sys.NotInHeap
+	// mspan 的类别
+	spanclass spanClass
+
+	// 部分使用的span列表
+	// 使用两个集合交替角色
+	// [0] -> 已清扫的spans
+	// [1] -> 未清扫的spans
+	partial [2]spanSet // list of spans with a free object
+	// 完全使用的 mspan
+	full    [2]spanSet // list of spans with no free objects
+}
+
+
+type spanSet struct {
+	// spanSet是一个两级数据结构，由一个可增长的主干（spine）指向固定大小的块组成。
+	// 访问spine不需要锁，但添加块或扩展spine时需要获取spine锁。
+	//
+	// 因为每个mspan至少覆盖8K的堆内存，且在spanSet中最多占用8字节，
+	// 所以spine的增长是相当有限的。
+
+	// 锁
+	spineLock mutex
+	// 原子指针，指向一个动态数组
+	spine     atomicSpanSetSpinePointer // *[N]atomic.Pointer[spanSetBlock]
+	// 当前spine数组中实际使用的长度 原子类型
+	spineLen  atomic.Uintptr            // Spine array length
+	//  spine数组的容量
+	spineCap  uintptr                   // Spine array cap, accessed under spineLock
+
+	// index是spanSet中的头尾指针，被压缩在一个字段中。
+	// head和tail都表示所有块的逻辑连接中的索引位置，其中head总是在tail之后或等于tail
+	// （等于tail时表示集合为空）。这个字段始终通过原子操作访问。
+	//
+	// head和tail各自的宽度为32位，这意味着在需要重置之前，我们最多支持2^32次push操作。
+	// 如果堆中的每个span都存储在这个集合中，且每个span都是最小尺寸（1个运行时页面，8 KiB），
+	// 那么大约需要32 TiB大小的堆才会导致无法表示的情况。
+	// 头部索引
+	index atomicHeadTailIndex
+}
+```
+
+
+```go
+type mheap struct {
+	central [numSpanClasses]struct {
+		mcentral mcentral
+		// 填充字节 一般不能整除的时候 末尾的余数就不用了
+		pad      [(cpu.CacheLinePadSize - unsafe.Sizeof(mcentral{})%cpu.CacheLinePadSize) % cpu.CacheLinePadSize]byte
+	}
+}
+```
+
+### mheap
+
+mheap 是全局的内存管理器，申请内存是 mcentral 不满足要求的时候，就会从 mheap 中申请，要加全局锁。如果 mheap 还不能满足，就会系统调用从操作系统申请，每次申请的最小单位是 Arena，也就是 64M。
+
+```go
+type mheap struct {
+	_ sys.NotInHeap
+
+	// 全局锁
+	lock mutex
+	// page 分配器 管理所有的page 
+	// 他是多个 radix tree 组成的 没个树管理 16G 的内存
+	pages pageAlloc 
+
+	sweepgen uint32 // sweep 代数 gc时候使用
+
+	// 所有的 mspan
+	allspans []*mspan 
+
+	// 正在使用的 page 数
+	pagesInUse         atomic.Uintptr 
+	// ......
+
+	// 用于定位内存地址是哪个 mspan 的
+	// 二维数组 1 << arenaL1Bits = 1   1 << arenaL2Bits = 4194304 
+	arenas [1 << arenaL1Bits]*[1 << arenaL2Bits]*heapArena
+
+	spanalloc fixalloc              // span 分配器
+	cachealloc fixalloc             // mcache 分配器
+	specialfinalizeralloc fixalloc  // finalizer 分配器
+	// ......
+}
+```
+
+### heapArena
+
+```go
+
+// A heapArena stores metadata for a heap arena. heapArenas are stored
+// outside of the Go heap and accessed via the mheap_.arenas index.
+type heapArena struct {
+	_ sys.NotInHeap
+
+	// page 对应的 mspan
+	// pagesPerArena 8192 一个 page 8KB 所以一个 heapArena 可以存储 64M 的内存
+	spans [pagesPerArena]*mspan
+
+	// 标记哪个 page 是在使用的
+	// /8 是 uint8 可以表示 8 个 page
+	pageInUse [pagesPerArena / 8]uint8
+
+	// 标记哪些span包含被标记的对象 用于 gc 加速
+	pageMarks [pagesPerArena / 8]uint8
+
+	// 标记哪些span包含特殊对象
+	pageSpecials [pagesPerArena / 8]uint8
+
+	checkmarks *checkmarksMap
+
+	// arena中第一个未使用（已归零）页面的起始字节
+	zeroedBase uintptr
+}
+```
+
+
+### pageAlloc
+
+分配 page 的结构体，是一个 radix tree 的结构，一共有 5 层，每一层都是一个 summary 数组，用于快速查找空闲页面。
+
+```go
+type pageAlloc struct {
+	// 基数树 一共有 summaryLevels=5 层
+	// 基数树的摘要数组，用于快速查找空闲页面
+	summary [summaryLevels][]pallocSum
+
+	//  二级页面位图结构 
+	// 使用二级结构而不是一个大的扁平数组，是因为在64位平台上总大小可能非常大(O(GiB))
+	chunks [1 << pallocChunksL1Bits]*[1 << pallocChunksL2Bits]pallocData
+
+	// 搜索起始地址
+	searchAddr offAddr
+
+	// start 和 end 表示 pageAlloc 知道的块索引范围
+	start, end chunkIdx
+
+	// ......
+}
+```
+
+```go
+type pallocSum uint64
+
+//  pallocSum 被划分成几个部分：
+// 63位     62-42位    41-21位    20-0位
+// [标志位] [end值]    [max值]    [start值]
+//  1      21位      21位       21位
+
+func (p pallocSum) start() uint {
+	// 检查第63位是否为1
+	if uint64(p)&uint64(1<<63) != 0 {
+		return maxPackedValue
+	}
+	// 否则，取最低21位
+	return uint(uint64(p) & (maxPackedValue - 1))
+}
+
+func (p pallocSum) max() uint {
+	if uint64(p)&uint64(1<<63) != 0 {
+		return maxPackedValue
+	}
+	// 右移21位，然后取21位
+	return uint((uint64(p) >> logMaxPackedValue) & (maxPackedValue - 1))
+}
+
+func (p pallocSum) end() uint {
+	if uint64(p)&uint64(1<<63) != 0 {
+		return maxPackedValue
+	}
+	// 右移42位，然后取21位
+	return uint((uint64(p) >> (2 * logMaxPackedValue)) & (maxPackedValue - 1))
+}
+```
+
+![](/images/go_page_alloc.png)
+
+
+## 内存分配流程
