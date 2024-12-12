@@ -820,3 +820,149 @@ func mmap(addr unsafe.Pointer, n uintptr, prot, flags, fd int32, off uint32) (un
 	return sysMmap(addr, n, prot, flags, fd, off)
 }
 ```
+
+
+## stack 内存
+
+```go
+// newproc1
+if newg == nil {
+	newg = malg(stackMin)
+}
+```
+
+```go
+//newproc1 -> malg -> stackalloc
+func stackalloc(n uint32) stack {
+	thisg := getg()
+	// ......
+
+	var v unsafe.Pointer
+	// 小栈 linux 下是 32k
+	if n < fixedStack<<_NumStackOrders && n < _StackCacheSize {
+		order := uint8(0)
+		n2 := n
+		for n2 > fixedStack {
+			order++
+			n2 >>= 1
+		}
+		var x gclinkptr
+		 // 以下情况直接从全局池分配：
+        // 1. 禁用栈缓存
+        // 2. 没有关联的 P
+        // 3. 禁用抢占
+		if stackNoCache != 0 || thisg.m.p == 0 || thisg.m.preemptoff != "" {
+			lock(&stackpool[order].item.mu)
+			x = stackpoolalloc(order)
+			unlock(&stackpool[order].item.mu)
+		} else {
+			// 从 P 的本地缓存分配
+			c := thisg.m.p.ptr().mcache
+			x = c.stackcache[order].list
+			// 如果本地缓存为空，则重新填充
+			if x.ptr() == nil {
+				stackcacherefill(c, order)
+				x = c.stackcache[order].list
+			}
+			c.stackcache[order].list = x.ptr().next
+			c.stackcache[order].size -= uintptr(n)
+		}
+		v = unsafe.Pointer(x)
+	} else {
+		// 大栈
+		var s *mspan
+		npage := uintptr(n) >> _PageShift
+		log2npage := stacklog2(npage)
+
+		// Try to get a stack from the large stack cache.
+		lock(&stackLarge.lock)
+		if !stackLarge.free[log2npage].isEmpty() {
+			s = stackLarge.free[log2npage].first
+			stackLarge.free[log2npage].remove(s)
+		}
+		unlock(&stackLarge.lock)
+
+		lockWithRankMayAcquire(&mheap_.lock, lockRankMheap)
+
+		if s == nil {
+			// 从堆中分配新的栈空间
+			s = mheap_.allocManual(npage, spanAllocStack)
+			if s == nil {
+				throw("out of memory")
+			}
+			osStackAlloc(s)
+			s.elemsize = uintptr(n)
+		}
+		v = unsafe.Pointer(s.base())
+	}
+
+	// ...
+	return stack{uintptr(v), uintptr(v) + uintptr(n)}
+}
+```
+
+**stackpoolalloc stackpool**
+
+```go
+var stackpool [_NumStackOrders]struct {
+	item stackpoolItem
+	_    [(cpu.CacheLinePadSize - unsafe.Sizeof(stackpoolItem{})%cpu.CacheLinePadSize) % cpu.CacheLinePadSize]byte
+}
+
+type stackpoolItem struct {
+	_    sys.NotInHeap
+	mu   mutex
+	span mSpanList
+}
+
+
+func stackpoolalloc(order uint8) gclinkptr {
+	list := &stackpool[order].item.span
+	s := list.first
+	if s == nil {
+		// 从 mheap 中申请 class = 0 对应页数的
+		s = mheap_.allocManual(_StackCacheSize>>_PageShift, spanAllocStack)
+		// ...
+	}
+	// 分配内存
+	x := s.manualFreeList
+	// ...
+	return x
+}
+```
+
+**stackcache**
+
+```go
+type mcache struct {
+	stackcache [_NumStackOrders]stackfreelist
+}
+
+type stackfreelist struct {
+	list gclinkptr 
+	size uintptr  
+}
+
+type gclinkptr uintptr
+
+func (p gclinkptr) ptr() *gclink {
+	return (*gclink)(unsafe.Pointer(p))
+}
+```
+
+
+**stackcacherefill**
+
+```go
+func stackcacherefill(c *mcache, order uint8) {
+	for size < _StackCacheSize/2 {
+		x := stackpoolalloc(order)
+		x.ptr().next = list
+		list = x
+		size += fixedStack << order
+	}
+	unlock(&stackpool[order].item.mu)
+	c.stackcache[order].list = list
+	c.stackcache[order].size = size
+}
+```
