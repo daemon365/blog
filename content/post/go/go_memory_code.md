@@ -8,7 +8,6 @@ categories:
 tags:
   - go
 
-draft: true
 ---
 
 
@@ -24,7 +23,7 @@ draft: true
 
 ![](/images/virtual_memory.png)
 
-如上图所示，如果直接使用真是的内存，想要连续的肯定是申请不到的，这就是内存碎片的问题。而使用虚拟内存，通过 Page 映射的方式，保证内存连续。
+如上图所示，如果直接使用真实的内存，想要连续的内存肯定是申请不到的，这就是内存碎片的问题。而使用虚拟内存，通过 Page 映射的方式，保证内存连续。
 
 ## Go 内存管理单元
 
@@ -58,7 +57,7 @@ mspan 是 go 内存管理基本单元，一个 mspan 包含一个或者多个 pa
 3. span 是 mspan 的大小。
 4. objects 是 mspan 中对象的个数。
 5. tail waste 是 mspan 中最后一个对象的浪费空间。（不能整除造成的）
-6. max waste 是 mspan 中最大的浪费空间。（比如第一个中 每个都使用 1 byte，那么就所有都浪费 7 byte,1 / 7 = 87.50%）
+6. max waste 是 mspan 中最大的浪费空间。（比如第一个中 每个都使用 1 byte，那么就所有都浪费 7 byte,7 / 8 = 87.50%）
 7. min align 是 mspan 中对象的对齐大小。如果超过这个就会分配下一个 mspan。
 
 ## 数据结构
@@ -117,7 +116,7 @@ func (sc spanClass) noscan() bool {
 }
 ```
 
-spanClass 是 unint8 类型，一共有 8 位，前 7 位是 sizeclass，也就是上边 table 中的内容，一共有 `(67 + 1) * 2` 种类型, +1 是 0 代表比 67 class 需要的内存还大。最后一位是 noscan，也就是表示这个对象中是否含有指针，用来给 GC 扫描加速用的，所以要 * 2。
+spanClass 是 unint8 类型，一共有 8 位，前 7 位是 sizeclass，也就是上边 table 中的内容，一共有 `(67 + 1) * 2` 种类型, +1 是 0 代表比 67 class 的内存还大。最后一位是 noscan，也就是表示这个对象中是否含有指针，用来给 GC 扫描加速用的（无指针对象就不用继续扫描了），所以要 * 2。
 
 #### mspan 详解
 
@@ -964,5 +963,115 @@ func stackcacherefill(c *mcache, order uint8) {
 	unlock(&stackpool[order].item.mu)
 	c.stackcache[order].list = list
 	c.stackcache[order].size = size
+}
+```
+
+### 回收
+
+```go
+//Goexit -> goexit1 -> goexit0 -> gdestroy
+func gdestroy(gp *g) {
+	// ......
+	// 修改状态
+	casgstatus(gp, _Grunning, _Gdead)
+	// 把 gp 的变量制空 .......
+
+	// 把 m 上的 g 制空
+	dropg()
+
+	gfput(pp, gp)
+}
+
+func gfput(pp *p, gp *g) {
+	// ......
+	stksize := gp.stack.hi - gp.stack.lo
+
+	// 如果栈不是默认大小 直接释放掉 只有默认大小才去复用
+	if stksize != uintptr(startingStackSize) {
+		// non-standard stack size - free it.
+		stackfree(gp.stack)
+		gp.stack.lo = 0
+		gp.stack.hi = 0
+		gp.stackguard0 = 0
+	}
+
+	// 将 goroutine 放入空闲队列
+	pp.gFree.push(gp)
+	pp.gFree.n++
+	// 如果到达 64 个 goroutine 就把一部分放到全局队列中
+	if pp.gFree.n >= 64 {
+		var (
+			inc      int32
+			stackQ   gQueue
+			noStackQ gQueue
+		)
+		for pp.gFree.n >= 32 {
+			gp := pp.gFree.pop()
+			pp.gFree.n--
+			if gp.stack.lo == 0 {
+				noStackQ.push(gp)
+			} else {
+				stackQ.push(gp)
+			}
+			inc++
+		}
+		lock(&sched.gFree.lock)
+		sched.gFree.noStack.pushAll(noStackQ)
+		sched.gFree.stack.pushAll(stackQ)
+		sched.gFree.n += inc
+		unlock(&sched.gFree.lock)
+	}
+}
+```
+
+**stackfree**
+
+```go
+func stackfree(stk stack) {
+	// ......
+	
+	if n < fixedStack<<_NumStackOrders && n < _StackCacheSize {
+		// 小栈（< 32k） 留着复用一下
+		order := uint8(0)
+		n2 := n
+		for n2 > fixedStack {
+			order++
+			n2 >>= 1
+		}
+		x := gclinkptr(v)
+		 // 如果不使用缓存或当前处理器被抢占，使用全局栈池
+		if stackNoCache != 0 || gp.m.p == 0 || gp.m.preemptoff != "" {
+			lock(&stackpool[order].item.mu)
+			stackpoolfree(x, order)
+			unlock(&stackpool[order].item.mu)
+		} else {
+			// 否则，使用本地缓存
+			c := gp.m.p.ptr().mcache
+			if c.stackcache[order].size >= _StackCacheSize {
+				stackcacherelease(c, order)
+			}
+			x.ptr().next = c.stackcache[order].list
+			c.stackcache[order].list = x
+			c.stackcache[order].size += n
+		}
+	} else {
+		// 如果栈大小不适合缓存，检查其 span 状态并相应处理
+		s := spanOfUnchecked(uintptr(v))
+		if s.state.get() != mSpanManual {
+			println(hex(s.base()), v)
+			throw("bad span state")
+		}
+		if gcphase == _GCoff {
+			// 如果 GC 未运行，立即释放栈
+			osStackFree(s)
+			mheap_.freeManual(s, spanAllocStack)
+		} else {
+			// 如果 GC 运行中，将栈添加到大栈缓存，避免与 GC 竞态
+			log2npage := stacklog2(s.npages)
+			lock(&stackLarge.lock)
+			stackLarge.free[log2npage].insert(s)
+			unlock(&stackLarge.lock)
+		}
+	}
 }
 ```
