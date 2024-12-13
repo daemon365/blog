@@ -1,4 +1,9 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><search><entry><title>从源码分析 GMP 调度原理</title><url>/post/go/gmp_code/</url><categories><category>go</category></categories><tags/><content type="html">  本身涉及到的 go 代码 都是基于 go 1.23.0 版本
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><search><entry><title>go 内存管理</title><url>/post/go/go_memory_code/</url><categories><category>go</category></categories><tags><tag>go</tag></tags><content type="html">  操作系统内存管理 操作系统管理内存的存储单元是页（page），在 linux 中一般是 4KB。而且，操作系统还会使用 虚拟内存 来管理内存，在用户程序中，我们看到的内存是不是真实的内存，而是虚拟内存。当访问或者修改内存的时候，操作系统会将虚拟内存映射到真实的内存中。申请内存的组件是 Page Table 和 MMU（Memory Management Unit）。因为这个性能很重要，所以在 CPU 中专门有一个 TLB（Translation Lookaside Buffer）来缓存 Page Table 的内容。
+为什么要用虚拟内存？
+保护内存，每个进程都有自己的虚拟内存，不会相互干扰。防止修改和访问别的进程的内存。 减少内存碎片，虚拟内存是连续的，而真实的内存是不连续的。 当内存不够时，可以把虚拟内存映射到硬盘上，这样就可以使用硬盘的空间来扩展内存。 如上图所示，如果直接使用真实的内存，想要连续的内存肯定是申请不到的，这就是内存碎片的问题。而使用虚拟内存，通过 Page 映射的方式，保证内存连续。
+Go 内存管理单元 page 在 go 中，管理内存的存储单元也是页（Page）, 每个页的大小是 8KB。Go 内存管理是由 runtime 来管理的，runtime 会维护一个内存池，用来分配和回收内存。这样可以避免频繁的系统调用申请内存，提高性能。
+mspan mspan 是 go 内存管理基本单元，一个 mspan 包含一个或者多个 page。go 中有多种 mspan，每种 mspan 给不同的内存大小使用。
+class bytes/obj bytes/span objects tail waste max waste min align 1 8 8192 1024 0 87.50% 8 2 16 8192 512 0 43.75% 16 3 24 8192 341 8 29.24% 8 4 32 8192 256 0 21.88% 32 5 48 8192 170 32 31.52% 16 6 64 8192 128 0 23.44% 64 7 80 8192 102 32 19.07% 16 8 96 8192 85 32 15.95% 32 9 112 8192 73 16 13.56% 16 &amp;amp;hellip; &amp;amp;hellip; &amp;amp;hellip; …  </content></entry><entry><title>从源码分析 GMP 调度原理</title><url>/post/go/gmp_code/</url><categories><category>go</category></categories><tags/><content type="html">  本身涉及到的 go 代码 都是基于 go 1.23.0 版本
 传统 OS 线程 线程是 CPU 的最小调度单位，CPU 通过不断切换线程来实现多任务的并发。这会引发一些问题（对于用户角度）：
 线程的创建和销毁等是昂贵的，因为要不断在用户空间和内核空间切换。 线程的调度是由操作系统负责的，用户无法控制。而操作系统又可能不知道线程已经 IO 阻塞，导致线程被调度，浪费 CPU 资源。 线程的栈是很大的，最新版 linux 默认是 8M，会引起内存浪费。 &amp;amp;hellip;&amp;amp;hellip; 所以，最简单的办法就是复用线程，go 中使用的是 M:N 模型，即 M 个 OS 线程对应 N 个 任务。
 GMP 模型 G goroutine, 一个 goroutine 代表一个任务。它有自己的栈空间，默认是 2K，栈空间可以动态增长。方式就是把旧的栈空间复制到新的栈空间，然后释放旧的栈空间。它的栈是在 heap （对于 OS） 上分配的。

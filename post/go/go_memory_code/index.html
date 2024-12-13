@@ -1,0 +1,905 @@
+<!doctype html><html lang=zh-CN data-theme=light><head><meta charset=UTF-8><meta name=viewport content="width=device-width"><meta name=theme-color content="#222" media="(prefers-color-scheme: light)"><meta name=generator content="Hugo 0.139.4"><link rel="shortcut icon" type=image/x-icon href=/imgs/icons/favicon.ico><link rel=icon type=image/x-icon href=/imgs/icons/favicon.ico><link rel=icon type=image/png sizes=16x16 href=/imgs/icons/favicon.ico><link rel=icon type=image/png sizes=32x32 href=/imgs/icons/favicon.ico><link rel=apple-touch-icon sizes=180x180 href=/imgs/icons/favicon.ico><meta itemprop=name content="go 内存管理"><meta itemprop=description content="Don't let yourself stop."><meta name=description content="Don't let yourself stop."><meta itemprop=datePublished zgotmplz><meta itemprop=dateModified zgotmplz><meta itemprop=image content="https://daemon365.dev/imgs/daemon365.png"><meta itemprop=keywords content="go"><meta property="og:type" content="article"><meta property="og:title" content="go 内存管理"><meta property="og:description" content="Don't let yourself stop."><meta property="og:image" content="/imgs/daemon365.png"><meta property="og:image:width" content="312"><meta property="og:image:height" content="312"><meta property="og:image:type" content="image/jpeg/png/svg/jpg"><meta property="og:url" content="https://daemon365.dev/post/go/go_memory_code/"><meta property="og:site_name" content="Daemon"><meta property="og:locale" content="zh-CN"><meta property="article:author" content="daemon365"><meta property="article:published_time" content="2024-12-10 20:55:56 +0800 +0800"><meta property="article:modified_time" content="2024-12-10 20:55:56 +0800 +0800"><link type=text/css rel=stylesheet href=https://daemon365.dev/3rd/font-awesome/6.6.0/css/all.min.css><link type=text/css rel=stylesheet href=https://daemon365.dev/3rd/animate.css/4.1.1/animate.min.css><link type=text/css rel=stylesheet href=https://daemon365.dev/3rd/viewerjs/1.11.6/viewer.min.css><link rel=stylesheet href=/css/main.min.5ec1f63635756d664e619fe2d87a11c7394f519beff240c124743433c9861792.css><script type=text/javascript>(function(){localDB={set:function(e,t,n){if(n===0)return;const s=new Date,o=n*864e5,i={value:t,expiry:s.getTime()+o};localStorage.setItem(e,JSON.stringify(i))},get:function(e){const t=localStorage.getItem(e);if(!t)return void 0;const n=JSON.parse(t),s=new Date;return s.getTime()>n.expiry?(localStorage.removeItem(e),void 0):n.value}},theme={active:function(){const e=localDB.get("theme");if(e==null)return;theme.toggle(e),window.matchMedia("(prefers-color-scheme: dark)").addListener(function(e){theme.toggle(e.matches?"dark":"light")})},toggle:function(e){document.documentElement.setAttribute("data-theme",e),localDB.set("theme",e,2);const t=document.querySelector("iframe.giscus-frame");if(t){const n={setConfig:{theme:e}};t.contentWindow.postMessage({giscus:n},"https://giscus.app")}}},theme.active()})(window)</script><script class=next-config data-name=page type=application/json>{"comments":true,"isHome":false,"isPage":true,"path":"go_memory_code","permalink":"https://daemon365.dev/post/go/go_memory_code/","title":"go 内存管理","waline":{"js":[{"alias":"@waline/client","alias_name":"waline","file":"dist/pageview.js","name":"pageview","version":"2.15.8"},{"alias":"@waline/client","alias_name":"waline","file":"dist/comment.js","name":"comment","version":"2.15.8"}]}}</script><script type=text/javascript>document.addEventListener("DOMContentLoaded",()=>{var e=document.createElement("script");e.charset="UTF-8",e.id="LA_COLLECT",e.src="https://sdk.51.la/js-sdk-pro.min.js",e.async="true",e.onload=function(){LA.init({id:"JmAHxEAUVgyS8B1c",ck:"JmAHxEAUVgyS8B1c",autoTrack:!0})},document.head.appendChild(e)})</script><script type=text/javascript>document.addEventListener("DOMContentLoaded",()=>{var e=document.createElement("script");e.charset="UTF-8",e.src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js",e.async=!1,e.defer=!0,document.head.appendChild(e),e.onload=function(){NexT.utils.fmtBusuanzi()}})</script><title>go 内存管理 - Daemon</title><noscript><link rel=stylesheet href=/css/noscript.css></noscript></head><body itemscope itemtype=http://schema.org/WebPage><div class=headband></div><main class=main><header class=header itemscope itemtype=http://schema.org/WPHeader><div class=header-inner><div class=site-brand-container><div class=site-nav-toggle><div class=toggle aria-label role=button><span class=toggle-line></span>
+<span class=toggle-line></span>
+<span class=toggle-line></span></div></div><div class=site-meta><a href=/ class=brand rel=start><i class=logo-line></i><h1 class=site-title>Daemon</h1><i class=logo-line></i></a><p class=site-subtitle itemprop=description>Don't let yourself stop.</p></div><div class=site-nav-right><div class="toggle popup-trigger"><i class="fa fa-search fa-fw fa-lg"></i></div></div></div><nav class=site-nav><ul class="main-menu menu"><li class="menu-item menu-item-home"><a href=/ class=hvr-icon-pulse rel=section><i class="fa fa-home hvr-icon"></i>Home</a></li><li class="menu-item menu-item-about"><a href=/about/ class=hvr-icon-pulse rel=section><i class="fa fa-user hvr-icon"></i>About</a></li><li class="menu-item menu-item-archives"><a href=/archives/ class=hvr-icon-pulse rel=section><i class="fa fa-archive hvr-icon"></i>Archives</a></li><li class="menu-item menu-item-commonweal"><a href=/404.html class=hvr-icon-pulse rel=section><i class="fa fa-heartbeat hvr-icon"></i>Commonweal</a></li><li class="menu-item menu-item-search"><a role=button class="popup-trigger hvr-icon-pulse"><i class="fa fa-search fa-fw hvr-icon"></i>搜索</a></li></ul></nav><div class=search-pop-overlay><div class="popup search-popup"><div class=search-header><span class=search-icon><i class="fa fa-search"></i></span><div class=search-input-container><input autocomplete=off autocapitalize=off maxlength=80 placeholder=搜索... spellcheck=false type=search class=search-input></div><span class=popup-btn-close role=button><i class="fa fa-times-circle"></i></span></div><div class="search-result-container no-result"><div class=search-result-icon><i class="fa fa-spinner fa-pulse fa-5x"></i></div></div></div></div></div><div class="toggle sidebar-toggle" role=button><span class=toggle-line></span>
+<span class=toggle-line></span>
+<span class=toggle-line></span></div><aside class=sidebar><div class="sidebar-inner sidebar-nav-active sidebar-toc-active"><ul class=sidebar-nav><li class=sidebar-nav-toc>文章目录</li><li class=sidebar-nav-overview>站点概览</li></ul><div class=sidebar-panel-container><div class="post-toc-wrap sidebar-panel"><div class="post-toc animated"><nav id=TableOfContents><ul><li><a href=#操作系统内存管理>操作系统内存管理</a></li><li><a href=#go-内存管理单元>Go 内存管理单元</a><ul><li><a href=#page>page</a></li><li><a href=#mspan>mspan</a></li></ul></li><li><a href=#数据结构>数据结构</a><ul><li><a href=#mspan-1>mspan</a><ul><li><a href=#spanclass>spanClass</a></li><li><a href=#mspan-详解>mspan 详解</a></li></ul></li><li><a href=#mcache>mcache</a></li><li><a href=#mcentral>mcentral</a></li><li><a href=#mheap>mheap</a></li><li><a href=#heaparena>heapArena</a></li><li><a href=#pagealloc>pageAlloc</a></li></ul></li><li><a href=#内存分配流程>内存分配流程</a><ul><li><a href=#流程>流程</a></li><li><a href=#mallocgc>mallocgc</a></li><li><a href=#nextfreefast>nextFreeFast</a></li><li><a href=#nextfree>nextFree</a></li><li><a href=#heading></a></li></ul></li><li><a href=#stack-内存>stack 内存</a><ul><li><a href=#回收>回收</a></li></ul></li></ul></nav></div></div><div class="site-overview-wrap sidebar-panel"><div class="site-author site-overview-item animated" itemprop=author itemscope itemtype=http://schema.org/Person><img class=site-author-image itemprop=image alt=daemon365 src=/imgs/img-lazy-loading.gif data-src=/imgs/daemon365.png><p class=site-author-name itemprop=name>daemon365</p><div class=site-description itemprop=description>Don't let yourself stop.</div></div><div class="site-state-wrap site-overview-item animated"><nav class=site-state><div class="site-state-item site-state-posts"><a href=/archives/><span class=site-state-item-count>95</span>
+<span class=site-state-item-name>日志</span></a></div><div class="site-state-item site-state-categories"><a href=/categories/><span class=site-state-item-count>7</span>
+<span class=site-state-item-name>分类</span></a></div><div class="site-state-item site-state-tags"><a href=/tags/><span class=site-state-item-count>52</span>
+<span class=site-state-item-name>标签</span></a></div></nav></div><div class="links-of-social site-overview-item animated"><span class=links-of-social-item><a href=https://github.com/daemon365 title="Github → https://github.com/daemon365" rel=noopener target=_blank><i class="fab fa-github fa-fw"></i>
+Github</a></span></div><div class="cc-license animated" itemprop=license><a href=https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh class=cc-opacity rel=noopener target=_blank title=共享知识><img src=/imgs/img-lazy-loading.gif data-src=/imgs/cc/big/by_nc_sa.svg alt=共享知识></a></div><div class="links-of-blogroll site-overview-item animated"><div class=links-of-blogroll-title><i class="fa fa-globe fa-fw"></i>
+友情链接</div><ul class=links-of-blogroll-list><li class=links-of-blogroll-item><a href=https://go-kratos.dev title=https://go-kratos.dev target=_blank>kratos</a></li></ul></div></div></div></div></aside><div class=sidebar-dimmer></div></header><div class=tool-buttons><div id=goto-comments class="button goto-comments" title=直达评论><i class="fas fa-comments"></i></div><div id=toggle-theme class=button title=深浅模式切换><i class="fas fa-adjust"></i></div><div class=back-to-top role=button title=返回顶部><i class="fa fa-arrow-up"></i>
+<span>0%</span></div></div><div class=reading-progress-bar></div><script type=text/javascript src=//sidecar.gitter.im/dist/sidecar.v1.js async></script><script type=text/javascript>((window.gitter={}).chat={}).options={room:"hugo-next/community"}</script><noscript><div class=noscript-warning>Theme NexT works best with JavaScript enabled</div></noscript><div class="main-inner post posts-expand"><div class=post-block><article itemscope itemtype=http://schema.org/Article class=post-content lang><link itemprop=mainEntityOfPage href=https://daemon365.dev/post/go/go_memory_code/><span hidden itemprop=author itemscope itemtype=http://schema.org/Person><meta itemprop=image content="/imgs/daemon365.png"><meta itemprop=name content="daemon365"></span><span hidden itemprop=publisher itemscope itemtype=http://schema.org/Organization><meta itemprop=name content="daemon365"><meta itemprop=description content="Don't let yourself stop."></span><span hidden itemprop=post itemscope itemtype=http://schema.org/CreativeWork><meta itemprop=name content="go 内存管理"><meta itemprop=description content="操作系统内存管理
+
+操作系统管理内存的存储单元是页（page），在 linux 中一般是 4KB。而且，操作系统还会使用 虚拟内存 来管理内存，在用户程序中，我们看到的内存是不是真实的内存，而是虚拟内存。当访问或者修改内存的时候，操作系统会将虚拟内存映射到真实的内存中。申请内存的组件是 Page Table 和 MMU（Memory Management Unit）。因为这个性能很重要，所以在 CPU 中专门有一个 TLB（Translation Lookaside Buffer）来缓存 Page Table 的内容。"></span><header class=post-header><h1 class=post-title itemprop="name headline">go 内存管理</h1><div class=post-meta-container><div class=post-meta-items><span class=post-meta-item><span class=post-meta-item-icon><i class="fas fa-solid fa-calendar"></i>
+</span><span class=post-meta-item-text title=发表于>发表于：
+</span><time title="创建时间：2024-12-10 20:55:56 +0800 +0800" itemprop="dateCreated datePublished" datetime="2024-12-10 20:55:56 +0800 +0800">2024-12-10
+</time></span><span class=post-meta-item><span class=post-meta-item-icon><i class="fas fa-solid fa-folder-open"></i>
+</span><span class=post-meta-item-text title=分类于>分类于：
+</span><span itemprop=about itemscope itemtype=http://schema.org/Thing><a href=/categories/go itemprop=url rel=index><span itemprop=name>go</span></a></span></span></div><div class=post-meta-items><span class=post-meta-item title=字数><span class=post-meta-item-icon><i class="fas fa-solid fa-file-word"></i>
+</span><span class=post-meta-item-text>字数：</span>
+<span>6082</span>
+</span><span class=post-meta-item title=阅读><span class=post-meta-item-icon><i class="fas fa-solid fa-clock"></i>
+</span><span class=post-meta-item-text>阅读：&ap;</span>
+<span>13分钟</span>
+</span><span class=post-meta-item title=浏览><span class=post-meta-item-icon><i class="fas fa-solid fa-eye"></i>
+</span><span class=post-meta-item-text>浏览：
+</span><span id=busuanzi_value_page_pv data-path=/post/go/go_memory_code/><i class="fa fa-sync fa-spin"></i></span></span></div></div></header><div class=post-body itemprop=articleBody><h2 id=操作系统内存管理>操作系统内存管理
+<a class=header-anchor href=#%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%86%85%e5%ad%98%e7%ae%a1%e7%90%86></a></h2><p>操作系统管理内存的存储单元是页（page），在 linux 中一般是 4KB。而且，操作系统还会使用 <code>虚拟内存</code> 来管理内存，在用户程序中，我们看到的内存是不是真实的内存，而是虚拟内存。当访问或者修改内存的时候，操作系统会将虚拟内存映射到真实的内存中。申请内存的组件是 Page Table 和 MMU（Memory Management Unit）。因为这个性能很重要，所以在 CPU 中专门有一个 TLB（Translation Lookaside Buffer）来缓存 Page Table 的内容。</p><p>为什么要用虚拟内存？</p><ol><li>保护内存，每个进程都有自己的虚拟内存，不会相互干扰。防止修改和访问别的进程的内存。</li><li>减少内存碎片，虚拟内存是连续的，而真实的内存是不连续的。</li><li>当内存不够时，可以把虚拟内存映射到硬盘上，这样就可以使用硬盘的空间来扩展内存。</li></ol><p><img src=/imgs/img-lazy-loading.gif data-src=/images/virtual_memory.png alt></p><p>如上图所示，如果直接使用真实的内存，想要连续的内存肯定是申请不到的，这就是内存碎片的问题。而使用虚拟内存，通过 Page 映射的方式，保证内存连续。</p><h2 id=go-内存管理单元>Go 内存管理单元
+<a class=header-anchor href=#go-%e5%86%85%e5%ad%98%e7%ae%a1%e7%90%86%e5%8d%95%e5%85%83></a></h2><h3 id=page>page
+<a class=header-anchor href=#page></a></h3><p>在 go 中，管理内存的存储单元也是页（Page）, 每个页的大小是 8KB。Go 内存管理是由 runtime 来管理的，runtime 会维护一个内存池，用来分配和回收内存。这样可以避免频繁的系统调用申请内存，提高性能。</p><h3 id=mspan>mspan
+<a class=header-anchor href=#mspan></a></h3><p>mspan 是 go 内存管理基本单元，一个 mspan 包含一个或者多个 page。go 中有多种 mspan，每种 mspan 给不同的内存大小使用。</p><table><thead><tr><th>class</th><th>bytes/obj</th><th>bytes/span</th><th>objects</th><th>tail waste</th><th>max waste</th><th>min align</th></tr></thead><tbody><tr><td>1</td><td>8</td><td>8192</td><td>1024</td><td>0</td><td>87.50%</td><td>8</td></tr><tr><td>2</td><td>16</td><td>8192</td><td>512</td><td>0</td><td>43.75%</td><td>16</td></tr><tr><td>3</td><td>24</td><td>8192</td><td>341</td><td>8</td><td>29.24%</td><td>8</td></tr><tr><td>4</td><td>32</td><td>8192</td><td>256</td><td>0</td><td>21.88%</td><td>32</td></tr><tr><td>5</td><td>48</td><td>8192</td><td>170</td><td>32</td><td>31.52%</td><td>16</td></tr><tr><td>6</td><td>64</td><td>8192</td><td>128</td><td>0</td><td>23.44%</td><td>64</td></tr><tr><td>7</td><td>80</td><td>8192</td><td>102</td><td>32</td><td>19.07%</td><td>16</td></tr><tr><td>8</td><td>96</td><td>8192</td><td>85</td><td>32</td><td>15.95%</td><td>32</td></tr><tr><td>9</td><td>112</td><td>8192</td><td>73</td><td>16</td><td>13.56%</td><td>16</td></tr><tr><td>&mldr;</td><td>&mldr;</td><td>&mldr;</td><td>&mldr;</td><td>&mldr;</td><td>&mldr;</td><td>&mldr;</td></tr><tr><td>64</td><td>24576</td><td>24576</td><td>1</td><td>0</td><td>11.45%</td><td>8192</td></tr><tr><td>65</td><td>27264</td><td>81920</td><td>3</td><td>128</td><td>10.00%</td><td>128</td></tr><tr><td>66</td><td>28672</td><td>57344</td><td>2</td><td>0</td><td>4.91%</td><td>4096</td></tr><tr><td>67</td><td>32768</td><td>32768</td><td>1</td><td>0</td><td>12.50%</td><td>8192</td></tr></tbody></table><ol><li>class 是 mspan 的类型，每种类型对应不同的内存大小。</li><li>obj 是每个对象的大小。</li><li>span 是 mspan 的大小。</li><li>objects 是 mspan 中对象的个数。</li><li>tail waste 是 mspan 中最后一个对象的浪费空间。（不能整除造成的）</li><li>max waste 是 mspan 中最大的浪费空间。（比如第一个中 每个都使用 1 byte，那么就所有都浪费 7 byte,7 / 8 = 87.50%）</li><li>min align 是 mspan 中对象的对齐大小。如果超过这个就会分配下一个 mspan。</li></ol><h2 id=数据结构>数据结构
+<a class=header-anchor href=#%e6%95%b0%e6%8d%ae%e7%bb%93%e6%9e%84></a></h2><h3 id=mspan-1>mspan
+<a class=header-anchor href=#mspan-1></a></h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>mspan</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// 双向链表 下一个 mspan 和 上一个 mspan
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>next</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>mspan</span>    
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>prev</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>mspan</span>    
+</span></span><span style=display:flex><span>  	<span style=color:#75715e>// debug 使用的
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>list</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>mSpanList</span> 
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  	<span style=color:#75715e>// 起始地址和页数 当 class 太大 要多个页组成 mspan
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>startAddr</span> <span style=color:#66d9ef>uintptr</span> 
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>npages</span>    <span style=color:#66d9ef>uintptr</span> 
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  	<span style=color:#75715e>// 手动管理的空闲对象链表
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>manualFreeList</span> <span style=color:#a6e22e>gclinkptr</span> 
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// 下一个空闲对象的地址 如果小于它 就不用检索了 直接从这个地址开始 提高效率
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>freeindex</span> <span style=color:#66d9ef>uint16</span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// 对象的个数
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>nelems</span> <span style=color:#66d9ef>uint16</span> 
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// GC 扫描使用的空闲索引
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>freeIndexForScan</span> <span style=color:#66d9ef>uint16</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// bitmap 每个 bit 对应一个对象 标记是否使用
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>allocCache</span> <span style=color:#66d9ef>uint64</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// ...
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>  	<span style=color:#75715e>// span 的类型 
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>spanclass</span>             <span style=color:#a6e22e>spanClass</span>     <span style=color:#75715e>// size class and noscan (uint8)
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#75715e>//  ...
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>}
+</span></span></code></pre></div><h4 id=spanclass>spanClass
+<a class=header-anchor href=#spanclass></a></h4><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>spanClass</span> <span style=color:#66d9ef>uint8</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>makeSpanClass</span>(<span style=color:#a6e22e>sizeclass</span> <span style=color:#66d9ef>uint8</span>, <span style=color:#a6e22e>noscan</span> <span style=color:#66d9ef>bool</span>) <span style=color:#a6e22e>spanClass</span> {
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>return</span> <span style=color:#a6e22e>spanClass</span>(<span style=color:#a6e22e>sizeclass</span><span style=color:#f92672>&lt;&lt;</span><span style=color:#ae81ff>1</span>) | <span style=color:#a6e22e>spanClass</span>(<span style=color:#a6e22e>bool2int</span>(<span style=color:#a6e22e>noscan</span>))
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>//go:nosplit
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>sc</span> <span style=color:#a6e22e>spanClass</span>) <span style=color:#a6e22e>sizeclass</span>() <span style=color:#66d9ef>int8</span> {
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>return</span> int8(<span style=color:#a6e22e>sc</span> <span style=color:#f92672>&gt;&gt;</span> <span style=color:#ae81ff>1</span>)
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>//go:nosplit
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>sc</span> <span style=color:#a6e22e>spanClass</span>) <span style=color:#a6e22e>noscan</span>() <span style=color:#66d9ef>bool</span> {
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>return</span> <span style=color:#a6e22e>sc</span><span style=color:#f92672>&amp;</span><span style=color:#ae81ff>1</span> <span style=color:#f92672>!=</span> <span style=color:#ae81ff>0</span>
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>spanClass 是 unint8 类型，一共有 8 位，前 7 位是 sizeclass，也就是上边 table 中的内容，一共有 <code>(67 + 1) * 2</code> 种类型, +1 是 0 代表比 67 class 的内存还大。最后一位是 noscan，也就是表示这个对象中是否含有指针，用来给 GC 扫描加速用的（无指针对象就不用继续扫描了），所以要 * 2。</p><h4 id=mspan-详解>mspan 详解
+<a class=header-anchor href=#mspan-%e8%af%a6%e8%a7%a3></a></h4><p><img src=/imgs/img-lazy-loading.gif data-src=/images/go_memory_mspan.png alt></p><p>如果所示</p><ul><li>mspan 是一个双向链表，如果不够用了，在挂一个就行了。</li><li>startAddr 是 mspan 的起始地址，npages 是 page 数量。根据 startAddr + npages * 8KB 就可以得到 mspan 的结束地址。</li><li>allocCache 是一个 bitmap，每个 bit 对应一个对象，标记是否使用。使用了 ctz(count trailing zero)。</li><li>freeindex 是下一个空闲对象的地址，如果小于它，就不用检索了，直接从这个地址开始，提高效率。</li></ul><h3 id=mcache>mcache
+<a class=header-anchor href=#mcache></a></h3><p>mache 是每个 P （processor）的结构体中都有的，是用来缓存的，因为每个 P 同一时间只有一个 goroutine 在执行，所以 mcache 是不需要加锁的。这也是 mcache 的设计初衷，减少锁的竞争，提高性能。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>p</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>  <span style=color:#75715e>// ...
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>  <span style=color:#a6e22e>mcache</span>      <span style=color:#f92672>*</span><span style=color:#a6e22e>mcache</span>
+</span></span><span style=display:flex><span>  <span style=color:#75715e>// ...
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>}
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#75715e>// 每个 P 的本队缓存
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>mcache</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// 不在 gc 的堆中分配
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>_</span> <span style=color:#a6e22e>sys</span>.<span style=color:#a6e22e>NotInHeap</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// The following members are accessed on every malloc,
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#75715e>// so they are grouped here for better caching.
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>nextSample</span> <span style=color:#66d9ef>uintptr</span> <span style=color:#75715e>// trigger heap sample after allocating this many bytes
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>scanAlloc</span>  <span style=color:#66d9ef>uintptr</span> <span style=color:#75715e>// bytes of scannable heap allocated
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// 微对象分配器（&lt;16B 不含指针）
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>tiny</span>       <span style=color:#66d9ef>uintptr</span> <span style=color:#75715e>// 内存的其实地址
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>tinyoffset</span> <span style=color:#66d9ef>uintptr</span> <span style=color:#75715e>// 偏移量
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>tinyAllocs</span> <span style=color:#66d9ef>uintptr</span> <span style=color:#75715e>// 分配了多少个 tiny 对象
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// span缓存数组，按大小类别索引
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>alloc</span> [<span style=color:#a6e22e>numSpanClasses</span>]<span style=color:#f92672>*</span><span style=color:#a6e22e>mspan</span> <span style=color:#75715e>// spans to allocate from, indexed by spanClass
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// 用于不同大小的栈内存分配 go 的 堆上分配栈内存
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>stackcache</span> [<span style=color:#a6e22e>_NumStackOrders</span>]<span style=color:#a6e22e>stackfreelist</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// 控制 mcache 的刷新
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>flushGen</span> <span style=color:#a6e22e>atomic</span>.<span style=color:#a6e22e>Uint32</span>
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><h3 id=mcentral>mcentral
+<a class=header-anchor href=#mcentral></a></h3><p>mcentral 也是一种缓存，只不过在中心而不是在每个 P 上。mcentral 存在的意义也是减少锁竞争，如果没有 mcentral，那么只要从中心申请 mspan 就需要加锁。现在加上了 mcentral，申请时就需要加特别力度的锁就可以了，比如申请 class = 1 的 mspan 加 class = 1 的锁就可以了，不影响别人申请 class = 2 的 mspan。这样就可以较少锁竞争，提高性能。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>mcentral</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>_</span>         <span style=color:#a6e22e>sys</span>.<span style=color:#a6e22e>NotInHeap</span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// mspan 的类别
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>spanclass</span> <span style=color:#a6e22e>spanClass</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// 部分使用的span列表
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#75715e>// 使用两个集合交替角色
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#75715e>// [0] -&gt; 已清扫的spans
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#75715e>// [1] -&gt; 未清扫的spans
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>partial</span> [<span style=color:#ae81ff>2</span>]<span style=color:#a6e22e>spanSet</span> <span style=color:#75715e>// list of spans with a free object
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#75715e>// 完全使用的 mspan
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>full</span>    [<span style=color:#ae81ff>2</span>]<span style=color:#a6e22e>spanSet</span> <span style=color:#75715e>// list of spans with no free objects
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>spanSet</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// spanSet是一个两级数据结构，由一个可增长的主干（spine）指向固定大小的块组成。
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#75715e>// 访问spine不需要锁，但添加块或扩展spine时需要获取spine锁。
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#75715e>//
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#75715e>// 因为每个mspan至少覆盖8K的堆内存，且在spanSet中最多占用8字节，
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#75715e>// 所以spine的增长是相当有限的。
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// 锁
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>spineLock</span> <span style=color:#a6e22e>mutex</span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// 原子指针，指向一个动态数组
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>spine</span>     <span style=color:#a6e22e>atomicSpanSetSpinePointer</span> <span style=color:#75715e>// *[N]atomic.Pointer[spanSetBlock]
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#75715e>// 当前spine数组中实际使用的长度 原子类型
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>spineLen</span>  <span style=color:#a6e22e>atomic</span>.<span style=color:#a6e22e>Uintptr</span>            <span style=color:#75715e>// Spine array length
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#75715e>//  spine数组的容量
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>spineCap</span>  <span style=color:#66d9ef>uintptr</span>                   <span style=color:#75715e>// Spine array cap, accessed under spineLock
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// index是spanSet中的头尾指针，被压缩在一个字段中。
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#75715e>// head和tail都表示所有块的逻辑连接中的索引位置，其中head总是在tail之后或等于tail
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#75715e>// （等于tail时表示集合为空）。这个字段始终通过原子操作访问。
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#75715e>//
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#75715e>// head和tail各自的宽度为32位，这意味着在需要重置之前，我们最多支持2^32次push操作。
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#75715e>// 如果堆中的每个span都存储在这个集合中，且每个span都是最小尺寸（1个运行时页面，8 KiB），
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#75715e>// 那么大约需要32 TiB大小的堆才会导致无法表示的情况。
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#75715e>// 头部索引
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>index</span> <span style=color:#a6e22e>atomicHeadTailIndex</span>
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>mheap</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>central</span> [<span style=color:#a6e22e>numSpanClasses</span>]<span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>mcentral</span> <span style=color:#a6e22e>mcentral</span>
+</span></span><span style=display:flex><span>		<span style=color:#75715e>// 填充字节 一般不能整除的时候 末尾的余数就不用了
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>		<span style=color:#a6e22e>pad</span>      [(<span style=color:#a6e22e>cpu</span>.<span style=color:#a6e22e>CacheLinePadSize</span> <span style=color:#f92672>-</span> <span style=color:#a6e22e>unsafe</span>.<span style=color:#a6e22e>Sizeof</span>(<span style=color:#a6e22e>mcentral</span>{})<span style=color:#f92672>%</span><span style=color:#a6e22e>cpu</span>.<span style=color:#a6e22e>CacheLinePadSize</span>) <span style=color:#f92672>%</span> <span style=color:#a6e22e>cpu</span>.<span style=color:#a6e22e>CacheLinePadSize</span>]<span style=color:#66d9ef>byte</span>
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><h3 id=mheap>mheap
+<a class=header-anchor href=#mheap></a></h3><p>mheap 是全局的内存管理器，申请内存是 mcentral 不满足要求的时候，就会从 mheap 中申请，要加全局锁。如果 mheap 还不能满足，就会系统调用从操作系统申请，每次申请的最小单位是 Arena，也就是 64M。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>mheap</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>_</span> <span style=color:#a6e22e>sys</span>.<span style=color:#a6e22e>NotInHeap</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// 全局锁
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>lock</span> <span style=color:#a6e22e>mutex</span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// page 分配器 管理所有的page 
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>pages</span> <span style=color:#a6e22e>pageAlloc</span> 
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>sweepgen</span> <span style=color:#66d9ef>uint32</span> <span style=color:#75715e>// sweep 代数 gc时候使用
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// 所有的 mspan
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>allspans</span> []<span style=color:#f92672>*</span><span style=color:#a6e22e>mspan</span> 
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// 正在使用的 page 数
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>pagesInUse</span>         <span style=color:#a6e22e>atomic</span>.<span style=color:#a6e22e>Uintptr</span> 
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// ......
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// 用于定位内存地址是哪个 mspan 的
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#75715e>// 二维数组 1 &lt;&lt; arenaL1Bits = 1   1 &lt;&lt; arenaL2Bits = 4194304 
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>arenas</span> [<span style=color:#ae81ff>1</span> <span style=color:#f92672>&lt;&lt;</span> <span style=color:#a6e22e>arenaL1Bits</span>]<span style=color:#f92672>*</span>[<span style=color:#ae81ff>1</span> <span style=color:#f92672>&lt;&lt;</span> <span style=color:#a6e22e>arenaL2Bits</span>]<span style=color:#f92672>*</span><span style=color:#a6e22e>heapArena</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>spanalloc</span> <span style=color:#a6e22e>fixalloc</span>              <span style=color:#75715e>// span 分配器
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>cachealloc</span> <span style=color:#a6e22e>fixalloc</span>             <span style=color:#75715e>// mcache 分配器
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>specialfinalizeralloc</span> <span style=color:#a6e22e>fixalloc</span>  <span style=color:#75715e>// finalizer 分配器
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#75715e>// ......
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>}
+</span></span></code></pre></div><h3 id=heaparena>heapArena
+<a class=header-anchor href=#heaparena></a></h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-go data-lang=go><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// A heapArena stores metadata for a heap arena. heapArenas are stored
+</span></span></span><span style=display:flex><span><span style=color:#75715e>// outside of the Go heap and accessed via the mheap_.arenas index.
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>heapArena</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>_</span> <span style=color:#a6e22e>sys</span>.<span style=color:#a6e22e>NotInHeap</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// page 对应的 mspan
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#75715e>// pagesPerArena 8192 一个 page 8KB 所以一个 heapArena 可以存储 64M 的内存
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>spans</span> [<span style=color:#a6e22e>pagesPerArena</span>]<span style=color:#f92672>*</span><span style=color:#a6e22e>mspan</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// 标记哪个 page 是在使用的
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#75715e>// /8 是 uint8 可以表示 8 个 page
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>pageInUse</span> [<span style=color:#a6e22e>pagesPerArena</span> <span style=color:#f92672>/</span> <span style=color:#ae81ff>8</span>]<span style=color:#66d9ef>uint8</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// 标记哪些span包含被标记的对象 用于 gc 加速
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>pageMarks</span> [<span style=color:#a6e22e>pagesPerArena</span> <span style=color:#f92672>/</span> <span style=color:#ae81ff>8</span>]<span style=color:#66d9ef>uint8</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// 标记哪些span包含特殊对象
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>pageSpecials</span> [<span style=color:#a6e22e>pagesPerArena</span> <span style=color:#f92672>/</span> <span style=color:#ae81ff>8</span>]<span style=color:#66d9ef>uint8</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>checkmarks</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>checkmarksMap</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// arena中第一个未使用（已归零）页面的起始字节
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>zeroedBase</span> <span style=color:#66d9ef>uintptr</span>
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><h3 id=pagealloc>pageAlloc
+<a class=header-anchor href=#pagealloc></a></h3><p>分配 page 的结构体，是一个 radix tree 的结构，一共有 5 层，每一层都是一个 summary 数组，用于快速查找空闲页面。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>pageAlloc</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// 基数树 一共有 summaryLevels=5 层
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#75715e>// 基数树的摘要数组，用于快速查找空闲页面
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>summary</span> [<span style=color:#a6e22e>summaryLevels</span>][]<span style=color:#a6e22e>pallocSum</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>//  二级页面位图结构 
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#75715e>// 使用二级结构而不是一个大的扁平数组，是因为在64位平台上总大小可能非常大(O(GiB))
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>chunks</span> [<span style=color:#ae81ff>1</span> <span style=color:#f92672>&lt;&lt;</span> <span style=color:#a6e22e>pallocChunksL1Bits</span>]<span style=color:#f92672>*</span>[<span style=color:#ae81ff>1</span> <span style=color:#f92672>&lt;&lt;</span> <span style=color:#a6e22e>pallocChunksL2Bits</span>]<span style=color:#a6e22e>pallocData</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// 搜索起始地址
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>searchAddr</span> <span style=color:#a6e22e>offAddr</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// start 和 end 表示 pageAlloc 知道的块索引范围
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>start</span>, <span style=color:#a6e22e>end</span> <span style=color:#a6e22e>chunkIdx</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// ......
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>}
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>pallocSum</span> <span style=color:#66d9ef>uint64</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>//  pallocSum 被划分成几个部分：
+</span></span></span><span style=display:flex><span><span style=color:#75715e>// 63位     62-42位    41-21位    20-0位
+</span></span></span><span style=display:flex><span><span style=color:#75715e>// [标志位] [end值]    [max值]    [start值]
+</span></span></span><span style=display:flex><span><span style=color:#75715e>//  1      21位      21位       21位
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>p</span> <span style=color:#a6e22e>pallocSum</span>) <span style=color:#a6e22e>start</span>() <span style=color:#66d9ef>uint</span> {
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// 检查第63位是否为1
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#66d9ef>if</span> uint64(<span style=color:#a6e22e>p</span>)<span style=color:#f92672>&amp;</span>uint64(<span style=color:#ae81ff>1</span><span style=color:#f92672>&lt;&lt;</span><span style=color:#ae81ff>63</span>) <span style=color:#f92672>!=</span> <span style=color:#ae81ff>0</span> {
+</span></span><span style=display:flex><span>		<span style=color:#66d9ef>return</span> <span style=color:#a6e22e>maxPackedValue</span>
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// 否则，取最低21位
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#66d9ef>return</span> uint(uint64(<span style=color:#a6e22e>p</span>) <span style=color:#f92672>&amp;</span> (<span style=color:#a6e22e>maxPackedValue</span> <span style=color:#f92672>-</span> <span style=color:#ae81ff>1</span>))
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>p</span> <span style=color:#a6e22e>pallocSum</span>) max() <span style=color:#66d9ef>uint</span> {
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> uint64(<span style=color:#a6e22e>p</span>)<span style=color:#f92672>&amp;</span>uint64(<span style=color:#ae81ff>1</span><span style=color:#f92672>&lt;&lt;</span><span style=color:#ae81ff>63</span>) <span style=color:#f92672>!=</span> <span style=color:#ae81ff>0</span> {
+</span></span><span style=display:flex><span>		<span style=color:#66d9ef>return</span> <span style=color:#a6e22e>maxPackedValue</span>
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// 右移21位，然后取21位
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#66d9ef>return</span> uint((uint64(<span style=color:#a6e22e>p</span>) <span style=color:#f92672>&gt;&gt;</span> <span style=color:#a6e22e>logMaxPackedValue</span>) <span style=color:#f92672>&amp;</span> (<span style=color:#a6e22e>maxPackedValue</span> <span style=color:#f92672>-</span> <span style=color:#ae81ff>1</span>))
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>p</span> <span style=color:#a6e22e>pallocSum</span>) <span style=color:#a6e22e>end</span>() <span style=color:#66d9ef>uint</span> {
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> uint64(<span style=color:#a6e22e>p</span>)<span style=color:#f92672>&amp;</span>uint64(<span style=color:#ae81ff>1</span><span style=color:#f92672>&lt;&lt;</span><span style=color:#ae81ff>63</span>) <span style=color:#f92672>!=</span> <span style=color:#ae81ff>0</span> {
+</span></span><span style=display:flex><span>		<span style=color:#66d9ef>return</span> <span style=color:#a6e22e>maxPackedValue</span>
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// 右移42位，然后取21位
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#66d9ef>return</span> uint((uint64(<span style=color:#a6e22e>p</span>) <span style=color:#f92672>&gt;&gt;</span> (<span style=color:#ae81ff>2</span> <span style=color:#f92672>*</span> <span style=color:#a6e22e>logMaxPackedValue</span>)) <span style=color:#f92672>&amp;</span> (<span style=color:#a6e22e>maxPackedValue</span> <span style=color:#f92672>-</span> <span style=color:#ae81ff>1</span>))
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p><img src=/imgs/img-lazy-loading.gif data-src=/images/go_page_alloc.png alt></p><h2 id=内存分配流程>内存分配流程
+<a class=header-anchor href=#%e5%86%85%e5%ad%98%e5%88%86%e9%85%8d%e6%b5%81%e7%a8%8b></a></h2><h3 id=流程>流程
+<a class=header-anchor href=#%e6%b5%81%e7%a8%8b></a></h3><p><img src=/imgs/img-lazy-loading.gif data-src=/images/go_memory_flow.png alt></p><p>go 中把 对象分成三类 tiny ，small 和 large。tiny 是小于 16B 的对象，small 是大于等于 16B 小于 32KB 的对象，large 是大于 32KB 的对象。tiny 分配器主要是为了减少内存碎片。</p><ol><li>如果是 tiny object，直接使用 tiny 分配器分配。如果 tiny 分配器中的空间不够（定长位16B），就从 mchunk 中获取一个新的 16B 的对象作为 tiny 分配器的空间使用。</li><li>如果是 small object，根据所属的 class, 从 mcache 获取对应 mspan 中的内存。</li><li>如果 mspan 中的内存不够，根据所属的 class 从 mcentral 中获取新的 mspan ，从 mspan 中获取内存。（要 class 力度的锁）</li><li>如果 mcentral 中的 mspan 也不够，就从 mheap 中获取对应数量的 page 组装成 mspan，然后从新的 mspan 中获取内存。（全局锁）</li><li>如果 mheap 中的 mspan 也不够，就系统调用从操作系统获取新的 Arena。把内存 page 分配好，然后继续第四步。</li><li>如果是 large object，直接从第四部开始。</li></ol><h3 id=mallocgc>mallocgc
+<a class=header-anchor href=#mallocgc></a></h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#75715e>// 在 heap 上分配内存函数 size 对象大小 typ 对象类型 needzero 是否需要清零
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>mallocgc</span>(<span style=color:#a6e22e>size</span> <span style=color:#66d9ef>uintptr</span>, <span style=color:#a6e22e>typ</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>_type</span>, <span style=color:#a6e22e>needzero</span> <span style=color:#66d9ef>bool</span>) <span style=color:#a6e22e>unsafe</span>.<span style=color:#a6e22e>Pointer</span> {
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// gc 终止阶段不允许分配 这个是一个检查 正常情况下不会出现
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>gcphase</span> <span style=color:#f92672>==</span> <span style=color:#a6e22e>_GCmarktermination</span> {
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>throw</span>(<span style=color:#e6db74>&#34;mallocgc called with gcphase == _GCmarktermination&#34;</span>)
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// 处理分类为 0 的情况
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>size</span> <span style=color:#f92672>==</span> <span style=color:#ae81ff>0</span> {
+</span></span><span style=display:flex><span>		<span style=color:#66d9ef>return</span> <span style=color:#a6e22e>unsafe</span>.<span style=color:#a6e22e>Pointer</span>(<span style=color:#f92672>&amp;</span><span style=color:#a6e22e>zerobase</span>)
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// ......
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// Set mp.mallocing to keep from being preempted by GC.
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>mp</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>acquirem</span>()
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>mp</span>.<span style=color:#a6e22e>mallocing</span> <span style=color:#f92672>!=</span> <span style=color:#ae81ff>0</span> {
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>throw</span>(<span style=color:#e6db74>&#34;malloc deadlock&#34;</span>)
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>mp</span>.<span style=color:#a6e22e>gsignal</span> <span style=color:#f92672>==</span> <span style=color:#a6e22e>getg</span>() {
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>throw</span>(<span style=color:#e6db74>&#34;malloc during signal&#34;</span>)
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>mp</span>.<span style=color:#a6e22e>mallocing</span> = <span style=color:#ae81ff>1</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>shouldhelpgc</span> <span style=color:#f92672>:=</span> <span style=color:#66d9ef>false</span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>dataSize</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>userSize</span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// 获取 M 和 M 所属 P 的 mcache
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>c</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>getMCache</span>(<span style=color:#a6e22e>mp</span>)
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>c</span> <span style=color:#f92672>==</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>throw</span>(<span style=color:#e6db74>&#34;mallocgc called without a P or outside bootstrapping&#34;</span>)
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>var</span> <span style=color:#a6e22e>span</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>mspan</span>
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>var</span> <span style=color:#a6e22e>header</span> <span style=color:#f92672>**</span><span style=color:#a6e22e>_type</span>
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>var</span> <span style=color:#a6e22e>x</span> <span style=color:#a6e22e>unsafe</span>.<span style=color:#a6e22e>Pointer</span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// 对象总是不是含有指针  如果不含有 就不用往下扫描了 用来 gc 加速
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>noscan</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>typ</span> <span style=color:#f92672>==</span> <span style=color:#66d9ef>nil</span> <span style=color:#f92672>||</span> !<span style=color:#a6e22e>typ</span>.<span style=color:#a6e22e>Pointers</span>()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// 是不是小对象 （&lt; 32k - 8）
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>size</span> <span style=color:#f92672>&lt;=</span> <span style=color:#a6e22e>maxSmallSize</span><span style=color:#f92672>-</span><span style=color:#a6e22e>mallocHeaderSize</span> {
+</span></span><span style=display:flex><span>		<span style=color:#75715e>// 如果对象大小小于 16B 且不含有指针 则使用 tiny 分配器
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>		<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>noscan</span> <span style=color:#f92672>&amp;&amp;</span> <span style=color:#a6e22e>size</span> &lt; <span style=color:#a6e22e>maxTinySize</span> {
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>off</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>tinyoffset</span>
+</span></span><span style=display:flex><span>			<span style=color:#75715e>// 内存对齐一下
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>			<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>size</span><span style=color:#f92672>&amp;</span><span style=color:#ae81ff>7</span> <span style=color:#f92672>==</span> <span style=color:#ae81ff>0</span> {
+</span></span><span style=display:flex><span>				<span style=color:#a6e22e>off</span> = <span style=color:#a6e22e>alignUp</span>(<span style=color:#a6e22e>off</span>, <span style=color:#ae81ff>8</span>)
+</span></span><span style=display:flex><span>			} <span style=color:#66d9ef>else</span> <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>goarch</span>.<span style=color:#a6e22e>PtrSize</span> <span style=color:#f92672>==</span> <span style=color:#ae81ff>4</span> <span style=color:#f92672>&amp;&amp;</span> <span style=color:#a6e22e>size</span> <span style=color:#f92672>==</span> <span style=color:#ae81ff>12</span> {
+</span></span><span style=display:flex><span>				<span style=color:#a6e22e>off</span> = <span style=color:#a6e22e>alignUp</span>(<span style=color:#a6e22e>off</span>, <span style=color:#ae81ff>8</span>)
+</span></span><span style=display:flex><span>			} <span style=color:#66d9ef>else</span> <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>size</span><span style=color:#f92672>&amp;</span><span style=color:#ae81ff>3</span> <span style=color:#f92672>==</span> <span style=color:#ae81ff>0</span> {
+</span></span><span style=display:flex><span>				<span style=color:#a6e22e>off</span> = <span style=color:#a6e22e>alignUp</span>(<span style=color:#a6e22e>off</span>, <span style=color:#ae81ff>4</span>)
+</span></span><span style=display:flex><span>			} <span style=color:#66d9ef>else</span> <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>size</span><span style=color:#f92672>&amp;</span><span style=color:#ae81ff>1</span> <span style=color:#f92672>==</span> <span style=color:#ae81ff>0</span> {
+</span></span><span style=display:flex><span>				<span style=color:#a6e22e>off</span> = <span style=color:#a6e22e>alignUp</span>(<span style=color:#a6e22e>off</span>, <span style=color:#ae81ff>2</span>)
+</span></span><span style=display:flex><span>			}
+</span></span><span style=display:flex><span>			<span style=color:#75715e>// 如果剩余空间足够 使用 tiny 分配器
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>			<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>off</span><span style=color:#f92672>+</span><span style=color:#a6e22e>size</span> <span style=color:#f92672>&lt;=</span> <span style=color:#a6e22e>maxTinySize</span> <span style=color:#f92672>&amp;&amp;</span> <span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>tiny</span> <span style=color:#f92672>!=</span> <span style=color:#ae81ff>0</span> {
+</span></span><span style=display:flex><span>				<span style=color:#a6e22e>x</span> = <span style=color:#a6e22e>unsafe</span>.<span style=color:#a6e22e>Pointer</span>(<span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>tiny</span> <span style=color:#f92672>+</span> <span style=color:#a6e22e>off</span>)
+</span></span><span style=display:flex><span>				<span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>tinyoffset</span> = <span style=color:#a6e22e>off</span> <span style=color:#f92672>+</span> <span style=color:#a6e22e>size</span>
+</span></span><span style=display:flex><span>				<span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>tinyAllocs</span><span style=color:#f92672>++</span>
+</span></span><span style=display:flex><span>				<span style=color:#a6e22e>mp</span>.<span style=color:#a6e22e>mallocing</span> = <span style=color:#ae81ff>0</span>
+</span></span><span style=display:flex><span>				<span style=color:#a6e22e>releasem</span>(<span style=color:#a6e22e>mp</span>)
+</span></span><span style=display:flex><span>				<span style=color:#66d9ef>return</span> <span style=color:#a6e22e>x</span>
+</span></span><span style=display:flex><span>			}
+</span></span><span style=display:flex><span>			<span style=color:#75715e>// 重新 分配一个 tiny 使用 
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>			<span style=color:#a6e22e>span</span> = <span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>alloc</span>[<span style=color:#a6e22e>tinySpanClass</span>]
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>v</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>nextFreeFast</span>(<span style=color:#a6e22e>span</span>)
+</span></span><span style=display:flex><span>			<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>v</span> <span style=color:#f92672>==</span> <span style=color:#ae81ff>0</span> {
+</span></span><span style=display:flex><span>				<span style=color:#a6e22e>v</span>, <span style=color:#a6e22e>span</span>, <span style=color:#a6e22e>shouldhelpgc</span> = <span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>nextFree</span>(<span style=color:#a6e22e>tinySpanClass</span>)
+</span></span><span style=display:flex><span>			}
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>x</span> = <span style=color:#a6e22e>unsafe</span>.<span style=color:#a6e22e>Pointer</span>(<span style=color:#a6e22e>v</span>)
+</span></span><span style=display:flex><span>			(<span style=color:#f92672>*</span>[<span style=color:#ae81ff>2</span>]<span style=color:#66d9ef>uint64</span>)(<span style=color:#a6e22e>x</span>)[<span style=color:#ae81ff>0</span>] = <span style=color:#ae81ff>0</span>
+</span></span><span style=display:flex><span>			(<span style=color:#f92672>*</span>[<span style=color:#ae81ff>2</span>]<span style=color:#66d9ef>uint64</span>)(<span style=color:#a6e22e>x</span>)[<span style=color:#ae81ff>1</span>] = <span style=color:#ae81ff>0</span>
+</span></span><span style=display:flex><span>			<span style=color:#66d9ef>if</span> !<span style=color:#a6e22e>raceenabled</span> <span style=color:#f92672>&amp;&amp;</span> (<span style=color:#a6e22e>size</span> &lt; <span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>tinyoffset</span> <span style=color:#f92672>||</span> <span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>tiny</span> <span style=color:#f92672>==</span> <span style=color:#ae81ff>0</span>) {
+</span></span><span style=display:flex><span>				<span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>tiny</span> = uintptr(<span style=color:#a6e22e>x</span>)
+</span></span><span style=display:flex><span>				<span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>tinyoffset</span> = <span style=color:#a6e22e>size</span>
+</span></span><span style=display:flex><span>			}
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>size</span> = <span style=color:#a6e22e>maxTinySize</span>
+</span></span><span style=display:flex><span>		} <span style=color:#66d9ef>else</span> {
+</span></span><span style=display:flex><span>			<span style=color:#75715e>// 处理小对象
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>			<span style=color:#75715e>// 处理对象头部 主要加入一些头部信息帮助 GC 加速
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>			<span style=color:#a6e22e>hasHeader</span> <span style=color:#f92672>:=</span> !<span style=color:#a6e22e>noscan</span> <span style=color:#f92672>&amp;&amp;</span> !<span style=color:#a6e22e>heapBitsInSpan</span>(<span style=color:#a6e22e>size</span>)
+</span></span><span style=display:flex><span>			<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>hasHeader</span> {
+</span></span><span style=display:flex><span>				<span style=color:#a6e22e>size</span> <span style=color:#f92672>+=</span> <span style=color:#a6e22e>mallocHeaderSize</span>
+</span></span><span style=display:flex><span>			}
+</span></span><span style=display:flex><span>			<span style=color:#75715e>// 根据不同的对象大小 使用不同的mspan
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>			<span style=color:#66d9ef>var</span> <span style=color:#a6e22e>sizeclass</span> <span style=color:#66d9ef>uint8</span>
+</span></span><span style=display:flex><span>			<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>size</span> <span style=color:#f92672>&lt;=</span> <span style=color:#a6e22e>smallSizeMax</span><span style=color:#f92672>-</span><span style=color:#ae81ff>8</span> {
+</span></span><span style=display:flex><span>				<span style=color:#a6e22e>sizeclass</span> = <span style=color:#a6e22e>size_to_class8</span>[<span style=color:#a6e22e>divRoundUp</span>(<span style=color:#a6e22e>size</span>, <span style=color:#a6e22e>smallSizeDiv</span>)]
+</span></span><span style=display:flex><span>			} <span style=color:#66d9ef>else</span> {
+</span></span><span style=display:flex><span>				<span style=color:#a6e22e>sizeclass</span> = <span style=color:#a6e22e>size_to_class128</span>[<span style=color:#a6e22e>divRoundUp</span>(<span style=color:#a6e22e>size</span><span style=color:#f92672>-</span><span style=color:#a6e22e>smallSizeMax</span>, <span style=color:#a6e22e>largeSizeDiv</span>)]
+</span></span><span style=display:flex><span>			}
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>size</span> = uintptr(<span style=color:#a6e22e>class_to_size</span>[<span style=color:#a6e22e>sizeclass</span>])
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>spc</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>makeSpanClass</span>(<span style=color:#a6e22e>sizeclass</span>, <span style=color:#a6e22e>noscan</span>)
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>span</span> = <span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>alloc</span>[<span style=color:#a6e22e>spc</span>]
+</span></span><span style=display:flex><span>			<span style=color:#75715e>// 使用缓存从 mspan 中获取空闲对象
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>			<span style=color:#a6e22e>v</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>nextFreeFast</span>(<span style=color:#a6e22e>span</span>)
+</span></span><span style=display:flex><span>			<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>v</span> <span style=color:#f92672>==</span> <span style=color:#ae81ff>0</span> {
+</span></span><span style=display:flex><span>				<span style=color:#75715e>// 先从本地获取 span 如果本地没获取到 升级到 mcenral 获取
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>				<span style=color:#a6e22e>v</span>, <span style=color:#a6e22e>span</span>, <span style=color:#a6e22e>shouldhelpgc</span> = <span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>nextFree</span>(<span style=color:#a6e22e>spc</span>)
+</span></span><span style=display:flex><span>			}
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>x</span> = <span style=color:#a6e22e>unsafe</span>.<span style=color:#a6e22e>Pointer</span>(<span style=color:#a6e22e>v</span>)
+</span></span><span style=display:flex><span>			<span style=color:#75715e>// 如果需要清零 处理一下
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>			<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>needzero</span> <span style=color:#f92672>&amp;&amp;</span> <span style=color:#a6e22e>span</span>.<span style=color:#a6e22e>needzero</span> <span style=color:#f92672>!=</span> <span style=color:#ae81ff>0</span> {
+</span></span><span style=display:flex><span>				<span style=color:#a6e22e>memclrNoHeapPointers</span>(<span style=color:#a6e22e>x</span>, <span style=color:#a6e22e>size</span>)
+</span></span><span style=display:flex><span>			}
+</span></span><span style=display:flex><span>			<span style=color:#75715e>// 设置头
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>			<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>hasHeader</span> {
+</span></span><span style=display:flex><span>				<span style=color:#a6e22e>header</span> = (<span style=color:#f92672>**</span><span style=color:#a6e22e>_type</span>)(<span style=color:#a6e22e>x</span>)
+</span></span><span style=display:flex><span>				<span style=color:#a6e22e>x</span> = <span style=color:#a6e22e>add</span>(<span style=color:#a6e22e>x</span>, <span style=color:#a6e22e>mallocHeaderSize</span>)
+</span></span><span style=display:flex><span>				<span style=color:#a6e22e>size</span> <span style=color:#f92672>-=</span> <span style=color:#a6e22e>mallocHeaderSize</span>
+</span></span><span style=display:flex><span>			}
+</span></span><span style=display:flex><span>		}
+</span></span><span style=display:flex><span>	} <span style=color:#66d9ef>else</span> {
+</span></span><span style=display:flex><span>		<span style=color:#75715e>// 大对象分配 直接从 mheap 中获取 class = 0 的 mspan
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>		<span style=color:#a6e22e>shouldhelpgc</span> = <span style=color:#66d9ef>true</span>
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>span</span> = <span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>allocLarge</span>(<span style=color:#a6e22e>size</span>, <span style=color:#a6e22e>noscan</span>)
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>span</span>.<span style=color:#a6e22e>freeindex</span> = <span style=color:#ae81ff>1</span>
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>span</span>.<span style=color:#a6e22e>allocCount</span> = <span style=color:#ae81ff>1</span>
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>size</span> = <span style=color:#a6e22e>span</span>.<span style=color:#a6e22e>elemsize</span>
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>x</span> = <span style=color:#a6e22e>unsafe</span>.<span style=color:#a6e22e>Pointer</span>(<span style=color:#a6e22e>span</span>.<span style=color:#a6e22e>base</span>())
+</span></span><span style=display:flex><span>		<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>needzero</span> <span style=color:#f92672>&amp;&amp;</span> <span style=color:#a6e22e>span</span>.<span style=color:#a6e22e>needzero</span> <span style=color:#f92672>!=</span> <span style=color:#ae81ff>0</span> {
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>delayedZeroing</span> = <span style=color:#66d9ef>true</span>
+</span></span><span style=display:flex><span>		}
+</span></span><span style=display:flex><span>		<span style=color:#66d9ef>if</span> !<span style=color:#a6e22e>noscan</span> {
+</span></span><span style=display:flex><span>			<span style=color:#75715e>// Tell the GC not to look at this yet.
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>			<span style=color:#a6e22e>span</span>.<span style=color:#a6e22e>largeType</span> = <span style=color:#66d9ef>nil</span>
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>header</span> = <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>span</span>.<span style=color:#a6e22e>largeType</span>
+</span></span><span style=display:flex><span>		}
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// ......
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#66d9ef>return</span> <span style=color:#a6e22e>x</span>
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><h3 id=nextfreefast>nextFreeFast
+<a class=header-anchor href=#nextfreefast></a></h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>nextFreeFast</span>(<span style=color:#a6e22e>s</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>mspan</span>) <span style=color:#a6e22e>gclinkptr</span> {
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// 使用 ctz64 (amd64 中是 tzcnt 指令 )  获取末尾的 0（以分配） 的个数 如果是 64 说明没有空闲对象
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>theBit</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>sys</span>.<span style=color:#a6e22e>TrailingZeros64</span>(<span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>allocCache</span>) 
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// 如果找到了空闲位置（theBit &lt; 64）
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>theBit</span> &lt; <span style=color:#ae81ff>64</span> {
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>result</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>freeindex</span> <span style=color:#f92672>+</span> uint16(<span style=color:#a6e22e>theBit</span>)
+</span></span><span style=display:flex><span>		<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>result</span> &lt; <span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>nelems</span> {
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>freeidx</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>result</span> <span style=color:#f92672>+</span> <span style=color:#ae81ff>1</span>
+</span></span><span style=display:flex><span>			<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>freeidx</span><span style=color:#f92672>%</span><span style=color:#ae81ff>64</span> <span style=color:#f92672>==</span> <span style=color:#ae81ff>0</span> <span style=color:#f92672>&amp;&amp;</span> <span style=color:#a6e22e>freeidx</span> <span style=color:#f92672>!=</span> <span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>nelems</span> {
+</span></span><span style=display:flex><span>				<span style=color:#66d9ef>return</span> <span style=color:#ae81ff>0</span>
+</span></span><span style=display:flex><span>			}
+</span></span><span style=display:flex><span>			<span style=color:#75715e>// 分配了 cache 移动一下
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>			<span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>allocCache</span> <span style=color:#f92672>&gt;&gt;=</span> uint(<span style=color:#a6e22e>theBit</span> <span style=color:#f92672>+</span> <span style=color:#ae81ff>1</span>)
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>freeindex</span> = <span style=color:#a6e22e>freeidx</span>
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>allocCount</span><span style=color:#f92672>++</span>
+</span></span><span style=display:flex><span>			<span style=color:#75715e>// result * elemsize：计算对象的偏移量
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>            <span style=color:#75715e>// base()：获取span的起始地址
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>			<span style=color:#66d9ef>return</span> <span style=color:#a6e22e>gclinkptr</span>(uintptr(<span style=color:#a6e22e>result</span>)<span style=color:#f92672>*</span><span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>elemsize</span> <span style=color:#f92672>+</span> <span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>base</span>())
+</span></span><span style=display:flex><span>		}
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>return</span> <span style=color:#ae81ff>0</span>
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><h3 id=nextfree>nextFree
+<a class=header-anchor href=#nextfree></a></h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#75715e>// nextFree 从 mcache 中获取下一个空闲对象
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>c</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>mcache</span>) <span style=color:#a6e22e>nextFree</span>(<span style=color:#a6e22e>spc</span> <span style=color:#a6e22e>spanClass</span>) (<span style=color:#a6e22e>v</span> <span style=color:#a6e22e>gclinkptr</span>, <span style=color:#a6e22e>s</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>mspan</span>, <span style=color:#a6e22e>shouldhelpgc</span> <span style=color:#66d9ef>bool</span>) {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>s</span> = <span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>alloc</span>[<span style=color:#a6e22e>spc</span>]
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>shouldhelpgc</span> = <span style=color:#66d9ef>false</span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// 从 mcache 对象空位的偏移量
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>freeIndex</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>nextFreeIndex</span>()
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>freeIndex</span> <span style=color:#f92672>==</span> <span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>nelems</span> {
+</span></span><span style=display:flex><span>		<span style=color:#75715e>// mcache 没有靠你先对象 从 mcentral,mheap 获取
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>		<span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>refill</span>(<span style=color:#a6e22e>spc</span>)
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>shouldhelpgc</span> = <span style=color:#66d9ef>true</span>
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>s</span> = <span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>alloc</span>[<span style=color:#a6e22e>spc</span>]
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>freeIndex</span> = <span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>nextFreeIndex</span>()
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>freeIndex</span> <span style=color:#f92672>&gt;=</span> <span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>nelems</span> {
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>throw</span>(<span style=color:#e6db74>&#34;freeIndex is not valid&#34;</span>)
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>v</span> = <span style=color:#a6e22e>gclinkptr</span>(uintptr(<span style=color:#a6e22e>freeIndex</span>)<span style=color:#f92672>*</span><span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>elemsize</span> <span style=color:#f92672>+</span> <span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>base</span>())
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>allocCount</span><span style=color:#f92672>++</span>
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>allocCount</span> &gt; <span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>nelems</span> {
+</span></span><span style=display:flex><span>		println(<span style=color:#e6db74>&#34;s.allocCount=&#34;</span>, <span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>allocCount</span>, <span style=color:#e6db74>&#34;s.nelems=&#34;</span>, <span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>nelems</span>)
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>throw</span>(<span style=color:#e6db74>&#34;s.allocCount &gt; s.nelems&#34;</span>)
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>return</span>
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>一组一组获取空闲对象</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-GO data-lang=GO><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>s</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>mspan</span>) <span style=color:#a6e22e>nextFreeIndex</span>() <span style=color:#66d9ef>uint16</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>sfreeindex</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>freeindex</span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>snelems</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>nelems</span>
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>sfreeindex</span> <span style=color:#f92672>==</span> <span style=color:#a6e22e>snelems</span> {
+</span></span><span style=display:flex><span>		<span style=color:#66d9ef>return</span> <span style=color:#a6e22e>sfreeindex</span>
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>sfreeindex</span> &gt; <span style=color:#a6e22e>snelems</span> {
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>throw</span>(<span style=color:#e6db74>&#34;s.freeindex &gt; s.nelems&#34;</span>)
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>aCache</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>allocCache</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>bitIndex</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>sys</span>.<span style=color:#a6e22e>TrailingZeros64</span>(<span style=color:#a6e22e>aCache</span>)
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>for</span> <span style=color:#a6e22e>bitIndex</span> <span style=color:#f92672>==</span> <span style=color:#ae81ff>64</span> {
+</span></span><span style=display:flex><span>		<span style=color:#75715e>// Move index to start of next cached bits.
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>		<span style=color:#a6e22e>sfreeindex</span> = (<span style=color:#a6e22e>sfreeindex</span> <span style=color:#f92672>+</span> <span style=color:#ae81ff>64</span>) <span style=color:#f92672>&amp;^</span> (<span style=color:#ae81ff>64</span> <span style=color:#f92672>-</span> <span style=color:#ae81ff>1</span>)
+</span></span><span style=display:flex><span>		<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>sfreeindex</span> <span style=color:#f92672>&gt;=</span> <span style=color:#a6e22e>snelems</span> {
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>freeindex</span> = <span style=color:#a6e22e>snelems</span>
+</span></span><span style=display:flex><span>			<span style=color:#66d9ef>return</span> <span style=color:#a6e22e>snelems</span>
+</span></span><span style=display:flex><span>		}
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>whichByte</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>sfreeindex</span> <span style=color:#f92672>/</span> <span style=color:#ae81ff>8</span>
+</span></span><span style=display:flex><span>		<span style=color:#75715e>// Refill s.allocCache with the next 64 alloc bits.
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>		<span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>refillAllocCache</span>(<span style=color:#a6e22e>whichByte</span>)
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>aCache</span> = <span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>allocCache</span>
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>bitIndex</span> = <span style=color:#a6e22e>sys</span>.<span style=color:#a6e22e>TrailingZeros64</span>(<span style=color:#a6e22e>aCache</span>)
+</span></span><span style=display:flex><span>		<span style=color:#75715e>// nothing available in cached bits
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>		<span style=color:#75715e>// grab the next 8 bytes and try again.
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	}
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>result</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>sfreeindex</span> <span style=color:#f92672>+</span> uint16(<span style=color:#a6e22e>bitIndex</span>)
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>result</span> <span style=color:#f92672>&gt;=</span> <span style=color:#a6e22e>snelems</span> {
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>freeindex</span> = <span style=color:#a6e22e>snelems</span>
+</span></span><span style=display:flex><span>		<span style=color:#66d9ef>return</span> <span style=color:#a6e22e>snelems</span>
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>allocCache</span> <span style=color:#f92672>&gt;&gt;=</span> uint(<span style=color:#a6e22e>bitIndex</span> <span style=color:#f92672>+</span> <span style=color:#ae81ff>1</span>)
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>sfreeindex</span> = <span style=color:#a6e22e>result</span> <span style=color:#f92672>+</span> <span style=color:#ae81ff>1</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>sfreeindex</span><span style=color:#f92672>%</span><span style=color:#ae81ff>64</span> <span style=color:#f92672>==</span> <span style=color:#ae81ff>0</span> <span style=color:#f92672>&amp;&amp;</span> <span style=color:#a6e22e>sfreeindex</span> <span style=color:#f92672>!=</span> <span style=color:#a6e22e>snelems</span> {
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>whichByte</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>sfreeindex</span> <span style=color:#f92672>/</span> <span style=color:#ae81ff>8</span>
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>refillAllocCache</span>(<span style=color:#a6e22e>whichByte</span>)
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>freeindex</span> = <span style=color:#a6e22e>sfreeindex</span>
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>return</span> <span style=color:#a6e22e>result</span>
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><h3 id=heading><a class=header-anchor href=#heading></a></h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#75715e>// 给 mcache 添加一个新的 mspan 一般是申请内存 mcache 中没有空闲对象了
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>c</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>mcache</span>) <span style=color:#a6e22e>refill</span>(<span style=color:#a6e22e>spc</span> <span style=color:#a6e22e>spanClass</span>) {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>s</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>alloc</span>[<span style=color:#a6e22e>spc</span>]
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>allocCount</span> <span style=color:#f92672>!=</span> <span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>nelems</span> {
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>throw</span>(<span style=color:#e6db74>&#34;refill of span with free space remaining&#34;</span>)
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>s</span> <span style=color:#f92672>!=</span> <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>emptymspan</span> {
+</span></span><span style=display:flex><span>		<span style=color:#75715e>// ......
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>		<span style=color:#75715e>// 如果不是空的 而且没有空闲对象 就把这个 span 放到 mcentral 中 mcache 使用不了这个 span 了
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>		<span style=color:#a6e22e>mheap_</span>.<span style=color:#a6e22e>central</span>[<span style=color:#a6e22e>spc</span>].<span style=color:#a6e22e>mcentral</span>.<span style=color:#a6e22e>uncacheSpan</span>(<span style=color:#a6e22e>s</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>		<span style=color:#75715e>// ......
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// 从 mcentral 获取新的 span 如果没有就从 mheap 再没有就系统调用申请内存
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>s</span> = <span style=color:#a6e22e>mheap_</span>.<span style=color:#a6e22e>central</span>[<span style=color:#a6e22e>spc</span>].<span style=color:#a6e22e>mcentral</span>.<span style=color:#a6e22e>cacheSpan</span>()
+</span></span><span style=display:flex><span>	
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// .....
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>alloc</span>[<span style=color:#a6e22e>spc</span>] = <span style=color:#a6e22e>s</span>
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p><strong>cacheSpan</strong></p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>c</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>mcentral</span>) <span style=color:#a6e22e>cacheSpan</span>() <span style=color:#f92672>*</span><span style=color:#a6e22e>mspan</span> {
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// ......
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// 尝试从以清扫的部分获取
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>sg</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>mheap_</span>.<span style=color:#a6e22e>sweepgen</span>
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>s</span> = <span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>partialSwept</span>(<span style=color:#a6e22e>sg</span>).<span style=color:#a6e22e>pop</span>(); <span style=color:#a6e22e>s</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>		<span style=color:#66d9ef>goto</span> <span style=color:#a6e22e>havespan</span>
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// 如果以清扫的没有 就马上开始主动清扫
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>sl</span> = <span style=color:#a6e22e>sweep</span>.<span style=color:#a6e22e>active</span>.<span style=color:#a6e22e>begin</span>()
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>sl</span>.<span style=color:#a6e22e>valid</span> {
+</span></span><span style=display:flex><span>		<span style=color:#75715e>// 尝试从未清扫的部分使用的 span 列表中获取 
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>		<span style=color:#66d9ef>for</span> ; <span style=color:#a6e22e>spanBudget</span> <span style=color:#f92672>&gt;=</span> <span style=color:#ae81ff>0</span>; <span style=color:#a6e22e>spanBudget</span><span style=color:#f92672>--</span> {
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>s</span> = <span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>partialUnswept</span>(<span style=color:#a6e22e>sg</span>).<span style=color:#a6e22e>pop</span>()
+</span></span><span style=display:flex><span>			<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>s</span> <span style=color:#f92672>==</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>				<span style=color:#66d9ef>break</span>
+</span></span><span style=display:flex><span>			}
+</span></span><span style=display:flex><span>			<span style=color:#75715e>// 尝试获取 span 
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>			<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>s</span>, <span style=color:#a6e22e>ok</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>sl</span>.<span style=color:#a6e22e>tryAcquire</span>(<span style=color:#a6e22e>s</span>); <span style=color:#a6e22e>ok</span> {
+</span></span><span style=display:flex><span>				<span style=color:#75715e>// 清扫它 并使用
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>				<span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>sweep</span>(<span style=color:#66d9ef>true</span>)
+</span></span><span style=display:flex><span>				<span style=color:#a6e22e>sweep</span>.<span style=color:#a6e22e>active</span>.<span style=color:#a6e22e>end</span>(<span style=color:#a6e22e>sl</span>)
+</span></span><span style=display:flex><span>				<span style=color:#66d9ef>goto</span> <span style=color:#a6e22e>havespan</span>
+</span></span><span style=display:flex><span>			}
+</span></span><span style=display:flex><span>		}
+</span></span><span style=display:flex><span>		<span style=color:#75715e>// 尝试从未清扫的已满 span 列表中获取
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>		<span style=color:#66d9ef>for</span> ; <span style=color:#a6e22e>spanBudget</span> <span style=color:#f92672>&gt;=</span> <span style=color:#ae81ff>0</span>; <span style=color:#a6e22e>spanBudget</span><span style=color:#f92672>--</span> {
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>s</span> = <span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>fullUnswept</span>(<span style=color:#a6e22e>sg</span>).<span style=color:#a6e22e>pop</span>()
+</span></span><span style=display:flex><span>			<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>s</span> <span style=color:#f92672>==</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>				<span style=color:#66d9ef>break</span>
+</span></span><span style=display:flex><span>			}
+</span></span><span style=display:flex><span>			<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>s</span>, <span style=color:#a6e22e>ok</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>sl</span>.<span style=color:#a6e22e>tryAcquire</span>(<span style=color:#a6e22e>s</span>); <span style=color:#a6e22e>ok</span> {
+</span></span><span style=display:flex><span>				<span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>sweep</span>(<span style=color:#66d9ef>true</span>)
+</span></span><span style=display:flex><span>				<span style=color:#75715e>// 清扫之后 看有无可用的 没有就下一个
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>				<span style=color:#a6e22e>freeIndex</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>nextFreeIndex</span>()
+</span></span><span style=display:flex><span>				<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>freeIndex</span> <span style=color:#f92672>!=</span> <span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>nelems</span> {
+</span></span><span style=display:flex><span>					<span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>freeindex</span> = <span style=color:#a6e22e>freeIndex</span>
+</span></span><span style=display:flex><span>					<span style=color:#a6e22e>sweep</span>.<span style=color:#a6e22e>active</span>.<span style=color:#a6e22e>end</span>(<span style=color:#a6e22e>sl</span>)
+</span></span><span style=display:flex><span>					<span style=color:#66d9ef>goto</span> <span style=color:#a6e22e>havespan</span>
+</span></span><span style=display:flex><span>				}
+</span></span><span style=display:flex><span>				<span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>fullSwept</span>(<span style=color:#a6e22e>sg</span>).<span style=color:#a6e22e>push</span>(<span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>mspan</span>)
+</span></span><span style=display:flex><span>			}
+</span></span><span style=display:flex><span>		}
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>sweep</span>.<span style=color:#a6e22e>active</span>.<span style=color:#a6e22e>end</span>(<span style=color:#a6e22e>sl</span>)
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>trace</span> = <span style=color:#a6e22e>traceAcquire</span>()
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>trace</span>.<span style=color:#a6e22e>ok</span>() {
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>trace</span>.<span style=color:#a6e22e>GCSweepDone</span>()
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>traceDone</span> = <span style=color:#66d9ef>true</span>
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>traceRelease</span>(<span style=color:#a6e22e>trace</span>)
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// mcentral 中没有可用的 span 了 从 mheap 中获取
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>s</span> = <span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>grow</span>()
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>s</span> <span style=color:#f92672>==</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>		<span style=color:#66d9ef>return</span> <span style=color:#66d9ef>nil</span>
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// 获取到了 span 了 上边会 goto 到这
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#a6e22e>havespan</span>:
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// ......
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#75715e>// 处理 allocCache 缓存
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>freeByteBase</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>freeindex</span> <span style=color:#f92672>&amp;^</span> (<span style=color:#ae81ff>64</span> <span style=color:#f92672>-</span> <span style=color:#ae81ff>1</span>)
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>whichByte</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>freeByteBase</span> <span style=color:#f92672>/</span> <span style=color:#ae81ff>8</span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>refillAllocCache</span>(<span style=color:#a6e22e>whichByte</span>)
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>allocCache</span> <span style=color:#f92672>&gt;&gt;=</span> <span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>freeindex</span> <span style=color:#f92672>%</span> <span style=color:#ae81ff>64</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>return</span> <span style=color:#a6e22e>s</span>
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p><strong>grow</strong></p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>c</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>mcentral</span>) <span style=color:#a6e22e>grow</span>() <span style=color:#f92672>*</span><span style=color:#a6e22e>mspan</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>npages</span> <span style=color:#f92672>:=</span> uintptr(<span style=color:#a6e22e>class_to_allocnpages</span>[<span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>spanclass</span>.<span style=color:#a6e22e>sizeclass</span>()])
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>size</span> <span style=color:#f92672>:=</span> uintptr(<span style=color:#a6e22e>class_to_size</span>[<span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>spanclass</span>.<span style=color:#a6e22e>sizeclass</span>()])
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// 申请内存
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>s</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>mheap_</span>.<span style=color:#a6e22e>alloc</span>(<span style=color:#a6e22e>npages</span>, <span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>spanclass</span>)
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>s</span> <span style=color:#f92672>==</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>		<span style=color:#66d9ef>return</span> <span style=color:#66d9ef>nil</span>
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// 计算这个 span 可以容纳多少个对象 和 偏移量等
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>n</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>divideByElemSize</span>(<span style=color:#a6e22e>npages</span> <span style=color:#f92672>&lt;&lt;</span> <span style=color:#a6e22e>_PageShift</span>)
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>limit</span> = <span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>base</span>() <span style=color:#f92672>+</span> <span style=color:#a6e22e>size</span><span style=color:#f92672>*</span><span style=color:#a6e22e>n</span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>initHeapBits</span>(<span style=color:#66d9ef>false</span>)
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>return</span> <span style=color:#a6e22e>s</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>h</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>mheap</span>) <span style=color:#a6e22e>alloc</span>(<span style=color:#a6e22e>npages</span> <span style=color:#66d9ef>uintptr</span>, <span style=color:#a6e22e>spanclass</span> <span style=color:#a6e22e>spanClass</span>) <span style=color:#f92672>*</span><span style=color:#a6e22e>mspan</span> {
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>var</span> <span style=color:#a6e22e>s</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>mspan</span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>systemstack</span>(<span style=color:#66d9ef>func</span>() {
+</span></span><span style=display:flex><span>		<span style=color:#75715e>// 先清扫一些页 防止一直增长
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>		<span style=color:#66d9ef>if</span> !<span style=color:#a6e22e>isSweepDone</span>() {
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>h</span>.<span style=color:#a6e22e>reclaim</span>(<span style=color:#a6e22e>npages</span>)
+</span></span><span style=display:flex><span>		}
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>s</span> = <span style=color:#a6e22e>h</span>.<span style=color:#a6e22e>allocSpan</span>(<span style=color:#a6e22e>npages</span>, <span style=color:#a6e22e>spanAllocHeap</span>, <span style=color:#a6e22e>spanclass</span>)
+</span></span><span style=display:flex><span>	})
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>return</span> <span style=color:#a6e22e>s</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>h</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>mheap</span>) <span style=color:#a6e22e>allocSpan</span>(<span style=color:#a6e22e>npages</span> <span style=color:#66d9ef>uintptr</span>, <span style=color:#a6e22e>typ</span> <span style=color:#a6e22e>spanAllocType</span>, <span style=color:#a6e22e>spanclass</span> <span style=color:#a6e22e>spanClass</span>) (<span style=color:#a6e22e>s</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>mspan</span>) {
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// 检查内存对其 ......
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#66d9ef>if</span> !<span style=color:#a6e22e>needPhysPageAlign</span> <span style=color:#f92672>&amp;&amp;</span> <span style=color:#a6e22e>pp</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> <span style=color:#f92672>&amp;&amp;</span> <span style=color:#a6e22e>npages</span> &lt; <span style=color:#a6e22e>pageCachePages</span><span style=color:#f92672>/</span><span style=color:#ae81ff>4</span> {
+</span></span><span style=display:flex><span>		<span style=color:#75715e>// 尝试从缓存直接获取
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>		<span style=color:#f92672>*</span><span style=color:#a6e22e>c</span> = <span style=color:#a6e22e>h</span>.<span style=color:#a6e22e>pages</span>.<span style=color:#a6e22e>allocToCache</span>()
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// 加锁
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>lock</span>(<span style=color:#f92672>&amp;</span><span style=color:#a6e22e>h</span>.<span style=color:#a6e22e>lock</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>needPhysPageAlign</span> {
+</span></span><span style=display:flex><span>		<span style=color:#75715e>// Overallocate by a physical page to allow for later alignment.
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>		<span style=color:#a6e22e>extraPages</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>physPageSize</span> <span style=color:#f92672>/</span> <span style=color:#a6e22e>pageSize</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>		<span style=color:#75715e>// 尝试从 pageAlloc 获取页
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>		<span style=color:#a6e22e>base</span>, <span style=color:#a6e22e>_</span> = <span style=color:#a6e22e>h</span>.<span style=color:#a6e22e>pages</span>.<span style=color:#a6e22e>find</span>(<span style=color:#a6e22e>npages</span> <span style=color:#f92672>+</span> <span style=color:#a6e22e>extraPages</span>)
+</span></span><span style=display:flex><span>		
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>base</span> <span style=color:#f92672>==</span> <span style=color:#ae81ff>0</span> {
+</span></span><span style=display:flex><span>		<span style=color:#75715e>// 尝试分配所需页数
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>		<span style=color:#a6e22e>base</span>, <span style=color:#a6e22e>scav</span> = <span style=color:#a6e22e>h</span>.<span style=color:#a6e22e>pages</span>.<span style=color:#a6e22e>alloc</span>(<span style=color:#a6e22e>npages</span>)
+</span></span><span style=display:flex><span>		<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>base</span> <span style=color:#f92672>==</span> <span style=color:#ae81ff>0</span> {
+</span></span><span style=display:flex><span>			<span style=color:#66d9ef>var</span> <span style=color:#a6e22e>ok</span> <span style=color:#66d9ef>bool</span>
+</span></span><span style=display:flex><span>			<span style=color:#75715e>// 空间不足，尝试扩展
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>			<span style=color:#a6e22e>growth</span>, <span style=color:#a6e22e>ok</span> = <span style=color:#a6e22e>h</span>.<span style=color:#a6e22e>grow</span>(<span style=color:#a6e22e>npages</span>)
+</span></span><span style=display:flex><span>			<span style=color:#66d9ef>if</span> !<span style=color:#a6e22e>ok</span> {
+</span></span><span style=display:flex><span>				<span style=color:#a6e22e>unlock</span>(<span style=color:#f92672>&amp;</span><span style=color:#a6e22e>h</span>.<span style=color:#a6e22e>lock</span>)
+</span></span><span style=display:flex><span>				<span style=color:#66d9ef>return</span> <span style=color:#66d9ef>nil</span>
+</span></span><span style=display:flex><span>			}
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>base</span>, <span style=color:#a6e22e>scav</span> = <span style=color:#a6e22e>h</span>.<span style=color:#a6e22e>pages</span>.<span style=color:#a6e22e>alloc</span>(<span style=color:#a6e22e>npages</span>)
+</span></span><span style=display:flex><span>			<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>base</span> <span style=color:#f92672>==</span> <span style=color:#ae81ff>0</span> {
+</span></span><span style=display:flex><span>				<span style=color:#a6e22e>throw</span>(<span style=color:#e6db74>&#34;grew heap, but no adequate free space found&#34;</span>)
+</span></span><span style=display:flex><span>			}
+</span></span><span style=display:flex><span>		}
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>unlock</span>(<span style=color:#f92672>&amp;</span><span style=color:#a6e22e>h</span>.<span style=color:#a6e22e>lock</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>HaveSpan</span>:
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// ......
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// 组装成 mspan
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>h</span>.<span style=color:#a6e22e>initSpan</span>(<span style=color:#a6e22e>s</span>, <span style=color:#a6e22e>typ</span>, <span style=color:#a6e22e>spanclass</span>, <span style=color:#a6e22e>base</span>, <span style=color:#a6e22e>npages</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>return</span> <span style=color:#a6e22e>s</span>
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#75715e>// 向操作系统申请内存
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>h</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>mheap</span>) <span style=color:#a6e22e>grow</span>(<span style=color:#a6e22e>npage</span> <span style=color:#66d9ef>uintptr</span>) (<span style=color:#66d9ef>uintptr</span>, <span style=color:#66d9ef>bool</span>) {
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// 每次申请 4 M
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>ask</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>alignUp</span>(<span style=color:#a6e22e>npage</span>, <span style=color:#a6e22e>pallocChunkPages</span>) <span style=color:#f92672>*</span> <span style=color:#a6e22e>pageSize</span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// ......
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>av</span>, <span style=color:#a6e22e>asize</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>h</span>.<span style=color:#a6e22e>sysAlloc</span>(<span style=color:#a6e22e>ask</span>, <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>h</span>.<span style=color:#a6e22e>arenaHints</span>, <span style=color:#66d9ef>true</span>)
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// ......
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// sysAlloc -&gt; sysReserve -&gt; sysReserveOS
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>sysReserveOS</span>(<span style=color:#a6e22e>v</span> <span style=color:#a6e22e>unsafe</span>.<span style=color:#a6e22e>Pointer</span>, <span style=color:#a6e22e>n</span> <span style=color:#66d9ef>uintptr</span>) <span style=color:#a6e22e>unsafe</span>.<span style=color:#a6e22e>Pointer</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>p</span>, <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>mmap</span>(<span style=color:#a6e22e>v</span>, <span style=color:#a6e22e>n</span>, <span style=color:#a6e22e>_PROT_NONE</span>, <span style=color:#a6e22e>_MAP_ANON</span>|<span style=color:#a6e22e>_MAP_PRIVATE</span>, <span style=color:#f92672>-</span><span style=color:#ae81ff>1</span>, <span style=color:#ae81ff>0</span>)
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#ae81ff>0</span> {
+</span></span><span style=display:flex><span>		<span style=color:#66d9ef>return</span> <span style=color:#66d9ef>nil</span>
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>return</span> <span style=color:#a6e22e>p</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>mmap</span>(<span style=color:#a6e22e>addr</span> <span style=color:#a6e22e>unsafe</span>.<span style=color:#a6e22e>Pointer</span>, <span style=color:#a6e22e>n</span> <span style=color:#66d9ef>uintptr</span>, <span style=color:#a6e22e>prot</span>, <span style=color:#a6e22e>flags</span>, <span style=color:#a6e22e>fd</span> <span style=color:#66d9ef>int32</span>, <span style=color:#a6e22e>off</span> <span style=color:#66d9ef>uint32</span>) (<span style=color:#a6e22e>unsafe</span>.<span style=color:#a6e22e>Pointer</span>, <span style=color:#66d9ef>int</span>) {
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// ......
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#66d9ef>return</span> <span style=color:#a6e22e>sysMmap</span>(<span style=color:#a6e22e>addr</span>, <span style=color:#a6e22e>n</span>, <span style=color:#a6e22e>prot</span>, <span style=color:#a6e22e>flags</span>, <span style=color:#a6e22e>fd</span>, <span style=color:#a6e22e>off</span>)
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><h2 id=stack-内存>stack 内存
+<a class=header-anchor href=#stack-%e5%86%85%e5%ad%98></a></h2><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#75715e>// newproc1
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>if</span> <span style=color:#a6e22e>newg</span> <span style=color:#f92672>==</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>newg</span> = <span style=color:#a6e22e>malg</span>(<span style=color:#a6e22e>stackMin</span>)
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#75715e>//newproc1 -&gt; malg -&gt; stackalloc
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>stackalloc</span>(<span style=color:#a6e22e>n</span> <span style=color:#66d9ef>uint32</span>) <span style=color:#a6e22e>stack</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>thisg</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>getg</span>()
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// ......
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>var</span> <span style=color:#a6e22e>v</span> <span style=color:#a6e22e>unsafe</span>.<span style=color:#a6e22e>Pointer</span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// 小栈 linux 下是 32k
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>n</span> &lt; <span style=color:#a6e22e>fixedStack</span><span style=color:#f92672>&lt;&lt;</span><span style=color:#a6e22e>_NumStackOrders</span> <span style=color:#f92672>&amp;&amp;</span> <span style=color:#a6e22e>n</span> &lt; <span style=color:#a6e22e>_StackCacheSize</span> {
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>order</span> <span style=color:#f92672>:=</span> uint8(<span style=color:#ae81ff>0</span>)
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>n2</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>n</span>
+</span></span><span style=display:flex><span>		<span style=color:#66d9ef>for</span> <span style=color:#a6e22e>n2</span> &gt; <span style=color:#a6e22e>fixedStack</span> {
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>order</span><span style=color:#f92672>++</span>
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>n2</span> <span style=color:#f92672>&gt;&gt;=</span> <span style=color:#ae81ff>1</span>
+</span></span><span style=display:flex><span>		}
+</span></span><span style=display:flex><span>		<span style=color:#66d9ef>var</span> <span style=color:#a6e22e>x</span> <span style=color:#a6e22e>gclinkptr</span>
+</span></span><span style=display:flex><span>		 <span style=color:#75715e>// 以下情况直接从全局池分配：
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>        <span style=color:#75715e>// 1. 禁用栈缓存
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>        <span style=color:#75715e>// 2. 没有关联的 P
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>        <span style=color:#75715e>// 3. 禁用抢占
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>		<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>stackNoCache</span> <span style=color:#f92672>!=</span> <span style=color:#ae81ff>0</span> <span style=color:#f92672>||</span> <span style=color:#a6e22e>thisg</span>.<span style=color:#a6e22e>m</span>.<span style=color:#a6e22e>p</span> <span style=color:#f92672>==</span> <span style=color:#ae81ff>0</span> <span style=color:#f92672>||</span> <span style=color:#a6e22e>thisg</span>.<span style=color:#a6e22e>m</span>.<span style=color:#a6e22e>preemptoff</span> <span style=color:#f92672>!=</span> <span style=color:#e6db74>&#34;&#34;</span> {
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>lock</span>(<span style=color:#f92672>&amp;</span><span style=color:#a6e22e>stackpool</span>[<span style=color:#a6e22e>order</span>].<span style=color:#a6e22e>item</span>.<span style=color:#a6e22e>mu</span>)
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>x</span> = <span style=color:#a6e22e>stackpoolalloc</span>(<span style=color:#a6e22e>order</span>)
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>unlock</span>(<span style=color:#f92672>&amp;</span><span style=color:#a6e22e>stackpool</span>[<span style=color:#a6e22e>order</span>].<span style=color:#a6e22e>item</span>.<span style=color:#a6e22e>mu</span>)
+</span></span><span style=display:flex><span>		} <span style=color:#66d9ef>else</span> {
+</span></span><span style=display:flex><span>			<span style=color:#75715e>// 从 P 的本地缓存分配
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>			<span style=color:#a6e22e>c</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>thisg</span>.<span style=color:#a6e22e>m</span>.<span style=color:#a6e22e>p</span>.<span style=color:#a6e22e>ptr</span>().<span style=color:#a6e22e>mcache</span>
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>x</span> = <span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>stackcache</span>[<span style=color:#a6e22e>order</span>].<span style=color:#a6e22e>list</span>
+</span></span><span style=display:flex><span>			<span style=color:#75715e>// 如果本地缓存为空，则重新填充
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>			<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>x</span>.<span style=color:#a6e22e>ptr</span>() <span style=color:#f92672>==</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>				<span style=color:#a6e22e>stackcacherefill</span>(<span style=color:#a6e22e>c</span>, <span style=color:#a6e22e>order</span>)
+</span></span><span style=display:flex><span>				<span style=color:#a6e22e>x</span> = <span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>stackcache</span>[<span style=color:#a6e22e>order</span>].<span style=color:#a6e22e>list</span>
+</span></span><span style=display:flex><span>			}
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>stackcache</span>[<span style=color:#a6e22e>order</span>].<span style=color:#a6e22e>list</span> = <span style=color:#a6e22e>x</span>.<span style=color:#a6e22e>ptr</span>().<span style=color:#a6e22e>next</span>
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>stackcache</span>[<span style=color:#a6e22e>order</span>].<span style=color:#a6e22e>size</span> <span style=color:#f92672>-=</span> uintptr(<span style=color:#a6e22e>n</span>)
+</span></span><span style=display:flex><span>		}
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>v</span> = <span style=color:#a6e22e>unsafe</span>.<span style=color:#a6e22e>Pointer</span>(<span style=color:#a6e22e>x</span>)
+</span></span><span style=display:flex><span>	} <span style=color:#66d9ef>else</span> {
+</span></span><span style=display:flex><span>		<span style=color:#75715e>// 大栈
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>		<span style=color:#66d9ef>var</span> <span style=color:#a6e22e>s</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>mspan</span>
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>npage</span> <span style=color:#f92672>:=</span> uintptr(<span style=color:#a6e22e>n</span>) <span style=color:#f92672>&gt;&gt;</span> <span style=color:#a6e22e>_PageShift</span>
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>log2npage</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>stacklog2</span>(<span style=color:#a6e22e>npage</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>		<span style=color:#75715e>// Try to get a stack from the large stack cache.
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>		<span style=color:#a6e22e>lock</span>(<span style=color:#f92672>&amp;</span><span style=color:#a6e22e>stackLarge</span>.<span style=color:#a6e22e>lock</span>)
+</span></span><span style=display:flex><span>		<span style=color:#66d9ef>if</span> !<span style=color:#a6e22e>stackLarge</span>.<span style=color:#a6e22e>free</span>[<span style=color:#a6e22e>log2npage</span>].<span style=color:#a6e22e>isEmpty</span>() {
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>s</span> = <span style=color:#a6e22e>stackLarge</span>.<span style=color:#a6e22e>free</span>[<span style=color:#a6e22e>log2npage</span>].<span style=color:#a6e22e>first</span>
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>stackLarge</span>.<span style=color:#a6e22e>free</span>[<span style=color:#a6e22e>log2npage</span>].<span style=color:#a6e22e>remove</span>(<span style=color:#a6e22e>s</span>)
+</span></span><span style=display:flex><span>		}
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>unlock</span>(<span style=color:#f92672>&amp;</span><span style=color:#a6e22e>stackLarge</span>.<span style=color:#a6e22e>lock</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>lockWithRankMayAcquire</span>(<span style=color:#f92672>&amp;</span><span style=color:#a6e22e>mheap_</span>.<span style=color:#a6e22e>lock</span>, <span style=color:#a6e22e>lockRankMheap</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>		<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>s</span> <span style=color:#f92672>==</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>			<span style=color:#75715e>// 从堆中分配新的栈空间
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>			<span style=color:#a6e22e>s</span> = <span style=color:#a6e22e>mheap_</span>.<span style=color:#a6e22e>allocManual</span>(<span style=color:#a6e22e>npage</span>, <span style=color:#a6e22e>spanAllocStack</span>)
+</span></span><span style=display:flex><span>			<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>s</span> <span style=color:#f92672>==</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>				<span style=color:#a6e22e>throw</span>(<span style=color:#e6db74>&#34;out of memory&#34;</span>)
+</span></span><span style=display:flex><span>			}
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>osStackAlloc</span>(<span style=color:#a6e22e>s</span>)
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>elemsize</span> = uintptr(<span style=color:#a6e22e>n</span>)
+</span></span><span style=display:flex><span>		}
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>v</span> = <span style=color:#a6e22e>unsafe</span>.<span style=color:#a6e22e>Pointer</span>(<span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>base</span>())
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// ...
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#66d9ef>return</span> <span style=color:#a6e22e>stack</span>{uintptr(<span style=color:#a6e22e>v</span>), uintptr(<span style=color:#a6e22e>v</span>) <span style=color:#f92672>+</span> uintptr(<span style=color:#a6e22e>n</span>)}
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p><strong>stackpoolalloc stackpool</strong></p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#66d9ef>var</span> <span style=color:#a6e22e>stackpool</span> [<span style=color:#a6e22e>_NumStackOrders</span>]<span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>item</span> <span style=color:#a6e22e>stackpoolItem</span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>_</span>    [(<span style=color:#a6e22e>cpu</span>.<span style=color:#a6e22e>CacheLinePadSize</span> <span style=color:#f92672>-</span> <span style=color:#a6e22e>unsafe</span>.<span style=color:#a6e22e>Sizeof</span>(<span style=color:#a6e22e>stackpoolItem</span>{})<span style=color:#f92672>%</span><span style=color:#a6e22e>cpu</span>.<span style=color:#a6e22e>CacheLinePadSize</span>) <span style=color:#f92672>%</span> <span style=color:#a6e22e>cpu</span>.<span style=color:#a6e22e>CacheLinePadSize</span>]<span style=color:#66d9ef>byte</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>stackpoolItem</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>_</span>    <span style=color:#a6e22e>sys</span>.<span style=color:#a6e22e>NotInHeap</span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>mu</span>   <span style=color:#a6e22e>mutex</span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>span</span> <span style=color:#a6e22e>mSpanList</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>stackpoolalloc</span>(<span style=color:#a6e22e>order</span> <span style=color:#66d9ef>uint8</span>) <span style=color:#a6e22e>gclinkptr</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>list</span> <span style=color:#f92672>:=</span> <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>stackpool</span>[<span style=color:#a6e22e>order</span>].<span style=color:#a6e22e>item</span>.<span style=color:#a6e22e>span</span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>s</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>list</span>.<span style=color:#a6e22e>first</span>
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>s</span> <span style=color:#f92672>==</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>		<span style=color:#75715e>// 从 mheap 中申请 class = 0 对应页数的
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>		<span style=color:#a6e22e>s</span> = <span style=color:#a6e22e>mheap_</span>.<span style=color:#a6e22e>allocManual</span>(<span style=color:#a6e22e>_StackCacheSize</span><span style=color:#f92672>&gt;&gt;</span><span style=color:#a6e22e>_PageShift</span>, <span style=color:#a6e22e>spanAllocStack</span>)
+</span></span><span style=display:flex><span>		<span style=color:#75715e>// ...
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	}
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// 分配内存
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>x</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>manualFreeList</span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// ...
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#66d9ef>return</span> <span style=color:#a6e22e>x</span>
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p><strong>stackcache</strong></p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>mcache</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>stackcache</span> [<span style=color:#a6e22e>_NumStackOrders</span>]<span style=color:#a6e22e>stackfreelist</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>stackfreelist</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>list</span> <span style=color:#a6e22e>gclinkptr</span> 
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>size</span> <span style=color:#66d9ef>uintptr</span>  
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>gclinkptr</span> <span style=color:#66d9ef>uintptr</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>p</span> <span style=color:#a6e22e>gclinkptr</span>) <span style=color:#a6e22e>ptr</span>() <span style=color:#f92672>*</span><span style=color:#a6e22e>gclink</span> {
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>return</span> (<span style=color:#f92672>*</span><span style=color:#a6e22e>gclink</span>)(<span style=color:#a6e22e>unsafe</span>.<span style=color:#a6e22e>Pointer</span>(<span style=color:#a6e22e>p</span>))
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p><strong>stackcacherefill</strong></p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>stackcacherefill</span>(<span style=color:#a6e22e>c</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>mcache</span>, <span style=color:#a6e22e>order</span> <span style=color:#66d9ef>uint8</span>) {
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>for</span> <span style=color:#a6e22e>size</span> &lt; <span style=color:#a6e22e>_StackCacheSize</span><span style=color:#f92672>/</span><span style=color:#ae81ff>2</span> {
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>x</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>stackpoolalloc</span>(<span style=color:#a6e22e>order</span>)
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>x</span>.<span style=color:#a6e22e>ptr</span>().<span style=color:#a6e22e>next</span> = <span style=color:#a6e22e>list</span>
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>list</span> = <span style=color:#a6e22e>x</span>
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>size</span> <span style=color:#f92672>+=</span> <span style=color:#a6e22e>fixedStack</span> <span style=color:#f92672>&lt;&lt;</span> <span style=color:#a6e22e>order</span>
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>unlock</span>(<span style=color:#f92672>&amp;</span><span style=color:#a6e22e>stackpool</span>[<span style=color:#a6e22e>order</span>].<span style=color:#a6e22e>item</span>.<span style=color:#a6e22e>mu</span>)
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>stackcache</span>[<span style=color:#a6e22e>order</span>].<span style=color:#a6e22e>list</span> = <span style=color:#a6e22e>list</span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>stackcache</span>[<span style=color:#a6e22e>order</span>].<span style=color:#a6e22e>size</span> = <span style=color:#a6e22e>size</span>
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><h3 id=回收>回收
+<a class=header-anchor href=#%e5%9b%9e%e6%94%b6></a></h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#75715e>//Goexit -&gt; goexit1 -&gt; goexit0 -&gt; gdestroy
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>gdestroy</span>(<span style=color:#a6e22e>gp</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>g</span>) {
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// ......
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#75715e>// 修改状态
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>casgstatus</span>(<span style=color:#a6e22e>gp</span>, <span style=color:#a6e22e>_Grunning</span>, <span style=color:#a6e22e>_Gdead</span>)
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// 把 gp 的变量制空 .......
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// 把 m 上的 g 制空
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>dropg</span>()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>gfput</span>(<span style=color:#a6e22e>pp</span>, <span style=color:#a6e22e>gp</span>)
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>gfput</span>(<span style=color:#a6e22e>pp</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>p</span>, <span style=color:#a6e22e>gp</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>g</span>) {
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// ......
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>stksize</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>gp</span>.<span style=color:#a6e22e>stack</span>.<span style=color:#a6e22e>hi</span> <span style=color:#f92672>-</span> <span style=color:#a6e22e>gp</span>.<span style=color:#a6e22e>stack</span>.<span style=color:#a6e22e>lo</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// 如果栈不是默认大小 直接释放掉 只有默认大小才去复用
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>stksize</span> <span style=color:#f92672>!=</span> uintptr(<span style=color:#a6e22e>startingStackSize</span>) {
+</span></span><span style=display:flex><span>		<span style=color:#75715e>// non-standard stack size - free it.
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>		<span style=color:#a6e22e>stackfree</span>(<span style=color:#a6e22e>gp</span>.<span style=color:#a6e22e>stack</span>)
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>gp</span>.<span style=color:#a6e22e>stack</span>.<span style=color:#a6e22e>lo</span> = <span style=color:#ae81ff>0</span>
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>gp</span>.<span style=color:#a6e22e>stack</span>.<span style=color:#a6e22e>hi</span> = <span style=color:#ae81ff>0</span>
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>gp</span>.<span style=color:#a6e22e>stackguard0</span> = <span style=color:#ae81ff>0</span>
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// 将 goroutine 放入空闲队列
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>pp</span>.<span style=color:#a6e22e>gFree</span>.<span style=color:#a6e22e>push</span>(<span style=color:#a6e22e>gp</span>)
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>pp</span>.<span style=color:#a6e22e>gFree</span>.<span style=color:#a6e22e>n</span><span style=color:#f92672>++</span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// 如果到达 64 个 goroutine 就把一部分放到全局队列中
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>pp</span>.<span style=color:#a6e22e>gFree</span>.<span style=color:#a6e22e>n</span> <span style=color:#f92672>&gt;=</span> <span style=color:#ae81ff>64</span> {
+</span></span><span style=display:flex><span>		<span style=color:#66d9ef>var</span> (
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>inc</span>      <span style=color:#66d9ef>int32</span>
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>stackQ</span>   <span style=color:#a6e22e>gQueue</span>
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>noStackQ</span> <span style=color:#a6e22e>gQueue</span>
+</span></span><span style=display:flex><span>		)
+</span></span><span style=display:flex><span>		<span style=color:#66d9ef>for</span> <span style=color:#a6e22e>pp</span>.<span style=color:#a6e22e>gFree</span>.<span style=color:#a6e22e>n</span> <span style=color:#f92672>&gt;=</span> <span style=color:#ae81ff>32</span> {
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>gp</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>pp</span>.<span style=color:#a6e22e>gFree</span>.<span style=color:#a6e22e>pop</span>()
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>pp</span>.<span style=color:#a6e22e>gFree</span>.<span style=color:#a6e22e>n</span><span style=color:#f92672>--</span>
+</span></span><span style=display:flex><span>			<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>gp</span>.<span style=color:#a6e22e>stack</span>.<span style=color:#a6e22e>lo</span> <span style=color:#f92672>==</span> <span style=color:#ae81ff>0</span> {
+</span></span><span style=display:flex><span>				<span style=color:#a6e22e>noStackQ</span>.<span style=color:#a6e22e>push</span>(<span style=color:#a6e22e>gp</span>)
+</span></span><span style=display:flex><span>			} <span style=color:#66d9ef>else</span> {
+</span></span><span style=display:flex><span>				<span style=color:#a6e22e>stackQ</span>.<span style=color:#a6e22e>push</span>(<span style=color:#a6e22e>gp</span>)
+</span></span><span style=display:flex><span>			}
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>inc</span><span style=color:#f92672>++</span>
+</span></span><span style=display:flex><span>		}
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>lock</span>(<span style=color:#f92672>&amp;</span><span style=color:#a6e22e>sched</span>.<span style=color:#a6e22e>gFree</span>.<span style=color:#a6e22e>lock</span>)
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>sched</span>.<span style=color:#a6e22e>gFree</span>.<span style=color:#a6e22e>noStack</span>.<span style=color:#a6e22e>pushAll</span>(<span style=color:#a6e22e>noStackQ</span>)
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>sched</span>.<span style=color:#a6e22e>gFree</span>.<span style=color:#a6e22e>stack</span>.<span style=color:#a6e22e>pushAll</span>(<span style=color:#a6e22e>stackQ</span>)
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>sched</span>.<span style=color:#a6e22e>gFree</span>.<span style=color:#a6e22e>n</span> <span style=color:#f92672>+=</span> <span style=color:#a6e22e>inc</span>
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>unlock</span>(<span style=color:#f92672>&amp;</span><span style=color:#a6e22e>sched</span>.<span style=color:#a6e22e>gFree</span>.<span style=color:#a6e22e>lock</span>)
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p><strong>stackfree</strong></p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>stackfree</span>(<span style=color:#a6e22e>stk</span> <span style=color:#a6e22e>stack</span>) {
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// ......
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>n</span> &lt; <span style=color:#a6e22e>fixedStack</span><span style=color:#f92672>&lt;&lt;</span><span style=color:#a6e22e>_NumStackOrders</span> <span style=color:#f92672>&amp;&amp;</span> <span style=color:#a6e22e>n</span> &lt; <span style=color:#a6e22e>_StackCacheSize</span> {
+</span></span><span style=display:flex><span>		<span style=color:#75715e>// 小栈（&lt; 32k） 留着复用一下
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>		<span style=color:#a6e22e>order</span> <span style=color:#f92672>:=</span> uint8(<span style=color:#ae81ff>0</span>)
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>n2</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>n</span>
+</span></span><span style=display:flex><span>		<span style=color:#66d9ef>for</span> <span style=color:#a6e22e>n2</span> &gt; <span style=color:#a6e22e>fixedStack</span> {
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>order</span><span style=color:#f92672>++</span>
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>n2</span> <span style=color:#f92672>&gt;&gt;=</span> <span style=color:#ae81ff>1</span>
+</span></span><span style=display:flex><span>		}
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>x</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>gclinkptr</span>(<span style=color:#a6e22e>v</span>)
+</span></span><span style=display:flex><span>		 <span style=color:#75715e>// 如果不使用缓存或当前处理器被抢占，使用全局栈池
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>		<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>stackNoCache</span> <span style=color:#f92672>!=</span> <span style=color:#ae81ff>0</span> <span style=color:#f92672>||</span> <span style=color:#a6e22e>gp</span>.<span style=color:#a6e22e>m</span>.<span style=color:#a6e22e>p</span> <span style=color:#f92672>==</span> <span style=color:#ae81ff>0</span> <span style=color:#f92672>||</span> <span style=color:#a6e22e>gp</span>.<span style=color:#a6e22e>m</span>.<span style=color:#a6e22e>preemptoff</span> <span style=color:#f92672>!=</span> <span style=color:#e6db74>&#34;&#34;</span> {
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>lock</span>(<span style=color:#f92672>&amp;</span><span style=color:#a6e22e>stackpool</span>[<span style=color:#a6e22e>order</span>].<span style=color:#a6e22e>item</span>.<span style=color:#a6e22e>mu</span>)
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>stackpoolfree</span>(<span style=color:#a6e22e>x</span>, <span style=color:#a6e22e>order</span>)
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>unlock</span>(<span style=color:#f92672>&amp;</span><span style=color:#a6e22e>stackpool</span>[<span style=color:#a6e22e>order</span>].<span style=color:#a6e22e>item</span>.<span style=color:#a6e22e>mu</span>)
+</span></span><span style=display:flex><span>		} <span style=color:#66d9ef>else</span> {
+</span></span><span style=display:flex><span>			<span style=color:#75715e>// 否则，使用本地缓存
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>			<span style=color:#a6e22e>c</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>gp</span>.<span style=color:#a6e22e>m</span>.<span style=color:#a6e22e>p</span>.<span style=color:#a6e22e>ptr</span>().<span style=color:#a6e22e>mcache</span>
+</span></span><span style=display:flex><span>			<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>stackcache</span>[<span style=color:#a6e22e>order</span>].<span style=color:#a6e22e>size</span> <span style=color:#f92672>&gt;=</span> <span style=color:#a6e22e>_StackCacheSize</span> {
+</span></span><span style=display:flex><span>				<span style=color:#a6e22e>stackcacherelease</span>(<span style=color:#a6e22e>c</span>, <span style=color:#a6e22e>order</span>)
+</span></span><span style=display:flex><span>			}
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>x</span>.<span style=color:#a6e22e>ptr</span>().<span style=color:#a6e22e>next</span> = <span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>stackcache</span>[<span style=color:#a6e22e>order</span>].<span style=color:#a6e22e>list</span>
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>stackcache</span>[<span style=color:#a6e22e>order</span>].<span style=color:#a6e22e>list</span> = <span style=color:#a6e22e>x</span>
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>stackcache</span>[<span style=color:#a6e22e>order</span>].<span style=color:#a6e22e>size</span> <span style=color:#f92672>+=</span> <span style=color:#a6e22e>n</span>
+</span></span><span style=display:flex><span>		}
+</span></span><span style=display:flex><span>	} <span style=color:#66d9ef>else</span> {
+</span></span><span style=display:flex><span>		<span style=color:#75715e>// 如果栈大小不适合缓存，检查其 span 状态并相应处理
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>		<span style=color:#a6e22e>s</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>spanOfUnchecked</span>(uintptr(<span style=color:#a6e22e>v</span>))
+</span></span><span style=display:flex><span>		<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>state</span>.<span style=color:#a6e22e>get</span>() <span style=color:#f92672>!=</span> <span style=color:#a6e22e>mSpanManual</span> {
+</span></span><span style=display:flex><span>			println(<span style=color:#a6e22e>hex</span>(<span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>base</span>()), <span style=color:#a6e22e>v</span>)
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>throw</span>(<span style=color:#e6db74>&#34;bad span state&#34;</span>)
+</span></span><span style=display:flex><span>		}
+</span></span><span style=display:flex><span>		<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>gcphase</span> <span style=color:#f92672>==</span> <span style=color:#a6e22e>_GCoff</span> {
+</span></span><span style=display:flex><span>			<span style=color:#75715e>// 如果 GC 未运行，立即释放栈
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>			<span style=color:#a6e22e>osStackFree</span>(<span style=color:#a6e22e>s</span>)
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>mheap_</span>.<span style=color:#a6e22e>freeManual</span>(<span style=color:#a6e22e>s</span>, <span style=color:#a6e22e>spanAllocStack</span>)
+</span></span><span style=display:flex><span>		} <span style=color:#66d9ef>else</span> {
+</span></span><span style=display:flex><span>			<span style=color:#75715e>// 如果 GC 运行中，将栈添加到大栈缓存，避免与 GC 竞态
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>			<span style=color:#a6e22e>log2npage</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>stacklog2</span>(<span style=color:#a6e22e>s</span>.<span style=color:#a6e22e>npages</span>)
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>lock</span>(<span style=color:#f92672>&amp;</span><span style=color:#a6e22e>stackLarge</span>.<span style=color:#a6e22e>lock</span>)
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>stackLarge</span>.<span style=color:#a6e22e>free</span>[<span style=color:#a6e22e>log2npage</span>].<span style=color:#a6e22e>insert</span>(<span style=color:#a6e22e>s</span>)
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>unlock</span>(<span style=color:#f92672>&amp;</span><span style=color:#a6e22e>stackLarge</span>.<span style=color:#a6e22e>lock</span>)
+</span></span><span style=display:flex><span>		}
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div></div><footer class=post-footer><div class=post-tags><a href=/tags/go>go</a></div><div class=addthis_inline_share_toolbox style=text-align:center></div><hr><div class=post-copyright><img src=/imgs/cc/cc.svg width=75 height=75 align=right alt=共享知识><ul><li class=post-copyright-title><strong>文章标题：</strong>
+go 内存管理</li><li class=post-copyright-author><strong>本文作者： </strong>daemon365</li><li class=post-copyright-link><strong>本文链接：</strong>
+<a id=post-cr-link href=https://daemon365.dev/post/go/go_memory_code/ title="go 内存管理">https://daemon365.dev/post/go/go_memory_code/</a></li><li class=post-copyright-license><strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <i class="fab fa-fw fa-creative-commons"></i><a target=_blank href=https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh>BY-NC-SA</a> 许可协议。转载请注明出处！</li></ul></div><div class=post-nav><div class="post-nav-next post-nav-item"></div><div class="post-nav-prev post-nav-item"><a href=/post/go/gmp_code/ rel=prev title="从源码分析 GMP 调度原理">从源码分析 GMP 调度原理
+<i class="fa fa-chevron-right"></i></a></div></div></footer></article></div><div id=comments class=post-comments><div class=comment-head><div class=comment-headline><i class="fas fa-comments fa-fw"></i>
+<span>评论交流</span></div></div><div class=comment-wrap><div><div class=comment-loading><i class="fa fa-sync fa-spin"></i></div><div class=utterances-container></div></div></div></div></div></main><footer class=footer><div class=footer-inner><div class=copyright>&copy;
+<span itemprop=copyrightYear>2019 - 2024
+</span><span class=with-love><i class="fa fa-heart"></i>
+</span><span class=author itemprop=copyrightHolder>daemon365</span></div><div class=powered-by>由 <a href=https://gohugo.io title=0.139.4 target=_blank>Hugo</a> & <a href=https://github.com/hugo-next/hugo-theme-next title=4.6.3 target=_blank>Hugo NexT.Gemini</a> 强力驱动</div></div></footer><script type=text/javascript src=https://daemon365.dev/3rd/animejs/3.2.2/anime.min.js crossorigin=anonymous defer></script><script type=text/javascript src=https://daemon365.dev/3rd/viewerjs/1.11.6/viewer.min.js crossorigin=anonymous defer></script><script class=next-config data-name=main type=application/json>{"bookmark":{"color":"#222","enable":false,"save":"manual"},"copybtn":true,"darkmode":false,"hostname":"https://daemon365.dev/","i18n":{"ds_day":" 天前","ds_days":" 天 ","ds_hour":" 小时前","ds_hours":" 小时 ","ds_just":"刚刚","ds_min":" 分钟前","ds_mins":" 分钟","ds_month":" 个月前","ds_years":" 年 ","empty":"没有找到任何搜索结果：${query}","hits":"找到 ${hits} 个搜索结果","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","placeholder":"搜索..."},"lang":"zh-CN","lawidget":{"id":"JmAHxEAUVgyS8B1c","js":"https://v6-widget.51.la/v6/laId/quote.js?theme=0\u0026col=true\u0026f=12\u0026display=0,0,0,1,0,1,1,1"},"lazyload":false,"localSearch":{"enable":true,"limit":1e3,"path":"/searchindexes.xml","preload":false,"topnperarticle":-1,"trigger":"auto","unescape":false},"motion":{"async":false,"enable":false,"transition":{"collheader":"fadeInLeft","postblock":"fadeIn","postbody":"fadeInDown","postheader":"fadeInDown","sidebar":"fadeInUp"}},"postmeta":{"comments":{"enable":false,"plugin":"waline"},"views":{"enable":true,"plugin":"busuanzi"}},"root":"/","scheme":"Gemini","sidebar":{"display":"post","offset":12,"padding":18,"position":"left","width":256},"utterances":{"cfg":{"issueterm":"pathname","label":"comments","repo":"daemon365/blog","theme":"preferred-color-scheme"},"js":"https://utteranc.es/client.js"},"vendor":{"plugins":"local","router":{"name":"local","type":"modern","url":"https://daemon365.dev/3rd"}},"version":"4.6.3"}</script><script type=text/javascript src=/js/main.min.412b2d7d9cead6dbf9b4df1d9dcc9b5b7818e8e434f664050b4498e888bb3009.js defer></script></body></html>
