@@ -1,4 +1,25 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on Daemon</title><link>https://daemon365.dev/post/</link><description>Recent content in Posts on Daemon</description><generator>Hugo</generator><language>zh-CN</language><lastBuildDate>Tue, 10 Dec 2024 20:55:56 +0800</lastBuildDate><atom:link href="https://daemon365.dev/post/rss.xml" rel="self" type="application/rss+xml"/><item><title>go 内存管理</title><link>https://daemon365.dev/post/go/go_memory_code/</link><pubDate>Tue, 10 Dec 2024 20:55:56 +0800</pubDate><guid>https://daemon365.dev/post/go/go_memory_code/</guid><description>&lt;h2 id="操作系统内存管理">操作系统内存管理
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on Daemon</title><link>https://daemon365.dev/post/</link><description>Recent content in Posts on Daemon</description><generator>Hugo</generator><language>zh-CN</language><lastBuildDate>Tue, 17 Dec 2024 11:06:10 +0800</lastBuildDate><atom:link href="https://daemon365.dev/post/rss.xml" rel="self" type="application/rss+xml"/><item><title>Go 垃圾回收</title><link>https://daemon365.dev/post/go/go_gc_code/</link><pubDate>Tue, 17 Dec 2024 11:06:10 +0800</pubDate><guid>https://daemon365.dev/post/go/go_gc_code/</guid><description>&lt;p>*** Go 代码基于 v1.23.0 ***&lt;/p>
+&lt;h2 id="介绍">介绍
+&lt;a class="header-anchor" href="#%e4%bb%8b%e7%bb%8d">&lt;/a>
+&lt;/h2>&lt;ul>
+&lt;li>
+&lt;a href="https://daemon365.dev/post/go/golang_gc_garbage_collection_mechanism/" title="golang GC 垃圾回收机制" rel="noopener external nofollow noreferrer" target="_blank" class=" exturl">
+ golang GC 垃圾回收机制
+ 
+ &lt;i class="fa fa-external-link-alt">&lt;/i>
+ 
+&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;h2 id="触发条件">触发条件
+&lt;a class="header-anchor" href="#%e8%a7%a6%e5%8f%91%e6%9d%a1%e4%bb%b6">&lt;/a>
+&lt;/h2>&lt;ol>
+&lt;li>用户调用 &lt;code>runtime.GC&lt;/code> 主动触发&lt;/li>
+&lt;li>Go 程序检测到距上次 GC 内存分配增长超过一定比例时（默认 100%）触发&lt;/li>
+&lt;li>定时触发 （默认 2 min）&lt;/li>
+&lt;/ol>
+&lt;h2 id="定时触发">定时触发
+&lt;a class="header-anchor" href="#%e5%ae%9a%e6%97%b6%e8%a7%a6%e5%8f%91">&lt;/a>
+&lt;/h2>&lt;p>代码在 &lt;code>src/runtime/proc.go&lt;/code> 中&lt;/p></description></item><item><title>go 内存管理</title><link>https://daemon365.dev/post/go/go_memory_code/</link><pubDate>Tue, 10 Dec 2024 20:55:56 +0800</pubDate><guid>https://daemon365.dev/post/go/go_memory_code/</guid><description>&lt;h2 id="操作系统内存管理">操作系统内存管理
 &lt;a class="header-anchor" href="#%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%86%85%e5%ad%98%e7%ae%a1%e7%90%86">&lt;/a>
 &lt;/h2>&lt;p>操作系统管理内存的存储单元是页（page），在 linux 中一般是 4KB。而且，操作系统还会使用 &lt;code>虚拟内存&lt;/code> 来管理内存，在用户程序中，我们看到的内存是不是真实的内存，而是虚拟内存。当访问或者修改内存的时候，操作系统会将虚拟内存映射到真实的内存中。申请内存的组件是 Page Table 和 MMU（Memory Management Unit）。因为这个性能很重要，所以在 CPU 中专门有一个 TLB（Translation Lookaside Buffer）来缓存 Page Table 的内容。&lt;/p></description></item><item><title>从源码分析 GMP 调度原理</title><link>https://daemon365.dev/post/go/gmp_code/</link><pubDate>Sat, 07 Dec 2024 14:23:31 +0800</pubDate><guid>https://daemon365.dev/post/go/gmp_code/</guid><description>&lt;p>&lt;strong>本身涉及到的 go 代码 都是基于 go 1.23.0 版本&lt;/strong>&lt;/p>
 &lt;h2 id="传统-os-线程">传统 OS 线程
