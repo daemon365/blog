@@ -1,7 +1,6 @@
 ---
 title: "Go 垃圾回收"
 date: 2024-12-17T11:06:10+08:00
-draft: true
 
 categories:
   - go
@@ -945,4 +944,317 @@ func gcMarkTermination(stw worldStop) {
 	}
 
 }
+```
+
+## 清扫 
+
+```go
+func gcSweep(mode gcMode) bool {
+	// ......
+	
+	// 并发清扫
+	lock(&sweep.lock)
+	if sweep.parked {
+		sweep.parked = false
+		ready(sweep.g, 0, true)
+	}
+	unlock(&sweep.lock)
+	return false
+}
+
+```
+
+sweep.g 的创建 
+
+```go
+var sweep sweepdata
+
+type sweepdata struct {
+	g      *g
+}
+
+// 在 runtime main 中调用了gcenable()
+func gcenable() {
+	c := make(chan int, 2)
+	go bgsweep(c)
+	go bgscavenge(c)
+	<-c
+	<-c
+	memstats.enablegc = true 
+}
+```
+
+### bgscavenge
+
+从 OS 申请到 _heap 上的内存 不用了 还回去一些
+
+```go
+func bgscavenge(c chan int) {
+	scavenger.init()
+
+	c <- 1
+	// 等待
+	scavenger.park()
+
+	for {
+		// 执行一次清理 (scavenge) 操作，返回释放的内存量和本次操作的耗时
+		released, workTime := scavenger.run()
+		// 没有释放内存，休眠
+		if released == 0 {
+			scavenger.park()
+			continue
+		}
+		// 如果释放了内存，将释放的内存量和耗时记录到统计信息中
+		mheap_.pages.scav.releasedBg.Add(released)
+		scavenger.sleep(workTime)
+	}
+}
+```
+####  scavenger.run
+
+```go
+func (s *scavengerState) run() (released uintptr, worked float64) {
+	for worked < minScavWorkTime {
+		// 如果需要停止，就停止
+		if s.shouldStop() {
+			break
+		}
+
+		const scavengeQuantum = 64 << 10
+		r, duration := s.scavenge(scavengeQuantum)
+
+		const approxWorkedNSPerPhysicalPage = 10e3
+		if duration == 0 {
+			worked += approxWorkedNSPerPhysicalPage * float64(r/physPageSize)
+		} else {
+			worked += float64(duration)
+		}
+		released += r
+
+	}
+	
+	return
+}
+```
+
+#### s.scavenge
+
+```go
+if s.scavenge == nil {
+		s.scavenge = func(n uintptr) (uintptr, int64) {
+			start := nanotime()
+			r := mheap_.pages.scavenge(n, nil, false)
+			end := nanotime()
+			if start >= end {
+				return r, 0
+			}
+			scavenge.backgroundTime.Add(end - start)
+			return r, end - start
+		}
+	}
+```
+
+```go
+func (p *pageAlloc) scavenge(nbytes uintptr, shouldStop func() bool, force bool) uintptr {
+	released := uintptr(0)
+	for released < nbytes {
+		ci, pageIdx := p.scav.index.find(force)
+		if ci == 0 {
+			break
+		}
+		systemstack(func() {
+			released += p.scavengeOne(ci, pageIdx, nbytes-released)
+		})
+		if shouldStop != nil && shouldStop() {
+			break
+		}
+	}
+	return released
+}
+```
+
+#### scavengeOne
+
+```go
+func (p *pageAlloc) scavengeOne(ci chunkIdx, searchIdx uint, max uintptr) uintptr {
+	maxPages := max / pageSize
+	if max%pageSize != 0 {
+		maxPages++
+	}
+
+	minPages := physPageSize / pageSize
+	if minPages < 1 {
+		minPages = 1
+	}
+
+	lock(p.mheapLock)
+	if p.summary[len(p.summary)-1][ci].max() >= uint(minPages) {
+		// 找到回收的开始地址 和页数
+		base, npages := p.chunkOf(ci).findScavengeCandidate(searchIdx, minPages, maxPages)
+
+		// If we found something, scavenge it and return!
+		if npages != 0 {
+			// ......
+			unlock(p.mheapLock)
+
+			if !p.test {
+				// 系统调用
+				sysUnused(unsafe.Pointer(addr), uintptr(npages)*pageSize)
+
+				// ......
+			}
+
+			// 更新统计信息
+			lock(p.mheapLock)
+			if b := (offAddr{addr}); b.lessThan(p.searchAddr) {
+				p.searchAddr = b
+			}
+			p.chunkOf(ci).free(base, npages)
+			p.update(addr, uintptr(npages), true, false)
+
+			// Mark the range as scavenged.
+			p.chunkOf(ci).scavenged.setRange(base, npages)
+			unlock(p.mheapLock)
+
+			return uintptr(npages) * pageSize
+		}
+	}
+	p.scav.index.setEmpty(ci)
+	unlock(p.mheapLock)
+
+	return 0
+}
+```
+
+### bgsweep
+
+```go
+func bgsweep(c chan int) {
+	sweep.g = getg()
+
+	lockInit(&sweep.lock, lockRankSweep)
+	lock(&sweep.lock)
+	sweep.parked = true
+	c <- 1
+	// 休眠 等待gc 完成 唤醒它
+	goparkunlock(&sweep.lock, waitReasonGCSweepWait, traceBlockGCSweep, 1)
+
+	for {
+		// 执行一次清扫操作
+		for sweepone() != ^uintptr(0) {
+			nSwept++
+			// 每清扫一定数量对象，就尝试让出 CPU
+			if nSwept%sweepBatchSize == 0 {
+				goschedIfBusy()
+			}
+		}
+		// 释放一些写缓冲区
+		for freeSomeWbufs(true) {
+			goschedIfBusy()
+		}
+		lock(&sweep.lock)
+		// 检查是否完成了所有扫描任务。
+		if !isSweepDone() {
+			unlock(&sweep.lock)
+			continue
+		}
+		sweep.parked = true
+		// 休眠 等待下一次 gc 标记完成唤醒它
+		goparkunlock(&sweep.lock, waitReasonGCSweepWait, traceBlockGCSweep, 1)
+	}
+}
+```
+
+#### sweepone
+
+```go
+func sweepone() uintptr {
+	gp := getg()
+	gp.m.locks++
+	sl := sweep.active.begin()
+	if !sl.valid {
+		gp.m.locks--
+		return ^uintptr(0)
+	}
+
+	// Find a span to sweep.
+	npages := ^uintptr(0)
+	var noMoreWork bool
+	for {
+		// 查找 span
+		s := mheap_.nextSpanForSweep()
+		if s == nil {
+			noMoreWork = sweep.active.markDrained()
+			break
+		}
+		// 试着清扫
+		if s, ok := sl.tryAcquire(s); ok {
+			// Sweep the span we found.
+			npages = s.npages
+			if s.sweep(false) {
+				mheap_.reclaimCredit.Add(npages)
+			} else {
+				npages = 0
+			}
+			break
+		}
+	}
+	sweep.active.end(sl)
+
+	// ......
+	gp.m.locks--
+	return npages
+}
+```
+
+sweep 主要逻辑是把 刚刚标记过的 gcmarkBits 复制给 allocBits 
+
+```go
+func (sl *sweepLocked) sweep(preserve bool) bool {
+	// ......
+	s.allocBits = s.gcmarkBits
+	s.gcmarkBits = newMarkBits(uintptr(s.nelems))
+	// ......
+}
+```
+
+#### 分配内存
+
+如果我们的 span 标记之后 还没来得及清扫，修改了 allocBits 值，然后再清扫会出问题。go 是怎么解决的呢？
+
+```go
+// 拿 span 的时候会检查 如果没清扫就先清扫一下 再使用内存
+func (c *mcentral) cacheSpan() *mspan {
+	// ......
+	if s, ok := sl.tryAcquire(s); ok {
+		// We got ownership of the span, so let's sweep it.
+		s.sweep(true)
+	}
+	// ......
+}
+
+func (h *mheap) alloc(npages uintptr, spanclass spanClass) *mspan {
+	var s *mspan
+	systemstack(func() {
+		if !isSweepDone() {
+			h.reclaim(npages)
+		}
+		s = h.allocSpan(npages, spanAllocHeap, spanclass)
+	})
+	return s
+}
+
+func (h *mheap) reclaim(npage uintptr) {
+	// ......
+	nfound := h.reclaimChunk(arenas, idx, pagesPerReclaimerChunk)
+	// ......
+}
+
+func (h *mheap) reclaimChunk(arenas []*pageAlloc, idx, npages uintptr) uintptr {
+	// ......
+	if s.sweep(false) {
+	}
+	// ......
+}
+
 ```
