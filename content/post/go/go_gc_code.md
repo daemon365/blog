@@ -1,5 +1,5 @@
 ---
-title: "Go 垃圾回收"
+title: "Go 垃圾回收原理"
 date: 2024-12-17T11:06:10+08:00
 
 categories:
