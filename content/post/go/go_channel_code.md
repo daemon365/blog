@@ -3,8 +3,6 @@ title: "Go channel 原理"
 date: 2024-12-22T19:14:55+08:00
 lastmod: 2024-12-22T19:14:55+08:00
 
-draft: true
-
 categories:
   - go
 tags:
@@ -163,7 +161,7 @@ func chansend(c *hchan, ep unsafe.Pointer, block bool, callerpc uintptr) bool {
 	}
 
 	lock(&c.lock)
-  // 检查 channel 是否已经关闭
+    // 检查 channel 是否已经关闭
 	if c.closed != 0 {
 		unlock(&c.lock)
 		panic(plainError("send on closed channel"))
@@ -250,6 +248,7 @@ func chansend(c *hchan, ep unsafe.Pointer, block bool, callerpc uintptr) bool {
 2. 如果通道缓冲区有空间，直接将值写入缓冲区
 3. 如果缓冲区没有空间，且是阻塞模式，当前 Goroutine 挂起等待接收者
 
+![](/images/go_channel_write.png)
 
 ### send
 
@@ -397,7 +396,7 @@ func chanrecv(c *hchan, ep unsafe.Pointer, block bool) (selected, received bool)
 	// 非阻塞模式下检查失败条件
 	if !block && empty(c) {
 		if atomic.Load(&c.closed) == 0 {
-      // 已经没关闭 直接返回 因为这是非阻塞模式而且 buf 为空的情况
+      		// 已经没关闭 直接返回 因为这是非阻塞模式而且 buf 为空的情况
 			return
 		}
 		if empty(c) {
@@ -419,7 +418,7 @@ func chanrecv(c *hchan, ep unsafe.Pointer, block bool) (selected, received bool)
 	lock(&c.lock)
 
 	if c.closed != 0 {
-    // 通道已关闭 检查是否有数据
+    	// 通道已关闭 检查是否有数据
 		if c.qcount == 0 {
 			if raceenabled {
 				raceacquire(c.raceaddr())
@@ -440,14 +439,14 @@ func chanrecv(c *hchan, ep unsafe.Pointer, block bool) (selected, received bool)
 		}
 	}
 
-  // 如果缓冲区中有数据，从缓冲区接收
+  	// 如果缓冲区中有数据，从缓冲区接收
 	if c.qcount > 0 {
 		qp := chanbuf(c, c.recvx)
 		if raceenabled {
 			racenotify(c, c.recvx, nil)
 		}
 		if ep != nil {
-      // 直接 COPY 内存
+      		// 直接 COPY 内存
 			typedmemmove(c.elemtype, ep, qp)
 		}
 		typedmemclr(c.elemtype, qp)
@@ -460,7 +459,7 @@ func chanrecv(c *hchan, ep unsafe.Pointer, block bool) (selected, received bool)
 		return true, true
 	}
 
-  // 如果是非阻塞接收，直接返回
+  	// 如果是非阻塞接收，直接返回
 	if !block {
 		unlock(&c.lock)
 		return false, false
@@ -512,9 +511,51 @@ func chanrecv(c *hchan, ep unsafe.Pointer, block bool) (selected, received bool)
 所以读数据（阻塞读）的逻辑为:
 
 1. 检查 channel 是否已经关闭 如果关闭了 而且没有数据了 直接返回
-2. 如果有等待发送的 Goroutine （c.sendq 里面有值），直接从发送队列中取出值
+2. 如果有等待发送的 Goroutine （c.sendq 里面有值），如果无缓冲chan 直接从goroutine中取值 负责从 buf 取出值 并把数据加入末尾
 3. 如果缓冲区中有数据，从缓冲区接收
 4. 如果缓冲区没有数据了 挂起 goroutine 并加入 recvq 等待接收者
+
+![](/images/go_channel_read.png)
+
+### recv
+
+```go
+func recv(c *hchan, sg *sudog, ep unsafe.Pointer, unlockf func(), skip int) {
+	if c.dataqsiz == 0 {
+		
+		if ep != nil {
+			// 如果是无缓冲通道，直接 Copy 数据
+			recvDirect(c.elemtype, sg, ep)
+		}
+	} else {
+		// 否则，通道是有缓冲通道。
+        // 从队列的头部获取数据，同时通知发送方将其数据放到尾部
+		qp := chanbuf(c, c.recvx)
+		
+		// 从队列复制数据到接收方
+		if ep != nil {
+			typedmemmove(c.elemtype, ep, qp)
+		}
+		// 将发送者的数据复制到队列中
+		typedmemmove(c.elemtype, qp, sg.elem)
+		c.recvx++
+		if c.recvx == c.dataqsiz {
+			c.recvx = 0
+		}
+		c.sendx = c.recvx // c.sendx = (c.sendx+1) % c.dataqsiz
+	}
+	sg.elem = nil
+	gp := sg.g
+	unlockf()
+	gp.param = unsafe.Pointer(sg)
+	sg.success = true
+	if sg.releasetime != 0 {
+		sg.releasetime = cputicks()
+	}
+	goready(gp, skip+1)
+}
+
+```
 
 ## 关闭
 
@@ -611,3 +652,49 @@ func selectnbrecv(elem unsafe.Pointer, c *hchan) (selected, received bool) {
 
 - 在阻塞下，需要当前 goroutine 挂起时，非阻塞则不需要，直接返回 flase。
 - 如果能直接读数据，则返回 true。
+
+## select
+
+```go
+func walkSelectCases(cases []*ir.CommClause) []ir.Node {
+	// ......
+	switch n.Op() {
+	default:
+		base.Fatalf("select %v", n.Op())
+
+	case ir.OSEND:
+		// if selectnbsend(c, v) { body } else { default body }
+		n := n.(*ir.SendStmt)
+		ch := n.Chan
+		cond = mkcall1(chanfn("selectnbsend", 2, ch.Type()), types.Types[types.TBOOL], r.PtrInit(), ch, n.Value)
+
+	case ir.OSELRECV2:
+		n := n.(*ir.AssignListStmt)
+		recv := n.Rhs[0].(*ir.UnaryExpr)
+		ch := recv.X
+		elem := n.Lhs[0]
+		if ir.IsBlank(elem) {
+			elem = typecheck.NodNil()
+		}
+		cond = typecheck.TempAt(base.Pos, ir.CurFunc, types.Types[types.TBOOL])
+		fn := chanfn("selectnbrecv", 2, ch.Type())
+		call := mkcall1(fn, fn.Type().ResultsTuple(), r.PtrInit(), elem, ch)
+		as := ir.NewAssignListStmt(r.Pos(), ir.OAS2, []ir.Node{cond, n.Lhs[1]}, []ir.Node{call})
+		r.PtrInit().Append(typecheck.Stmt(as))
+	}
+
+	// ......
+}
+```
+
+```go
+func selectnbsend(c *hchan, elem unsafe.Pointer) (selected bool) {
+	return chansend(c, elem, false, getcallerpc())
+}
+
+func selectnbrecv(elem unsafe.Pointer, c *hchan) (selected, received bool) {
+	return chanrecv(c, elem, false)
+}
+```
+
+改写后就是调用 `selectnbsend` 非阻塞的从 channel 发送数据，如果成功则返回 true，否则返回 false。失败了就从下个 case 继续执行。
