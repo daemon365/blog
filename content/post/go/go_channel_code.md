@@ -16,6 +16,7 @@ tags:
 3. 使用 chan 实现 goroutine 之间的协作与同步，可用于信号传递、任务完成通知等。
 4. select 配合 chan，可以同时监听多个 channel，处理任意一个可用 channel 的数据。
 
+<!--more-->
 
 ## 结构
 
