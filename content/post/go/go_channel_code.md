@@ -9,6 +9,14 @@ tags:
   - go
 ---
 
+## 作用
+
+1. Go 语言的 channel 是一种 goroutine 之间的通信方式，它可以用来传递数据，也可以用来同步 goroutine 的执行。
+2. chan 是 goroutine 之间的通信桥梁，可以安全地在多个 goroutine 中共享数据。
+3. 使用 chan 实现 goroutine 之间的协作与同步，可用于信号传递、任务完成通知等。
+4. select 配合 chan，可以同时监听多个 channel，处理任意一个可用 channel 的数据。
+
+
 ## 结构
 
 ```go
