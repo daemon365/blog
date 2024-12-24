@@ -15,25 +15,6 @@ Go 语言的 channel 是一种 goroutine 之间的通信方式，它可以用来
 chan 是 goroutine 之间的通信桥梁，可以安全地在多个 goroutine 中共享数据。
 使用 chan 实现 goroutine 之间的协作与同步，可用于信号传递、任务完成通知等。
 select 配合 chan，可以同时监听多个 channel，处理任意一个可用 channel 的数据。
-
-结构
-
-type hchan struct {
-	qcount   uint           // 队列中的元素个数
-	dataqsiz uint           // 环形队列的容量
-	buf      unsafe.Pointer // 环形队列的指针
-	elemsize uint16        // 元素的大小
-	closed   uint32         // 是否关闭 如果以关闭则不是0
-	timer    *timer // 为此 channel 提供时间控制的计时器
-	elemtype *_type // 元素的类型
-	sendx    uint   // 发送索引，指示下一个发送操作的位置
-	recvx    uint   // 接收索引，指示下一个接收操作的位置
-	recvq    waitq  // 等待接收的等待队列
-	sendq    waitq  // 等待发送的等待队列
-
-	// 锁
-	lock mutex
-}
 "></span><header class=post-header><h1 class=post-title itemprop="name headline">Go channel 原理</h1><div class=post-meta-container><div class=post-meta-items><span class=post-meta-item><span class=post-meta-item-icon><i class="fas fa-solid fa-calendar"></i>
 </span><span class=post-meta-item-text title=发表于>发表于：
 </span><time title="创建时间：2024-12-22 19:14:55 +0800 +0800" itemprop="dateCreated datePublished" datetime="2024-12-22 19:14:55 +0800 +0800">2024-12-22
