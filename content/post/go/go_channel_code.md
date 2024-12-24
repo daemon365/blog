@@ -38,6 +38,8 @@ type hchan struct {
 }
 ```
 
+![](/images/go_channel_struct.png)
+
 **waitq**
 
 ```go
