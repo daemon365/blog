@@ -1,0 +1,467 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>Thrift on Daemon365</title><link>https://daemon365.dev/tags/thrift/</link><description>Don't let yourself stop.</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><lastBuildDate>Wed, 30 Dec 2020 00:00:00 +0800</lastBuildDate><atom:link href="https://daemon365.dev/tags/thrift/index.xml" rel="self" type="application/rss+xml"/><item><title>thrift的介绍及其使用</title><link>https://daemon365.dev/post/microservice/introduction_and_use_of_thrift/</link><pubDate>Wed, 30 Dec 2020 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/microservice/introduction_and_use_of_thrift/</guid><description>&lt;h2 id="什么是thrift"&gt;什么是thrift&lt;/h2&gt;
+&lt;p&gt;Thrift是Facebook于2007年开发的跨语言的rpc服框架，提供多语言的编译功能，并提供多种服务器工作模式；用户通过Thrift的IDL（接口定义语言）来描述接口函数及数据类型，然后通过Thrift的编译环境生成各种语言类型的接口文件，用户可以根据自己的需要采用不同的语言开发客户端代码和服务器端代码。&lt;/p&gt;
+&lt;p&gt;例如，我想开发一个快速计算的RPC服务，它主要通过接口函数getInt对外提供服务，这个RPC服务的getInt函数使用用户传入的参数，经过复杂的计算，计算出一个整形值返回给用户；服务器端使用java语言开发，而调用客户端可以是java、c、python等语言开发的程序，在这种应用场景下，我们只需要使用Thrift的IDL描述一下getInt函数（以.thrift为后缀的文件），然后使用Thrift的多语言编译功能，将这个IDL文件编译成C、java、python几种语言对应的“特定语言接口文件”（每种语言只需要一条简单的命令即可编译完成），这样拿到对应语言的“特定语言接口文件”之后，就可以开发客户端和服务器端的代码了，开发过程中只要接口不变，客户端和服务器端的开发可以独立的进行。&lt;/p&gt;
+&lt;p&gt;Thrift为服务器端程序提供了很多的工作模式，例如：线程池模型、非阻塞模型等等，可以根据自己的实际应用场景选择一种工作模式高效地对外提供服务；&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Thrift的官方网站：http://thrift.apache.org/&lt;/strong&gt;&lt;/p&gt;
+&lt;h2 id="thrift的协议结构"&gt;thrift的协议结构&lt;/h2&gt;
+&lt;p&gt;&lt;img src="https://daemon365.dev/images/db700a52-4aa0-49f2-aa47-2fd759a99b44.png" alt=""&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://daemon365.dev/images/767a4b7a-7cfd-44a0-a616-263a3b3bc501.png" alt=""&gt;&lt;/p&gt;
+&lt;p&gt;Thrift是一种c/s的架构体系。TServer主要任务是高效的接受客户端请求，并将请求转发给Processor处理。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;最上层是用户自行实现的业务逻辑代码；&lt;/li&gt;
+&lt;li&gt;Processor是由thrift编译器自动生成的代码，它封装了从输入数据流中读数据和向数据流中写数据的操作，它的主要工作是：从连接中读取数据，把处理交给用户实现impl，最后把结果写到连接上。&lt;/li&gt;
+&lt;li&gt;TProtocol是用于数据类型解析的，将结构化数据转化为字节流给TTransport进行传输。从TProtocol以下部分是thirft的传输协议和底层I/O通信。&lt;/li&gt;
+&lt;li&gt;TTransport是与底层数据传输密切相关的传输层，负责以字节流方式接收和发送消息体，不关注是什么数据类型。&lt;/li&gt;
+&lt;li&gt;底层IO负责实际的数据传输，包括socket、文件和压缩数据流等。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="下载"&gt;下载&lt;/h2&gt;
+&lt;p&gt;下载thrift编译软件:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;MacOs:&lt;code&gt;brew install thrift&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Windows:Thrift官方下载地址：http://thrift.apache.org/download&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;golang下载: &lt;code&gt;go get github.com/apache/thrift/lib/go/thrift&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;python下载: &lt;code&gt;sudo pip install thrift&lt;/code&gt;&lt;/p&gt;
+&lt;h2 id="idl文件编写"&gt;IDL文件编写&lt;/h2&gt;
+&lt;p&gt;thrift 采用IDL（Interface Definition Language）来定义通用的服务接口，并通过生成不同的语言代理实现来达到跨语言、平台的功能。在thrift的IDL中可以定义以下一些类型：基本数据类型，结构体，容器，异常、服务&lt;/p&gt;
+&lt;h3 id="基本类型"&gt;基本类型&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;bool: 布尔值 (true or false), one byte&lt;/li&gt;
+&lt;li&gt;byte: 有符号字节&lt;/li&gt;
+&lt;li&gt;i16: 16位有符号整型&lt;/li&gt;
+&lt;li&gt;i32: 32位有符号整型&lt;/li&gt;
+&lt;li&gt;i64: 64位有符号整型&lt;/li&gt;
+&lt;li&gt;double: 64位浮点型&lt;/li&gt;
+&lt;li&gt;string: Encoding agnostic text or binary string&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;基本类型中基本都是有符号数，因为有些语言没有无符号数，所以Thrift不支持无符号整型。&lt;/p&gt;
+&lt;h3 id="特殊类型"&gt;特殊类型&lt;/h3&gt;
+&lt;p&gt;binary: Blob (byte array) a sequence of unencoded bytes&lt;/p&gt;</description><content:encoded><![CDATA[<h2 id="什么是thrift">什么是thrift</h2>
+<p>Thrift是Facebook于2007年开发的跨语言的rpc服框架，提供多语言的编译功能，并提供多种服务器工作模式；用户通过Thrift的IDL（接口定义语言）来描述接口函数及数据类型，然后通过Thrift的编译环境生成各种语言类型的接口文件，用户可以根据自己的需要采用不同的语言开发客户端代码和服务器端代码。</p>
+<p>例如，我想开发一个快速计算的RPC服务，它主要通过接口函数getInt对外提供服务，这个RPC服务的getInt函数使用用户传入的参数，经过复杂的计算，计算出一个整形值返回给用户；服务器端使用java语言开发，而调用客户端可以是java、c、python等语言开发的程序，在这种应用场景下，我们只需要使用Thrift的IDL描述一下getInt函数（以.thrift为后缀的文件），然后使用Thrift的多语言编译功能，将这个IDL文件编译成C、java、python几种语言对应的“特定语言接口文件”（每种语言只需要一条简单的命令即可编译完成），这样拿到对应语言的“特定语言接口文件”之后，就可以开发客户端和服务器端的代码了，开发过程中只要接口不变，客户端和服务器端的开发可以独立的进行。</p>
+<p>Thrift为服务器端程序提供了很多的工作模式，例如：线程池模型、非阻塞模型等等，可以根据自己的实际应用场景选择一种工作模式高效地对外提供服务；</p>
+<p><strong>Thrift的官方网站：http://thrift.apache.org/</strong></p>
+<h2 id="thrift的协议结构">thrift的协议结构</h2>
+<p><img src="/images/db700a52-4aa0-49f2-aa47-2fd759a99b44.png" alt=""></p>
+<p><img src="/images/767a4b7a-7cfd-44a0-a616-263a3b3bc501.png" alt=""></p>
+<p>Thrift是一种c/s的架构体系。TServer主要任务是高效的接受客户端请求，并将请求转发给Processor处理。</p>
+<ul>
+<li>最上层是用户自行实现的业务逻辑代码；</li>
+<li>Processor是由thrift编译器自动生成的代码，它封装了从输入数据流中读数据和向数据流中写数据的操作，它的主要工作是：从连接中读取数据，把处理交给用户实现impl，最后把结果写到连接上。</li>
+<li>TProtocol是用于数据类型解析的，将结构化数据转化为字节流给TTransport进行传输。从TProtocol以下部分是thirft的传输协议和底层I/O通信。</li>
+<li>TTransport是与底层数据传输密切相关的传输层，负责以字节流方式接收和发送消息体，不关注是什么数据类型。</li>
+<li>底层IO负责实际的数据传输，包括socket、文件和压缩数据流等。</li>
+</ul>
+<h2 id="下载">下载</h2>
+<p>下载thrift编译软件:</p>
+<ul>
+<li>MacOs:<code>brew install thrift</code></li>
+<li>Windows:Thrift官方下载地址：http://thrift.apache.org/download</li>
+</ul>
+<p>golang下载: <code>go get github.com/apache/thrift/lib/go/thrift</code></p>
+<p>python下载: <code>sudo pip install thrift</code></p>
+<h2 id="idl文件编写">IDL文件编写</h2>
+<p>thrift 采用IDL（Interface Definition Language）来定义通用的服务接口，并通过生成不同的语言代理实现来达到跨语言、平台的功能。在thrift的IDL中可以定义以下一些类型：基本数据类型，结构体，容器，异常、服务</p>
+<h3 id="基本类型">基本类型</h3>
+<ul>
+<li>bool: 布尔值 (true or false), one byte</li>
+<li>byte: 有符号字节</li>
+<li>i16: 16位有符号整型</li>
+<li>i32: 32位有符号整型</li>
+<li>i64: 64位有符号整型</li>
+<li>double: 64位浮点型</li>
+<li>string: Encoding agnostic text or binary string</li>
+</ul>
+<p>基本类型中基本都是有符号数，因为有些语言没有无符号数，所以Thrift不支持无符号整型。</p>
+<h3 id="特殊类型">特殊类型</h3>
+<p>binary: Blob (byte array) a sequence of unencoded bytes</p>
+<p>这是string类型的一种变形，主要是为<a href="http://lib.csdn.net/base/javase">Java</a>使用，目前我主要使用C++的语言，所以java的这个类型没有用过</p>
+<h3 id="struct">struct</h3>
+<p>thrift中struct是定义为一种对象，和面向对象语言的class差不多.,但是struct有以下一些约束：</p>
+<ul>
+<li>struct不能继承，但是可以嵌套，不能嵌套自己。</li>
+<li>其成员都是有明确类型</li>
+<li>成员是被正整数编号过的，其中的编号使不能重复的，这个是为了在传输过程中编码使用。</li>
+<li>成员分割符可以是逗号（,）或是分号（;），而且可以混用，但是为了清晰期间，建议在定义中只使用一种，比如C++学习者可以就使用分号（;）。</li>
+<li>字段会有optional和required之分和protobuf一样，但是如果不指定则为无类型—可以不填充该值，但是在序列化传输的时候也会序列化进去，optional是不填充则部序列化，required是必须填充也必须序列化。</li>
+<li>每个字段可以设置默认值</li>
+<li>同一文件可以定义多个struct，也可以定义在不同的文件，进行include引入。</li>
+</ul>
+<p>数字标签作用非常大，但是随着项目开发的不断发展，也许字段会有变化，但是建议不要轻易修改这些数字标签，修改之后如果没有同步客户端和服务器端会让一方解析出问题。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#00a8c8">struct</span> <span style="color:#75af00">Report</span> <span style="color:#111">{</span>  
+</span></span><span style="display:flex;"><span>	<span style="color:#ae81ff">1</span><span style="color:#111">:</span> <span style="color:#75af00">required</span> <span style="color:#00a8c8">string</span> <span style="color:#75af00">msg</span><span style="color:#111">,</span> <span style="color:#75715e">//改字段必须填写  </span>
+</span></span><span style="display:flex;"><span>	<span style="color:#ae81ff">2</span><span style="color:#111">:</span> <span style="color:#75af00">optional</span> <span style="color:#75af00">i32</span> <span style="color:#00a8c8">type</span> <span style="color:#111">=</span> <span style="color:#ae81ff">0</span><span style="color:#111">;</span> <span style="color:#75715e">//默认值  </span>
+</span></span><span style="display:flex;"><span>	<span style="color:#ae81ff">3</span><span style="color:#111">:</span> <span style="color:#75af00">i32</span> <span style="color:#75af00">time</span> <span style="color:#75715e">//默认字段类型为optional </span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span></code></pre></div><p>规范的struct定义中的每个域均会使用required或者 optional关键字进行标识。如果required标识的域没有赋值，Thrift将给予提示；如果optional标识的域没有赋值，该域将不会被序列化传输；如果某个optional标识域有缺省值而用户没有重新赋值，则该域的值一直为缺省值；如果某个optional标识域有缺省值或者用户已经重新赋值，而不设置它的__isset为true，也不会被序列化传输。</p>
+<h3 id="容器containers">容器（Containers）</h3>
+<p>　　Thrift容器与目前流行编程语言的容器类型相对应，有3种可用容器类型：</p>
+<ul>
+<li>list<t>: 元素类型为t的有序表，容许元素重复。对应c++的vector，java的ArrayList或者其他语言的数组（官方文档说是ordered list不知道如何理解？排序的？c++的vector不排序）</li>
+<li>set<t>:元素类型为t的无序表，不容许元素重复。对应c++中的set，java中的HashSet,python中的set，php中没有set，则转换为list类型了</li>
+<li>map&lt;t,t&gt;: 键类型为t，值类型为t的kv对，键不容许重复。对用c++中的map, Java的HashMap, PHP 对应 array, Python/Ruby 的dictionary。</li>
+</ul>
+<p>　　容器中元素类型可以是除了service外的任何合法Thrift类型（包括结构体和异常）。为了最大的兼容性，map的key最好是thrift的基本类型，有些语言不支持复杂类型的key，JSON协议只支持那些基本类型的key。</p>
+<p>容器都是同构容器，不失异构容器。</p>
+<p>例子</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#00a8c8">struct</span> <span style="color:#75af00">Test</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">1</span><span style="color:#111">:</span> <span style="color:#00a8c8">map</span><span style="color:#111">&lt;</span><span style="color:#75af00">Numberz</span><span style="color:#111">,</span> <span style="color:#75af00">UserId</span><span style="color:#111">&gt;</span> <span style="color:#75af00">user_map</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">2</span><span style="color:#111">:</span> <span style="color:#75af00">set</span><span style="color:#111">&lt;</span><span style="color:#75af00">Numberz</span><span style="color:#111">&gt;</span> <span style="color:#75af00">num_sets</span><span style="color:#111">,</span> 
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">3</span><span style="color:#111">:</span> <span style="color:#75af00">list</span><span style="color:#111">&lt;</span><span style="color:#75af00">Stusers</span><span style="color:#111">&gt;</span> <span style="color:#75af00">users</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span></code></pre></div><h3 id="枚举enmu">枚举（enmu）</h3>
+<p>很多语言都有枚举，意义都一样。比如，当定义一个消息类型时，它只能是预定义的值列表中的一个，可以用枚举实现。说明：</p>
+<ul>
+<li>编译器默认从0开始赋值</li>
+<li>可以赋予某个常量某个整数</li>
+<li>允许常量是十六进制整数</li>
+<li>末尾没有分号</li>
+<li>给常量赋缺省值时，使用常量的全称</li>
+</ul>
+<p>　　注意，不同于protocal buffer，thrift不支持枚举类嵌套，枚举常量必须是32位的正整数</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75af00">enum</span> <span style="color:#75af00">EnOpType</span> <span style="color:#111">{</span><span style="color:#75af00">CMD_OK</span> <span style="color:#111">=</span> <span style="color:#ae81ff">0</span><span style="color:#111">,</span> <span style="color:#75715e">// (0)  </span>
+</span></span><span style="display:flex;"><span>               <span style="color:#75af00">CMD_NOT_EXIT</span> <span style="color:#111">=</span> <span style="color:#ae81ff">2000</span><span style="color:#111">,</span> <span style="color:#75715e">// (2000) </span>
+</span></span><span style="display:flex;"><span>               <span style="color:#75af00">CMD_EXIT</span> <span style="color:#111">=</span> <span style="color:#ae81ff">2001</span><span style="color:#111">,</span> <span style="color:#75715e">// (2001) 　　</span>
+</span></span><span style="display:flex;"><span>               <span style="color:#75af00">CMD_ADD</span> <span style="color:#111">=</span> <span style="color:#ae81ff">2002</span> <span style="color:#75715e">// (2002)</span>
+</span></span><span style="display:flex;"><span>              <span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">struct</span> <span style="color:#75af00">StUser</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">1</span><span style="color:#111">:</span> <span style="color:#75af00">required</span> <span style="color:#75af00">i32</span> <span style="color:#75af00">userId</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">2</span><span style="color:#111">:</span> <span style="color:#75af00">required</span> <span style="color:#00a8c8">string</span> <span style="color:#75af00">userName</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">3</span><span style="color:#111">:</span> <span style="color:#75af00">optional</span> <span style="color:#75af00">EnOpType</span> <span style="color:#75af00">cmd_code</span> <span style="color:#111">=</span> <span style="color:#75af00">EnOpType</span><span style="color:#111">.</span><span style="color:#75af00">CMD_OK</span><span style="color:#111">;</span> <span style="color:#75715e">// (0)</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">4</span><span style="color:#111">:</span> <span style="color:#75af00">optional</span> <span style="color:#00a8c8">string</span> <span style="color:#75af00">language</span> <span style="color:#111">=</span> <span style="color:#960050;background-color:#1e0010">“</span><span style="color:#75af00">english</span><span style="color:#960050;background-color:#1e0010">”</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span></code></pre></div><h3 id="常量定义和类型定义">常量定义和类型定义</h3>
+<p>　　Thrift允许定义跨语言使用的常量，复杂的类型和结构体可使用JSON形式表示。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#00a8c8">const</span> <span style="color:#75af00">i32</span> <span style="color:#75af00">INT_CONST</span> <span style="color:#111">=</span> <span style="color:#ae81ff">1234</span><span style="color:#111">;</span> <span style="color:#00a8c8">const</span> <span style="color:#75af00">EnOpType</span> <span style="color:#75af00">myEnOpType</span> <span style="color:#111">=</span> <span style="color:#75af00">EnOpType</span><span style="color:#111">.</span><span style="color:#75af00">CMD_EXIT</span><span style="color:#111">;</span> <span style="color:#75715e">//2001</span>
+</span></span></code></pre></div><p>　说明：分号可有可无。支持16进制。　　</p>
+<p>Thrift支持C/C++类型定义。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75af00">typedef</span> <span style="color:#75af00">i32</span> <span style="color:#75af00">MyInteger</span> <span style="color:#75715e">// a </span>
+</span></span><span style="display:flex;"><span><span style="color:#75af00">typedef</span> <span style="color:#75af00">StUser</span> <span style="color:#75af00">ReU</span> <span style="color:#75715e">// b </span>
+</span></span><span style="display:flex;"><span><span style="color:#75af00">typedef</span> <span style="color:#75af00">i64</span> <span style="color:#75af00">UserId</span>
+</span></span></code></pre></div><p>　说明：a.末尾没有逗号。b. Struct也可以使用typedef。</p>
+<h3 id="异常exceptions">异常（Exceptions）</h3>
+<p>　　Thrift结构体在概念上类似于（similar to）C语言结构体类型—将相关属性封装在一起的简便方式。Thrift结构体将会被转换成面向对象语言的类。</p>
+<p>　　异常在语法和功能上类似于结构体，差别是异常使用关键字exception，而且异常是继承每种语言的基础异常类。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75af00">exception</span> <span style="color:#75af00">Extest</span> <span style="color:#111">{</span> 
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">1</span><span style="color:#111">:</span> <span style="color:#75af00">i32</span> <span style="color:#75af00">errorCode</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">2</span><span style="color:#111">:</span> <span style="color:#00a8c8">string</span> <span style="color:#75af00">message</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">3</span><span style="color:#111">:</span> <span style="color:#75af00">StUser</span> <span style="color:#75af00">userinfo</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span></code></pre></div><h3 id="服务services">服务（Services）</h3>
+<p>　　服务的定义方法在语义(semantically)上等同于面向对象语言中的接口。Thrift编译器会产生执行这些接口的client和server stub。具体参见下一节。</p>
+<p>　　在流行的序列化/反序列化框架（如protocal buffer）中，Thrift是少有的提供多语言间RPC服务的框架。这是Thrift的一大特色。</p>
+<p>　　Thrift编译器会根据选择的目标语言为server产生服务接口代码，为client产生stubs。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75af00">service</span> <span style="color:#75af00">SeTest</span> <span style="color:#111">{</span>   <span style="color:#75af00">void</span> <span style="color:#75af00">ping</span><span style="color:#111">(),</span>   <span style="color:#00a8c8">bool</span> <span style="color:#75af00">postTweet</span><span style="color:#111">(</span><span style="color:#ae81ff">1</span><span style="color:#111">:</span> <span style="color:#75af00">StUser</span> <span style="color:#75af00">user</span><span style="color:#111">);</span>   
+</span></span><span style="display:flex;"><span>    <span style="color:#75af00">StUser</span> <span style="color:#75af00">searchTweets</span><span style="color:#111">(</span><span style="color:#ae81ff">1</span><span style="color:#111">:</span><span style="color:#00a8c8">string</span> <span style="color:#75af00">name</span><span style="color:#111">);</span>  
+</span></span><span style="display:flex;"><span>    <span style="color:#75af00">oneway</span> <span style="color:#75af00">void</span> <span style="color:#75af00">zip</span><span style="color:#111">()</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>　
+</span></span></code></pre></div><ul>
+<li>首先所有的方法都是纯虚汗数，也就是继承类必须实现这些方法</li>
+<li>返回值不是基本类型的都把返回值放到了函数参数中第一个参数，命名_return</li>
+<li>所有的参数（除返回值）都是const类型，意味这函数一般参数无法作为返回值携带者。只会有一个返回参数，如果返回值有多个，那只能封装复杂类型作为返回值参数。</li>
+<li>oneway的返回值一定是void</li>
+<li>当然服务是支持继承。</li>
+<li>服务不支持重载</li>
+</ul>
+<h3 id="名字空间namespace">名字空间（Namespace）</h3>
+<p>Thrift中的命名空间类似于C++中的namespace和java中的package，它们提供了一种组织（隔离）代码的简便方式。名字空间也可以用于解决类型定义中的名字冲突。</p>
+<p>由于每种语言均有自己的命名空间定义方式（如<a href="http://lib.csdn.net/base/python">Python</a>中有module）, thrift允许开发者针对特定语言定义namespace：</p>
+<pre tabindex="0"><code>namespace go com.example.test
+namespace py com.example.test  
+namespace php com.example.test  
+</code></pre><h3 id="注释comment">注释（Comment）</h3>
+<p>　　Thrift支持C多行风格和Java/C++单行风格。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">/* 
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">* This is a multi-line comment. 
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">* Just like in C. 
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">*/</span> 
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// C++/Java style single-line comments work just as well.</span>
+</span></span></code></pre></div><h3 id="11includes">11Includes</h3>
+<p>　　便于管理、重用和提高模块性/组织性，我们常常分割Thrift定义在不同的文件中。包含文件搜索方式与c++一样。Thrift允许文件包含其它thrift文件，用户需要使用thrift文件名作为前缀访问被包含的对象，如：</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75af00">include</span> <span style="color:#d88200">&#34;test.thrift&#34;</span>    
+</span></span><span style="display:flex;"><span><span style="color:#f92672">...</span> 
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">struct</span> <span style="color:#75af00">StSearchResult</span> <span style="color:#111">{</span>    
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">1</span><span style="color:#111">:</span> <span style="color:#75af00">in32</span> <span style="color:#75af00">uid</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">...</span> 
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span></code></pre></div><p>thrift文件名要用双引号包含，末尾没有逗号或者分号</p>
+<h2 id="thrift支持的传输及服务模型">Thrift支持的传输及服务模型</h2>
+<h3 id="支持的传输格式">支持的传输格式：</h3>
+<table>
+  <thead>
+      <tr>
+          <th style="text-align: left">参数:</th>
+          <th>描述:</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: left">TBinaryProtocol</td>
+          <td>二进制格式</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">TCompactProtocol</td>
+          <td>压缩格式</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">TJSONProtocol</td>
+          <td>JSON格式</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">TSimpleJSONProtocol</td>
+          <td>提供JSON只写协议, 生成的文件很容易通过脚本语言解析</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">TDebugProtocol</td>
+          <td>使用易懂的可读的文本格式，以便于debug</td>
+      </tr>
+  </tbody>
+</table>
+<h3 id="支持的数据传输方式">支持的数据传输方式：</h3>
+<table>
+  <thead>
+      <tr>
+          <th>参数:</th>
+          <th>描述:</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>TSocket</td>
+          <td>阻塞式socker</td>
+      </tr>
+      <tr>
+          <td>TFramedTransport</td>
+          <td>以frame为单位进行传输，非阻塞式服务中使用</td>
+      </tr>
+      <tr>
+          <td>TFileTransport</td>
+          <td>以文件形式进行传输</td>
+      </tr>
+      <tr>
+          <td>TMemoryTransport</td>
+          <td>将内存用于I/O. java实现时内部实际使用了简单的ByteArrayOutputStream</td>
+      </tr>
+      <tr>
+          <td>TZlibTransport</td>
+          <td>使用zlib进行压缩， 与其他传输方式联合使用。当前无java实现</td>
+      </tr>
+  </tbody>
+</table>
+<h3 id="支持的服务模型">支持的服务模型：</h3>
+<table>
+  <thead>
+      <tr>
+          <th>参数:</th>
+          <th>描述:</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>TSimpleServer</td>
+          <td>简单的单线程服务模型，常用于测试</td>
+      </tr>
+      <tr>
+          <td>TThreadPoolServer</td>
+          <td>多线程服务模型，使用标准的阻塞式IO</td>
+      </tr>
+      <tr>
+          <td>TNonblockingServer</td>
+          <td>多线程服务模型，使用非阻塞式IO（需使用TFramedTransport数据传输方式）</td>
+      </tr>
+  </tbody>
+</table>
+<h2 id="代码实现">代码实现</h2>
+<h3 id="编写thrift文件">编写*.thrift文件</h3>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75af00">namespace</span> <span style="color:#00a8c8">go</span> <span style="color:#75af00">example</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">struct</span> <span style="color:#75af00">Data</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#ae81ff">1</span><span style="color:#111">:</span> <span style="color:#00a8c8">string</span> <span style="color:#75af00">text</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75af00">service</span> <span style="color:#75af00">format_data</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75af00">Data</span> <span style="color:#75af00">do_format</span><span style="color:#111">(</span><span style="color:#ae81ff">1</span><span style="color:#111">:</span><span style="color:#75af00">Data</span> <span style="color:#75af00">data</span><span style="color:#111">),</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span></code></pre></div><p>解析成go代码:<code>thrift --out . --gen go example.thrift</code></p>
+<p>解析成python代码:<code>thrift --out . --gen py example.thrift</code></p>
+<h3 id="golang服务端">golang服务端</h3>
+<p>服务端的实现:</p>
+<ol>
+<li>Handler
+<ul>
+<li>服务端业务处理逻辑。这里就是业务代码，比如 计算两个字符串 相似度</li>
+</ul>
+</li>
+<li>Processor
+<ul>
+<li>从Thrift框架 转移到 业务处理逻辑。因此是RPC调用，客户端要把 参数发送给服务端，而这一切由Thrift封装起来了，由Processor将收到的“数据”转交给业务逻辑去处理</li>
+</ul>
+</li>
+<li>Protocol
+<ul>
+<li>数据的序列化与反序列化。客户端提供的是“字符串”，而数据传输是一个个的字节，因此会用到序列化与反序列化。</li>
+</ul>
+</li>
+<li>Transport
+<ul>
+<li>传输层的数据传输。</li>
+</ul>
+</li>
+<li>TServer
+<ul>
+<li>服务端的类型。服务器以何种方式来处理客户端请求</li>
+<li>TSimpleServer —— 单线程服务器端使用标准的阻塞式 I/O</li>
+<li>TThreadPoolServer —— 多线程服务器端使用标准的阻塞式 I/O</li>
+<li>TNonblockingServer —— 多线程服务器端使用非阻塞式 I/O</li>
+</ul>
+</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">/* server.go */</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;context&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;fmt&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;log&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;test/example&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;github.com/apache/thrift/lib/go/thrift&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">type</span> <span style="color:#75af00">FormatDataImpl</span> <span style="color:#00a8c8">struct</span><span style="color:#111">{}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#111">(</span><span style="color:#75af00">fdi</span> <span style="color:#f92672">*</span><span style="color:#75af00">FormatDataImpl</span><span style="color:#111">)</span> <span style="color:#75af00">DoFormat</span><span style="color:#111">(</span><span style="color:#75af00">ctx</span> <span style="color:#75af00">context</span><span style="color:#111">.</span><span style="color:#75af00">Context</span><span style="color:#111">)</span> <span style="color:#111">(</span><span style="color:#75af00">r</span> <span style="color:#00a8c8">string</span><span style="color:#111">,</span> <span style="color:#75af00">err</span> <span style="color:#00a8c8">error</span><span style="color:#111">)</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">return</span> <span style="color:#d88200">&#34;不好&#34;</span><span style="color:#111">,</span> <span style="color:#00a8c8">nil</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">const</span> <span style="color:#111">(</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">HOST</span> <span style="color:#111">=</span> <span style="color:#d88200">&#34;127.0.0.1&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">PORT</span> <span style="color:#111">=</span> <span style="color:#d88200">&#34;8080&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#75af00">main</span><span style="color:#111">()</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">handler</span> <span style="color:#f92672">:=</span> <span style="color:#f92672">&amp;</span><span style="color:#75af00">FormatDataImpl</span><span style="color:#111">{}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">processor</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">example</span><span style="color:#111">.</span><span style="color:#75af00">NewFormatDataProcessor</span><span style="color:#111">(</span><span style="color:#75af00">handler</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">serverTransport</span><span style="color:#111">,</span> <span style="color:#75af00">err</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">thrift</span><span style="color:#111">.</span><span style="color:#75af00">NewTServerSocket</span><span style="color:#111">(</span><span style="color:#75af00">HOST</span> <span style="color:#f92672">+</span> <span style="color:#d88200">&#34;:&#34;</span> <span style="color:#f92672">+</span> <span style="color:#75af00">PORT</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">err</span> <span style="color:#f92672">!=</span> <span style="color:#00a8c8">nil</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">log</span><span style="color:#111">.</span><span style="color:#75af00">Fatalln</span><span style="color:#111">(</span><span style="color:#d88200">&#34;Error:&#34;</span><span style="color:#111">,</span> <span style="color:#75af00">err</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">transportFactory</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">thrift</span><span style="color:#111">.</span><span style="color:#75af00">NewTBufferedTransportFactory</span><span style="color:#111">(</span><span style="color:#ae81ff">10000000</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">protocolFactory</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">thrift</span><span style="color:#111">.</span><span style="color:#75af00">NewTBinaryProtocolFactoryDefault</span><span style="color:#111">()</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">server</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">thrift</span><span style="color:#111">.</span><span style="color:#75af00">NewTSimpleServer4</span><span style="color:#111">(</span><span style="color:#75af00">processor</span><span style="color:#111">,</span> <span style="color:#75af00">serverTransport</span><span style="color:#111">,</span> <span style="color:#75af00">transportFactory</span><span style="color:#111">,</span> <span style="color:#75af00">protocolFactory</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">fmt</span><span style="color:#111">.</span><span style="color:#75af00">Println</span><span style="color:#111">(</span><span style="color:#d88200">&#34;Running at:&#34;</span><span style="color:#111">,</span> <span style="color:#75af00">HOST</span><span style="color:#f92672">+</span><span style="color:#d88200">&#34;:&#34;</span><span style="color:#f92672">+</span><span style="color:#75af00">PORT</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">err</span> <span style="color:#111">=</span> <span style="color:#75af00">server</span><span style="color:#111">.</span><span style="color:#75af00">Serve</span><span style="color:#111">()</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">err</span> <span style="color:#f92672">!=</span> <span style="color:#00a8c8">nil</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">log</span><span style="color:#111">.</span><span style="color:#75af00">Fatalln</span><span style="color:#111">(</span><span style="color:#d88200">&#34;Error:&#34;</span><span style="color:#111">,</span> <span style="color:#75af00">err</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span></code></pre></div><h3 id="python服务端">python服务端</h3>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">from</span> <span style="color:#111">thrift.protocol</span> <span style="color:#f92672">import</span> <span style="color:#111">TBinaryProtocol</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> <span style="color:#111">thrift.server</span> <span style="color:#f92672">import</span> <span style="color:#111">TServer</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> <span style="color:#111">thrift.transport</span> <span style="color:#f92672">import</span> <span style="color:#111">TSocket</span><span style="color:#111">,</span> <span style="color:#111">TTransport</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> <span style="color:#111">example</span> <span style="color:#f92672">import</span> <span style="color:#111">format_data</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#111">__HOST</span> <span style="color:#f92672">=</span> <span style="color:#d88200">&#39;127.0.0.1&#39;</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">__PORT</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">8080</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">class</span> <span style="color:#75af00">FormatDataImpl</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">def</span> <span style="color:#75af00">do_format</span><span style="color:#111">(</span><span style="color:#111">self</span><span style="color:#111">):</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#00a8c8">return</span> <span style="color:#d88200">&#34;你好&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">if</span> <span style="color:#111">__name__</span> <span style="color:#f92672">==</span> <span style="color:#d88200">&#39;__main__&#39;</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">handler</span> <span style="color:#f92672">=</span> <span style="color:#111">FormatDataImpl</span><span style="color:#111">()</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">processor</span> <span style="color:#f92672">=</span> <span style="color:#111">format_data</span><span style="color:#f92672">.</span><span style="color:#111">Processor</span><span style="color:#111">(</span><span style="color:#111">handler</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">transport</span> <span style="color:#f92672">=</span> <span style="color:#111">TSocket</span><span style="color:#f92672">.</span><span style="color:#111">TServerSocket</span><span style="color:#111">(</span><span style="color:#d88200">&#39;127.0.0.1&#39;</span><span style="color:#111">,</span> <span style="color:#ae81ff">8080</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">tfactory</span> <span style="color:#f92672">=</span> <span style="color:#111">TTransport</span><span style="color:#f92672">.</span><span style="color:#111">TBufferedTransportFactory</span><span style="color:#111">()</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">pfactory</span> <span style="color:#f92672">=</span> <span style="color:#111">TBinaryProtocol</span><span style="color:#f92672">.</span><span style="color:#111">TBinaryProtocolFactory</span><span style="color:#111">()</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">server</span> <span style="color:#f92672">=</span> <span style="color:#111">TServer</span><span style="color:#f92672">.</span><span style="color:#111">TSimpleServer</span><span style="color:#111">(</span><span style="color:#111">processor</span><span style="color:#111">,</span> <span style="color:#111">transport</span><span style="color:#111">,</span> <span style="color:#111">tfactory</span><span style="color:#111">,</span> <span style="color:#111">pfactory</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">print</span><span style="color:#111">(</span><span style="color:#d88200">&#34;Starting python server...&#34;</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">server</span><span style="color:#f92672">.</span><span style="color:#111">serve</span><span style="color:#111">()</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">print</span><span style="color:#111">(</span><span style="color:#d88200">&#34;done!&#34;</span><span style="color:#111">)</span>
+</span></span></code></pre></div><h3 id="golang客户端">golang客户端</h3>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;context&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;fmt&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;log&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;net&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;test/example&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;github.com/apache/thrift/lib/go/thrift&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">const</span> <span style="color:#111">(</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">HOST</span> <span style="color:#111">=</span> <span style="color:#d88200">&#34;127.0.0.1&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">PORT</span> <span style="color:#111">=</span> <span style="color:#d88200">&#34;8080&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#75af00">main</span><span style="color:#111">()</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">tSocket</span><span style="color:#111">,</span> <span style="color:#75af00">err</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">thrift</span><span style="color:#111">.</span><span style="color:#75af00">NewTSocket</span><span style="color:#111">(</span><span style="color:#75af00">net</span><span style="color:#111">.</span><span style="color:#75af00">JoinHostPort</span><span style="color:#111">(</span><span style="color:#75af00">HOST</span><span style="color:#111">,</span> <span style="color:#75af00">PORT</span><span style="color:#111">))</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">err</span> <span style="color:#f92672">!=</span> <span style="color:#00a8c8">nil</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">log</span><span style="color:#111">.</span><span style="color:#75af00">Fatalln</span><span style="color:#111">(</span><span style="color:#d88200">&#34;tSocket error:&#34;</span><span style="color:#111">,</span> <span style="color:#75af00">err</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">transport</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">thrift</span><span style="color:#111">.</span><span style="color:#75af00">NewTBufferedTransport</span><span style="color:#111">(</span><span style="color:#75af00">tSocket</span><span style="color:#111">,</span><span style="color:#ae81ff">10000000</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// transport, err := transportFactory.Gwt(tSocket)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// if err != nil {</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 	log.Fatalln(&#34;GetTransport error:&#34;, err)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// }</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">protocolFactory</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">thrift</span><span style="color:#111">.</span><span style="color:#75af00">NewTBinaryProtocolFactoryDefault</span><span style="color:#111">()</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">client</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">example</span><span style="color:#111">.</span><span style="color:#75af00">NewFormatDataClientFactory</span><span style="color:#111">(</span><span style="color:#75af00">transport</span><span style="color:#111">,</span> <span style="color:#75af00">protocolFactory</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">err</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">transport</span><span style="color:#111">.</span><span style="color:#75af00">Open</span><span style="color:#111">();</span> <span style="color:#75af00">err</span> <span style="color:#f92672">!=</span> <span style="color:#00a8c8">nil</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">log</span><span style="color:#111">.</span><span style="color:#75af00">Fatalln</span><span style="color:#111">(</span><span style="color:#d88200">&#34;Error opening:&#34;</span><span style="color:#111">,</span> <span style="color:#75af00">HOST</span><span style="color:#f92672">+</span><span style="color:#d88200">&#34;:&#34;</span><span style="color:#f92672">+</span><span style="color:#75af00">PORT</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">defer</span> <span style="color:#75af00">transport</span><span style="color:#111">.</span><span style="color:#75af00">Close</span><span style="color:#111">()</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// data := example.Data{Text: &#34;hello,world!as赵海宇&#34;}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">d</span><span style="color:#111">,</span> <span style="color:#75af00">err</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">client</span><span style="color:#111">.</span><span style="color:#75af00">DoFormat</span><span style="color:#111">(</span><span style="color:#75af00">context</span><span style="color:#111">.</span><span style="color:#75af00">TODO</span><span style="color:#111">()</span> <span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">fmt</span><span style="color:#111">.</span><span style="color:#75af00">Println</span><span style="color:#111">(</span><span style="color:#75af00">d</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span></code></pre></div><p>5.python客户端</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">from</span> <span style="color:#111">example</span> <span style="color:#f92672">import</span> <span style="color:#111">format_data</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> <span style="color:#111">thrift</span> <span style="color:#f92672">import</span> <span style="color:#111">Thrift</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> <span style="color:#111">thrift.transport</span> <span style="color:#f92672">import</span> <span style="color:#111">TSocket</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> <span style="color:#111">thrift.transport</span> <span style="color:#f92672">import</span> <span style="color:#111">TTransport</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> <span style="color:#111">thrift.protocol</span> <span style="color:#f92672">import</span> <span style="color:#111">TBinaryProtocol</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">try</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Make socket</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">transport</span> <span style="color:#f92672">=</span> <span style="color:#111">TSocket</span><span style="color:#f92672">.</span><span style="color:#111">TSocket</span><span style="color:#111">(</span><span style="color:#d88200">&#39;127.0.0.1&#39;</span><span style="color:#111">,</span> <span style="color:#ae81ff">8080</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Buffering is critical. Raw sockets are very slow</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">transport</span> <span style="color:#f92672">=</span> <span style="color:#111">TTransport</span><span style="color:#f92672">.</span><span style="color:#111">TBufferedTransport</span><span style="color:#111">(</span><span style="color:#111">transport</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Wrap in a protocol</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">protocol</span> <span style="color:#f92672">=</span> <span style="color:#111">TBinaryProtocol</span><span style="color:#f92672">.</span><span style="color:#111">TBinaryProtocol</span><span style="color:#111">(</span><span style="color:#111">transport</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Create a client to use the protocol encoder</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">client</span> <span style="color:#f92672">=</span> <span style="color:#111">format_data</span><span style="color:#f92672">.</span><span style="color:#111">Client</span><span style="color:#111">(</span><span style="color:#111">protocol</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Connect!</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">transport</span><span style="color:#f92672">.</span><span style="color:#111">open</span><span style="color:#111">()</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># data = format_data.Data(text=&#34;sada&#34;)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">d</span> <span style="color:#f92672">=</span> <span style="color:#111">client</span><span style="color:#f92672">.</span><span style="color:#111">do_format</span><span style="color:#111">()</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">print</span><span style="color:#111">(</span><span style="color:#111">d</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">transport</span><span style="color:#f92672">.</span><span style="color:#111">close</span><span style="color:#111">()</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">except</span> <span style="color:#111">Thrift</span><span style="color:#f92672">.</span><span style="color:#111">TException</span> <span style="color:#00a8c8">as</span> <span style="color:#111">tx</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">print</span><span style="color:#111">(</span><span style="color:#111">tx</span><span style="color:#f92672">.</span><span style="color:#111">message</span><span style="color:#111">)</span>
+</span></span></code></pre></div><h2 id="常见的坑">常见的坑</h2>
+<ol>
+<li>golang中倒入包路径有<code>github.com/apache/thrift/lib/go/thrift</code>和<code>git.apache.org/thrift.git/lib/go/thrift</code> 要统一用一个,不然会出问题</li>
+<li>golang中 thrift的新版实现的结构体多一个<code>ctx context.Context</code>参数.(老版本没有,网上很多的demo代码用新版的thrift会报错)</li>
+<li>客户端以及服务端对应好传输及服务模型协议,不同会报错.</li>
+</ol>
+<p>参考文章:</p>
+<ul>
+<li><a href="https://www.cnblogs.com/hapjin/p/8075721.html">https://www.cnblogs.com/hapjin/p/8075721.html</a></li>
+<li><a href="https://blog.csdn.net/houjixin/article/details/42778335">https://blog.csdn.net/houjixin/article/details/42778335</a></li>
+<li><a href="https://www.jianshu.com/p/4723ce380b0e">https://www.jianshu.com/p/4723ce380b0e</a></li>
+</ul>
+]]></content:encoded><category>microservice</category><category>thrift</category><category>go</category></item></channel></rss>

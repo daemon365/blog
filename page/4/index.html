@@ -1,452 +1,87 @@
-<!doctype html><html lang=zh-CN data-theme=light><head><meta charset=UTF-8><meta name=viewport content="width=device-width"><meta name=theme-color content="#222" media="(prefers-color-scheme: light)"><meta name=generator content="Hugo 0.140.1"><link rel="shortcut icon" type=image/x-icon href=/imgs/icons/favicon.ico><link rel=icon type=image/x-icon href=/imgs/icons/favicon.ico><link rel=icon type=image/png sizes=16x16 href=/imgs/icons/favicon.ico><link rel=icon type=image/png sizes=32x32 href=/imgs/icons/favicon.ico><link rel=apple-touch-icon sizes=180x180 href=/imgs/icons/favicon.ico><meta itemprop=name content="Daemon"><meta itemprop=description content="Don't let yourself stop."><meta name=description content="Don't let yourself stop."><meta itemprop=image content="https://daemon365.dev/imgs/daemon365.png"><meta itemprop=keywords content="Go, Golang, Linux, Docker, Kubernetes, DevOps, Cloud Native, Open Source, Daemon365"><meta property="og:type" content="website"><meta property="og:title" content="Daemon"><meta property="og:description" content="Don't let yourself stop."><meta property="og:image" content="/imgs/daemon365.png"><meta property="og:image:width" content="312"><meta property="og:image:height" content="312"><meta property="og:image:type" content="image/jpeg/png/svg/jpg"><meta property="og:url" content="https://daemon365.dev/"><meta property="og:site_name" content="Daemon"><meta property="og:locale" content="zh-CN"><link type=text/css rel=stylesheet href=https://daemon365.dev/3rd/font-awesome/6.6.0/css/all.min.css><link type=text/css rel=stylesheet href=https://daemon365.dev/3rd/animate.css/4.1.1/animate.min.css><link type=text/css rel=stylesheet href=https://daemon365.dev/3rd/viewerjs/1.11.6/viewer.min.css><link rel=stylesheet href=/css/main.min.5ec1f63635756d664e619fe2d87a11c7394f519beff240c124743433c9861792.css><script type=text/javascript>(function(){localDB={set:function(e,t,n){if(n===0)return;const s=new Date,o=n*864e5,i={value:t,expiry:s.getTime()+o};localStorage.setItem(e,JSON.stringify(i))},get:function(e){const t=localStorage.getItem(e);if(!t)return void 0;const n=JSON.parse(t),s=new Date;return s.getTime()>n.expiry?(localStorage.removeItem(e),void 0):n.value}},theme={active:function(){const e=localDB.get("theme");if(e==null)return;theme.toggle(e),window.matchMedia("(prefers-color-scheme: dark)").addListener(function(e){theme.toggle(e.matches?"dark":"light")})},toggle:function(e){document.documentElement.setAttribute("data-theme",e),localDB.set("theme",e,2);const t=document.querySelector("iframe.giscus-frame");if(t){const n={setConfig:{theme:e}};t.contentWindow.postMessage({giscus:n},"https://giscus.app")}}},theme.active()})(window)</script><script class=next-config data-name=page type=application/json>{"comments":true,"isHome":true,"isPage":false,"path":"daemon365.dev","permalink":"https://daemon365.dev/","title":"Daemon","waline":{"js":[{"alias":"@waline/client","alias_name":"waline","file":"dist/pageview.js","name":"pageview","version":"2.15.8"},{"alias":"@waline/client","alias_name":"waline","file":"dist/comment.js","name":"comment","version":"2.15.8"}]}}</script><script type=text/javascript>document.addEventListener("DOMContentLoaded",()=>{var e=document.createElement("script");e.charset="UTF-8",e.id="LA_COLLECT",e.src="https://sdk.51.la/js-sdk-pro.min.js",e.async="true",e.onload=function(){LA.init({id:"JmAHxEAUVgyS8B1c",ck:"JmAHxEAUVgyS8B1c",autoTrack:!0})},document.head.appendChild(e)})</script><script type=text/javascript>document.addEventListener("DOMContentLoaded",()=>{var e=document.createElement("script");e.charset="UTF-8",e.src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js",e.async=!1,e.defer=!0,document.head.appendChild(e),e.onload=function(){NexT.utils.fmtBusuanzi()}})</script><title>Daemon</title><noscript><link rel=stylesheet href=/css/noscript.css></noscript></head><body itemscope itemtype=http://schema.org/WebPage><div class=headband></div><main class=main><header class=header itemscope itemtype=http://schema.org/WPHeader><div class=header-inner><div class=site-brand-container><div class=site-nav-toggle><div class=toggle aria-label role=button><span class=toggle-line></span>
-<span class=toggle-line></span>
-<span class=toggle-line></span></div></div><div class=site-meta><a href=/ class=brand rel=start><i class=logo-line></i><h1 class=site-title>Daemon</h1><i class=logo-line></i></a><p class=site-subtitle itemprop=description>Don't let yourself stop.</p></div><div class=site-nav-right><div class="toggle popup-trigger"><i class="fa fa-search fa-fw fa-lg"></i></div></div></div><nav class=site-nav><ul class="main-menu menu"><li class="menu-item menu-item-home"><a href=/ class="hvr-icon-pulse menu-item-active" rel=section><i class="fa fa-home hvr-icon"></i>Home</a></li><li class="menu-item menu-item-about"><a href=/about/ class=hvr-icon-pulse rel=section><i class="fa fa-user hvr-icon"></i>About</a></li><li class="menu-item menu-item-archives"><a href=/archives/ class=hvr-icon-pulse rel=section><i class="fa fa-archive hvr-icon"></i>Archives</a></li><li class="menu-item menu-item-commonweal"><a href=/404.html class=hvr-icon-pulse rel=section><i class="fa fa-heartbeat hvr-icon"></i>Commonweal</a></li><li class="menu-item menu-item-search"><a role=button class="popup-trigger hvr-icon-pulse"><i class="fa fa-search fa-fw hvr-icon"></i>搜索</a></li></ul></nav><div class=search-pop-overlay><div class="popup search-popup"><div class=search-header><span class=search-icon><i class="fa fa-search"></i></span><div class=search-input-container><input autocomplete=off autocapitalize=off maxlength=80 placeholder=搜索... spellcheck=false type=search class=search-input></div><span class=popup-btn-close role=button><i class="fa fa-times-circle"></i></span></div><div class="search-result-container no-result"><div class=search-result-icon><i class="fa fa-spinner fa-pulse fa-5x"></i></div></div></div></div></div><div class="toggle sidebar-toggle" role=button><span class=toggle-line></span>
-<span class=toggle-line></span>
-<span class=toggle-line></span></div><aside class=sidebar><div class="sidebar-inner sidebar-overview-active"><ul class=sidebar-nav><li class=sidebar-nav-toc>文章目录</li><li class=sidebar-nav-overview>站点概览</li></ul><div class=sidebar-panel-container><div class="post-toc-wrap sidebar-panel"><div class="post-toc animated"><nav id=TableOfContents></nav></div></div><div class="site-overview-wrap sidebar-panel"><div class="site-author site-overview-item animated" itemprop=author itemscope itemtype=http://schema.org/Person><img class=site-author-image itemprop=image alt=daemon365 src=/imgs/img-lazy-loading.gif data-src=/imgs/daemon365.png><p class=site-author-name itemprop=name>daemon365</p><div class=site-description itemprop=description>Don't let yourself stop.</div></div><div class="site-state-wrap site-overview-item animated"><nav class=site-state><div class="site-state-item site-state-posts"><a href=/archives/><span class=site-state-item-count>97</span>
-<span class=site-state-item-name>日志</span></a></div><div class="site-state-item site-state-categories"><a href=/categories/><span class=site-state-item-count>7</span>
-<span class=site-state-item-name>分类</span></a></div><div class="site-state-item site-state-tags"><a href=/tags/><span class=site-state-item-count>52</span>
-<span class=site-state-item-name>标签</span></a></div></nav></div><div class="links-of-social site-overview-item animated"><span class=links-of-social-item><a href=https://github.com/daemon365 title="Github → https://github.com/daemon365" rel=noopener target=_blank><i class="fab fa-github fa-fw"></i>
-Github</a></span></div><div class="cc-license animated" itemprop=license><a href=https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh class=cc-opacity rel=noopener target=_blank title=共享知识><img src=/imgs/img-lazy-loading.gif data-src=/imgs/cc/big/by_nc_sa.svg alt=共享知识></a></div><div class="links-of-blogroll site-overview-item animated"><div class=links-of-blogroll-title><i class="fa fa-globe fa-fw"></i>
-友情链接</div><ul class=links-of-blogroll-list><li class=links-of-blogroll-item><a href=https://go-kratos.dev title=https://go-kratos.dev target=_blank>kratos</a></li></ul></div></div></div></div></aside><div class=sidebar-dimmer></div></header><div class=tool-buttons><div id=goto-comments class="button goto-comments" title=直达评论><i class="fas fa-comments"></i></div><div id=toggle-theme class=button title=深浅模式切换><i class="fas fa-adjust"></i></div><div class=back-to-top role=button title=返回顶部><i class="fa fa-arrow-up"></i>
-<span>0%</span></div></div><div class=reading-progress-bar></div><script type=text/javascript src=//sidecar.gitter.im/dist/sidecar.v1.js async></script><script type=text/javascript>((window.gitter={}).chat={}).options={room:"hugo-next/community"}</script><noscript><div class=noscript-warning>Theme NexT works best with JavaScript enabled</div></noscript><div class="main-inner index posts-expand"><div class=post-block><article itemscope itemtype=http://schema.org/Article class=post-content lang><link itemprop=mainEntityOfPage href=https://daemon365.dev/post/go/go_command_line_tool_cobra/><span hidden itemprop=author itemscope itemtype=http://schema.org/Person><meta itemprop=image content="/imgs/daemon365.png"><meta itemprop=name content="daemon365"></span><span hidden itemprop=publisher itemscope itemtype=http://schema.org/Organization><meta itemprop=name content="daemon365"><meta itemprop=description content="Don't let yourself stop."></span><span hidden itemprop=post itemscope itemtype=http://schema.org/CreativeWork><meta itemprop=name content="Go命令行工具cobra"><meta itemprop=description content="关于
-
-Cobra 是 Go 的 CLI 框架。它包含一个用于创建功能强大的现代 CLI 应用程序的库，以及一个用于快速生成基于 Cobra 的应用程序和命令文件的工具。
-Cobra 由 Go 项目成员和 hugo 作者 
-
-    spf13
-    
-    
-    
- 创建，已经被许多流行的 Go 项目采用，比如 kubernetes、docker等"></span><header class=post-header><h2 class=post-title itemprop="name headline"><a href=/post/go/go_command_line_tool_cobra/ itemprop=url class=post-title-link>Go命令行工具cobra</a></h2><div class=post-meta-container><div class=post-meta-items><span class=post-meta-item><span class=post-meta-item-icon><i class="fas fa-solid fa-calendar"></i>
-</span><span class=post-meta-item-text title=发表于>发表于：
-</span><time title="创建时间：2022-12-21 00:00:00 +0800 +0800" itemprop="dateCreated datePublished" datetime="2022-12-21 00:00:00 +0800 +0800">2022-12-21
-</time></span><span class=post-meta-item><span class=post-meta-item-icon><i class="fas fa-solid fa-folder-open"></i>
-</span><span class=post-meta-item-text title=分类于>分类于：
-</span><span itemprop=about itemscope itemtype=http://schema.org/Thing><a href=/categories/go itemprop=url rel=index><span itemprop=name>go</span></a></span></span></div></div></header><div class=post-body itemprop=articleBody><h2 id=关于>关于
-<a class=header-anchor href=#%e5%85%b3%e4%ba%8e></a></h2><p>Cobra 是 Go 的 CLI 框架。它包含一个用于创建功能强大的现代 CLI 应用程序的库，以及一个用于快速生成基于 Cobra 的应用程序和命令文件的工具。</p><p>Cobra 由 Go 项目成员和 hugo 作者
-<a href=https://github.com/spf13 title=spf13 rel="noopener external nofollow noreferrer" target=_blank class=exturl>spf13
-<i class="fa fa-external-link-alt"></i>
-</a>创建，已经被许多流行的 Go 项目采用，比如 kubernetes、docker等</p></div><footer class=post-footer><div class=post-button><a class=btn href=/post/go/go_command_line_tool_cobra/#more rel=contents>阅读全文 &#187;</a></div><div class=post-eof></div></footer></article></div><div class=post-block><article itemscope itemtype=http://schema.org/Article class=post-content lang><link itemprop=mainEntityOfPage href=https://daemon365.dev/post/others/lua_basics/><span hidden itemprop=author itemscope itemtype=http://schema.org/Person><meta itemprop=image content="/imgs/daemon365.png"><meta itemprop=name content="daemon365"></span><span hidden itemprop=publisher itemscope itemtype=http://schema.org/Organization><meta itemprop=name content="daemon365"><meta itemprop=description content="Don't let yourself stop."></span><span hidden itemprop=post itemscope itemtype=http://schema.org/CreativeWork><meta itemprop=name content="lua基础"><meta itemprop=description content="什么是lua
-
-
-
-    Lua
-    
-    
-    
-是一个小巧的
-
-    脚本语言
-    
-    
-    
-。它是
-
-    巴西
-    
-    
-    
-
-
-    里约热内卢天主教大学
-    
-    
-    
-（Pontifical Catholic University of Rio de Janeiro）里的一个由Roberto Ierusalimschy、Waldemar Celes 和 Luiz Henrique de Figueiredo三人所组成的研究小组于1993年开发的。 其设计目的是为了通过灵活嵌入应用程序中从而为应用程序提供灵活的扩展和定制功能。Lua由标准C编写而成，几乎在所有操作系统和平台上都可以编译，运行。Lua并没有提供强大的库，这是由它的定位决定的。所以Lua不适合作为开发独立应用程序的语言。Lua 有一个同时进行的JIT项目，提供在特定平台上的即时编译功能。"></span><header class=post-header><h2 class=post-title itemprop="name headline"><a href=/post/others/lua_basics/ itemprop=url class=post-title-link>lua基础</a></h2><div class=post-meta-container><div class=post-meta-items><span class=post-meta-item><span class=post-meta-item-icon><i class="fas fa-solid fa-calendar"></i>
-</span><span class=post-meta-item-text title=发表于>发表于：
-</span><time title="创建时间：2022-10-25 00:00:00 +0800 +0800" itemprop="dateCreated datePublished" datetime="2022-10-25 00:00:00 +0800 +0800">2022-10-25
-</time></span><span class=post-meta-item><span class=post-meta-item-icon><i class="fas fa-solid fa-folder-open"></i>
-</span><span class=post-meta-item-text title=分类于>分类于：
-</span><span itemprop=about itemscope itemtype=http://schema.org/Thing><a href=/categories/others itemprop=url rel=index><span itemprop=name>others</span></a></span></span></div></div></header><div class=post-body itemprop=articleBody><h2 id=什么是lua>什么是lua
-<a class=header-anchor href=#%e4%bb%80%e4%b9%88%e6%98%aflua></a></h2><p><a href=https://www.lua.org/ title=Lua rel="noopener external nofollow noreferrer" target=_blank class=exturl>Lua
-<i class="fa fa-external-link-alt"></i>
-</a>是一个小巧的
-<a href=https://baike.baidu.com/item/%e8%84%9a%e6%9c%ac%e8%af%ad%e8%a8%80 title=脚本语言 rel="noopener external nofollow noreferrer" target=_blank class=exturl>脚本语言
-<i class="fa fa-external-link-alt"></i>
-</a>。它是
-<a href=https://baike.baidu.com/item/%e5%b7%b4%e8%a5%bf/5422 title=巴西 rel="noopener external nofollow noreferrer" target=_blank class=exturl>巴西
-<i class="fa fa-external-link-alt"></i>
-</a><a href=https://baike.baidu.com/item/%e9%87%8c%e7%ba%a6%e7%83%ad%e5%86%85%e5%8d%a2%e5%a4%a9%e4%b8%bb%e6%95%99%e5%a4%a7%e5%ad%a6/1050607 title=里约热内卢天主教大学 rel="noopener external nofollow noreferrer" target=_blank class=exturl>里约热内卢天主教大学
-<i class="fa fa-external-link-alt"></i>
-</a>（Pontifical Catholic University of Rio de Janeiro）里的一个由Roberto Ierusalimschy、Waldemar Celes 和 Luiz Henrique de Figueiredo三人所组成的研究小组于1993年开发的。 其设计目的是为了通过灵活嵌入应用程序中从而为应用程序提供灵活的扩展和定制功能。Lua由标准C编写而成，几乎在所有操作系统和平台上都可以编译，运行。Lua并没有提供强大的库，这是由它的定位决定的。所以Lua不适合作为开发独立应用程序的语言。Lua 有一个同时进行的JIT项目，提供在特定平台上的即时编译功能。</p></div><footer class=post-footer><div class=post-button><a class=btn href=/post/others/lua_basics/#more rel=contents>阅读全文 &#187;</a></div><div class=post-eof></div></footer></article></div><div class=post-block><article itemscope itemtype=http://schema.org/Article class=post-content lang><link itemprop=mainEntityOfPage href=https://daemon365.dev/post/cloud/kubernetes_cluster_latest_version_installation/><span hidden itemprop=author itemscope itemtype=http://schema.org/Person><meta itemprop=image content="/imgs/daemon365.png"><meta itemprop=name content="daemon365"></span><span hidden itemprop=publisher itemscope itemtype=http://schema.org/Organization><meta itemprop=name content="daemon365"><meta itemprop=description content="Don't let yourself stop."></span><span hidden itemprop=post itemscope itemtype=http://schema.org/CreativeWork><meta itemprop=name content="kubernetes集群最新版安装"><meta itemprop=description content="原文地址：https://haiyux.cc/2022/09/21/k8s-install/
-
-虚拟机准备
-
-我这里准备了三台虚拟机，分别部署一个master和两个node，操作系统位ubuntu 20.04。以下为特殊说明为三台机器都要做此操作
-安装容器runtime
-
-之前，我们用的容器runtime基本都是docker，但是docker并没有实现k8s的CRI，是在kubelet的有一个组件叫docker-shim做转化，在kubernetes v1.24版本以上这个组件已经废弃，这里选择containerd做容器runtime。当然，containerd是可以使用docker的镜像的。如果非要使用docker的话，被kubernetes废弃的docker-shim被docker自己维护起来了，可以试试看。但是不建议纯纯的浪费资源。"></span><header class=post-header><h2 class=post-title itemprop="name headline"><a href=/post/cloud/kubernetes_cluster_latest_version_installation/ itemprop=url class=post-title-link>kubernetes集群最新版安装</a></h2><div class=post-meta-container><div class=post-meta-items><span class=post-meta-item><span class=post-meta-item-icon><i class="fas fa-solid fa-calendar"></i>
-</span><span class=post-meta-item-text title=发表于>发表于：
-</span><time title="创建时间：2022-09-22 00:00:00 +0800 +0800" itemprop="dateCreated datePublished" datetime="2022-09-22 00:00:00 +0800 +0800">2022-09-22
-</time></span><span class=post-meta-item><span class=post-meta-item-icon><i class="fas fa-solid fa-folder-open"></i>
-</span><span class=post-meta-item-text title=分类于>分类于：
-</span><span itemprop=about itemscope itemtype=http://schema.org/Thing><a href=/categories/cloud itemprop=url rel=index><span itemprop=name>cloud</span></a></span></span></div></div></header><div class=post-body itemprop=articleBody><h2 id=原文地址httpshaiyuxcc20220921k8s-install>原文地址：https://haiyux.cc/2022/09/21/k8s-install/
-<a class=header-anchor href=#%e5%8e%9f%e6%96%87%e5%9c%b0%e5%9d%80httpshaiyuxcc20220921k8s-install></a></h2><h2 id=虚拟机准备>虚拟机准备
-<a class=header-anchor href=#%e8%99%9a%e6%8b%9f%e6%9c%ba%e5%87%86%e5%a4%87></a></h2><p>我这里准备了三台虚拟机，分别部署一个master和两个node，操作系统位ubuntu 20.04。<strong>以下为特殊说明为三台机器都要做此操作</strong></p><h2 id=安装容器runtime>安装容器runtime
-<a class=header-anchor href=#%e5%ae%89%e8%a3%85%e5%ae%b9%e5%99%a8runtime></a></h2><p>之前，我们用的容器runtime基本都是docker，但是docker并没有实现k8s的CRI，是在kubelet的有一个组件叫docker-shim做转化，在kubernetes v1.24版本以上这个组件已经废弃，这里选择containerd做容器runtime。当然，containerd是可以使用docker的镜像的。如果非要使用docker的话，被kubernetes废弃的docker-shim被docker自己维护起来了，可以试试看。但是不建议纯纯的浪费资源。</p></div><footer class=post-footer><div class=post-button><a class=btn href=/post/cloud/kubernetes_cluster_latest_version_installation/#more rel=contents>阅读全文 &#187;</a></div><div class=post-eof></div></footer></article></div><div class=post-block><article itemscope itemtype=http://schema.org/Article class=post-content lang><link itemprop=mainEntityOfPage href=https://daemon365.dev/post/database/redis_publish_subscribe/><span hidden itemprop=author itemscope itemtype=http://schema.org/Person><meta itemprop=image content="/imgs/daemon365.png"><meta itemprop=name content="daemon365"></span><span hidden itemprop=publisher itemscope itemtype=http://schema.org/Organization><meta itemprop=name content="daemon365"><meta itemprop=description content="Don't let yourself stop."></span><span hidden itemprop=post itemscope itemtype=http://schema.org/CreativeWork><meta itemprop=name content="redis发布订阅"><meta itemprop=description content="什么是发布和订阅
-
-Redis 发布订阅 (pub/sub) 是一种消息通信模式：发送者 (pub) 发送消息，订阅者 (sub) 接收消息。
+<!doctype html><html lang=en><head><meta name=generator content="Hugo 0.152.2"><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Daemon365</title><link rel=icon href=/imgs/favicon.ico><link rel=manifest href=/manifest.json><meta name=theme-color content="#007aff"><meta name=mobile-web-app-capable content="yes"><meta name=apple-mobile-web-app-capable content="yes"><meta name=apple-mobile-web-app-status-bar-style content="default"><meta name=apple-mobile-web-app-title content="Daemon365"><link rel=alternate type=application/rss+xml title=Daemon365 href=https://daemon365.dev/index.xml><meta name=description content="Don't let yourself stop."><meta name=keywords content="[Go Golang Linux Docker Kubernetes DevOps Cloud Native Open Source Daemon365]"><meta name=author content="daemon365"><meta property="og:type" content="website"><meta property="og:url" content="https://daemon365.dev/"><meta property="og:title" content="Daemon365"><meta property="og:description" content="Don't let yourself stop."><meta property="og:image" content="https://daemon365.dev/imgs/avatar.svg"><meta property="og:locale" content="en"><meta property="og:site_name" content="Daemon365"><meta name=twitter:card content="summary_large_image"><meta name=twitter:url content="https://daemon365.dev/"><meta name=twitter:title content="Daemon365"><meta name=twitter:description content="Don't let yourself stop."><meta name=twitter:image content="https://daemon365.dev/imgs/avatar.svg"><link rel=canonical href=https://daemon365.dev/><link rel=alternate type=application/rss+xml title=Daemon365 href=https://daemon365.dev/index.xml><script type=application/ld+json>{"@context":"https://schema.org","@type":"WebSite","name":"Daemon365","url":"https:\/\/daemon365.dev\/","description":"Don\u0027t let yourself stop.","publisher":{"@type":"Organization","name":"Daemon365"},"inLanguage":"en"}</script><meta name=robots content="index, follow"><meta name=googlebot content="index, follow"><link rel=stylesheet href=/css/components/variables.css><link rel=stylesheet href=/css/components/base.css><link rel=stylesheet href=/css/components/layout.css><link rel=stylesheet href=/css/main.css><link rel=stylesheet href=/css/components/search.css><link rel=stylesheet href=/css/components/toc.css><link rel=stylesheet href=/css/components/image-preview.css><link rel=stylesheet href=/css/components/reading-progress.css><style>:root{font-family:-apple-system,BlinkMacSystemFont,segoe ui,Roboto,helvetica neue,Arial,sans-serif}</style></head><body><div class=reading-progress-bar></div><header class=site-header><div class=container><div class=header-content><div class=site-branding><a href=/ class=site-logo><span class=site-title>Daemon365</span></a></div><nav class=site-nav><ul class=nav-menu><li><a href=/ class=active><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+Home</a></li><li><a href=/about><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+About</a></li><li><a href=/archives><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+Archives</a></li><li><a href=/categories><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+Categories</a></li><li><a href=/tags><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83.0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+Tags</a></li><li><button class=search-trigger aria-label=Search>
+<svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+Search</button></li></ul></nav></div></div></header><main class=main-content><div class=home-container><div class=container><section class=recent-posts><div class=posts-list><article class=post-card><div class=post-card-content><h3 class=post-title><a href=/post/go/go_command_line_tool_cobra/>Go命令行工具cobra</a></h3><div class=post-meta><time datetime=2022-12-21><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+2022-12-21
+</time><span class=post-category><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+go
+</span><span class=reading-time><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+2 min read</span></div><p class=post-summary>关于 Cobra 是 Go 的 CLI 框架。它包含一个用于创建功能强大的现代 CLI 应用程序的库，以及一个用于快速生成基于 Cobra 的应用程序和命令文件的工具。
+Cobra 由 Go 项目成员和 hugo 作者 spf13 创建，已经被许多流行的 Go 项目采用，比如 …</p><div class=post-tags><a href=/tags/go class=tag>go</a></div></div></article><article class=post-card><div class=post-card-content><h3 class=post-title><a href=/post/others/lua_basics/>lua基础</a></h3><div class=post-meta><time datetime=2022-10-25><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+2022-10-25
+</time><span class=post-category><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+others
+</span><span class=reading-time><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+3 min read</span></div><p class=post-summary>什么是lua Lua是一个小巧的脚本语言。它是巴西里约热内卢天主教大学（Pontifical Catholic University of Rio de Janeiro）里的一个由Roberto Ierusalimschy、Waldemar Celes 和 Luiz Henrique de …</p><div class=post-tags><a href=/tags/lua class=tag>lua</a></div></div></article><article class=post-card><div class=post-card-content><h3 class=post-title><a href=/post/cloud/kubernetes_cluster_latest_version_installation/>kubernetes集群最新版安装</a></h3><div class=post-meta><time datetime=2022-09-22><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+2022-09-22
+</time><span class=post-category><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+cloud
+</span><span class=reading-time><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+4 min read</span></div><p class=post-summary>原文地址：https://haiyux.cc/2022/09/21/k8s-install/ 虚拟机准备 我这里准备了三台虚拟机，分别部署一个master和两个node，操作系统位ubuntu 20.04。以下为特殊说明为三台机器都要做此操作
+安装容器runtime 之前，我们用的容器runtime …</p><div class=post-tags><a href=/tags/kubernetes class=tag>kubernetes</a></div></div></article><article class=post-card><div class=post-card-content><h3 class=post-title><a href=/post/database/redis_publish_subscribe/>redis发布订阅</a></h3><div class=post-meta><time datetime=2022-08-20><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+2022-08-20
+</time><span class=post-category><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+database
+</span><span class=reading-time><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+1 min read</span></div><p class=post-summary>什么是发布和订阅 Redis 发布订阅 (pub/sub) 是一种消息通信模式：发送者 (pub) 发送消息，订阅者 (sub) 接收消息。
 Redis 客户端可以订阅任意数量的频道。
-发布和订阅
-
-1、客户端可以订阅频道如下图
-
-2、当给这个频道发布消息后，消息就会发送给订阅的客户端"></span><header class=post-header><h2 class=post-title itemprop="name headline"><a href=/post/database/redis_publish_subscribe/ itemprop=url class=post-title-link>redis发布订阅</a></h2><div class=post-meta-container><div class=post-meta-items><span class=post-meta-item><span class=post-meta-item-icon><i class="fas fa-solid fa-calendar"></i>
-</span><span class=post-meta-item-text title=发表于>发表于：
-</span><time title="创建时间：2022-08-20 00:00:00 +0800 +0800" itemprop="dateCreated datePublished" datetime="2022-08-20 00:00:00 +0800 +0800">2022-08-20
-</time></span><span class=post-meta-item><span class=post-meta-item-icon><i class="fas fa-solid fa-folder-open"></i>
-</span><span class=post-meta-item-text title=分类于>分类于：
-</span><span itemprop=about itemscope itemtype=http://schema.org/Thing><a href=/categories/database itemprop=url rel=index><span itemprop=name>database</span></a></span></span></div></div></header><div class=post-body itemprop=articleBody><h2 id=什么是发布和订阅>什么是发布和订阅
-<a class=header-anchor href=#%e4%bb%80%e4%b9%88%e6%98%af%e5%8f%91%e5%b8%83%e5%92%8c%e8%ae%a2%e9%98%85></a></h2><p>Redis 发布订阅 (pub/sub) 是一种消息通信模式：发送者 (pub) 发送消息，订阅者 (sub) 接收消息。</p><p>Redis 客户端可以订阅任意数量的频道。</p><h2 id=发布和订阅>发布和订阅
-<a class=header-anchor href=#%e5%8f%91%e5%b8%83%e5%92%8c%e8%ae%a2%e9%98%85></a></h2><p>1、客户端可以订阅频道如下图</p><p><img src=/imgs/img-lazy-loading.gif data-src=/images/96a0c4ca-666f-475e-8dd0-bfbd37f4dbb6.png alt></p><p>2、当给这个频道发布消息后，消息就会发送给订阅的客户端</p></div><footer class=post-footer><div class=post-button><a class=btn href=/post/database/redis_publish_subscribe/#more rel=contents>阅读全文 &#187;</a></div><div class=post-eof></div></footer></article></div><div class=post-block><article itemscope itemtype=http://schema.org/Article class=post-content lang><link itemprop=mainEntityOfPage href=https://daemon365.dev/post/others/vscode_commonly_used_shortcut_keys_and_plug_ins/><span hidden itemprop=author itemscope itemtype=http://schema.org/Person><meta itemprop=image content="/imgs/daemon365.png"><meta itemprop=name content="daemon365"></span><span hidden itemprop=publisher itemscope itemtype=http://schema.org/Organization><meta itemprop=name content="daemon365"><meta itemprop=description content="Don't let yourself stop."></span><span hidden itemprop=post itemscope itemtype=http://schema.org/CreativeWork><meta itemprop=name content="vscode常用快捷键及插件"><meta itemprop=description content="macOS
-
-全局
-
-
-Command + Shift + P / F1 显示命令面板
-Command + P 快速打开
-Command + Shift + N 打开新窗口
-Command + W 关闭窗口
-
-基本
-
-
-Command + X 剪切（未选中文本的情况下，剪切光标所在行）
-Command + C 复制（未选中文本的情况下，复制光标所在行）
-``Option + Up` 向上移动行
-Option + Down 向下移动行
-Option + Shift + Up 向上复制行
-Option + Shift + Down 向下复制行
-Command + Shift + K 删除行
-Command + Enter 下一行插入
-Command + Shift + Enter 上一行插入
-Command + Shift + \ 跳转到匹配的括号
-Command + [ 减少缩进
-Command + ] 增加缩进
-Home 跳转至行首
-End 跳转到行尾
-Command + Up 跳转至文件开头
-Command + Down 跳转至文件结尾
-Ctrl + PgUp 按行向上滚动
-Ctrl + PgDown 按行向下滚动
-Command + PgDown 按屏向下滚动
-Command + PgUp 按屏向上滚动
-Command + Shift + [ 折叠代码块
-Command + Shift + ] 展开代码块
-Command + K Command + [ 折叠全部子代码块
-Command + K Command + ] 展开全部子代码块
-Command + K Command + 0 折叠全部代码块
-Command + K Command + J 展开全部代码块
-Command + K Command + C 添加行注释
-Command + K Command + U 移除行注释
-Command + / 添加、移除行注释
-Option + Shift + A 添加、移除块注释
-Option + Z 自动换行、取消自动换行
-
-多光标与选择
-
-
-Option + 点击 插入多个光标
-Command + Option + Up 向上插入光标
-Command + Option + Down 向下插入光标
-Command + U 撤销上一个光标操作
-Option + Shift + I 在所选行的行尾插入光标
-Command + I 选中当前行
-Command + Shift + L 选中所有与当前选中内容相同部分
-Command + F2 选中所有与当前选中单词相同的单词
-Command + Ctrl + Shift + Left 折叠选中
-Command + Ctrl + Shift + Right 展开选中
-Alt + Shift + 拖动鼠标 选中代码块
-Command + Shift + Option + Up 列选择 向上
-Command + Shift + Option + Down 列选择 向下
-Command + Shift + Option + Left 列选择 向左
-Command + Shift + Option + Right 列选择 向右
-Command + Shift + Option + PgUp 列选择 向上翻页
-Command + Shift + Option + PgDown 列选择 向下翻页
-
-查找替换
-
-
-Command + F 查找
-Command + Option + F 替换
-Command + G 查找下一个
-Command + Shift + G 查找上一个
-Option + Enter 选中所有匹配项
-Command + D 向下选中相同内容
-Command + K Command + D 移除前一个向下选中相同内容
-
-进阶
-
-
-Ctrl + Space 打开建议
-Command + Shift + Space 参数提示
-Tab Emmet插件缩写补全
-Option + Shift + F 格式化
-Command + K Command + F 格式化选中内容
-F12 跳转到声明位置
-Option + F12 查看具体声明内容
-Command + K F12 分屏查看具体声明内容
-Command + . 快速修复
-Shift + F12 显示引用
-F2 重命名符号
-Command + Shift + . 替换为上一个值
-Command + Shift + , 替换为下一个值
-Command + K Command + X 删除行尾多余空格
-Command + K M 更改文件语言
-
-导航
-
-
-Command + T 显示所有符号
-Ctrl + G 跳转至某行
-Command + P 跳转到某个文件
-Command + Shift + O 跳转到某个符号
-Command + Shift + M 打开问题面板
-F8下一个错误或警告位置
-Shift + F8 上一个错误或警告位置
-Ctrl + Shift + Tab 编辑器历史记录
-Ctrl + -后退
-Ctrl + Shift + - 前进
-Ctrl + Shift + M Tab 切换焦点
-
-编辑器管理
-
-
-Command + W 关闭编辑器
-Command + K F 关闭文件夹
-Command + \ 编辑器分屏
-Command + 1 切换到第一分组
-Command + 2 切换到第二分组
-Command + 3 切换到第三分组
-Command + K Command + Left 切换到上一分组
-Command + K Command + Right 切换到下一分组
-Command + K Command + Shift + Left 左移编辑器
-Command + K Command + Shift + Right 右移编辑器
-Command + K Left 激活左侧编辑组
-Command + K Right 激活右侧编辑组
-
-文件管理
-
-
-Command + N 新建文件
-Command + O 打开文件
-Command + S 保存文件
-Command + Shift + S 另存为
-Command + Option + S 全部保存
-Command + W 关闭
-Command + K Command + W 全部关闭
-Command + Shift + T 重新打开被关闭的编辑器
-Command + K Enter 保持打开
-Ctrl + Tab 打开下一个
-Ctrl + Shift + Tab 打开上一个
-Command + K P 复制当前文件路径
-Command + K R 在资源管理器中查看当前文件
-Command + K O 新窗口打开当前文件
-
-显示
-
-
-Command + Ctrl + F 全屏、退出全屏
-Command + Option + 1 切换编辑器分屏方式（横、竖）
-Command + + 放大
-Command + - 缩小
-Command + B 显示、隐藏侧边栏
-Command + Shift + E 显示资源管理器 或 切换焦点
-Command + Shift + F 显示搜索框
-Ctrl + Shift + G 显示Git面板
-Command + Shift + D 显示调试面板
-Command + Shift + X 显示插件面板
-Command + Shift + H 全局搜索替换
-Command + Shift + J 显示、隐藏高级搜索
-Command + Shift + C 打开新终端
-Command + Shift + U 显示输出面板
-Command + Shift + V Markdown预览窗口
-Command + K V 分屏显示 Markdown预览窗口
-
-调试
-
-
-F9 设置 或 取消断点
-F5 开始 或 继续
-F11 进入
-Shift + F11 跳出
-F10 跳过
-Command + K Command + I 显示悬停信息
-
-集成终端
-
-
-Ctrl +显示终端 Ctrl + Shift +新建终端
-Command + Up 向上滚动
-Command + Down 向下滚动
-PgUp 向上翻页
-PgDown 向下翻页
-Command + Home 滚动到顶部
-Command + End 滚动到底部
-
-windows & linux
-
-注释:"></span><header class=post-header><h2 class=post-title itemprop="name headline"><a href=/post/others/vscode_commonly_used_shortcut_keys_and_plug_ins/ itemprop=url class=post-title-link>vscode常用快捷键及插件</a></h2><div class=post-meta-container><div class=post-meta-items><span class=post-meta-item><span class=post-meta-item-icon><i class="fas fa-solid fa-calendar"></i>
-</span><span class=post-meta-item-text title=发表于>发表于：
-</span><time title="创建时间：2022-03-25 00:00:00 +0800 +0800" itemprop="dateCreated datePublished" datetime="2022-03-25 00:00:00 +0800 +0800">2022-03-25
-</time></span><span class=post-meta-item><span class=post-meta-item-icon><i class="fas fa-solid fa-folder-open"></i>
-</span><span class=post-meta-item-text title=分类于>分类于：
-</span><span itemprop=about itemscope itemtype=http://schema.org/Thing><a href=/categories/others itemprop=url rel=index><span itemprop=name>others</span></a></span></span></div></div></header><div class=post-body itemprop=articleBody><h2 id=macos>macOS
-<a class=header-anchor href=#macos></a></h2><h3 id=全局>全局
-<a class=header-anchor href=#%e5%85%a8%e5%b1%80></a></h3><ul><li><code>Command + Shift + P / F1</code> 显示命令面板</li><li><code>Command + P</code> 快速打开</li><li><code>Command + Shift + N</code> 打开新窗口</li><li><code>Command + W </code>关闭窗口</li></ul><h3 id=基本>基本
-<a class=header-anchor href=#%e5%9f%ba%e6%9c%ac></a></h3><ul><li><code>Command + X</code> 剪切（未选中文本的情况下，剪切光标所在行）</li><li><code>Command + C</code> 复制（未选中文本的情况下，复制光标所在行）</li><li>``Option + Up` 向上移动行</li><li><code>Option + Down</code> 向下移动行</li><li><code>Option + Shift + Up</code> 向上复制行</li><li><code>Option + Shift + Down</code> 向下复制行</li><li><code>Command + Shift + K </code>删除行</li><li><code>Command + Enter</code> 下一行插入</li><li><code>Command + Shift + Enter</code> 上一行插入</li><li><code>Command + Shift + \</code> 跳转到匹配的括号</li><li><code>Command + [ </code>减少缩进</li><li><code>Command + ] </code>增加缩进</li><li><code>Home</code> 跳转至行首</li><li><code>End</code> 跳转到行尾</li><li><code>Command + Up</code> 跳转至文件开头</li><li><code>Command + Down</code> 跳转至文件结尾</li><li><code>Ctrl + PgUp</code> 按行向上滚动</li><li><code>Ctrl + PgDown</code> 按行向下滚动</li><li><code>Command + PgDown</code> 按屏向下滚动</li><li><code>Command + PgUp </code>按屏向上滚动</li><li><code>Command + Shift + [</code> 折叠代码块</li><li><code>Command + Shift + ]</code> 展开代码块</li><li><code>Command + K Command + [</code> 折叠全部子代码块</li><li><code>Command + K Command + ]</code> 展开全部子代码块</li><li><code>Command + K Command + 0</code> 折叠全部代码块</li><li><code>Command + K Command + J</code> 展开全部代码块</li><li><code>Command + K Command + C</code> 添加行注释</li><li><code>Command + K Command + U</code> 移除行注释</li><li><code>Command + /</code> 添加、移除行注释</li><li><code>Option + Shift + A</code> 添加、移除块注释</li><li><code>Option + Z</code> 自动换行、取消自动换行</li></ul><h3 id=多光标与选择>多光标与选择
-<a class=header-anchor href=#%e5%a4%9a%e5%85%89%e6%a0%87%e4%b8%8e%e9%80%89%e6%8b%a9></a></h3><ul><li><code>Option + 点击</code> 插入多个光标</li><li><code>Command + Option + Up</code> 向上插入光标</li><li><code>Command + Option + Down</code> 向下插入光标</li><li><code>Command + U</code> 撤销上一个光标操作</li><li><code>Option + Shift + I</code> 在所选行的行尾插入光标</li><li><code>Command + I</code> 选中当前行</li><li><code>Command + Shift + L</code> 选中所有与当前选中内容相同部分</li><li><code>Command + F2</code> 选中所有与当前选中单词相同的单词</li><li><code>Command + Ctrl + Shift + Left</code> 折叠选中</li><li><code>Command + Ctrl + Shift + Right</code> 展开选中</li><li><code>Alt + Shift + 拖动鼠标</code> 选中代码块</li><li><code>Command + Shift + Option + Up</code> 列选择 向上</li><li><code>Command + Shift + Option + Down</code> 列选择 向下</li><li><code>Command + Shift + Option + Left</code> 列选择 向左</li><li><code>Command + Shift + Option + Right</code> 列选择 向右</li><li><code>Command + Shift + Option + PgUp</code> 列选择 向上翻页</li><li><code>Command + Shift + Option + PgDown</code> 列选择 向下翻页</li></ul><h3 id=查找替换>查找替换
-<a class=header-anchor href=#%e6%9f%a5%e6%89%be%e6%9b%bf%e6%8d%a2></a></h3><ul><li><code>Command + F</code> 查找</li><li><code>Command + Option + F</code> 替换</li><li><code>Command + G</code> 查找下一个</li><li><code>Command + Shift + G</code> 查找上一个</li><li><code>Option + Enter</code> 选中所有匹配项</li><li><code>Command + D</code> 向下选中相同内容</li><li><code>Command + K Command + D</code> 移除前一个向下选中相同内容</li></ul><h3 id=进阶>进阶
-<a class=header-anchor href=#%e8%bf%9b%e9%98%b6></a></h3><ul><li><code>Ctrl + Space</code> 打开建议</li><li><code>Command + Shift + Space</code> 参数提示</li><li><code>Tab</code> Emmet插件缩写补全</li><li><code>Option + Shift + F</code> 格式化</li><li><code>Command + K Command + F </code>格式化选中内容</li><li><code>F12</code> 跳转到声明位置</li><li><code>Option + F12</code> 查看具体声明内容</li><li><code>Command + K F12</code> 分屏查看具体声明内容</li><li><code>Command + .</code> 快速修复</li><li><code>Shift + F12</code> 显示引用</li><li><code>F2</code> 重命名符号</li><li><code>Command + Shift + .</code> 替换为上一个值</li><li><code>Command + Shift + ,</code> 替换为下一个值</li><li><code>Command + K Command + X</code> 删除行尾多余空格</li><li><code>Command + K M</code> 更改文件语言</li></ul><h3 id=导航>导航
-<a class=header-anchor href=#%e5%af%bc%e8%88%aa></a></h3><ul><li><code>Command + T</code> 显示所有符号</li><li><code>Ctrl + G</code> 跳转至某行</li><li><code>Command + P</code> 跳转到某个文件</li><li><code>Command + Shift + O</code> 跳转到某个符号</li><li><code>Command + Shift + M</code> 打开问题面板</li><li><code>F8</code>下一个错误或警告位置</li><li><code>Shift + F8</code> 上一个错误或警告位置</li><li><code>Ctrl + Shift + Tab</code> 编辑器历史记录</li><li><code>Ctrl + -</code>后退</li><li><code>Ctrl + Shift + -</code> 前进</li><li><code>Ctrl + Shift + M Tab</code> 切换焦点</li></ul><h3 id=编辑器管理>编辑器管理
-<a class=header-anchor href=#%e7%bc%96%e8%be%91%e5%99%a8%e7%ae%a1%e7%90%86></a></h3><ul><li><code>Command + W</code> 关闭编辑器</li><li><code>Command + K F</code> 关闭文件夹</li><li><code>Command + \</code> 编辑器分屏</li><li><code>Command + 1</code> 切换到第一分组</li><li><code>Command + 2</code> 切换到第二分组</li><li><code>Command + 3</code> 切换到第三分组</li><li><code>Command + K Command + Left</code> 切换到上一分组</li><li><code>Command + K Command + Right</code> 切换到下一分组</li><li><code>Command + K Command + Shift + Left</code> 左移编辑器</li><li><code>Command + K Command + Shift + Right</code> 右移编辑器</li><li><code>Command + K Left</code> 激活左侧编辑组</li><li><code>Command + K Right</code> 激活右侧编辑组</li></ul><h3 id=文件管理>文件管理
-<a class=header-anchor href=#%e6%96%87%e4%bb%b6%e7%ae%a1%e7%90%86></a></h3><ul><li><code>Command + N</code> 新建文件</li><li><code>Command + O</code> 打开文件</li><li><code>Command + S</code> 保存文件</li><li><code>Command + Shift + S</code> 另存为</li><li><code>Command + Option + S</code> 全部保存</li><li><code>Command + W</code> 关闭</li><li><code>Command + K Command + W</code> 全部关闭</li><li><code>Command + Shift + T</code> 重新打开被关闭的编辑器</li><li><code>Command + K Enter</code> 保持打开</li><li><code>Ctrl + Tab</code> 打开下一个</li><li><code>Ctrl + Shift + Tab</code> 打开上一个</li><li><code>Command + K P</code> 复制当前文件路径</li><li><code>Command + K R</code> 在资源管理器中查看当前文件</li><li><code>Command + K O</code> 新窗口打开当前文件</li></ul><h3 id=显示>显示
-<a class=header-anchor href=#%e6%98%be%e7%a4%ba></a></h3><ul><li><code>Command + Ctrl + F</code> 全屏、退出全屏</li><li><code>Command + Option + 1</code> 切换编辑器分屏方式（横、竖）</li><li><code>Command + +</code> 放大</li><li><code>Command + -</code> 缩小</li><li><code>Command + B</code> 显示、隐藏侧边栏</li><li><code>Command + Shift + E</code> 显示资源管理器 或 切换焦点</li><li><code>Command + Shift + F</code> 显示搜索框</li><li><code>Ctrl + Shift + G</code> 显示Git面板</li><li><code>Command + Shift + D</code> 显示调试面板</li><li><code>Command + Shift + X</code> 显示插件面板</li><li><code>Command + Shift + H</code> 全局搜索替换</li><li><code>Command + Shift + J</code> 显示、隐藏高级搜索</li><li><code>Command + Shift + C</code> 打开新终端</li><li><code>Command + Shift + U</code> 显示输出面板</li><li><code>Command + Shift + V</code> Markdown预览窗口</li><li><code>Command + K V</code> 分屏显示 Markdown预览窗口</li></ul><h3 id=调试>调试
-<a class=header-anchor href=#%e8%b0%83%e8%af%95></a></h3><ul><li><code>F9</code> 设置 或 取消断点</li><li><code>F5</code> 开始 或 继续</li><li><code>F11</code> 进入</li><li><code>Shift + F11</code> 跳出</li><li><code>F10</code> 跳过</li><li><code>Command + K Command + I</code> 显示悬停信息</li></ul><h3 id=集成终端>集成终端
-<a class=header-anchor href=#%e9%9b%86%e6%88%90%e7%bb%88%e7%ab%af></a></h3><ul><li>Ctrl +显示终端 Ctrl + Shift +新建终端</li><li><code>Command + Up</code> 向上滚动</li><li><code>Command + Down</code> 向下滚动</li><li><code>PgUp</code> 向上翻页</li><li><code>PgDown</code> 向下翻页</li><li><code>Command + Home</code> 滚动到顶部</li><li><code>Command + End</code> 滚动到底部</li></ul><h2 id=windows--linux>windows & linux
-<a class=header-anchor href=#windows--linux></a></h2><p>注释:</p></div><footer class=post-footer><div class=post-button><a class=btn href=/post/others/vscode_commonly_used_shortcut_keys_and_plug_ins/#more rel=contents>阅读全文 &#187;</a></div><div class=post-eof></div></footer></article></div><div class=post-block><article itemscope itemtype=http://schema.org/Article class=post-content lang><link itemprop=mainEntityOfPage href=https://daemon365.dev/post/cloud/makefile/><span hidden itemprop=author itemscope itemtype=http://schema.org/Person><meta itemprop=image content="/imgs/daemon365.png"><meta itemprop=name content="daemon365"></span><span hidden itemprop=publisher itemscope itemtype=http://schema.org/Organization><meta itemprop=name content="daemon365"><meta itemprop=description content="Don't let yourself stop."></span><span hidden itemprop=post itemscope itemtype=http://schema.org/CreativeWork><meta itemprop=name content="makefile"><meta itemprop=description content="make
-
-make是一个构建自动化工具，会在当前目录下寻找Makefile或makefile文件。如果存在相应的文件，它就会依据其中定义好的规则完成构建任务。"></span><header class=post-header><h2 class=post-title itemprop="name headline"><a href=/post/cloud/makefile/ itemprop=url class=post-title-link>makefile</a></h2><div class=post-meta-container><div class=post-meta-items><span class=post-meta-item><span class=post-meta-item-icon><i class="fas fa-solid fa-calendar"></i>
-</span><span class=post-meta-item-text title=发表于>发表于：
-</span><time title="创建时间：2021-12-15 00:00:00 +0800 +0800" itemprop="dateCreated datePublished" datetime="2021-12-15 00:00:00 +0800 +0800">2021-12-15
-</time></span><span class=post-meta-item><span class=post-meta-item-icon><i class="fas fa-solid fa-folder-open"></i>
-</span><span class=post-meta-item-text title=分类于>分类于：
-</span><span itemprop=about itemscope itemtype=http://schema.org/Thing><a href=/categories/cloud itemprop=url rel=index><span itemprop=name>cloud</span></a></span></span></div></div></header><div class=post-body itemprop=articleBody><h2 id=make>make
-<a class=header-anchor href=#make></a></h2><p>make是一个构建自动化工具，会在当前目录下寻找Makefile或makefile文件。如果存在相应的文件，它就会依据其中定义好的规则完成构建任务。</p></div><footer class=post-footer><div class=post-button><a class=btn href=/post/cloud/makefile/#more rel=contents>阅读全文 &#187;</a></div><div class=post-eof></div></footer></article></div><div class=post-block><article itemscope itemtype=http://schema.org/Article class=post-content lang><link itemprop=mainEntityOfPage href=https://daemon365.dev/post/kratos/go_engineering___dependency_injection/><span hidden itemprop=author itemscope itemtype=http://schema.org/Person><meta itemprop=image content="/imgs/daemon365.png"><meta itemprop=name content="daemon365"></span><span hidden itemprop=publisher itemscope itemtype=http://schema.org/Organization><meta itemprop=name content="daemon365"><meta itemprop=description content="Don't let yourself stop."></span><span hidden itemprop=post itemscope itemtype=http://schema.org/CreativeWork><meta itemprop=name content="Go工程化 - 依赖注入"><meta itemprop=description content="我们在微服务框架
-
-    kratos v2
-    
-    
-    
-的默认项目模板中
-
-    kratos-layout
-    
-    
-    
-使用了
-
-    google/wire
-    
-    
-    
-进行依赖注入，也建议开发者在维护项目时使用该工具。
-wire 乍看起来比较违反直觉，导致很多同学不理解为什么要用或不清楚如何用（也包括曾经的我），本文来帮助大家理解 wire 的使用。"></span><header class=post-header><h2 class=post-title itemprop="name headline"><a href=/post/kratos/go_engineering___dependency_injection/ itemprop=url class=post-title-link>Go工程化 - 依赖注入</a></h2><div class=post-meta-container><div class=post-meta-items><span class=post-meta-item><span class=post-meta-item-icon><i class="fas fa-solid fa-calendar"></i>
-</span><span class=post-meta-item-text title=发表于>发表于：
-</span><time title="创建时间：2021-09-30 00:00:00 +0800 +0800" itemprop="dateCreated datePublished" datetime="2021-09-30 00:00:00 +0800 +0800">2021-09-30
-</time></span><span class=post-meta-item><span class=post-meta-item-icon><i class="fas fa-solid fa-folder-open"></i>
-</span><span class=post-meta-item-text title=分类于>分类于：
-</span><span itemprop=about itemscope itemtype=http://schema.org/Thing><a href=/categories/kratos itemprop=url rel=index><span itemprop=name>kratos</span></a></span></span></div></div></header><div class=post-body itemprop=articleBody><p>我们在微服务框架
-<a href=https://github.com/go-kratos/kratos title="kratos v2" rel="noopener external nofollow noreferrer" target=_blank class=exturl>kratos v2
-<i class="fa fa-external-link-alt"></i>
-</a>的默认项目模板中
-<a href=https://github.com/go-kratos/kratos-layout title=kratos-layout rel="noopener external nofollow noreferrer" target=_blank class=exturl>kratos-layout
-<i class="fa fa-external-link-alt"></i>
-</a>使用了
-<a href=https://github.com/google/wire title=google/wire rel="noopener external nofollow noreferrer" target=_blank class=exturl>google/wire
-<i class="fa fa-external-link-alt"></i>
-</a>进行依赖注入，也建议开发者在维护项目时使用该工具。</p><p>wire 乍看起来比较违反直觉，导致很多同学不理解为什么要用或不清楚如何用（也包括曾经的我），本文来帮助大家理解 wire 的使用。</p></div><footer class=post-footer><div class=post-button><a class=btn href=/post/kratos/go_engineering___dependency_injection/#more rel=contents>阅读全文 &#187;</a></div><div class=post-eof></div></footer></article></div><div class=post-block><article itemscope itemtype=http://schema.org/Article class=post-content lang><link itemprop=mainEntityOfPage href=https://daemon365.dev/post/kratos/kratos_v2_command_line_tool_usage/><span hidden itemprop=author itemscope itemtype=http://schema.org/Person><meta itemprop=image content="/imgs/daemon365.png"><meta itemprop=name content="daemon365"></span><span hidden itemprop=publisher itemscope itemtype=http://schema.org/Organization><meta itemprop=name content="daemon365"><meta itemprop=description content="Don't let yourself stop."></span><span hidden itemprop=post itemscope itemtype=http://schema.org/CreativeWork><meta itemprop=name content="kratos v2版本命令行工具使用"><meta itemprop=description content='使用
-
-下载
-
-go install github.com/go-kratos/kratos/cmd/kratos/v2@latest
-查看是否安装成功
-kratos -v
-
-kratos version v2.1.3
-升级
-
-kratos upgrade
-查看帮助
-
-kratos --help
-Kratos: An elegant toolkit for Go microservices.
-
-Usage:
-  kratos [command]
-
-Available Commands:
-  changelog   Get a kratos change log
-  completion  generate the autocompletion script for the specified shell
-  help        Help about any command
-  new         Create a service template
-  proto       Generate the proto files
-  run         Run project
-  upgrade     Upgrade the kratos tools
-
-Flags:
-  -h, --help      help for kratos
-  -v, --version   version for kratos
-
-Use "kratos [command] --help" for more information about a command.
-new命令
-
-kratos new 命令为创建一个kratos项目'></span><header class=post-header><h2 class=post-title itemprop="name headline"><a href=/post/kratos/kratos_v2_command_line_tool_usage/ itemprop=url class=post-title-link>kratos v2版本命令行工具使用</a></h2><div class=post-meta-container><div class=post-meta-items><span class=post-meta-item><span class=post-meta-item-icon><i class="fas fa-solid fa-calendar"></i>
-</span><span class=post-meta-item-text title=发表于>发表于：
-</span><time title="创建时间：2021-09-12 00:00:00 +0800 +0800" itemprop="dateCreated datePublished" datetime="2021-09-12 00:00:00 +0800 +0800">2021-09-12
-</time></span><span class=post-meta-item><span class=post-meta-item-icon><i class="fas fa-solid fa-folder-open"></i>
-</span><span class=post-meta-item-text title=分类于>分类于：
-</span><span itemprop=about itemscope itemtype=http://schema.org/Thing><a href=/categories/kratos itemprop=url rel=index><span itemprop=name>kratos</span></a></span></span></div></div></header><div class=post-body itemprop=articleBody><h2 id=使用>使用
-<a class=header-anchor href=#%e4%bd%bf%e7%94%a8></a></h2><h3 id=下载>下载
-<a class=header-anchor href=#%e4%b8%8b%e8%bd%bd></a></h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-bash data-lang=bash><span style=display:flex><span>go install github.com/go-kratos/kratos/cmd/kratos/v2@latest
-</span></span></code></pre></div><p>查看是否安装成功</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-bash data-lang=bash><span style=display:flex><span>kratos -v
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>kratos version v2.1.3
-</span></span></code></pre></div><h3 id=升级>升级
-<a class=header-anchor href=#%e5%8d%87%e7%ba%a7></a></h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-bash data-lang=bash><span style=display:flex><span>kratos upgrade
-</span></span></code></pre></div><h2 id=查看帮助>查看帮助
-<a class=header-anchor href=#%e6%9f%a5%e7%9c%8b%e5%b8%ae%e5%8a%a9></a></h2><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#a6e22e>kratos</span> <span style=color:#f92672>--</span><span style=color:#a6e22e>help</span>
-</span></span></code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-gdscript3 data-lang=gdscript3><span style=display:flex><span>Kratos: An elegant toolkit <span style=color:#66d9ef>for</span> Go microservices<span style=color:#f92672>.</span>
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>Usage:
-</span></span><span style=display:flex><span>  kratos [command]
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>Available Commands:
-</span></span><span style=display:flex><span>  changelog   Get a kratos change log
-</span></span><span style=display:flex><span>  completion  generate the autocompletion script <span style=color:#66d9ef>for</span> the specified shell
-</span></span><span style=display:flex><span>  help        Help about any command
-</span></span><span style=display:flex><span>  new         Create a service template
-</span></span><span style=display:flex><span>  proto       Generate the proto files
-</span></span><span style=display:flex><span>  run         Run project
-</span></span><span style=display:flex><span>  upgrade     Upgrade the kratos tools
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>Flags:
-</span></span><span style=display:flex><span>  <span style=color:#f92672>-</span>h, <span style=color:#f92672>--</span>help      help <span style=color:#66d9ef>for</span> kratos
-</span></span><span style=display:flex><span>  <span style=color:#f92672>-</span>v, <span style=color:#f92672>--</span>version   version <span style=color:#66d9ef>for</span> kratos
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>Use <span style=color:#e6db74>&#34;kratos [command] --help&#34;</span> <span style=color:#66d9ef>for</span> more information about a command<span style=color:#f92672>.</span>
-</span></span></code></pre></div><h2 id=new命令>new命令
-<a class=header-anchor href=#new%e5%91%bd%e4%bb%a4></a></h2><p>kratos new 命令为创建一个kratos项目</p></div><footer class=post-footer><div class=post-button><a class=btn href=/post/kratos/kratos_v2_command_line_tool_usage/#more rel=contents>阅读全文 &#187;</a></div><div class=post-eof></div></footer></article></div><div class=post-block><article itemscope itemtype=http://schema.org/Article class=post-content lang><link itemprop=mainEntityOfPage href=https://daemon365.dev/post/kratos/analyzing_the_breaker_fuse_source_code_implementation_from_kratos/><span hidden itemprop=author itemscope itemtype=http://schema.org/Person><meta itemprop=image content="/imgs/daemon365.png"><meta itemprop=name content="daemon365"></span><span hidden itemprop=publisher itemscope itemtype=http://schema.org/Organization><meta itemprop=name content="daemon365"><meta itemprop=description content="Don't let yourself stop."></span><span hidden itemprop=post itemscope itemtype=http://schema.org/CreativeWork><meta itemprop=name content="从kratos分析breaker熔断器源码实现"><meta itemprop=description content="为什么要用熔断
-
-前面我们讲过限流保证服务的可用性，不被突如其来的流量打爆。但是两种情况是限流解决不了的。
-
-如果我们服务只能处理1000QPS，但是有10wQPS打过来，服务还是会炸。因为拒绝请求也需要成本。
-服务但是io型的，会把mysql，redis，mq等中间件打挂。
-
-所以，我们遵循一个思路，可不可以client端在失败的多的时候就不调用了，直接返回错误呢？"></span><header class=post-header><h2 class=post-title itemprop="name headline"><a href=/post/kratos/analyzing_the_breaker_fuse_source_code_implementation_from_kratos/ itemprop=url class=post-title-link>从kratos分析breaker熔断器源码实现</a></h2><div class=post-meta-container><div class=post-meta-items><span class=post-meta-item><span class=post-meta-item-icon><i class="fas fa-solid fa-calendar"></i>
-</span><span class=post-meta-item-text title=发表于>发表于：
-</span><time title="创建时间：2021-09-04 17:55:01 +0800 +0800" itemprop="dateCreated datePublished" datetime="2021-09-04 17:55:01 +0800 +0800">2021-09-04
-</time></span><span class=post-meta-item><span class=post-meta-item-icon><i class="fas fa-solid fa-folder-open"></i>
-</span><span class=post-meta-item-text title=分类于>分类于：
-</span><span itemprop=about itemscope itemtype=http://schema.org/Thing><a href=/categories/kratos itemprop=url rel=index><span itemprop=name>kratos</span></a></span></span></div></div></header><div class=post-body itemprop=articleBody><h2 id=为什么要用熔断>为什么要用熔断
-<a class=header-anchor href=#%e4%b8%ba%e4%bb%80%e4%b9%88%e8%a6%81%e7%94%a8%e7%86%94%e6%96%ad></a></h2><p>前面我们讲过限流保证服务的可用性，不被突如其来的流量打爆。但是两种情况是限流解决不了的。</p><ol><li>如果我们服务只能处理1000QPS，但是有10wQPS打过来，服务还是会炸。因为拒绝请求也需要成本。</li><li>服务但是io型的，会把mysql，redis，mq等中间件打挂。</li></ol><p>所以，我们遵循一个思路，可不可以client端在失败的多的时候就不调用了，直接返回错误呢？</p></div><footer class=post-footer><div class=post-button><a class=btn href=/post/kratos/analyzing_the_breaker_fuse_source_code_implementation_from_kratos/#more rel=contents>阅读全文 &#187;</a></div><div class=post-eof></div></footer></article></div><div class=post-block><article itemscope itemtype=http://schema.org/Article class=post-content lang><link itemprop=mainEntityOfPage href=https://daemon365.dev/post/kratos/analyzing_the_implementation_of_bbr_current_limiting_source_code_from_kratos/><span hidden itemprop=author itemscope itemtype=http://schema.org/Person><meta itemprop=image content="/imgs/daemon365.png"><meta itemprop=name content="daemon365"></span><span hidden itemprop=publisher itemscope itemtype=http://schema.org/Organization><meta itemprop=name content="daemon365"><meta itemprop=description content="Don't let yourself stop."></span><span hidden itemprop=post itemscope itemtype=http://schema.org/CreativeWork><meta itemprop=name content="从kratos分析BBR限流源码实现"><meta itemprop=description content="什么是自适应限流
-
-自适应限流从整体维度对应用入口流量进行控制，结合应用的 Load、CPU 使用率、总体平均 RT、入口 QPS 和并发线程数等几个维度的监控指标，通过自适应的流控策略，让系统的入口流量和系统的负载达到一个平衡，让系统尽可能跑在最大吞吐量的同时保证系统整体的稳定性。"></span><header class=post-header><h2 class=post-title itemprop="name headline"><a href=/post/kratos/analyzing_the_implementation_of_bbr_current_limiting_source_code_from_kratos/ itemprop=url class=post-title-link>从kratos分析BBR限流源码实现</a></h2><div class=post-meta-container><div class=post-meta-items><span class=post-meta-item><span class=post-meta-item-icon><i class="fas fa-solid fa-calendar"></i>
-</span><span class=post-meta-item-text title=发表于>发表于：
-</span><time title="创建时间：2021-09-04 00:00:00 +0800 +0800" itemprop="dateCreated datePublished" datetime="2021-09-04 00:00:00 +0800 +0800">2021-09-04
-</time></span><span class=post-meta-item><span class=post-meta-item-icon><i class="fas fa-solid fa-folder-open"></i>
-</span><span class=post-meta-item-text title=分类于>分类于：
-</span><span itemprop=about itemscope itemtype=http://schema.org/Thing><a href=/categories/kratos itemprop=url rel=index><span itemprop=name>kratos</span></a></span></span></div></div></header><div class=post-body itemprop=articleBody><h2 id=什么是自适应限流>什么是自适应限流
-<a class=header-anchor href=#%e4%bb%80%e4%b9%88%e6%98%af%e8%87%aa%e9%80%82%e5%ba%94%e9%99%90%e6%b5%81></a></h2><p>自适应限流从整体维度对应用入口流量进行控制，结合应用的 Load、CPU 使用率、总体平均 RT、入口 QPS 和并发线程数等几个维度的监控指标，通过自适应的流控策略，让系统的入口流量和系统的负载达到一个平衡，让系统尽可能跑在最大吞吐量的同时保证系统整体的稳定性。</p></div><footer class=post-footer><div class=post-button><a class=btn href=/post/kratos/analyzing_the_implementation_of_bbr_current_limiting_source_code_from_kratos/#more rel=contents>阅读全文 &#187;</a></div><div class=post-eof></div></footer></article></div><nav class=pagination><a class="extend prev" rel=prev href=/page/3/><i class="fa fa-angle-left"></i>
-</a><a class=page-number href=/>1</a>
-<a class=page-number href=/page/2/>2</a>
-<a class=page-number href=/page/3/>3</a>
-<span class="page-number current">4</span>
-<a class=page-number href=/page/5/>5</a>
-<a class=page-number href=/page/6/>6</a>
-<a class=page-number href=/page/7/>7</a>
-<a class=page-number href=/page/8/>8</a>
-<a class="extend next" rel=next href=/page/5/><i class="fa fa-angle-right"></i></a></nav></div></main><footer class=footer><div class=footer-inner><div class=copyright>&copy;
-<span itemprop=copyrightYear>2019 - 2024
-</span><span class=with-love><i class="fa fa-heart"></i>
-</span><span class=author itemprop=copyrightHolder>daemon365</span></div><div class=powered-by>由 <a href=https://gohugo.io title=0.140.1 target=_blank>Hugo</a> & <a href=https://github.com/hugo-next/hugo-theme-next title=4.6.3 target=_blank>Hugo NexT.Gemini</a> 强力驱动</div></div></footer><script type=text/javascript src=https://daemon365.dev/3rd/animejs/3.2.2/anime.min.js crossorigin=anonymous defer></script><script type=text/javascript src=https://daemon365.dev/3rd/viewerjs/1.11.6/viewer.min.js crossorigin=anonymous defer></script><script class=next-config data-name=main type=application/json>{"bookmark":{"color":"#222","enable":false,"save":"manual"},"copybtn":true,"darkmode":false,"hostname":"https://daemon365.dev/","i18n":{"ds_day":" 天前","ds_days":" 天 ","ds_hour":" 小时前","ds_hours":" 小时 ","ds_just":"刚刚","ds_min":" 分钟前","ds_mins":" 分钟","ds_month":" 个月前","ds_years":" 年 ","empty":"没有找到任何搜索结果：${query}","hits":"找到 ${hits} 个搜索结果","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","placeholder":"搜索..."},"lang":"zh-CN","lawidget":{"id":"JmAHxEAUVgyS8B1c","js":"https://v6-widget.51.la/v6/laId/quote.js?theme=0\u0026col=true\u0026f=12\u0026display=0,0,0,1,0,1,1,1"},"lazyload":false,"localSearch":{"enable":true,"limit":1e3,"path":"/searchindexes.xml","preload":false,"topnperarticle":-1,"trigger":"auto","unescape":false},"motion":{"async":false,"enable":false,"transition":{"collheader":"fadeInLeft","postblock":"fadeIn","postbody":"fadeInDown","postheader":"fadeInDown","sidebar":"fadeInUp"}},"postmeta":{"comments":{"enable":false,"plugin":"waline"},"views":{"enable":true,"plugin":"busuanzi"}},"root":"/","scheme":"Gemini","sidebar":{"display":"post","offset":12,"padding":18,"position":"left","width":256},"utterances":{"cfg":{"issueterm":"pathname","label":"comments","repo":"daemon365/blog","theme":"preferred-color-scheme"},"js":"https://utteranc.es/client.js"},"vendor":{"plugins":"local","router":{"name":"local","type":"modern","url":"https://daemon365.dev/3rd"}},"version":"4.6.3"}</script><script type=text/javascript src=/js/main.min.412b2d7d9cead6dbf9b4df1d9dcc9b5b7818e8e434f664050b4498e888bb3009.js defer></script></body></html>
+发布和订阅 1、客户端可以订阅频道如下图
+2、当给这个频道发布消息后，消息就会发送给订阅的客户端
+发布订阅命令行实 …</p><div class=post-tags><a href=/tags/redis class=tag>redis</a></div></div></article><article class=post-card><div class=post-card-content><h3 class=post-title><a href=/post/others/vscode_commonly_used_shortcut_keys_and_plug_ins/>vscode常用快捷键及插件</a></h3><div class=post-meta><time datetime=2022-03-25><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+2022-03-25
+</time><span class=post-category><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+others
+</span><span class=reading-time><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+5 min read</span></div><p class=post-summary>macOS 全局 Command + Shift + P / F1 显示命令面板 Command + P 快速打开 Command + Shift + N 打开新窗口 Command + W 关闭窗口 基本 Command + X 剪切（未选中文本的情况下，剪切光标所在行） Command + C …</p><div class=post-tags><a href=/tags/vscode class=tag>vscode</a></div></div></article><article class=post-card><div class=post-card-content><h3 class=post-title><a href=/post/cloud/makefile/>makefile</a></h3><div class=post-meta><time datetime=2021-12-15><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+2021-12-15
+</time><span class=post-category><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+cloud
+</span><span class=reading-time><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+1 min read</span></div><p class=post-summary>make make是一个构建自动化工具，会在当前目录下寻找Makefile或makefile文件。如果存在相应的文件，它就会依据其中定义好的规则完成构建任务。
+makefile 什么是makefile？或许很多Winodws的程序员都不知道这个东西，因为那些Windows的IDE都为你做了这个工作， …</p><div class=post-tags><a href=/tags/makefile class=tag>makefile</a></div></div></article><article class=post-card><div class=post-card-content><h3 class=post-title><a href=/post/kratos/go_engineering___dependency_injection/>Go工程化 - 依赖注入</a></h3><div class=post-meta><time datetime=2021-09-30><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+2021-09-30
+</time><span class=post-category><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+kratos
+</span><span class=reading-time><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+5 min read</span></div><p class=post-summary>我们在微服务框架kratos v2的默认项目模板中kratos-layout使用了google/wire进行依赖注入，也建议开发者在维护项目时使用该工具。
+wire 乍看起来比较违反直觉，导致很多同学不理解为什么要用或不清楚如何用（也包括曾经的我），本文来帮助大家理解 wire 的使用。
+What …</p><div class=post-tags><a href=/tags/go class=tag>go</a>
+<a href=/tags/kratos class=tag>kratos</a>
+<a href=/tags/wire class=tag>wire</a></div></div></article><article class=post-card><div class=post-card-content><h3 class=post-title><a href=/post/kratos/kratos_v2_command_line_tool_usage/>kratos v2版本命令行工具使用</a></h3><div class=post-meta><time datetime=2021-09-12><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+2021-09-12
+</time><span class=post-category><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+kratos
+</span><span class=reading-time><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+2 min read</span></div><p class=post-summary>使用 下载 go install github.com/go-kratos/kratos/cmd/kratos/v2@latest 查看是否安装成功
+kratos -v kratos version v2.1.3 升级 kratos upgrade 查看帮助 kratos --help …</p><div class=post-tags><a href=/tags/go class=tag>go</a>
+<a href=/tags/kratos class=tag>kratos</a></div></div></article><article class=post-card><div class=post-card-content><h3 class=post-title><a href=/post/kratos/analyzing_the_breaker_fuse_source_code_implementation_from_kratos/>从kratos分析breaker熔断器源码实现</a></h3><div class=post-meta><time datetime=2021-09-04><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+2021-09-04
+</time><span class=post-category><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+kratos
+</span><span class=reading-time><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+2 min read</span></div><p class=post-summary>为什么要用熔断 前面我们讲过限流保证服务的可用性，不被突如其来的流量打爆。但是两种情况是限流解决不了的。
+如果我们服务只能处理1000QPS，但是有10wQPS打过来，服务还是会炸。因为拒绝请求也需要成本。 服务但是io型的，会把mysql，redis，mq等中间件打挂。 所以，我们遵循一个思路，可 …</p><div class=post-tags><a href=/tags/go class=tag>go</a>
+<a href=/tags/kratos class=tag>kratos</a>
+<a href=/tags/breaker class=tag>breaker</a></div></div></article><article class=post-card><div class=post-card-content><h3 class=post-title><a href=/post/kratos/analyzing_the_implementation_of_bbr_current_limiting_source_code_from_kratos/>从kratos分析BBR限流源码实现</a></h3><div class=post-meta><time datetime=2021-09-04><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+2021-09-04
+</time><span class=post-category><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+kratos
+</span><span class=reading-time><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+2 min read</span></div><p class=post-summary>什么是自适应限流 自适应限流从整体维度对应用入口流量进行控制，结合应用的 Load、CPU 使用率、总体平均 RT、入口 QPS 和并发线程数等几个维度的监控指标，通过自适应的流控策略，让系统的入口流量和系统的负载达到一个平衡，让系统尽可能跑在最大吞吐量的同时保证系统整体的稳定性。
+核心目标：
+自动 …</p><div class=post-tags><a href=/tags/go class=tag>go</a>
+<a href=/tags/kratos class=tag>kratos</a>
+<a href=/tags/bbr class=tag>BBR</a></div></div></article></div><nav class=pagination><a href=/page/3/ class="pagination-nav pagination-prev"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></a><div class=pagination-numbers><a href=/ class=pagination-number>1</a>
+<span class=pagination-ellipsis>...</span>
+<a href=/page/3/ class=pagination-number>3</a>
+<span class="pagination-number active">4</span>
+<a href=/page/5/ class=pagination-number>5</a>
+<span class=pagination-ellipsis>...</span>
+<a href=/page/10/ class=pagination-number>10</a></div><a href=/page/5/ class="pagination-nav pagination-next"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></a></nav></section></div></div></main><footer class=site-footer><div class=container><div class=footer-content><div class=footer-info><p class=copyright>© 2025 daemon365</p><p class=powered-by>Powered by <a href=https://gohugo.io/ target=_blank rel=noopener>Hugo</a> & <a href=https://github.com/daemon365/hugo-theme-daemon target=_blank rel=noopener>Daemon</a></p></div><div class=social-links><a href=https://github.com/daemon365 target=_blank rel=noopener aria-label=GitHub><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.374.0.0 5.373.0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931.0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176.0.0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221.0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
+</a><a href=mailto:daemon365@foxmail.com aria-label=Email><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1.0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1.0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></a></div></div></div></footer><div class=search-modal id=searchModal><div class=search-modal-backdrop></div><div class=search-modal-content><div class=search-modal-header><input type=text class=search-input id=searchInput placeholder="Search articles..." autofocus>
+<button class=search-close aria-label="Close search">
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div><div class=search-results id=searchResults><p class=search-hint>Enter 2 or more characters to start searching</p></div></div></div><script src=/js/components/search.js></script><script src=/js/components/toc.js></script><script src=/js/components/scroll-effects.js></script><script src=/js/components/code-copy.js></script><script src=/js/components/lazy-loading.js></script><script src=/js/components/image-preview.js></script><script src=/js/components/back-to-top.js></script><script src=/js/main-new.js></script><script>"serviceWorker"in navigator&&window.addEventListener("load",()=>{navigator.serviceWorker.register("/sw.js").then(e=>{console.log("Service Worker registered:",e.scope)}).catch(e=>{console.log("Service Worker registration failed:",e)})})</script></body></html>

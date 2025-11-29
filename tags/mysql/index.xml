@@ -1,0 +1,1326 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>Mysql on Daemon365</title><link>https://daemon365.dev/tags/mysql/</link><description>Don't let yourself stop.</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><lastBuildDate>Thu, 21 May 2020 00:00:00 +0800</lastBuildDate><atom:link href="https://daemon365.dev/tags/mysql/index.xml" rel="self" type="application/rss+xml"/><item><title>SQL查询语句执行流程</title><link>https://daemon365.dev/post/database/sql_query_statement_execution_process/</link><pubDate>Thu, 21 May 2020 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/database/sql_query_statement_execution_process/</guid><description>&lt;h2 id="msyql执行流程"&gt;msyql执行流程&lt;/h2&gt;
+&lt;p&gt;你有个最简单的表，表里只有一个 ID 字段，在执行下面这个查询语句时：：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-sql" data-lang="sql"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;select&lt;/span&gt; &lt;span style="color:#f92672"&gt;*&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;from&lt;/span&gt; &lt;span style="color:#111"&gt;T&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;where&lt;/span&gt; &lt;span style="color:#111"&gt;ID&lt;/span&gt;&lt;span style="color:#f92672"&gt;=&lt;/span&gt;&lt;span style="color:#ae81ff"&gt;10&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;；&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;我们看到的只是输入一条语句，返回一个结果，却不知道这条语句在 MySQL 内部的执行过程。&lt;/p&gt;
+&lt;p&gt;下面我给出的是 MySQL 的基本架构示意图，从中你可以清楚地看到 SQL 语句在 MySQL 的各个功能模块中的执行过程。&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://daemon365.dev/images/38d96a46-fa16-4ba4-8387-a766566d030d.png" alt=""&gt;&lt;/p&gt;
+&lt;p&gt;大体上，MySQL 分为 Server 层和存储引擎层两部分。&lt;/p&gt;
+&lt;p&gt;Server 层包括连接器、查询缓存、分析器、执行器等，以及所有的内置函数（如日期、时间、数学和加密函数等）和跨存储引擎的功能（如存储过程、触发器、视图）。&lt;/p&gt;
+&lt;p&gt;存储引擎层负责数据的存储和提取，支持 InnoDB、MyISAM、Memory 等多个存储引擎。MySQL 5.5.5 版本后默认存储存储引擎是 InnoDB。&lt;/p&gt;
+&lt;h2 id="连接器"&gt;连接器&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;验证账号密码是否正确&lt;/li&gt;
+&lt;li&gt;到权限表里面查出你拥有的权限，之后的执行语句，都会依赖这个权限数据。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id="查询缓存"&gt;查询缓存&lt;/h2&gt;
+&lt;p&gt;在建立连接后，就开始执行 select 语句了，执行前首先会查询缓存。&lt;/p&gt;
+&lt;p&gt;MySQL 拿到查询请求后，会先查询缓存，看是不是执行过这条语句。执行过的语句及其结果会以 key-value 对的形式保存在一定的内存区域中。key 是查询的语句，value 是查询的结果。如果你的查询能够直接在这个缓存中找到 key，那么这个value 就会被直接返回给客户端。&lt;/p&gt;
+&lt;p&gt;如果语句不在查询缓存中，就会继续后面的执行阶段。执行完成后，执行结果会被存入查询缓存中。如果查询命中缓存，MySQL 不需要执行后面的复杂操作，就可以直接返回结果，会提升效率。&lt;/p&gt;
+&lt;p&gt;但是查询缓存的失效非常频繁，只要有对一个表的更新，这个表上所有的查询缓存都会被清空。对于更新压力大的数据库来说，查询缓存的命中率会非常低。如果业务中需要有一张静态表，很长时间才会更新一次。比如，一个系统配置表，那这张表上的查询才适合使用查询缓存。MySQL 提供了这种按需使用的方式。可以将参数 query_cache_type 设置成 DEMAND，对于默认的 SQL 语句都将不使用查询缓存。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;MySQL 8.0 版本将查询缓存的功能删除了。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id="分析器"&gt;分析器&lt;/h2&gt;
+&lt;p&gt;如果没有命中查询缓存，就要开始真正执行语句了。首先，MySQL 需要知道你要做什么，因此需要对 SQL 语句做解析。&lt;/p&gt;
+&lt;p&gt;分析器先会做“词法分析”。你输入的是由多个字符串和空格组成的一条 SQL 语句，MySQL 需要识别出里面的字符串分别是什么，代表什么。MySQL 从你输入的&amp;quot;select&amp;quot;这个关键字识别出来，这是一个查询语句。它也要把字符串“T”识别成“表名 T”，把字符串“ID”识别成“列 ID”。做完了这些识别以后，就要做“语法分析”。根据词法分析的结果，语法分析器会根据语法规则，判断你输入的这个 SQL 语句是否满足 MySQL 语法。&lt;/p&gt;</description><content:encoded><![CDATA[<h2 id="msyql执行流程">msyql执行流程</h2>
+<p>你有个最简单的表，表里只有一个 ID 字段，在执行下面这个查询语句时：：</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#00a8c8">select</span> <span style="color:#f92672">*</span> <span style="color:#00a8c8">from</span> <span style="color:#111">T</span> <span style="color:#00a8c8">where</span> <span style="color:#111">ID</span><span style="color:#f92672">=</span><span style="color:#ae81ff">10</span><span style="color:#960050;background-color:#1e0010">；</span>
+</span></span></code></pre></div><p>我们看到的只是输入一条语句，返回一个结果，却不知道这条语句在 MySQL 内部的执行过程。</p>
+<p>下面我给出的是 MySQL 的基本架构示意图，从中你可以清楚地看到 SQL 语句在 MySQL 的各个功能模块中的执行过程。</p>
+<p><img src="/images/38d96a46-fa16-4ba4-8387-a766566d030d.png" alt=""></p>
+<p>大体上，MySQL 分为 Server 层和存储引擎层两部分。</p>
+<p>Server 层包括连接器、查询缓存、分析器、执行器等，以及所有的内置函数（如日期、时间、数学和加密函数等）和跨存储引擎的功能（如存储过程、触发器、视图）。</p>
+<p>存储引擎层负责数据的存储和提取，支持 InnoDB、MyISAM、Memory 等多个存储引擎。MySQL 5.5.5 版本后默认存储存储引擎是 InnoDB。</p>
+<h2 id="连接器">连接器</h2>
+<ol>
+<li>验证账号密码是否正确</li>
+<li>到权限表里面查出你拥有的权限，之后的执行语句，都会依赖这个权限数据。</li>
+</ol>
+<h2 id="查询缓存">查询缓存</h2>
+<p>在建立连接后，就开始执行 select 语句了，执行前首先会查询缓存。</p>
+<p>MySQL 拿到查询请求后，会先查询缓存，看是不是执行过这条语句。执行过的语句及其结果会以 key-value 对的形式保存在一定的内存区域中。key 是查询的语句，value 是查询的结果。如果你的查询能够直接在这个缓存中找到 key，那么这个value 就会被直接返回给客户端。</p>
+<p>如果语句不在查询缓存中，就会继续后面的执行阶段。执行完成后，执行结果会被存入查询缓存中。如果查询命中缓存，MySQL 不需要执行后面的复杂操作，就可以直接返回结果，会提升效率。</p>
+<p>但是查询缓存的失效非常频繁，只要有对一个表的更新，这个表上所有的查询缓存都会被清空。对于更新压力大的数据库来说，查询缓存的命中率会非常低。如果业务中需要有一张静态表，很长时间才会更新一次。比如，一个系统配置表，那这张表上的查询才适合使用查询缓存。MySQL 提供了这种按需使用的方式。可以将参数 query_cache_type 设置成 DEMAND，对于默认的 SQL 语句都将不使用查询缓存。</p>
+<blockquote>
+<p>MySQL 8.0 版本将查询缓存的功能删除了。</p>
+</blockquote>
+<h2 id="分析器">分析器</h2>
+<p>如果没有命中查询缓存，就要开始真正执行语句了。首先，MySQL 需要知道你要做什么，因此需要对 SQL 语句做解析。</p>
+<p>分析器先会做“词法分析”。你输入的是由多个字符串和空格组成的一条 SQL 语句，MySQL 需要识别出里面的字符串分别是什么，代表什么。MySQL 从你输入的&quot;select&quot;这个关键字识别出来，这是一个查询语句。它也要把字符串“T”识别成“表名 T”，把字符串“ID”识别成“列 ID”。做完了这些识别以后，就要做“语法分析”。根据词法分析的结果，语法分析器会根据语法规则，判断你输入的这个 SQL 语句是否满足 MySQL 语法。</p>
+<p>如果你的语句不对，就会收到“You have an error in your SQL syntax”的错误提醒，比如下面这个语句 select 少打了开头的字母“s”。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#111">elect</span> <span style="color:#f92672">*</span> <span style="color:#00a8c8">from</span> <span style="color:#111">t</span> <span style="color:#00a8c8">where</span> <span style="color:#111">ID</span><span style="color:#f92672">=</span><span style="color:#ae81ff">1</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">/*
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near &#39;elect * from t where ID=1&#39; at line 1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">*/</span>
+</span></span></code></pre></div><h2 id="优化器">优化器</h2>
+<p>经过了分析器，MySQL 就知道你要做什么了。在开始执行之前，还要先经过优化器的处理。</p>
+<p>优化器是在表里面有多个索引的时候，决定使用哪个索引；或者在一个语句有多表关联（join）的时候，决定各个表的连接顺序。比如你执行下面这样的语句，这个语句是执行两个表的 join：</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#00a8c8">select</span> <span style="color:#f92672">*</span> <span style="color:#00a8c8">from</span> <span style="color:#111">t1</span> <span style="color:#00a8c8">join</span> <span style="color:#111">t2</span> <span style="color:#00a8c8">using</span><span style="color:#111">(</span><span style="color:#111">ID</span><span style="color:#111">)</span>  <span style="color:#00a8c8">where</span> <span style="color:#111">t1</span><span style="color:#111">.</span><span style="color:#00a8c8">c</span><span style="color:#f92672">=</span><span style="color:#ae81ff">10</span> <span style="color:#00a8c8">and</span> <span style="color:#111">t2</span><span style="color:#111">.</span><span style="color:#111">d</span><span style="color:#f92672">=</span><span style="color:#ae81ff">20</span><span style="color:#111">;</span>
+</span></span></code></pre></div><ul>
+<li>既可以先从表 t1 里面取出 c=10 的记录的 ID 值，再根据 ID 值关联到表 t2，再判断 t2 里面 d 的值是否等于 20。</li>
+<li>也可以先从表 t2 里面取出 d=20 的记录的 ID 值，再根据 ID 值关联到 t1，再判断 t1 里面 c 的值是否等于 10。</li>
+</ul>
+<h2 id="执行器">执行器</h2>
+<p>MySQL 通过分析器知道了你要做什么，通过优化器知道了该怎么做，于是就进入了执行器阶段，开始执行语句。</p>
+<p>开始执行的时候，要先判断一下你对这个表 T 有没有执行查询的权限，如果没有，就会返回没有权限的错误，如下所示 (在工程实现上，如果命中查询缓存，会在查询缓存返回结果的时候，做权限验证。查询也会在优化器之前调用 precheck 验证权限)。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#00a8c8">select</span> <span style="color:#f92672">*</span> <span style="color:#00a8c8">from</span> <span style="color:#111">T</span> <span style="color:#00a8c8">where</span> <span style="color:#111">ID</span><span style="color:#f92672">=</span><span style="color:#ae81ff">10</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">/*
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">ERROR 1142 (42000): SELECT command denied to user &#39;b&#39;@&#39;localhost&#39; for table &#39;T&#39;
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">*/</span>
+</span></span></code></pre></div><p>如果有权限，就打开表继续执行。打开表的时候，执行器就会根据表的引擎定义，去使用这个引擎提供的接口。</p>
+<p>比如我们这个例子中的表 T 中，ID 字段没有索引，那么执行器的执行流程是这样的：</p>
+<ol>
+<li>调用 InnoDB 引擎接口取这个表的第一行，判断 ID 值是不是 10，如果不是则跳过，如果是则将这行存在结果集中；</li>
+<li>调用引擎接口取“下一行”，重复相同的判断逻辑，直到取到这个表的最后一行。</li>
+<li>执行器将上述遍历过程中所有满足条件的行组成的记录集作为结果集返回给客户端。</li>
+</ol>
+<p>对于有索引的表，第一次调用的是取满足条件的第一行这个接口，之后循环取满足条件的下一行这个接口。</p>
+<p>数据库的慢查询日志中有 rows_examined 字段，表示这个语句执行过程中扫描了多少行。这个值就是在执行器每次调用引擎获取数据行的时候累加的。在有些场景下，执行器调用一次，在引擎内部则扫描了多行，因此引擎扫描行数跟 rows_examined 并不是完全相同的。</p>
+<h2 id="总结">总结</h2>
+<p>主要通过对一个 SQL 语句完整执行过程进行讲解，介绍 MySQL 的逻辑架构，MySQL 主要包括连接器、查询缓存、分析器、优化器、执行器这几个模块。</p>
+<h2 id="参考文章">参考文章</h2>
+<ul>
+<li><a href="https://time.geekbang.org/column/article/68319">https://time.geekbang.org/column/article/68319</a></li>
+</ul>
+]]></content:encoded><category>database</category><category>mysql</category></item><item><title>mysql索引</title><link>https://daemon365.dev/post/database/mysql_index/</link><pubDate>Mon, 20 Apr 2020 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/database/mysql_index/</guid><description>&lt;h2 id="什么是索引"&gt;什么是索引&lt;/h2&gt;
+&lt;p&gt;一般的应用系统，都是读多写少。而且插入操作和一般的更新操作很少出现性能问题（因为有redo log锁cache缓存）。在生产环境中，我们遇到最多的，也是最容易出问题的，还是一些复杂的查询操作，因此对查询语句的优化显然是重中之重。说起加速查询，就不得不提到索引了。索引的核心思想就是&lt;strong&gt;加速查询&lt;/strong&gt;。&lt;/p&gt;
+&lt;h2 id="索引的原理"&gt;索引的原理&lt;/h2&gt;
+&lt;h3 id="索引原理"&gt;索引原理&lt;/h3&gt;
+&lt;p&gt;索引的目的在于提高查询效率，可以类比字典，如果要查“mysql”这个单词，我们肯定需要定位到m字母，然后从下往下找到y字母，再找到剩下的sql。如果没有索引，那么你可能需要把所有单词看一遍才能找到你想要的，如果我想找到m开头的单词呢？或者ze开头的单词呢？是不是觉得如果没有索引，这个事情根本无法完成？&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;本质都是：通过不断地缩小想要获取数据的范围来筛选出最终想要的结果，同时把随机的事件变成顺序的事件，也就是说，有了这种索引机制，我们可以总是用同一种查找方式来锁定数据。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;数据库也是一样，但显然要复杂许多，因为不仅面临着等值查询，还有范围查询(&amp;gt;、&amp;lt;、between、in)、模糊查询(like)、并集查询(or)等等。数据库应该选择怎么样的方式来应对所有的问题呢？我们回想字典的例子，能不能把数据分成段，然后分段查询呢？最简单的如果1000条数据，1到100分成第一段，101到200分成第二段，201到300分成第三段……这样查第250条数据，只要找第三段就可以了，一下子去除了90%的无效数据。但如果是1千万的记录呢，分成几段比较好？稍有算法基础的同学会想到搜索树，其平均复杂度是lgN，具有不错的查询性能。但这里我们忽略了一个关键的问题，复杂度模型是基于每次相同的操作成本来考虑的，数据库实现比较复杂，数据保存在磁盘上，而为了提高性能，每次又可以把部分数据读入内存来计算，因为我们知道访问磁盘的成本大概是访问内存的十万倍左右，所以简单的搜索树难以满足复杂的应用场景。&lt;/p&gt;
+&lt;h3 id="磁盘io与预读"&gt;磁盘IO与预读&lt;/h3&gt;
+&lt;p&gt;考虑到磁盘IO是非常高昂的操作，计算机操作系统做了一些优化，&lt;strong&gt;当一次IO时，不光把当前磁盘地址的数据，而是把相邻的数据也都读取到内存缓冲区内&lt;/strong&gt;，因为局部预读性原理告诉我们，当计算机访问一个地址的数据的时候，与其相邻的数据也会很快被访问到。每一次IO读取的数据我们称之为一页(page)。具体一页有多大数据跟操作系统有关，一般为4k或8k，也就是我们读取一页内的数据时候，实际上才发生了一次IO，这个理论对于索引的数据结构设计非常有帮助。&lt;/p&gt;
+&lt;h4 id="索引的数据结构"&gt;索引的数据结构&lt;/h4&gt;
+&lt;p&gt;前面讲了生活中索引的例子，索引的基本原理，数据库的复杂性，又讲了操作系统的相关知识，目的就是让大家了解，任何一种数据结构都不是凭空产生的，一定会有它的背景和使用场景，我们现在总结一下，我们需要这种数据结构能够做些什么，其实很简单，那就是：每次查找数据时把磁盘IO次数控制在一个很小的数量级，最好是常数数量级。那么我们就想到如果一个高度可控的多路搜索树是否能满足需求呢？就这样，b+树应运而生。&lt;/p&gt;
+&lt;h2 id="详解b树"&gt;详解b+树&lt;/h2&gt;
+&lt;p&gt;&lt;img src="https://daemon365.dev/images/d39ac7f7-0a67-4ce3-9d32-e2ae589d0a65.png" alt=""&gt;&lt;/p&gt;
+&lt;p&gt;如上图，是一颗b+树，关于b+树的定义可以参见&lt;a href="http://zh.wikipedia.org/wiki/B%2B%E6%A0%91"&gt;B+树&lt;/a&gt;，这里只说一些重点，浅蓝色的块我们称之为一个磁盘块，可以看到每个磁盘块包含几个数据项（深蓝色所示）和指针（黄色所示），如磁盘块1包含数据项17和35，包含指针P1、P2、P3，P1表示小于17的磁盘块，P2表示在17和35之间的磁盘块，P3表示大于35的磁盘块。真实的数据存在于叶子节点即3、5、9、10、13、15、28、29、36、60、75、79、90、99。非叶子节点只不存储真实的数据，只存储指引搜索方向的数据项，如17、35并不真实存在于数据表中。&lt;/p&gt;
+&lt;h3 id="b树的查找过程"&gt;b+树的查找过程&lt;/h3&gt;
+&lt;p&gt;如图所示，如果要查找数据项29，那么首先会把磁盘块1由磁盘加载到内存，此时发生一次IO，在内存中用二分查找确定29在17和35之间，锁定磁盘块1的P2指针，内存时间因为非常短（相比磁盘的IO）可以忽略不计，通过磁盘块1的P2指针的磁盘地址把磁盘块3由磁盘加载到内存，发生第二次IO，29在26和30之间，锁定磁盘块3的P2指针，通过指针加载磁盘块8到内存，发生第三次IO，同时内存中做二分查找找到29，结束查询，总计三次IO。真实的情况是，3层的b+树可以表示上百万的数据，如果上百万的数据查找只需要三次IO，性能提高将是巨大的，如果没有索引，每个数据项都要发生一次IO，那么总共需要百万次的IO，显然成本非常非常高。&lt;/p&gt;
+&lt;h3 id="b树性质"&gt;b+树性质&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;索引字段要尽量的小&lt;/strong&gt;：通过上面的分析，我们知道IO次数取决于b+数的高度h，假设当前数据表的数据为N，每个磁盘块的数据项的数量是m，则有h=㏒(m+1)N，当数据量N一定的情况下，m越大，h越小；而m = 磁盘块的大小 / 数据项的大小，磁盘块的大小也就是一个数据页的大小，是固定的，如果数据项占的空间越小，数据项的数量越多，树的高度越低。这就是为什么每个数据项，即索引字段要尽量的小，比如int占4字节，要比bigint8字节少一半。这也是为什么b+树要求把真实的数据放到叶子节点而不是内层节点，一旦放到内层节点，磁盘块的数据项会大幅度下降，导致树增高。当数据项等于1时将会退化成线性表。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;索引的最左匹配特性&lt;/strong&gt;：当b+树的数据项是复合的数据结构，比如(name,age,sex)的时候，b+数是按照从左到右的顺序来建立搜索树的，比如当(张三,20,F)这样的数据来检索的时候，b+树会优先比较name来确定下一步的所搜方向，如果name相同再依次比较age和sex，最后得到检索的数据；但当(20,F)这样的没有name的数据来的时候，b+树就不知道下一步该查哪个节点，因为建立搜索树的时候name就是第一个比较因子，必须要先根据name来搜索才能知道下一步去哪里查询。比如当(张三,F)这样的数据来检索时，b+树可以用name来指定搜索方向，但下一个字段age的缺失，所以只能把名字等于张三的数据都找到，然后再匹配性别是F的数据了， 这个是非常重要的性质，即索引的最左匹配特性。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id="聚集索引与辅助索引"&gt;聚集索引与辅助索引&lt;/h2&gt;
+&lt;p&gt;&lt;strong&gt;在数据库中，B+树的高度一般都在24层，这也就是说查找某一个键值的行记录时最多只需要24次IO，这倒不错。因为当前一般的机械硬盘每秒至少可以做100次IO，24次的IO意味着查询时间只需要0.02~0.04秒。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;数据库中的B+树索引可以分为聚集索引（clustered index）和辅助索引（secondary index），&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;聚集索引与辅助索引相同的是：不管是聚集索引还是辅助索引，其内部都是B+树的形式，即高度是平衡的，叶子结点存放着所有的数据。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;聚集索引与辅助索引不同的是：叶子结点存放的是否是一整行的信息&lt;/strong&gt;&lt;/p&gt;
+&lt;h3 id="聚集索引"&gt;聚集索引&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;InnoDB存储引擎表示索引组织表，即表中数据按照主键顺序存放。而聚集索引（clustered index）就是按照每张表的主键构造一棵B+树，同时叶子结点存放的即为整张表的行记录数据，也将聚集索引的叶子结点称为数据页。聚集索引的这个特性决定了索引组织表中数据也是索引的一部分。同B+树数据结构一样，每个数据页都通过一个双向链表来进行链接。&lt;/li&gt;
+&lt;li&gt;如果未定义主键，MySQL取第一个唯一索引（unique）而且只含非空列（NOT NULL）作为主键，InnoDB使用它作为聚簇索引。&lt;/li&gt;
+&lt;li&gt;如果没有这样的列，InnoDB就自己产生一个这样的ID值，它有六个字节，而且是隐藏的，使其作为聚簇索引。&lt;/li&gt;
+&lt;li&gt;由于实际的数据页只能按照一棵B+树进行排序，因此每张表只能拥有一个聚集索引。在多少情况下，查询优化器倾向于采用聚集索引。因为聚集索引能够在B+树索引的叶子节点上直接找到数据。此外由于定义了数据的逻辑顺序，聚集索引能够特别快地访问针对范围值得查询。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;img src="https://daemon365.dev/images/5eb91240-8ec1-42a0-93a9-7b2e2daf0d18.png" alt=""&gt;&lt;/p&gt;
+&lt;h4 id="聚集索引的好处"&gt;聚集索引的好处&lt;/h4&gt;
+&lt;ol&gt;
+&lt;li&gt;它对主键的排序查找和范围查找速度非常快，叶子节点的数据就是用户所要查询的数据。如用户需要查找一张表，查询最后的10位用户信息，由于B+树索引是双向链表，所以用户可以快速找到最后一个数据页，并取出10条记录&lt;/li&gt;
+&lt;li&gt;范围查询（range query），即如果要查找主键某一范围内的数据，通过叶子节点的上层中间节点就可以得到页的范围，之后直接读取数据页即可&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id="辅助索引"&gt;辅助索引&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;表中除了聚集索引外其他索引都是辅助索引（Secondary Index，也称为非聚集索引），与聚集索引的区别是：辅助索引的叶子节点不包含行记录的全部数据。&lt;/li&gt;
+&lt;li&gt;叶子节点除了包含键值以外，每个叶子节点中的索引行中还包含一个书签（bookmark）。该书签用来告诉InnoDB存储引擎去哪里可以找到与索引相对应的行数据。&lt;/li&gt;
+&lt;li&gt;由于InnoDB存储引擎是索引组织表，因此InnoDB存储引擎的辅助索引的书签就是相应行数据的聚集索引键。如下图&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;img src="https://daemon365.dev/images/7044a313-fd53-4e99-aaa6-0cd3011ae7bc.png" alt=""&gt;&lt;/p&gt;
+&lt;p&gt;辅助索引的存在并不影响数据在聚集索引中的组织，因此每张表上可以有多个辅助索引，但只能有一个聚集索引。当通过辅助索引来寻找数据时，InnoDB存储引擎会遍历辅助索引并通过叶子级别的指针获得只想主键索引的主键，然后再通过主键索引来找到一个完整的行记录。&lt;/p&gt;
+&lt;p&gt;举例来说，如果在一棵高度为3的辅助索引树种查找数据，那需要对这个辅助索引树遍历3次找到指定主键，如果聚集索引树的高度同样为3，那么还需要对聚集索引树进行3次查找，最终找到一个完整的行数据所在的页，因此一共需要6次逻辑IO访问才能得到最终的一个数据页。&lt;/p&gt;
+&lt;h2 id="mysql索引管理"&gt;MySQL索引管理&lt;/h2&gt;
+&lt;h3 id="功能"&gt;功能&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;索引的功能就是加速查找&lt;/li&gt;
+&lt;li&gt;mysql中的primary key，unique，联合唯一也都是索引，这些索引除了加速查找以外，还有约束的功能&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id="mysql常用的索引"&gt;MySQL常用的索引&lt;/h3&gt;
+&lt;p&gt;聚簇索引（主键索引）：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;加速查询&lt;/li&gt;
+&lt;li&gt;存储所有数据&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;普通索引INDEX：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;加速查找&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;唯一索引：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;主键索引PRIMARY KEY：加速查找+约束（不为空、不能重复）&lt;/li&gt;
+&lt;li&gt;唯一索引UNIQUE:加速查找+约束（不能重复）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;联合索引：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;加速查找&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-sql" data-lang="sql"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f92672"&gt;-&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;PRIMARY&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;KEY&lt;/span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#111"&gt;id&lt;/span&gt;&lt;span style="color:#111"&gt;,&lt;/span&gt;&lt;span style="color:#111"&gt;name&lt;/span&gt;&lt;span style="color:#111"&gt;):&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;联合主键索引&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f92672"&gt;-&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;UNIQUE&lt;/span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#111"&gt;id&lt;/span&gt;&lt;span style="color:#111"&gt;,&lt;/span&gt;&lt;span style="color:#111"&gt;name&lt;/span&gt;&lt;span style="color:#111"&gt;):&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;联合唯一索引&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f92672"&gt;-&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;INDEX&lt;/span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#111"&gt;id&lt;/span&gt;&lt;span style="color:#111"&gt;,&lt;/span&gt;&lt;span style="color:#111"&gt;name&lt;/span&gt;&lt;span style="color:#111"&gt;):&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;联合普通索引&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;索引建议使用bTree 不建议使用hash索引&lt;/strong&gt;&lt;/p&gt;</description><content:encoded><![CDATA[<h2 id="什么是索引">什么是索引</h2>
+<p>一般的应用系统，都是读多写少。而且插入操作和一般的更新操作很少出现性能问题（因为有redo log锁cache缓存）。在生产环境中，我们遇到最多的，也是最容易出问题的，还是一些复杂的查询操作，因此对查询语句的优化显然是重中之重。说起加速查询，就不得不提到索引了。索引的核心思想就是<strong>加速查询</strong>。</p>
+<h2 id="索引的原理">索引的原理</h2>
+<h3 id="索引原理">索引原理</h3>
+<p>索引的目的在于提高查询效率，可以类比字典，如果要查“mysql”这个单词，我们肯定需要定位到m字母，然后从下往下找到y字母，再找到剩下的sql。如果没有索引，那么你可能需要把所有单词看一遍才能找到你想要的，如果我想找到m开头的单词呢？或者ze开头的单词呢？是不是觉得如果没有索引，这个事情根本无法完成？</p>
+<p><strong>本质都是：通过不断地缩小想要获取数据的范围来筛选出最终想要的结果，同时把随机的事件变成顺序的事件，也就是说，有了这种索引机制，我们可以总是用同一种查找方式来锁定数据。</strong></p>
+<p>数据库也是一样，但显然要复杂许多，因为不仅面临着等值查询，还有范围查询(&gt;、&lt;、between、in)、模糊查询(like)、并集查询(or)等等。数据库应该选择怎么样的方式来应对所有的问题呢？我们回想字典的例子，能不能把数据分成段，然后分段查询呢？最简单的如果1000条数据，1到100分成第一段，101到200分成第二段，201到300分成第三段……这样查第250条数据，只要找第三段就可以了，一下子去除了90%的无效数据。但如果是1千万的记录呢，分成几段比较好？稍有算法基础的同学会想到搜索树，其平均复杂度是lgN，具有不错的查询性能。但这里我们忽略了一个关键的问题，复杂度模型是基于每次相同的操作成本来考虑的，数据库实现比较复杂，数据保存在磁盘上，而为了提高性能，每次又可以把部分数据读入内存来计算，因为我们知道访问磁盘的成本大概是访问内存的十万倍左右，所以简单的搜索树难以满足复杂的应用场景。</p>
+<h3 id="磁盘io与预读">磁盘IO与预读</h3>
+<p>考虑到磁盘IO是非常高昂的操作，计算机操作系统做了一些优化，<strong>当一次IO时，不光把当前磁盘地址的数据，而是把相邻的数据也都读取到内存缓冲区内</strong>，因为局部预读性原理告诉我们，当计算机访问一个地址的数据的时候，与其相邻的数据也会很快被访问到。每一次IO读取的数据我们称之为一页(page)。具体一页有多大数据跟操作系统有关，一般为4k或8k，也就是我们读取一页内的数据时候，实际上才发生了一次IO，这个理论对于索引的数据结构设计非常有帮助。</p>
+<h4 id="索引的数据结构">索引的数据结构</h4>
+<p>前面讲了生活中索引的例子，索引的基本原理，数据库的复杂性，又讲了操作系统的相关知识，目的就是让大家了解，任何一种数据结构都不是凭空产生的，一定会有它的背景和使用场景，我们现在总结一下，我们需要这种数据结构能够做些什么，其实很简单，那就是：每次查找数据时把磁盘IO次数控制在一个很小的数量级，最好是常数数量级。那么我们就想到如果一个高度可控的多路搜索树是否能满足需求呢？就这样，b+树应运而生。</p>
+<h2 id="详解b树">详解b+树</h2>
+<p><img src="/images/d39ac7f7-0a67-4ce3-9d32-e2ae589d0a65.png" alt=""></p>
+<p>如上图，是一颗b+树，关于b+树的定义可以参见<a href="http://zh.wikipedia.org/wiki/B%2B%E6%A0%91">B+树</a>，这里只说一些重点，浅蓝色的块我们称之为一个磁盘块，可以看到每个磁盘块包含几个数据项（深蓝色所示）和指针（黄色所示），如磁盘块1包含数据项17和35，包含指针P1、P2、P3，P1表示小于17的磁盘块，P2表示在17和35之间的磁盘块，P3表示大于35的磁盘块。真实的数据存在于叶子节点即3、5、9、10、13、15、28、29、36、60、75、79、90、99。非叶子节点只不存储真实的数据，只存储指引搜索方向的数据项，如17、35并不真实存在于数据表中。</p>
+<h3 id="b树的查找过程">b+树的查找过程</h3>
+<p>如图所示，如果要查找数据项29，那么首先会把磁盘块1由磁盘加载到内存，此时发生一次IO，在内存中用二分查找确定29在17和35之间，锁定磁盘块1的P2指针，内存时间因为非常短（相比磁盘的IO）可以忽略不计，通过磁盘块1的P2指针的磁盘地址把磁盘块3由磁盘加载到内存，发生第二次IO，29在26和30之间，锁定磁盘块3的P2指针，通过指针加载磁盘块8到内存，发生第三次IO，同时内存中做二分查找找到29，结束查询，总计三次IO。真实的情况是，3层的b+树可以表示上百万的数据，如果上百万的数据查找只需要三次IO，性能提高将是巨大的，如果没有索引，每个数据项都要发生一次IO，那么总共需要百万次的IO，显然成本非常非常高。</p>
+<h3 id="b树性质">b+树性质</h3>
+<ol>
+<li><strong>索引字段要尽量的小</strong>：通过上面的分析，我们知道IO次数取决于b+数的高度h，假设当前数据表的数据为N，每个磁盘块的数据项的数量是m，则有h=㏒(m+1)N，当数据量N一定的情况下，m越大，h越小；而m = 磁盘块的大小 / 数据项的大小，磁盘块的大小也就是一个数据页的大小，是固定的，如果数据项占的空间越小，数据项的数量越多，树的高度越低。这就是为什么每个数据项，即索引字段要尽量的小，比如int占4字节，要比bigint8字节少一半。这也是为什么b+树要求把真实的数据放到叶子节点而不是内层节点，一旦放到内层节点，磁盘块的数据项会大幅度下降，导致树增高。当数据项等于1时将会退化成线性表。</li>
+<li><strong>索引的最左匹配特性</strong>：当b+树的数据项是复合的数据结构，比如(name,age,sex)的时候，b+数是按照从左到右的顺序来建立搜索树的，比如当(张三,20,F)这样的数据来检索的时候，b+树会优先比较name来确定下一步的所搜方向，如果name相同再依次比较age和sex，最后得到检索的数据；但当(20,F)这样的没有name的数据来的时候，b+树就不知道下一步该查哪个节点，因为建立搜索树的时候name就是第一个比较因子，必须要先根据name来搜索才能知道下一步去哪里查询。比如当(张三,F)这样的数据来检索时，b+树可以用name来指定搜索方向，但下一个字段age的缺失，所以只能把名字等于张三的数据都找到，然后再匹配性别是F的数据了， 这个是非常重要的性质，即索引的最左匹配特性。</li>
+</ol>
+<h2 id="聚集索引与辅助索引">聚集索引与辅助索引</h2>
+<p><strong>在数据库中，B+树的高度一般都在24层，这也就是说查找某一个键值的行记录时最多只需要24次IO，这倒不错。因为当前一般的机械硬盘每秒至少可以做100次IO，24次的IO意味着查询时间只需要0.02~0.04秒。</strong></p>
+<p><strong>数据库中的B+树索引可以分为聚集索引（clustered index）和辅助索引（secondary index），</strong></p>
+<p><strong>聚集索引与辅助索引相同的是：不管是聚集索引还是辅助索引，其内部都是B+树的形式，即高度是平衡的，叶子结点存放着所有的数据。</strong></p>
+<p><strong>聚集索引与辅助索引不同的是：叶子结点存放的是否是一整行的信息</strong></p>
+<h3 id="聚集索引">聚集索引</h3>
+<ol>
+<li>InnoDB存储引擎表示索引组织表，即表中数据按照主键顺序存放。而聚集索引（clustered index）就是按照每张表的主键构造一棵B+树，同时叶子结点存放的即为整张表的行记录数据，也将聚集索引的叶子结点称为数据页。聚集索引的这个特性决定了索引组织表中数据也是索引的一部分。同B+树数据结构一样，每个数据页都通过一个双向链表来进行链接。</li>
+<li>如果未定义主键，MySQL取第一个唯一索引（unique）而且只含非空列（NOT NULL）作为主键，InnoDB使用它作为聚簇索引。</li>
+<li>如果没有这样的列，InnoDB就自己产生一个这样的ID值，它有六个字节，而且是隐藏的，使其作为聚簇索引。</li>
+<li>由于实际的数据页只能按照一棵B+树进行排序，因此每张表只能拥有一个聚集索引。在多少情况下，查询优化器倾向于采用聚集索引。因为聚集索引能够在B+树索引的叶子节点上直接找到数据。此外由于定义了数据的逻辑顺序，聚集索引能够特别快地访问针对范围值得查询。</li>
+</ol>
+<p><img src="/images/5eb91240-8ec1-42a0-93a9-7b2e2daf0d18.png" alt=""></p>
+<h4 id="聚集索引的好处">聚集索引的好处</h4>
+<ol>
+<li>它对主键的排序查找和范围查找速度非常快，叶子节点的数据就是用户所要查询的数据。如用户需要查找一张表，查询最后的10位用户信息，由于B+树索引是双向链表，所以用户可以快速找到最后一个数据页，并取出10条记录</li>
+<li>范围查询（range query），即如果要查找主键某一范围内的数据，通过叶子节点的上层中间节点就可以得到页的范围，之后直接读取数据页即可</li>
+</ol>
+<h3 id="辅助索引">辅助索引</h3>
+<ol>
+<li>表中除了聚集索引外其他索引都是辅助索引（Secondary Index，也称为非聚集索引），与聚集索引的区别是：辅助索引的叶子节点不包含行记录的全部数据。</li>
+<li>叶子节点除了包含键值以外，每个叶子节点中的索引行中还包含一个书签（bookmark）。该书签用来告诉InnoDB存储引擎去哪里可以找到与索引相对应的行数据。</li>
+<li>由于InnoDB存储引擎是索引组织表，因此InnoDB存储引擎的辅助索引的书签就是相应行数据的聚集索引键。如下图</li>
+</ol>
+<p><img src="/images/7044a313-fd53-4e99-aaa6-0cd3011ae7bc.png" alt=""></p>
+<p>辅助索引的存在并不影响数据在聚集索引中的组织，因此每张表上可以有多个辅助索引，但只能有一个聚集索引。当通过辅助索引来寻找数据时，InnoDB存储引擎会遍历辅助索引并通过叶子级别的指针获得只想主键索引的主键，然后再通过主键索引来找到一个完整的行记录。</p>
+<p>举例来说，如果在一棵高度为3的辅助索引树种查找数据，那需要对这个辅助索引树遍历3次找到指定主键，如果聚集索引树的高度同样为3，那么还需要对聚集索引树进行3次查找，最终找到一个完整的行数据所在的页，因此一共需要6次逻辑IO访问才能得到最终的一个数据页。</p>
+<h2 id="mysql索引管理">MySQL索引管理</h2>
+<h3 id="功能">功能</h3>
+<ol>
+<li>索引的功能就是加速查找</li>
+<li>mysql中的primary key，unique，联合唯一也都是索引，这些索引除了加速查找以外，还有约束的功能</li>
+</ol>
+<h3 id="mysql常用的索引">MySQL常用的索引</h3>
+<p>聚簇索引（主键索引）：</p>
+<ul>
+<li>加速查询</li>
+<li>存储所有数据</li>
+</ul>
+<p>普通索引INDEX：</p>
+<ul>
+<li>加速查找</li>
+</ul>
+<p>唯一索引：</p>
+<ul>
+<li>主键索引PRIMARY KEY：加速查找+约束（不为空、不能重复）</li>
+<li>唯一索引UNIQUE:加速查找+约束（不能重复）</li>
+</ul>
+<p>联合索引：</p>
+<ul>
+<li>加速查找</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#f92672">-</span> <span style="color:#00a8c8">PRIMARY</span> <span style="color:#00a8c8">KEY</span><span style="color:#111">(</span><span style="color:#111">id</span><span style="color:#111">,</span><span style="color:#111">name</span><span style="color:#111">):</span><span style="color:#960050;background-color:#1e0010">联合主键索引</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">-</span> <span style="color:#00a8c8">UNIQUE</span><span style="color:#111">(</span><span style="color:#111">id</span><span style="color:#111">,</span><span style="color:#111">name</span><span style="color:#111">):</span><span style="color:#960050;background-color:#1e0010">联合唯一索引</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">-</span> <span style="color:#00a8c8">INDEX</span><span style="color:#111">(</span><span style="color:#111">id</span><span style="color:#111">,</span><span style="color:#111">name</span><span style="color:#111">):</span><span style="color:#960050;background-color:#1e0010">联合普通索引</span>
+</span></span></code></pre></div><p><strong>索引建议使用bTree 不建议使用hash索引</strong></p>
+<h2 id="创建删除索引的语法">创建/删除索引的语法</h2>
+<ul>
+<li>创建表时</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#75715e">/*
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">CREATE TABLE 表名 (
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    字段名1  数据类型 [完整性约束条件…],
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    字段名2  数据类型 [完整性约束条件…],
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    [UNIQUE | FULLTEXT | SPATIAL ]   INDEX | KEY
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    [索引名]  (字段名[(长度)]  [ASC |DESC]) 
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">);
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">*/</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">create</span> <span style="color:#00a8c8">table</span> <span style="color:#111">t1</span><span style="color:#111">(</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">id</span> <span style="color:#111">int</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">name</span> <span style="color:#111">char</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">age</span> <span style="color:#111">int</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">sex</span> <span style="color:#111">enum</span><span style="color:#111">(</span><span style="color:#d88200">&#39;male&#39;</span><span style="color:#111">,</span><span style="color:#d88200">&#39;female&#39;</span><span style="color:#111">),</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">unique</span> <span style="color:#00a8c8">key</span> <span style="color:#111">uni_id</span><span style="color:#111">(</span><span style="color:#111">id</span><span style="color:#111">),</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">index</span> <span style="color:#111">ix_name</span><span style="color:#111">(</span><span style="color:#111">name</span><span style="color:#111">)</span> <span style="color:#f92672">#</span> <span style="color:#111">index没有key</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">);</span>
+</span></span></code></pre></div><ul>
+<li>CREATE在已存在的表上创建索引</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#75715e">/*
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">CREATE  [UNIQUE | FULLTEXT | SPATIAL ]  INDEX  索引名 
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	ON 表名 (字段名[(长度)]  [ASC |DESC]) ;
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">*/</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">create</span> <span style="color:#00a8c8">index</span> <span style="color:#111">ix_age</span> <span style="color:#00a8c8">on</span> <span style="color:#111">t1</span><span style="color:#111">(</span><span style="color:#111">age</span><span style="color:#111">);</span>
+</span></span></code></pre></div><ul>
+<li>ALTER TABLE在已存在的表上创建索引</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#75715e">/*
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">ALTER TABLE 表名 ADD  [UNIQUE | FULLTEXT | SPATIAL ] INDEX
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	索引名 (字段名[(长度)]  [ASC |DESC]) ;
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">*/</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">alter</span> <span style="color:#00a8c8">table</span> <span style="color:#111">t1</span> <span style="color:#00a8c8">add</span> <span style="color:#00a8c8">index</span> <span style="color:#111">ix_sex</span><span style="color:#111">(</span><span style="color:#111">sex</span><span style="color:#111">);</span>
+</span></span></code></pre></div><ul>
+<li>查看索引</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#00a8c8">show</span> <span style="color:#00a8c8">create</span> <span style="color:#00a8c8">table</span> <span style="color:#111">t1</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">/*
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">| t1    | CREATE TABLE `t1` (
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">  `id` int(11) DEFAULT NULL,
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">  `name` char(1) DEFAULT NULL,
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">  `age` int(11) DEFAULT NULL,
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">  `sex` enum(&#39;male&#39;,&#39;female&#39;) DEFAULT NULL,
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">  UNIQUE KEY `uni_id` (`id`),
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">  KEY `ix_name` (`name`),
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">  KEY `ix_age` (`age`),
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">  KEY `ix_sex` (`sex`)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">) ENGINE=InnoDB DEFAULT CHARSET=latin1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">*/</span>
+</span></span></code></pre></div><ul>
+<li>删除索引</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#00a8c8">DROP</span> <span style="color:#00a8c8">INDEX</span> <span style="color:#960050;background-color:#1e0010">索引名</span> <span style="color:#00a8c8">ON</span> <span style="color:#960050;background-color:#1e0010">表名字</span><span style="color:#111">;</span>
+</span></span></code></pre></div><h2 id="查询优化神器---explain命令">查询优化神器 - explain命令</h2>
+<p>关于explain命令相信大家并不陌生，具体用法和字段含义可以参考官网<a href="http://dev.mysql.com/doc/refman/5.5/en/explain-output.html">explain-output</a>，这里需要强调rows是核心指标，绝大部分rows小的语句执行一定很快（有例外，下面会讲到）。所以优化语句基本上都是在优化rows。</p>
+<h3 id="慢查询优化基本步骤">慢查询优化基本步骤</h3>
+<ol start="0">
+<li>
+<p>先运行看看是否真的很慢，注意设置SQL_NO_CACHE</p>
+</li>
+<li>
+<p>where条件单表查，锁定最小返回记录表。这句话的意思是把查询语句的where都应用到表中返回的记录数最小的表开始查起，单表每个字段分别查询，看哪个字段的区分度最高</p>
+</li>
+<li>
+<p>explain查看执行计划，是否与1预期一致（从锁定记录较少的表开始查询）</p>
+</li>
+<li>
+<p>order by limit 形式的sql语句让排序的表优先查</p>
+</li>
+<li>
+<p>了解业务方使用场景</p>
+</li>
+<li>
+<p>加索引时参照建索引的几大原则</p>
+</li>
+<li>
+<p>观察结果，不符合预期继续从0分析</p>
+</li>
+</ol>
+<h3 id="explain参数">explain参数</h3>
+<ol>
+<li>
+<p><code>select_typec</code>  表示 SELECT 的类型。
+常见的取值有</p>
+<ul>
+<li><code>SIMPLE</code>（简单表，即不使用表连接或者子查询）</li>
+<li><code>PRIMARY</code>（主查询，即外层的查询）</li>
+<li><code>UNION</code>（<code>UNION</code> 中的第二个或者后面的查询语句）</li>
+<li><code>SUBQUERY</code>（子查询中的第一个 <code>SELECT</code>）等。</li>
+</ul>
+</li>
+<li>
+<p><code>table</code>  输出结果集的表。</p>
+</li>
+<li>
+<p><code>type</code>  表示表的连接类型，性能由好到差的连接类型如下</p>
+<ul>
+<li><code>system</code>（表中仅有一行，即常量表）</li>
+<li><code>const</code>（单表中最多有一个匹配行，例如 <code>primary key</code> 或者 <code>unique index</code>）</li>
+<li><code>eq_ref</code>（对于前面的每一行，在此表中只查询一条记录，简单来说，就是多表连接中使用<code>primary key</code>或者<code>unique index</code>）</li>
+<li><code>ref</code>（与<code>eq_ref</code>类似，区别在于不是使用<code>primary key</code> 或者 <code>unique index</code>，而是使用普通的索引）</li>
+<li><code>ref_or_null</code>（与 <code>ref</code> 类似，区别在于条件中包含对 <code>NULL</code> 的查询）</li>
+<li><code>index_merge</code> (索引合并优化)</li>
+<li><code>unique_subquery</code>（in的后面是一个查询主键字段的子查询）</li>
+<li><code>index_subquery</code>（与 <code>unique_subquery</code> 类似，区别在于 in 的后面是查询非唯一索引字段的子查询）</li>
+<li><code>range</code>（单表中的范围查询）</li>
+<li><code>index</code>（对于前面的每一行，都通过查询索引来得到数据）</li>
+<li><code>all</code>（对于前面的每一行，都通过全表扫描来得到数据）。</li>
+</ul>
+</li>
+<li>
+<p><code>possible_keys</code>  表示查询时，可能使用的索引。</p>
+</li>
+<li>
+<p><code>key</code>  表示实际使用的索引。</p>
+</li>
+<li>
+<p><code>key_len</code>  索引字段的长度。</p>
+</li>
+<li>
+<p><code>rows</code>  扫描行的数量。</p>
+</li>
+<li>
+<p><code>Extra</code>  执行情况的说明和描述。</p>
+</li>
+</ol>
+]]></content:encoded><category>database</category><category>mysql</category></item><item><title>mysql事务</title><link>https://daemon365.dev/post/database/mysql_transaction/</link><pubDate>Fri, 03 Apr 2020 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/database/mysql_transaction/</guid><description>&lt;h2 id="事务是什么"&gt;事务是什么&lt;/h2&gt;
+&lt;p&gt;&lt;strong&gt;事务就是指逻辑上的一组SQL语句操作，组成这组操作的各个SQL语句，执行时要么全成功要么全失败。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;在 MySQL 中，事务支持是在引擎层实现的。MySQL 是一个支持多引擎的系统，但并不是所有的引擎都支持事务。&lt;/p&gt;
+&lt;p&gt;比如 MySQL 原生的 MyISAM 引擎就不支持事务，这也是 MyISAM 被 InnoDB 取代的重要原因之一&lt;/p&gt;
+&lt;h2 id="事务的四大特性"&gt;事务的四大特性&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;原子性(Atomicity)
+&lt;ul&gt;
+&lt;li&gt;事务是一个不可分割的单位，事务中的所有SQL等操作要么都发生，要么都不发生。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;一致性(Consistency)
+&lt;ul&gt;
+&lt;li&gt;事务发生前和发生后，数据的完整性必须保持一致。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;隔离性(Isolation)
+&lt;ul&gt;
+&lt;li&gt;当并发访问数据库时，一个正在执行的事务在执行完毕前，对于其他的会话是不可见的，多个并发事务之间的数据是相互隔离的。也就是其他人的操作在这个事务的执行过程中是看不到这个事务的执行结果的，也就是他们拿到的是这个事务执行之前的内容，等这个事务执行完才能拿到新的数据。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;持久性(Durability)
+&lt;ul&gt;
+&lt;li&gt;一个事务一旦被提交，它对数据库中的数据改变就是永久性的。如果出了错误，事务也不允撤销，只能通过&amp;rsquo;补偿性事务&amp;rsquo;。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id="事务的开启"&gt;事务的开启&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;开启:&lt;/p&gt;
+&lt;p&gt;begin/start transaction 执行第一个语句是开启事务&lt;/p&gt;
+&lt;p&gt;start transaction with consistent snapshot 直接开启事务&lt;/p&gt;
+&lt;p&gt;隐性事务：set autocommit=0，这个命令会将这个线程的自动提交关掉。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;意味着如果你只执行一个 select 语句，这个事务就启动了，而且并不会自动提交。这个事务持续存在直到你主动执行 commit 或 rollback 语句，或者断开连接。&lt;/p&gt;
+&lt;p&gt;有些客户端连接框架会默认连接成功后先执行一个 set autocommit=0 的命令。这就导致接下来的查询都在事务中，如果是长连接，就导致了意外的长事务。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;提交:commit&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;回滚:rollback&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="在事务中混合使用存储引擎"&gt;在事务中混合使用存储引擎&lt;/h2&gt;
+&lt;p&gt;MySQL服务器层不管理事务，事务是由下层的存储引擎实现的。所以在同一个事务中，使用多种存储引擎是不可靠的。&lt;/p&gt;
+&lt;p&gt;如果在事务中混合使用了事务型和非事务型的表（例如innodb和myisam表），在正常提交的情况下不会有什么问题。&lt;/p&gt;
+&lt;p&gt;但如果该事务需要回滚，非事务型的表上的变更就无法撤销，这会导致数据库处于不一致的状态，这种情况很难修复，事务的最终结果将无法确定。&lt;/p&gt;
+&lt;p&gt;所以，为每张表选择合适的存储引擎非常重要。&lt;/p&gt;
+&lt;p&gt;在非事务型的表上执行事务相关操作的时候，MySQL通常不会发出提醒，也不会报错。有时候只有回滚的时候才会发出一个警告：&amp;ldquo;某些非事务型的表上的变更不能被回滚&amp;rdquo;。&lt;/p&gt;
+&lt;p&gt;但大多数情况下，对非事务型表的操作都不会有提示。&lt;/p&gt;
+&lt;h2 id="脏读-幻读-不可重复读"&gt;脏读 幻读 不可重复读&lt;/h2&gt;
+&lt;h3 id="脏读"&gt;脏读&lt;/h3&gt;
+&lt;p&gt;所谓脏读是指一个事务中访问到了另外一个事务未提交的数据，如下图：&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;s1&lt;/th&gt;
+&lt;th&gt;s2&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;begin&lt;/td&gt;
+&lt;td&gt;begin&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;update test set number = 100 where id = 1;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;select number from test where id = 1;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;commit&lt;/td&gt;
+&lt;td&gt;commit&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;ul&gt;
+&lt;li&gt;如果会话 2 更新 number 为 100，但是在 number 之前，会话 1 希望得到 number，那么会获得的值就是更新前的值。或者如果会话 2 更新了值但是执行了 rollback，而会话 1 拿到的仍是 100。这就是脏读。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="不可重复读"&gt;不可重复读&lt;/h3&gt;
+&lt;p&gt;一个事务查询同一条记录2次，得到的结果不一致：&lt;/p&gt;</description><content:encoded><![CDATA[<h2 id="事务是什么">事务是什么</h2>
+<p><strong>事务就是指逻辑上的一组SQL语句操作，组成这组操作的各个SQL语句，执行时要么全成功要么全失败。</strong></p>
+<p>在 MySQL 中，事务支持是在引擎层实现的。MySQL 是一个支持多引擎的系统，但并不是所有的引擎都支持事务。</p>
+<p>比如 MySQL 原生的 MyISAM 引擎就不支持事务，这也是 MyISAM 被 InnoDB 取代的重要原因之一</p>
+<h2 id="事务的四大特性">事务的四大特性</h2>
+<ol>
+<li>原子性(Atomicity)
+<ul>
+<li>事务是一个不可分割的单位，事务中的所有SQL等操作要么都发生，要么都不发生。</li>
+</ul>
+</li>
+<li>一致性(Consistency)
+<ul>
+<li>事务发生前和发生后，数据的完整性必须保持一致。</li>
+</ul>
+</li>
+<li>隔离性(Isolation)
+<ul>
+<li>当并发访问数据库时，一个正在执行的事务在执行完毕前，对于其他的会话是不可见的，多个并发事务之间的数据是相互隔离的。也就是其他人的操作在这个事务的执行过程中是看不到这个事务的执行结果的，也就是他们拿到的是这个事务执行之前的内容，等这个事务执行完才能拿到新的数据。</li>
+</ul>
+</li>
+<li>持久性(Durability)
+<ul>
+<li>一个事务一旦被提交，它对数据库中的数据改变就是永久性的。如果出了错误，事务也不允撤销，只能通过&rsquo;补偿性事务&rsquo;。</li>
+</ul>
+</li>
+</ol>
+<h2 id="事务的开启">事务的开启</h2>
+<ul>
+<li>
+<p>开启:</p>
+<p>begin/start transaction 执行第一个语句是开启事务</p>
+<p>start transaction with consistent snapshot 直接开启事务</p>
+<p>隐性事务：set autocommit=0，这个命令会将这个线程的自动提交关掉。</p>
+<blockquote>
+<p>意味着如果你只执行一个 select 语句，这个事务就启动了，而且并不会自动提交。这个事务持续存在直到你主动执行 commit 或 rollback 语句，或者断开连接。</p>
+<p>有些客户端连接框架会默认连接成功后先执行一个 set autocommit=0 的命令。这就导致接下来的查询都在事务中，如果是长连接，就导致了意外的长事务。</p>
+</blockquote>
+</li>
+<li>
+<p>提交:commit</p>
+</li>
+<li>
+<p>回滚:rollback</p>
+</li>
+</ul>
+<h2 id="在事务中混合使用存储引擎">在事务中混合使用存储引擎</h2>
+<p>MySQL服务器层不管理事务，事务是由下层的存储引擎实现的。所以在同一个事务中，使用多种存储引擎是不可靠的。</p>
+<p>如果在事务中混合使用了事务型和非事务型的表（例如innodb和myisam表），在正常提交的情况下不会有什么问题。</p>
+<p>但如果该事务需要回滚，非事务型的表上的变更就无法撤销，这会导致数据库处于不一致的状态，这种情况很难修复，事务的最终结果将无法确定。</p>
+<p>所以，为每张表选择合适的存储引擎非常重要。</p>
+<p>在非事务型的表上执行事务相关操作的时候，MySQL通常不会发出提醒，也不会报错。有时候只有回滚的时候才会发出一个警告：&ldquo;某些非事务型的表上的变更不能被回滚&rdquo;。</p>
+<p>但大多数情况下，对非事务型表的操作都不会有提示。</p>
+<h2 id="脏读-幻读-不可重复读">脏读 幻读 不可重复读</h2>
+<h3 id="脏读">脏读</h3>
+<p>所谓脏读是指一个事务中访问到了另外一个事务未提交的数据，如下图：</p>
+<table>
+  <thead>
+      <tr>
+          <th>s1</th>
+          <th>s2</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>begin</td>
+          <td>begin</td>
+      </tr>
+      <tr>
+          <td></td>
+          <td>update test set number = 100 where id = 1;</td>
+      </tr>
+      <tr>
+          <td>select number from test where id = 1;</td>
+          <td></td>
+      </tr>
+      <tr>
+          <td>commit</td>
+          <td>commit</td>
+      </tr>
+  </tbody>
+</table>
+<ul>
+<li>如果会话 2 更新 number 为 100，但是在 number 之前，会话 1 希望得到 number，那么会获得的值就是更新前的值。或者如果会话 2 更新了值但是执行了 rollback，而会话 1 拿到的仍是 100。这就是脏读。</li>
+</ul>
+<h3 id="不可重复读">不可重复读</h3>
+<p>一个事务查询同一条记录2次，得到的结果不一致：</p>
+<table>
+  <thead>
+      <tr>
+          <th>S1</th>
+          <th>S2</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>begin</td>
+          <td>begin;</td>
+      </tr>
+      <tr>
+          <td>select number from test where id = 1;</td>
+          <td></td>
+      </tr>
+      <tr>
+          <td></td>
+          <td>update test set number = 200 where id = 1;</td>
+      </tr>
+      <tr>
+          <td></td>
+          <td>commit</td>
+      </tr>
+      <tr>
+          <td>select number from test where id = 1;</td>
+          <td></td>
+      </tr>
+      <tr>
+          <td>commit;</td>
+          <td></td>
+      </tr>
+  </tbody>
+</table>
+<ul>
+<li>由于在读取中间变更了数据，所以会话 1 事务查询期间的得到的结果就不一样了。</li>
+</ul>
+<h3 id="幻读">幻读</h3>
+<p>一个事务查询2次，得到的记录条数不一致：</p>
+<table>
+  <thead>
+      <tr>
+          <th>S1</th>
+          <th>S2</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>begin</td>
+          <td>begin</td>
+      </tr>
+      <tr>
+          <td>select number from test where id &lt; 5;</td>
+          <td></td>
+      </tr>
+      <tr>
+          <td></td>
+          <td>insert into test value(2,3);</td>
+      </tr>
+      <tr>
+          <td></td>
+          <td>commit</td>
+      </tr>
+      <tr>
+          <td>select number from test where id &lt; 5;</td>
+          <td></td>
+      </tr>
+      <tr>
+          <td>commit</td>
+          <td></td>
+      </tr>
+  </tbody>
+</table>
+<ul>
+<li>幻读是不可重复读的一种特殊场景。</li>
+</ul>
+<h2 id="事务的隔离级别">事务的隔离级别</h2>
+<p>MySQL 里有四个隔离级别：</p>
+<h3 id="read-uncommitted读未提交">READ UNCOMMITTED（读未提交）</h3>
+<p>在read uncommitted级别，事务中的修改 ，即使没有提交，对其他事务也都是可见的。事务可以读取未提交的数据，这也被称为脏读。</p>
+<p>这个级别会导致很多问题，从性能上来说，read uncommitted不会比其他的级别好太多，但却缺乏其他级别的很多好处，除非真个有非常必要的理由，在实际应用中一般很少使用。</p>
+<h3 id="read-committed提已提交">READ COMMITTED（提已提交）</h3>
+<p>大多数数据库系统的默认隔离级别都是READ COMMITTED（但MySQL不是）。</p>
+<p>READ COMMITTED满足前面提到的隔离性的简单定义：一个事务开始时，只能看见已经提交的事务所做的修改。</p>
+<p>换句话说，一个事务从开始直到提交之前，所做的任何修改对其他事务都是不可见的，这个级别有时候也叫做不可重复读。</p>
+<p>不可重复读现象：当事务内相同的记录被检索两次，且两次得到的结果不同时，此现象成为不可重复读。</p>
+<h3 id="repeatable-read读可重复读">REPEATABLE READ（读可重复读）</h3>
+<p>REPEATABLE READ解决了脏读的问题。该级别保证了在同一个事务中多次读取同样记录的结果是一致的。但是理论上，可重复读隔离级别还是无法解决另外一个幻读的问题。</p>
+<p>所谓幻读，指的是当某个事务在读取某个范围内的记录时，另外一个事务又在该范围内插入了新的记录，当之前的事务再次读取该范围的记录时，会产生幻行。</p>
+<p>可重复读是MySQL的默认事务隔离级别。</p>
+<h3 id="serizlizable可串行化">SERIZLIZABLE（可串行化）</h3>
+<p>SERIZLIZABLE是最高的隔离级别。它通过强制事务串行执行，避免了前面说的幻读的问题。</p>
+<p>简单来说，SERIZLIZABLE会在读取的每一行数据上都加锁，所以可能导致大量的超时和锁争用的问题。</p>
+<p>实际应用中也很少用到这个隔离级别，只有在非常需要确保数据的一致性而且可以接受没有并发的情况下，才考虑采用该级别。</p>
+<h4 id="不同事务隔离级别的效果">不同事务隔离级别的效果：</h4>
+<table>
+  <thead>
+      <tr>
+          <th>隔离级别</th>
+          <th>脏读</th>
+          <th>不可重复读</th>
+          <th>幻读</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>READ UNCOMMITTED（未提交读）</td>
+          <td>✅</td>
+          <td>✅</td>
+          <td>✅</td>
+      </tr>
+      <tr>
+          <td>READ COMMITTED（提已提交）</td>
+          <td>❎</td>
+          <td>✅</td>
+          <td>✅</td>
+      </tr>
+      <tr>
+          <td>REPEATABLE READ（可重复读）</td>
+          <td>❎</td>
+          <td>❎</td>
+          <td>✅</td>
+      </tr>
+      <tr>
+          <td>SERIZLIZABLE（可串行化）</td>
+          <td>❎</td>
+          <td>❎</td>
+          <td>✅</td>
+      </tr>
+  </tbody>
+</table>
+<p>在 InnoDB 中，默认为 Repeatable 级别，InnoDB 中使用一种被称为 next-key locking 的策略来避免幻读（phantom）现象的产生。</p>
+<p>隔离级别越高，越能保证数据的完整性和一致性，但是对并发性能的影响也越大。</p>
+<h2 id="事务隔离的实现">事务隔离的实现</h2>
+<p>隔离级别为默认可重复读</p>
+<p>在 MySQL 中，实际上每条记录在更新的时候都会同时记录一条回滚操作。
+记录上的最新值，通过回滚操作，都可以得到前一个状态的值。
+假设一个值从 1 被按顺序改成了 2、3、4，在回滚日志里面就会有类似下面的记录。</p>
+<p><img src="/images/1eb56f59-6331-4a47-bf33-b77144b26b18.png" alt=""></p>
+<p>当前值是 4，但是在查询这条记录的时候，不同时刻启动的事务会有不同的 read-view。
+如图中看到的，在视图 A、B、C 里面，这一个记录的值分别是 1、2、4，
+同一条记录在系统中可以存在多个版本，就是数据库的多版本并发控制（MVCC）。
+对于 read-view A，要得到 1，就必须将当前值依次执行图中所有的回滚操作得到。
+同时你会发现，
+即使现在有另外一个事务正在将 4 改成 5，这个事务跟 read-view A、B、C 对应的事务是不会冲突的</p>
+<h2 id="参考文章">参考文章</h2>
+<ul>
+<li><a href="https://time.geekbang.org/column/article/70562">https://time.geekbang.org/column/article/70562</a></li>
+</ul>
+]]></content:encoded><category>database</category><category>mysql</category><category>事务</category></item><item><title>mysql 锁</title><link>https://daemon365.dev/post/database/mysql_lock/</link><pubDate>Thu, 02 Apr 2020 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/database/mysql_lock/</guid><description>&lt;h2 id="mysql中的锁"&gt;MySQL中的锁&lt;/h2&gt;
+&lt;p&gt;数据库锁设计的初衷是处理并发问题。作为多用户共享的资源，当出现并发访问的时候，数据库需要合理地控制资源的访问规则。而锁就是用来实现这些访问规则的重要数据结构。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;根据加锁的范围，MySQL 里面的锁大致可以分成全局锁、表级锁和行锁三类&lt;/strong&gt;&lt;/p&gt;
+&lt;h2 id="全局锁"&gt;全局锁&lt;/h2&gt;
+&lt;p&gt;全局锁就是对整个数据库实例加锁。&lt;/p&gt;
+&lt;p&gt;MySQL提供了一个加全局读锁的方法，命令是Flush tables with read lock。当需要让整个库处于只读状态的时候，可以使用这个命令，之后其他线程的以下语句会被阻塞：数据更新语句（数据的增删改）、数据定义语句（包括建表、修改表结构等）和更新类事务的提交语句&lt;/p&gt;
+&lt;p&gt;全局锁的典型使用场景是，做全库逻辑备份。也就是把整库每个表都select出来存成文本&lt;/p&gt;
+&lt;p&gt;但是让整个库都只读，可能出现以下问题：&lt;/p&gt;
+&lt;p&gt;如果在主库上备份，那么在备份期间都不能执行更新，业务基本上就得停摆
+如果在从库上备份，那么在备份期间从库不能执行主库同步过来的binlog，会导致主从延迟
+在可重复读隔离级别下开启一个事务能够拿到一致性视图&lt;/p&gt;
+&lt;p&gt;官方自带的逻辑备份工具是mysqldump。当mysqldump使用参数–single-transaction的时候，导数据之前就会启动一个事务，来确保拿到一致性视图。而由于MVCC的支持，这个过程中数据是可以正常更新的。single-transaction只适用于所有的表使用事务引擎的库&lt;/p&gt;
+&lt;p&gt;既然要全库只读，为什么不使用set global readonly=true的方式？&lt;/p&gt;
+&lt;p&gt;在有些系统中，readonly的值会被用来做其他逻辑，比如用来判断一个库是主库还是备库。因此修改global变量的方式影响面更大
+在异常处理机制上有差异。如果执行Flush tables with read lock命令之后由于客户端发生异常断开，那么MySQL会自动释放这个全局锁，整个库回到可以正常更新的状态。而将整个库设置为readonly之后，如果客户端发生异常，则数据库会一直保持readonly状态，这样会导致整个库长时间处于不可写状态，风险较高&lt;/p&gt;
+&lt;h2 id="表级锁"&gt;表级锁&lt;/h2&gt;
+&lt;p&gt;&lt;strong&gt;MySQL 里面表级别的锁有两种：一种是表锁，一种是元数据锁（meta data lock，MDL)。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;表锁的语法是 lock tables … read/write。与 FTWRL 类似，可以用 unlock tables 主动释放锁，也可以在客户端断开的时候自动释放。需要注意，lock tables 语法除了会限制别的线程的读写外，也限定了本线程接下来的操作对象。&lt;/p&gt;
+&lt;p&gt;另一类表级的锁是 MDL（metadata lock)。MDL 不需要显式使用，在访问一个表的时候会被自动加上。MDL 的作用是，保证读写的正确性。&lt;/p&gt;
+&lt;p&gt;在 MySQL 5.5 版本中引入了 MDL，当对一个表做增删改查操作的时候，加 MDL 读锁；当要对表做结构变更操作的时候，加 MDL 写锁。&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;读锁之间不互斥，因此你可以有多个线程同时对一张表增删改查。&lt;/li&gt;
+&lt;li&gt;读写锁之间、写锁之间是互斥的，用来保证变更表结构操作的安全性。因此，如果有两个线程要同时给一个表加字段，其中一个要等另一个执行完才能开始执行。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;给一个表加字段，或者修改字段，或者加索引，需要扫描全表的数据。在对大表操作的时候，你肯定会特别小心，以免对线上服务造成影响。而实际上，即使是小表，操作不慎也会出问题。&lt;/p&gt;
+&lt;p&gt;如果某个表上的查询语句频繁，而且客户端有重试机制，也就是说超时后会再起一个新 session 再请求的话，这个库的线程很快就会爆满。&lt;/p&gt;
+&lt;p&gt;事务中的 MDL 锁，在语句执行开始时申请，但是语句结束后并不会马上释放，而会等到整个事务提交后再释放。&lt;/p&gt;
+&lt;h2 id="行锁"&gt;行锁&lt;/h2&gt;
+&lt;p&gt;MySQL 的行锁是在引擎层由各个引擎自己实现的。但并不是所有的引擎都支持行锁，比如 MyISAM 引擎就不支持行锁。&lt;/p&gt;</description><content:encoded><![CDATA[<h2 id="mysql中的锁">MySQL中的锁</h2>
+<p>数据库锁设计的初衷是处理并发问题。作为多用户共享的资源，当出现并发访问的时候，数据库需要合理地控制资源的访问规则。而锁就是用来实现这些访问规则的重要数据结构。</p>
+<p><strong>根据加锁的范围，MySQL 里面的锁大致可以分成全局锁、表级锁和行锁三类</strong></p>
+<h2 id="全局锁">全局锁</h2>
+<p>全局锁就是对整个数据库实例加锁。</p>
+<p>MySQL提供了一个加全局读锁的方法，命令是Flush tables with read lock。当需要让整个库处于只读状态的时候，可以使用这个命令，之后其他线程的以下语句会被阻塞：数据更新语句（数据的增删改）、数据定义语句（包括建表、修改表结构等）和更新类事务的提交语句</p>
+<p>全局锁的典型使用场景是，做全库逻辑备份。也就是把整库每个表都select出来存成文本</p>
+<p>但是让整个库都只读，可能出现以下问题：</p>
+<p>如果在主库上备份，那么在备份期间都不能执行更新，业务基本上就得停摆
+如果在从库上备份，那么在备份期间从库不能执行主库同步过来的binlog，会导致主从延迟
+在可重复读隔离级别下开启一个事务能够拿到一致性视图</p>
+<p>官方自带的逻辑备份工具是mysqldump。当mysqldump使用参数–single-transaction的时候，导数据之前就会启动一个事务，来确保拿到一致性视图。而由于MVCC的支持，这个过程中数据是可以正常更新的。single-transaction只适用于所有的表使用事务引擎的库</p>
+<p>既然要全库只读，为什么不使用set global readonly=true的方式？</p>
+<p>在有些系统中，readonly的值会被用来做其他逻辑，比如用来判断一个库是主库还是备库。因此修改global变量的方式影响面更大
+在异常处理机制上有差异。如果执行Flush tables with read lock命令之后由于客户端发生异常断开，那么MySQL会自动释放这个全局锁，整个库回到可以正常更新的状态。而将整个库设置为readonly之后，如果客户端发生异常，则数据库会一直保持readonly状态，这样会导致整个库长时间处于不可写状态，风险较高</p>
+<h2 id="表级锁">表级锁</h2>
+<p><strong>MySQL 里面表级别的锁有两种：一种是表锁，一种是元数据锁（meta data lock，MDL)。</strong></p>
+<p>表锁的语法是 lock tables … read/write。与 FTWRL 类似，可以用 unlock tables 主动释放锁，也可以在客户端断开的时候自动释放。需要注意，lock tables 语法除了会限制别的线程的读写外，也限定了本线程接下来的操作对象。</p>
+<p>另一类表级的锁是 MDL（metadata lock)。MDL 不需要显式使用，在访问一个表的时候会被自动加上。MDL 的作用是，保证读写的正确性。</p>
+<p>在 MySQL 5.5 版本中引入了 MDL，当对一个表做增删改查操作的时候，加 MDL 读锁；当要对表做结构变更操作的时候，加 MDL 写锁。</p>
+<ol>
+<li>读锁之间不互斥，因此你可以有多个线程同时对一张表增删改查。</li>
+<li>读写锁之间、写锁之间是互斥的，用来保证变更表结构操作的安全性。因此，如果有两个线程要同时给一个表加字段，其中一个要等另一个执行完才能开始执行。</li>
+</ol>
+<p>给一个表加字段，或者修改字段，或者加索引，需要扫描全表的数据。在对大表操作的时候，你肯定会特别小心，以免对线上服务造成影响。而实际上，即使是小表，操作不慎也会出问题。</p>
+<p>如果某个表上的查询语句频繁，而且客户端有重试机制，也就是说超时后会再起一个新 session 再请求的话，这个库的线程很快就会爆满。</p>
+<p>事务中的 MDL 锁，在语句执行开始时申请，但是语句结束后并不会马上释放，而会等到整个事务提交后再释放。</p>
+<h2 id="行锁">行锁</h2>
+<p>MySQL 的行锁是在引擎层由各个引擎自己实现的。但并不是所有的引擎都支持行锁，比如 MyISAM 引擎就不支持行锁。</p>
+<p>不支持行锁意味着并发控制只能使用表锁，对于这种引擎的表，同一张表上任何时刻只能有一个更新在执行，这就会影响到业务并发度。InnoDB 是支持行锁的，这也是 MyISAM 被 InnoDB 替代的重要原因之一。</p>
+<p>顾名思义，行锁就是针对数据表中行记录的锁。这很好理解，比如事务 A 更新了一行，而这时候事务 B 也要更新同一行，则必须等事务 A 的操作完成后才能进行更新。</p>
+<p>当然，数据库中还有一些没那么一目了然的概念和设计，这些概念如果理解和使用不当，容易导致程序出现非预期行为，比如两阶段锁。</p>
+<h3 id="两阶段锁">两阶段锁</h3>
+<p><img src="/images/79ee43b2-1671-4163-8b3a-65dd040b413f.png" alt=""></p>
+<p>这个问题的结论取决于事务 A 在执行完两条 update 语句后，持有哪些锁，以及在什么时候释放。</p>
+<p>事务 A 持有的两个记录的行锁，都是在 commit 的时候才释放的。也就是说，在 InnoDB 事务中，行锁是在需要的时候才加上的，但并不是不需要了就立刻释放，而是要等到事务结束时才释放。这个就是两阶段锁协议。如果你的事务中需要锁多个行，要把最可能造成锁冲突、最可能影响并发度的锁尽量往后放。</p>
+<h3 id="死锁和死锁检测">死锁和死锁检测</h3>
+<p>当并发系统中不同线程出现循环资源依赖，涉及的线程都在等待别的线程释放资源时，就会导致这几个线程都进入无限等待的状态，称为死锁</p>
+<p><img src="/images/ddd2a678-52c1-49bd-8dd8-a386f76a04c9.png" alt=""></p>
+<p>事务 A 和事务 B 在互相等待对方的资源释放，就是进入了死锁状态。</p>
+<p>当出现死锁以后，有两种策略：</p>
+<ul>
+<li>一种策略是，直接进入等待，直到超时。这个超时时间可以通过参数 innodb_lock_wait_timeout 来设置。</li>
+<li>另一种策略是，发起死锁检测，发现死锁后，主动回滚死锁链条中的某一个事务，让其他事务得以继续执行。将参数 innodb_deadlock_detect 设置为 on，表示开启这个逻辑。</li>
+</ul>
+<p>在 InnoDB 中，innodb_lock_wait_timeout 的默认值是 50s，意味着如果采用第一个策略，当出现死锁以后，第一个被锁住的线程要过 50s 才会超时退出，然后其他线程才有可能继续执行。对于在线服务来说，这个等待时间往往是无法接受的。但是，我们又不可能直接把这个时间设置成一个很小的值，比如 1s。这样当出现死锁的时候，确实很快就可以解开，但如果不是死锁，而是简单的锁等待呢？所以，超时时间设置太短的话，会出现很多误伤。所以，正常情况下我们还是要采用第二种策略，即：主动死锁检测，而且 innodb_deadlock_detect 的默认值本身就是 on。主动死锁检测在发生死锁的时候，是能够快速发现并进行处理的，但是它也是有额外负担的。</p>
+<p>你可以想象一下这个过程：每当一个事务被锁的时候，就要看看它所依赖的线程有没有被别人锁住，如此循环，最后判断是否出现了循环等待，也就是死锁。那如果是我们上面说到的所有事务都要更新同一行的场景呢？</p>
+<p>每个新来的被堵住的线程，都要判断会不会由于自己的加入导致了死锁，这是一个时间复杂度是 O(n) 的操作。假设有 1000 个并发线程要同时更新同一行，那么死锁检测操作就是 100 万这个量级的。虽然最终检测的结果是没有死锁，但是这期间要消耗大量的 CPU 资源。因此，你就会看到 CPU 利用率很高，但是每秒却执行不了几个事务。</p>
+<h2 id="间隙锁">间隙锁</h2>
+<p>为了解决幻读问题，InnoDB 只好引入新的锁，也就是间隙锁 (Gap Lock)。</p>
+<p>顾名思义，间隙锁，锁的就是两个值之间的空隙。比如文章开头的表 t，初始化插入了 6 个记录，这就产生了 7 个间隙。</p>
+<p><img src="/images/23120e22-e778-4a3e-8abd-a1dd6565723f.png" alt=""></p>
+<p>这样，当你执行 select * from t where d=5 for update 的时候，就不止是给数据库中已有的 6 个记录加上了行锁，还同时加了 7 个间隙锁。这样就确保了无法再插入新的记录。也就是说这时候，在一行行扫描的过程中，不仅将给行加上了行锁，还给行两边的空隙，也加上了间隙锁。现在你知道了，数据行是可以加上锁的实体，数据行之间的间隙，也是可以加上锁的实体。但是间隙锁跟我们之前碰到过的锁都不太一样。比如行锁，分成读锁和写锁。下图就是这两种类型行锁的冲突关系。</p>
+<p><img src="/images/49c036f3-adef-4392-996b-c33e19cb9e22.png" alt=""></p>
+<p>也就是说，跟行锁有冲突关系的是“另外一个行锁”。但是间隙锁不一样，跟间隙锁存在冲突关系的，是“往这个间隙中插入一个记录”这个操作。间隙锁之间都不存在冲突关系。</p>
+<p>举个例子：</p>
+<p><img src="/images/8b1dfc56-e5bd-4eff-a553-750ac9d4f631.png" alt=""></p>
+<p>这里 session B 并不会被堵住。因为表 t 里并没有 c=7 这个记录，因此 session A 加的是间隙锁 (5,10)。而 session B 也是在这个间隙加的间隙锁。它们有共同的目标，即：保护这个间隙，不允许插入值。但，它们之间是不冲突的。</p>
+<h2 id="next-key-lock">next-key lock</h2>
+<p>间隙锁和行锁合称 next-key lock，每个 next-key lock 是前开后闭区间。也就是说，我们的表 t 初始化以后，如果用 select * from t for update 要把整个表所有记录锁起来，就形成了 7 个 next-key lock，分别是 (-∞,0]、(0,5]、(5,10]、(10,15]、(15,20]、(20, 25]、(25, +supremum]。</p>
+<blockquote>
+<p>备注：这篇文章中，如果没有特别说明，我们把间隙锁记为开区间，把 next-key lock 记为前开后闭区间。</p>
+</blockquote>
+<p>这个 supremum 从哪儿来的呢？这是因为 +∞是开区间。实现上，InnoDB 给每个索引加了一个不存在的最大值 supremum，这样才符合我们前面说的“都是前开后闭区间”。</p>
+<h2 id="参考文章">参考文章</h2>
+<ul>
+<li><a href="https://time.geekbang.org/column/article/69862">https://time.geekbang.org/column/article/69862</a></li>
+</ul>
+]]></content:encoded><category>database</category><category>mysql</category></item><item><title>msyql redo log和binlog</title><link>https://daemon365.dev/post/database/msyql_redo_log_and_binlog/</link><pubDate>Wed, 01 Apr 2020 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/database/msyql_redo_log_and_binlog/</guid><description>&lt;h2 id="更新语句执行流程"&gt;更新语句执行流程&lt;/h2&gt;
+&lt;p&gt;下面是这个表的创建语句，这个表有一个主键 ID 和一个整型字段 c：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-sql" data-lang="sql"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;create&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;table&lt;/span&gt; &lt;span style="color:#111"&gt;T&lt;/span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#111"&gt;ID&lt;/span&gt; &lt;span style="color:#111"&gt;int&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;primary&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;key&lt;/span&gt;&lt;span style="color:#111"&gt;,&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;c&lt;/span&gt; &lt;span style="color:#111"&gt;int&lt;/span&gt;&lt;span style="color:#111"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;如果要将 ID=2 这一行的值加 1，SQL 语句就会这么写：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-sql" data-lang="sql"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;update&lt;/span&gt; &lt;span style="color:#111"&gt;T&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;set&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;c&lt;/span&gt;&lt;span style="color:#f92672"&gt;=&lt;/span&gt;&lt;span style="color:#00a8c8"&gt;c&lt;/span&gt;&lt;span style="color:#f92672"&gt;+&lt;/span&gt;&lt;span style="color:#ae81ff"&gt;1&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;where&lt;/span&gt; &lt;span style="color:#111"&gt;ID&lt;/span&gt;&lt;span style="color:#f92672"&gt;=&lt;/span&gt;&lt;span style="color:#ae81ff"&gt;2&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;前面我有跟你介绍过 SQL 语句基本的执行链路，这里我再把那张图拿过来，你也可以先简单看看这个图回顾下。首先，可以确定的说，查询语句的那一套流程，更新语句也是同样会走一遍。&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://daemon365.dev/images/5d8b13b4-c07c-443e-9683-5ca10a60e1dc.png" alt=""&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;通过连接器，客户端与 MySQL 建立连接&lt;/li&gt;
+&lt;li&gt;update 语句会把 T 表上的所有查询缓存结果清空&lt;/li&gt;
+&lt;li&gt;分析器会通过词法分析和语法分析识别这是一条更新语句&lt;/li&gt;
+&lt;li&gt;优化器会决定使用 ID 这个索引（聚簇索引）&lt;/li&gt;
+&lt;li&gt;执行器负责具体执行，找到匹配的一行，然后更新&lt;/li&gt;
+&lt;li&gt;更新过程中还会涉及 redo log（重做日志）和 binlog（归档日志）的操作&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;其中，这两种日志默认在数据库的 data 目录下，redo log 是 ib_logfile0 格式的，binlog 是 xxx-bin.000001 格式的。&lt;/p&gt;
+&lt;p&gt;接下来让我们分别去研究下日志模块中的 redo log 和 binlog。&lt;/p&gt;
+&lt;h2 id="日志模块redo-log"&gt;日志模块：redo log&lt;/h2&gt;
+&lt;p&gt;在 MySQL 中，如果每一次的更新操作都需要写进磁盘，然后磁盘也要找到对应的那条记录，然后再更新，整个过程 IO 成本、查找成本都很高。为了解决这个问题，MySQL 的设计者就采用了日志（redo log）来提升更新效率。&lt;/p&gt;
+&lt;p&gt;而日志和磁盘配合的整个过程，其实就是 MySQL 里的 WAL 技术，WAL 的全称是 Write-Ahead Logging，它的关键点就是先写日志，再写磁盘。&lt;/p&gt;
+&lt;p&gt;具体来说，当有一条记录需要更新的时候，InnoDB 引擎就会先把记录写到 redo log（redolog buffer）里面，并更新内存（buffer pool），这个时候更新就算完成了。同时，InnoDB 引擎会在适当的时候（如系统空闲时），将这个操作记录更新到磁盘里面（刷脏页）。&lt;/p&gt;</description><content:encoded><![CDATA[<h2 id="更新语句执行流程">更新语句执行流程</h2>
+<p>下面是这个表的创建语句，这个表有一个主键 ID 和一个整型字段 c：</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#00a8c8">create</span> <span style="color:#00a8c8">table</span> <span style="color:#111">T</span><span style="color:#111">(</span><span style="color:#111">ID</span> <span style="color:#111">int</span> <span style="color:#00a8c8">primary</span> <span style="color:#00a8c8">key</span><span style="color:#111">,</span> <span style="color:#00a8c8">c</span> <span style="color:#111">int</span><span style="color:#111">);</span>
+</span></span></code></pre></div><p>如果要将 ID=2 这一行的值加 1，SQL 语句就会这么写：</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#00a8c8">update</span> <span style="color:#111">T</span> <span style="color:#00a8c8">set</span> <span style="color:#00a8c8">c</span><span style="color:#f92672">=</span><span style="color:#00a8c8">c</span><span style="color:#f92672">+</span><span style="color:#ae81ff">1</span> <span style="color:#00a8c8">where</span> <span style="color:#111">ID</span><span style="color:#f92672">=</span><span style="color:#ae81ff">2</span><span style="color:#111">;</span>
+</span></span></code></pre></div><p>前面我有跟你介绍过 SQL 语句基本的执行链路，这里我再把那张图拿过来，你也可以先简单看看这个图回顾下。首先，可以确定的说，查询语句的那一套流程，更新语句也是同样会走一遍。</p>
+<p><img src="/images/5d8b13b4-c07c-443e-9683-5ca10a60e1dc.png" alt=""></p>
+<ol>
+<li>通过连接器，客户端与 MySQL 建立连接</li>
+<li>update 语句会把 T 表上的所有查询缓存结果清空</li>
+<li>分析器会通过词法分析和语法分析识别这是一条更新语句</li>
+<li>优化器会决定使用 ID 这个索引（聚簇索引）</li>
+<li>执行器负责具体执行，找到匹配的一行，然后更新</li>
+<li>更新过程中还会涉及 redo log（重做日志）和 binlog（归档日志）的操作</li>
+</ol>
+<p>其中，这两种日志默认在数据库的 data 目录下，redo log 是 ib_logfile0 格式的，binlog 是 xxx-bin.000001 格式的。</p>
+<p>接下来让我们分别去研究下日志模块中的 redo log 和 binlog。</p>
+<h2 id="日志模块redo-log">日志模块：redo log</h2>
+<p>在 MySQL 中，如果每一次的更新操作都需要写进磁盘，然后磁盘也要找到对应的那条记录，然后再更新，整个过程 IO 成本、查找成本都很高。为了解决这个问题，MySQL 的设计者就采用了日志（redo log）来提升更新效率。</p>
+<p>而日志和磁盘配合的整个过程，其实就是 MySQL 里的 WAL 技术，WAL 的全称是 Write-Ahead Logging，它的关键点就是先写日志，再写磁盘。</p>
+<p>具体来说，当有一条记录需要更新的时候，InnoDB 引擎就会先把记录写到 redo log（redolog buffer）里面，并更新内存（buffer pool），这个时候更新就算完成了。同时，InnoDB 引擎会在适当的时候（如系统空闲时），将这个操作记录更新到磁盘里面（刷脏页）。</p>
+<p>redo log 是 InnoDB 存储引擎层的日志，又称重做日志文件，redo log 是循环写的，redo log 不是记录数据页更新之后的状态，而是记录这个页做了什么改动。</p>
+<p>redo log 是固定大小的，比如可以配置为一组 4 个文件，每个文件的大小是 1GB，那么日志总共就可以记录 4GB 的操作。从头开始写，写到末尾就又回到开头循环写，如下图所示。</p>
+<p><img src="/images/05008dc5-c009-4d58-9a2b-2d981007284d.png" alt=""></p>
+<p>图中展示了一组 4 个文件的 redo log 日志，checkpoint 是当前要擦除的位置，擦除记录前需要先把对应的数据落盘（更新内存页，等待刷脏页）。write pos 到 checkpoint 之间的部分可以用来记录新的操作，如果 write pos 和 checkpoint 相遇，说明 redolog 已满，这个时候数据库停止进行数据库更新语句的执行，转而进行 redo log 日志同步到磁盘中。checkpoint 到 write pos 之间的部分等待落盘（先更新内存页，然后等待刷脏页）。</p>
+<p>有了 redo log 日志，那么在数据库进行异常重启的时候，可以根据 redo log 日志进行恢复，也就达到了 <strong>crash-safe</strong>。</p>
+<p>redo log 用于保证 crash-safe 能力。innodb_flush_log_at_trx_commit 这个参数设置成 1 的时候，表示每次事务的 redo log 都直接持久化到磁盘。这个参数建议设置成 1，这样可以保证 MySQL 异常重启之后数据不丢失。</p>
+<h2 id="日志模块binlog">日志模块：binlog</h2>
+<p>MySQL 整体来看，其实就有两块：一块是 Server 层，它主要做的是 MySQL 功能层面的事情；还有一块是引擎层，负责存储相关的具体事宜。 redo log 是 InnoDB 引擎特有的日志，而 Server 层也有自己的日志，称为 binlog（归档日志）。</p>
+<p><strong>为什么要有两份日志系统？</strong></p>
+<p>因为最开始 MySQL 里并没有 InnoDB 引擎。MySQL 自带的引擎是 MyISAM，但是 MyISAM 没有 crash-safe 的能力，binlog 日志只能用于归档。而InnoDB 是另一个公司以插件形式引入 MySQL 的，既然只依靠 binlog 是没有 crash-safe 能力的，所以 InnoDB 使用另外一套日志系统——也就是 redo log 来实现 crash-safe 能力。</p>
+<p>redo log 和 binlog 区别：</p>
+<ol>
+<li>redo log 是 InnoDB 引擎特有的；binlog 是 MySQL 的 Server 层实现的，所有引擎都可以使用。</li>
+<li>redo log 是物理日志，记录的是在某个数据页上做了什么修改；binlog 是逻辑日志，记录的是这个语句的原始逻辑。</li>
+<li>redo log 是循环写的，空间固定会用完；binlog 是可以追加写入的。追加写是指 binlog 文件写到一定大小后会切换到下一个，并不会覆盖以前的日志。</li>
+</ol>
+<p>有了对这两个日志的概念性理解后，再来看执行器和 InnoDB 引擎在执行这个 update 语句时的内部流程。</p>
+<ol>
+<li>执行器先找引擎取 ID=2 这一行。ID 是主键，引擎直接用树搜索找到这一行。如果 ID=2 这一行所在的数据页本来就在内存中，就直接返回给执行器；否则，需要先从磁盘读入内存，然后再返回。</li>
+<li>执行器拿到引擎给的行数据，把这个值加上 1，比如原来是 N，现在就是 N+1，得到新的一行数据，再调用引擎接口写入这行新数据。</li>
+<li>引擎将这行新数据更新到内存（InnoDB Buffer Pool）中，同时将这个更新操作记录到 redo log 里面，此时 redo log 处于 prepare 状态。然后告知执行器执行完成了，随时可以提交事务。</li>
+<li>执行器生成这个操作的 binlog，并把 binlog 写入磁盘。</li>
+<li>执行器调用引擎的提交事务接口，引擎把刚刚写入的 redo log 改成提交（commit）状态，更新完成。</li>
+</ol>
+<p>update 语句的执行流程图，图中浅色框表示是在 InnoDB 内部执行的，深色框表示是在执行器中执行的。</p>
+<p><img src="/images/935ffe42-60a8-4ca1-a65b-475486ac3827.png" alt=""></p>
+<h2 id="两阶段提交">两阶段提交</h2>
+<p>MySQL 使用两阶段提交主要解决 binlog 和 redo log 的数据一致性的问题。</p>
+<p>由于 redo log 和 binlog 是两个独立的逻辑，如果不用两阶段提交，要么就是先写完 redo log 再写 binlog，或者采用反过来的顺序。</p>
+<p>仍然用前面的 update 语句来做例子。假设当前 ID=2 的行，字段 c 的值是 0，再假设执行 update 语句过程中在写完第一个日志后，第二个日志还没有写完期间发生了 crash，会出现什么情况呢？</p>
+<ol>
+<li>**先写 redo log 后写 binlog。**假设在 redo log 写完，binlog 还没有写完的时候，MySQL 进程异常重启。由于我们前面说过的，redo log 写完之后，系统即使崩溃，仍然能够把数据恢复回来，所以恢复后这一行 c 的值是 1。但是由于 binlog 没写完就 crash 了，这时候 binlog 里面就没有记录这个语句。因此，之后备份日志的时候，存起来的 binlog 里面就没有这条语句。然后你会发现，如果需要用这个 binlog 来恢复临时库的话，由于这个语句的 binlog 丢失，这个临时库就会少了这一次更新，恢复出来的这一行 c 的值就是 0，与原库的值不同。</li>
+<li>**先写 binlog 后写 redo log。**如果在 binlog 写完之后 crash，由于 redo log 还没写，崩溃恢复以后这个事务无效，所以这一行 c 的值是 0。但是 binlog 里面已经记录了“把 c 从 0 改成 1”这个日志。所以，在之后用 binlog 来恢复的时候就多了一个事务出来，恢复出来的这一行 c 的值就是 1，与原库的值不同。</li>
+</ol>
+<p>简单说，redo log 和 binlog 都可以用于表示事务的提交状态，而两阶段提交就是让这两个状态保持逻辑上的一致。</p>
+<h2 id="参考文章">参考文章</h2>
+<ul>
+<li><a href="https://time.geekbang.org/column/article/68633">https://time.geekbang.org/column/article/68633</a></li>
+</ul>
+]]></content:encoded><category>database</category><category>mysql</category></item><item><title>MySQL基础数据类型</title><link>https://daemon365.dev/post/database/mysql_basic_data_types/</link><pubDate>Tue, 31 Mar 2020 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/database/mysql_basic_data_types/</guid><description>&lt;h2 id="数值类型"&gt;数值类型&lt;/h2&gt;
+&lt;p&gt;MySQL支持所有标准SQL数值数据类型。&lt;/p&gt;
+&lt;p&gt;这些类型包括严格数值数据类型(INTEGER、SMALLINT、DECIMAL和NUMERIC)，以及近似数值数据类型(FLOAT、REAL和DOUBLE PRECISION)。&lt;/p&gt;
+&lt;p&gt;关键字INT是INTEGER的同义词，关键字DEC是DECIMAL的同义词。&lt;/p&gt;
+&lt;p&gt;BIT数据类型保存位字段值，并且支持MyISAM、MEMORY、InnoDB和BDB表。&lt;/p&gt;
+&lt;p&gt;作为SQL标准的扩展，MySQL也支持整数类型TINYINT、MEDIUMINT和BIGINT。下面的表显示了需要的每个整数类型的存储和范围。&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th style="text-align: left"&gt;类型&lt;/th&gt;
+&lt;th style="text-align: left"&gt;大小&lt;/th&gt;
+&lt;th style="text-align: left"&gt;范围（有符号）&lt;/th&gt;
+&lt;th style="text-align: left"&gt;范围（无符号）&lt;/th&gt;
+&lt;th style="text-align: left"&gt;用途&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td style="text-align: left"&gt;TINYINT&lt;/td&gt;
+&lt;td style="text-align: left"&gt;1 字节&lt;/td&gt;
+&lt;td style="text-align: left"&gt;(-128，127)&lt;/td&gt;
+&lt;td style="text-align: left"&gt;(0，255)&lt;/td&gt;
+&lt;td style="text-align: left"&gt;小整数值&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style="text-align: left"&gt;SMALLINT&lt;/td&gt;
+&lt;td style="text-align: left"&gt;2 字节&lt;/td&gt;
+&lt;td style="text-align: left"&gt;(-32 768，32 767)&lt;/td&gt;
+&lt;td style="text-align: left"&gt;(0，65 535)&lt;/td&gt;
+&lt;td style="text-align: left"&gt;大整数值&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style="text-align: left"&gt;MEDIUMINT&lt;/td&gt;
+&lt;td style="text-align: left"&gt;3 字节&lt;/td&gt;
+&lt;td style="text-align: left"&gt;(-8 388 608，8 388 607)&lt;/td&gt;
+&lt;td style="text-align: left"&gt;(0，16 777 215)&lt;/td&gt;
+&lt;td style="text-align: left"&gt;大整数值&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style="text-align: left"&gt;INT或INTEGER&lt;/td&gt;
+&lt;td style="text-align: left"&gt;4 字节&lt;/td&gt;
+&lt;td style="text-align: left"&gt;(-2 147 483 648，2 147 483 647)&lt;/td&gt;
+&lt;td style="text-align: left"&gt;(0，4 294 967 295)&lt;/td&gt;
+&lt;td style="text-align: left"&gt;大整数值&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style="text-align: left"&gt;BIGINT&lt;/td&gt;
+&lt;td style="text-align: left"&gt;8 字节&lt;/td&gt;
+&lt;td style="text-align: left"&gt;(-9 233 372 036 854 775 808，9 223 372 036 854 775 807)&lt;/td&gt;
+&lt;td style="text-align: left"&gt;(0，18 446 744 073 709 551 615)&lt;/td&gt;
+&lt;td style="text-align: left"&gt;极大整数值&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style="text-align: left"&gt;FLOAT&lt;/td&gt;
+&lt;td style="text-align: left"&gt;4 字节&lt;/td&gt;
+&lt;td style="text-align: left"&gt;(-3.402 823 466 E+38，-1.175 494 351 E-38)，0，(1.175 494 351 E-38，3.402 823 466 351 E+38)&lt;/td&gt;
+&lt;td style="text-align: left"&gt;0，(1.175 494 351 E-38，3.402 823 466 E+38)&lt;/td&gt;
+&lt;td style="text-align: left"&gt;单精度 浮点数值&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style="text-align: left"&gt;DOUBLE&lt;/td&gt;
+&lt;td style="text-align: left"&gt;8 字节&lt;/td&gt;
+&lt;td style="text-align: left"&gt;(-1.797 693 134 862 315 7 E+308，-2.225 073 858 507 201 4 E-308)，0，(2.225 073 858 507 201 4 E-308，1.797 693 134 862 315 7 E+308)&lt;/td&gt;
+&lt;td style="text-align: left"&gt;0，(2.225 073 858 507 201 4 E-308，1.797 693 134 862 315 7 E+308)&lt;/td&gt;
+&lt;td style="text-align: left"&gt;双精度 浮点数值&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style="text-align: left"&gt;DECIMAL&lt;/td&gt;
+&lt;td style="text-align: left"&gt;对DECIMAL(M,D) ，如果M&amp;gt;D，为M+2否则为D+2&lt;/td&gt;
+&lt;td style="text-align: left"&gt;依赖于M和D的值&lt;/td&gt;
+&lt;td style="text-align: left"&gt;依赖于M和D的值&lt;/td&gt;
+&lt;td style="text-align: left"&gt;小数值&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;hr&gt;
+&lt;h2 id="日期和时间类型"&gt;日期和时间类型&lt;/h2&gt;
+&lt;p&gt;表示时间值的日期和时间类型为DATETIME、DATE、TIMESTAMP、TIME和YEAR。&lt;/p&gt;</description><content:encoded><![CDATA[<h2 id="数值类型">数值类型</h2>
+<p>MySQL支持所有标准SQL数值数据类型。</p>
+<p>这些类型包括严格数值数据类型(INTEGER、SMALLINT、DECIMAL和NUMERIC)，以及近似数值数据类型(FLOAT、REAL和DOUBLE PRECISION)。</p>
+<p>关键字INT是INTEGER的同义词，关键字DEC是DECIMAL的同义词。</p>
+<p>BIT数据类型保存位字段值，并且支持MyISAM、MEMORY、InnoDB和BDB表。</p>
+<p>作为SQL标准的扩展，MySQL也支持整数类型TINYINT、MEDIUMINT和BIGINT。下面的表显示了需要的每个整数类型的存储和范围。</p>
+<table>
+  <thead>
+      <tr>
+          <th style="text-align: left">类型</th>
+          <th style="text-align: left">大小</th>
+          <th style="text-align: left">范围（有符号）</th>
+          <th style="text-align: left">范围（无符号）</th>
+          <th style="text-align: left">用途</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: left">TINYINT</td>
+          <td style="text-align: left">1 字节</td>
+          <td style="text-align: left">(-128，127)</td>
+          <td style="text-align: left">(0，255)</td>
+          <td style="text-align: left">小整数值</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">SMALLINT</td>
+          <td style="text-align: left">2 字节</td>
+          <td style="text-align: left">(-32 768，32 767)</td>
+          <td style="text-align: left">(0，65 535)</td>
+          <td style="text-align: left">大整数值</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">MEDIUMINT</td>
+          <td style="text-align: left">3 字节</td>
+          <td style="text-align: left">(-8 388 608，8 388 607)</td>
+          <td style="text-align: left">(0，16 777 215)</td>
+          <td style="text-align: left">大整数值</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">INT或INTEGER</td>
+          <td style="text-align: left">4 字节</td>
+          <td style="text-align: left">(-2 147 483 648，2 147 483 647)</td>
+          <td style="text-align: left">(0，4 294 967 295)</td>
+          <td style="text-align: left">大整数值</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">BIGINT</td>
+          <td style="text-align: left">8 字节</td>
+          <td style="text-align: left">(-9 233 372 036 854 775 808，9 223 372 036 854 775 807)</td>
+          <td style="text-align: left">(0，18 446 744 073 709 551 615)</td>
+          <td style="text-align: left">极大整数值</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">FLOAT</td>
+          <td style="text-align: left">4 字节</td>
+          <td style="text-align: left">(-3.402 823 466 E+38，-1.175 494 351 E-38)，0，(1.175 494 351 E-38，3.402 823 466 351 E+38)</td>
+          <td style="text-align: left">0，(1.175 494 351 E-38，3.402 823 466 E+38)</td>
+          <td style="text-align: left">单精度 浮点数值</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">DOUBLE</td>
+          <td style="text-align: left">8 字节</td>
+          <td style="text-align: left">(-1.797 693 134 862 315 7 E+308，-2.225 073 858 507 201 4 E-308)，0，(2.225 073 858 507 201 4 E-308，1.797 693 134 862 315 7 E+308)</td>
+          <td style="text-align: left">0，(2.225 073 858 507 201 4 E-308，1.797 693 134 862 315 7 E+308)</td>
+          <td style="text-align: left">双精度 浮点数值</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">DECIMAL</td>
+          <td style="text-align: left">对DECIMAL(M,D) ，如果M&gt;D，为M+2否则为D+2</td>
+          <td style="text-align: left">依赖于M和D的值</td>
+          <td style="text-align: left">依赖于M和D的值</td>
+          <td style="text-align: left">小数值</td>
+      </tr>
+  </tbody>
+</table>
+<hr>
+<h2 id="日期和时间类型">日期和时间类型</h2>
+<p>表示时间值的日期和时间类型为DATETIME、DATE、TIMESTAMP、TIME和YEAR。</p>
+<p>每个时间类型有一个有效值范围和一个&quot;零&quot;值，当指定不合法的MySQL不能表示的值时使用&quot;零&quot;值。</p>
+<p>TIMESTAMP类型有专有的自动更新特性，将在后面描述。</p>
+<table>
+  <thead>
+      <tr>
+          <th style="text-align: left">类型</th>
+          <th style="text-align: left">大小 (字节)</th>
+          <th style="text-align: left">范围</th>
+          <th style="text-align: left">格式</th>
+          <th style="text-align: left">用途</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: left">DATE</td>
+          <td style="text-align: left">3</td>
+          <td style="text-align: left">1000-01-01/9999-12-31</td>
+          <td style="text-align: left">YYYY-MM-DD</td>
+          <td style="text-align: left">日期值</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">TIME</td>
+          <td style="text-align: left">3</td>
+          <td style="text-align: left">&lsquo;-838:59:59&rsquo;/&lsquo;838:59:59&rsquo;</td>
+          <td style="text-align: left">HH:MM:SS</td>
+          <td style="text-align: left">时间值或持续时间</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">YEAR</td>
+          <td style="text-align: left">1</td>
+          <td style="text-align: left">1901/2155</td>
+          <td style="text-align: left">YYYY</td>
+          <td style="text-align: left">年份值</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">DATETIME</td>
+          <td style="text-align: left">8</td>
+          <td style="text-align: left">1000-01-01 00:00:00/9999-12-31 23:59:59</td>
+          <td style="text-align: left">YYYY-MM-DD HH:MM:SS</td>
+          <td style="text-align: left">混合日期和时间值</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">TIMESTAMP</td>
+          <td style="text-align: left">4</td>
+          <td style="text-align: left">1970-01-01 00:00:00/2038结束时间是第 <strong>2147483647</strong> 秒，北京时间 <strong>2038-1-19 11:14:07</strong>，格林尼治时间 2038年1月19日 凌晨 03:14:07</td>
+          <td style="text-align: left">YYYYMMDD HHMMSS</td>
+          <td style="text-align: left">混合日期和时间值，时间戳</td>
+      </tr>
+  </tbody>
+</table>
+<hr>
+<h2 id="字符串类型">字符串类型</h2>
+<p>字符串类型指CHAR、VARCHAR、BINARY、VARBINARY、BLOB、TEXT、ENUM和SET。该节描述了这些类型如何工作以及如何在查询中使用这些类型。</p>
+<table>
+  <thead>
+      <tr>
+          <th style="text-align: left">类型</th>
+          <th style="text-align: left">大小</th>
+          <th style="text-align: left">用途</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: left">CHAR</td>
+          <td style="text-align: left">0-255字节</td>
+          <td style="text-align: left">定长字符串</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">VARCHAR</td>
+          <td style="text-align: left">0-65535 字节</td>
+          <td style="text-align: left">变长字符串</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">TINYBLOB</td>
+          <td style="text-align: left">0-255字节</td>
+          <td style="text-align: left">不超过 255 个字符的二进制字符串</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">TINYTEXT</td>
+          <td style="text-align: left">0-255字节</td>
+          <td style="text-align: left">短文本字符串</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">BLOB</td>
+          <td style="text-align: left">0-65 535字节</td>
+          <td style="text-align: left">二进制形式的长文本数据</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">TEXT</td>
+          <td style="text-align: left">0-65 535字节</td>
+          <td style="text-align: left">长文本数据</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">MEDIUMBLOB</td>
+          <td style="text-align: left">0-16 777 215字节</td>
+          <td style="text-align: left">二进制形式的中等长度文本数据</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">MEDIUMTEXT</td>
+          <td style="text-align: left">0-16 777 215字节</td>
+          <td style="text-align: left">中等长度文本数据</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">LONGBLOB</td>
+          <td style="text-align: left">0-4 294 967 295字节</td>
+          <td style="text-align: left">二进制形式的极大文本数据</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">LONGTEXT</td>
+          <td style="text-align: left">0-4 294 967 295字节</td>
+          <td style="text-align: left">极大文本数据</td>
+      </tr>
+  </tbody>
+</table>
+<p>CHAR 和 VARCHAR 类型类似，但它们保存和检索的方式不同。它们的最大长度和是否尾部空格被保留等方面也不同。在存储或检索过程中不进行大小写转换。</p>
+<p>BINARY 和 VARBINARY 类似于 CHAR 和 VARCHAR，不同的是它们包含二进制字符串而不要非二进制字符串。也就是说，它们包含字节字符串而不是字符字符串。这说明它们没有字符集，并且排序和比较基于列值字节的数值值。</p>
+<p>BLOB 是一个二进制大对象，可以容纳可变数量的数据。有 4 种 BLOB 类型：TINYBLOB、BLOB、MEDIUMBLOB 和 LONGBLOB。它们区别在于可容纳存储范围不同。</p>
+<p>有 4 种 TEXT 类型：TINYTEXT、TEXT、MEDIUMTEXT 和 LONGTEXT。对应的这 4 种 BLOB 类型，可存储的最大长度不同，可根据实际情况选择。</p>
+<h2 id="文章转自">文章转自</h2>
+<ul>
+<li><a href="http://www.runoob.com/mysql/mysql-data-types.html">http://www.runoob.com/mysql/mysql-data-types.html</a></li>
+</ul>
+]]></content:encoded><category>database</category><category>mysql</category></item><item><title>MySQL数据完整性约束</title><link>https://daemon365.dev/post/database/mysql_data_integrity_constraints/</link><pubDate>Tue, 31 Mar 2020 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/database/mysql_data_integrity_constraints/</guid><description>&lt;h2 id="主键约束"&gt;主键约束&lt;/h2&gt;
+&lt;p&gt;主键可以是表中的某一列，也可以是表中的多个列所构成的一个组合；其中，由多个列组合而成的主键也称为复合主键。在MySQL中，主键列必须遵守以下规则。&lt;/p&gt;
+&lt;p&gt;（1）每一个表只能定义一个主键。&lt;/p&gt;
+&lt;p&gt;（2）唯一性原则。主键的值，也称键值，必须能够唯一表示表中的每一条记录，且不能为NULL。&lt;/p&gt;
+&lt;p&gt;（3）最小化规则。复合主键不能包含不必要的多余列。也就是说，当从一个复合主键中删除一列后，如果剩下的列构成的主键仍能满足唯一性原则，那么这个复合主键是不正确的。&lt;/p&gt;
+&lt;p&gt;（4）一个列名在复合主键的列表中只能出现一次。&lt;/p&gt;
+&lt;p&gt;示例：创建学生信息表tb_student时，将学号（stu_id）字段设置为主键。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-sql" data-lang="sql"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;CREATE&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;TABLE&lt;/span&gt; &lt;span style="color:#111"&gt;tb_student&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;stu_id&lt;/span&gt; &lt;span style="color:#111"&gt;INT&lt;/span&gt; &lt;span style="color:#111"&gt;AUTO_INCREMENT&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;PRIMARY&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;KEY&lt;/span&gt;&lt;span style="color:#111"&gt;,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;name&lt;/span&gt; &lt;span style="color:#111"&gt;VARCHAR&lt;/span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#ae81ff"&gt;30&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#111"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;示例：创建用户信息表tb_student时，将学号（stu_id）和所在班级号（class_id）字段设置为复合主键。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-sql" data-lang="sql"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;CREATE&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;TABLE&lt;/span&gt; &lt;span style="color:#111"&gt;tb_student&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;stu_id&lt;/span&gt; &lt;span style="color:#111"&gt;INT&lt;/span&gt; &lt;span style="color:#111"&gt;AUTO_INCREMENT&lt;/span&gt;&lt;span style="color:#111"&gt;,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;name&lt;/span&gt; &lt;span style="color:#111"&gt;VARCHAR&lt;/span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#ae81ff"&gt;30&lt;/span&gt;&lt;span style="color:#111"&gt;),&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;class_id&lt;/span&gt; &lt;span style="color:#111"&gt;INT&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;NOT&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;NULL&lt;/span&gt;&lt;span style="color:#111"&gt;,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#00a8c8"&gt;PRIMARY&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;KEY&lt;/span&gt; &lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#111"&gt;stu_id&lt;/span&gt;&lt;span style="color:#111"&gt;,&lt;/span&gt;&lt;span style="color:#111"&gt;class_id&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#111"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;示例：通过修改数据表结构，添加主键约束。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-sql" data-lang="sql"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;ALTER&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;TABLE&lt;/span&gt; &lt;span style="color:#111"&gt;tb_student&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;ADD&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;CONSTRAINT&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;PRIMARY&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;KEY&lt;/span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#111"&gt;stu_id&lt;/span&gt;&lt;span style="color:#111"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id="唯一约束"&gt;唯一约束&lt;/h2&gt;
+&lt;p&gt;唯一约束使用UNIQUE关键字来定义。唯一约束的值必须是唯一的，且不能为空（NULL）。&lt;/p&gt;
+&lt;p&gt;在MySQL中，唯一约束与主键之间存在以下两点区别。&lt;/p&gt;
+&lt;p&gt;（1）一个表只能创建一个主键，但可以定义多个唯一约束。&lt;/p&gt;
+&lt;p&gt;（2）定义主键约束时，系统会自动创建PRIMARY KEY索引，而定义候选键约束时，系统会自动创建UNIQUE索引。&lt;/p&gt;
+&lt;p&gt;示例：创建用户信息表tb_student时，将学号（stu_id）和姓名（name）设置为唯一约束。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-sql" data-lang="sql"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;CREATE&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;TABLE&lt;/span&gt; &lt;span style="color:#111"&gt;tb_student&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;stu_id&lt;/span&gt; &lt;span style="color:#111"&gt;INT&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;UNIQUE&lt;/span&gt;&lt;span style="color:#111"&gt;,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;name&lt;/span&gt; &lt;span style="color:#111"&gt;VARCHAR&lt;/span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#ae81ff"&gt;30&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;UNIQUE&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#111"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;示例：创建用户信息表tb_student时，将学号（stu_id）和姓名（name）字段设置为复合唯一约束。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-sql" data-lang="sql"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;CREATE&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;TABLE&lt;/span&gt; &lt;span style="color:#111"&gt;tb_student&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;stu_id&lt;/span&gt; &lt;span style="color:#111"&gt;INT&lt;/span&gt;&lt;span style="color:#111"&gt;,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;name&lt;/span&gt; &lt;span style="color:#111"&gt;VARCHAR&lt;/span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#ae81ff"&gt;30&lt;/span&gt;&lt;span style="color:#111"&gt;),&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#00a8c8"&gt;UNIQUE&lt;/span&gt; &lt;span style="color:#111"&gt;uniq_id_name&lt;/span&gt; &lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#111"&gt;stu_id&lt;/span&gt;&lt;span style="color:#111"&gt;,&lt;/span&gt;&lt;span style="color:#111"&gt;name&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#111"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;示例：通过修改数据表结构，添加唯一约束。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-sql" data-lang="sql"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;ALTER&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;TABLE&lt;/span&gt; &lt;span style="color:#111"&gt;tb_student&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;ADD&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;CONSTRAINT&lt;/span&gt; &lt;span style="color:#111"&gt;uniq_id_name&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;UNIQUE&lt;/span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#111"&gt;stu_id&lt;/span&gt;&lt;span style="color:#111"&gt;,&lt;/span&gt;&lt;span style="color:#111"&gt;name&lt;/span&gt;&lt;span style="color:#111"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id="外键约束"&gt;外键约束&lt;/h2&gt;
+&lt;p&gt;MySQL有两种常用的引擎类型（MyISAM和InnoDB），目前，只用InnoDB引擎类型支持外键约束。&lt;/p&gt;
+&lt;p&gt;示例：创建班级信息表（tb_class）和学生信息表（tb_student），并设置学生信息表中班级编号（class_id）字段的外键约束。&lt;/p&gt;
+&lt;p&gt;&amp;ndash; 创建班级信息表&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-sql" data-lang="sql"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;CREATE&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;TABLE&lt;/span&gt; &lt;span style="color:#111"&gt;tb_class&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;class_id&lt;/span&gt; &lt;span style="color:#111"&gt;INT&lt;/span&gt; &lt;span style="color:#111"&gt;AUTO_INCREMENT&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;PRIMARY&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;KEY&lt;/span&gt;&lt;span style="color:#111"&gt;,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;class_name&lt;/span&gt; &lt;span style="color:#111"&gt;VARCHAR&lt;/span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#ae81ff"&gt;30&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;NOT&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;NULL&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#111"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&amp;ndash; 创建学生信息表，并设置班级ID的外键约束&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-sql" data-lang="sql"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;CREATE&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;TABLE&lt;/span&gt; &lt;span style="color:#111"&gt;tb_student&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;stu_id&lt;/span&gt; &lt;span style="color:#111"&gt;INT&lt;/span&gt; &lt;span style="color:#111"&gt;AUTO_INCREMENT&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;PRIMARY&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;KEY&lt;/span&gt;&lt;span style="color:#111"&gt;,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;name&lt;/span&gt; &lt;span style="color:#111"&gt;VARCHAR&lt;/span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#ae81ff"&gt;30&lt;/span&gt;&lt;span style="color:#111"&gt;),&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;class_id&lt;/span&gt; &lt;span style="color:#111"&gt;INT&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;NOT&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;NULL&lt;/span&gt;&lt;span style="color:#111"&gt;,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#00a8c8"&gt;FOREIGN&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;KEY&lt;/span&gt; &lt;span style="color:#111"&gt;fk_class_id&lt;/span&gt; &lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#111"&gt;class_id&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#00a8c8"&gt;REFERENCES&lt;/span&gt; &lt;span style="color:#111"&gt;tb_class&lt;/span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#111"&gt;class_id&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#111"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;示例：通过修改数据表结构，添加外键约束。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-sql" data-lang="sql"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;ALTER&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;TABLE&lt;/span&gt; &lt;span style="color:#111"&gt;tb_student&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;ADD&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;CONSTRAINT&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;FOREIGN&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;KEY&lt;/span&gt; &lt;span style="color:#111"&gt;fk_class_id&lt;/span&gt; &lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#111"&gt;class_id&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;REFERENCES&lt;/span&gt; &lt;span style="color:#111"&gt;tb_class&lt;/span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#111"&gt;class_id&lt;/span&gt;&lt;span style="color:#111"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id="非空约束"&gt;非空约束&lt;/h2&gt;
+&lt;p&gt;非空约约束就是限制必须为某个列提供值。空值（NULL）是不存在值，它既不是数字0，也不是空字符串，而是不存在、未知的情况。&lt;/p&gt;
+&lt;p&gt;示例：创建学生信息表tb_student时，将姓名（name）字段添加为非空约束。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-sql" data-lang="sql"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;CREATE&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;TABLE&lt;/span&gt; &lt;span style="color:#111"&gt;tb_student&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;stu_id&lt;/span&gt; &lt;span style="color:#111"&gt;INT&lt;/span&gt; &lt;span style="color:#111"&gt;AUTO_INCREMENT&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;PRIMARY&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;KEY&lt;/span&gt;&lt;span style="color:#111"&gt;,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;name&lt;/span&gt; &lt;span style="color:#111"&gt;VARCHAR&lt;/span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#ae81ff"&gt;30&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;NOT&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;NULL&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#111"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;示例：通过修改数据表结构，将姓名（name）字段修改为非空。&lt;/p&gt;</description><content:encoded><![CDATA[<h2 id="主键约束">主键约束</h2>
+<p>主键可以是表中的某一列，也可以是表中的多个列所构成的一个组合；其中，由多个列组合而成的主键也称为复合主键。在MySQL中，主键列必须遵守以下规则。</p>
+<p>（1）每一个表只能定义一个主键。</p>
+<p>（2）唯一性原则。主键的值，也称键值，必须能够唯一表示表中的每一条记录，且不能为NULL。</p>
+<p>（3）最小化规则。复合主键不能包含不必要的多余列。也就是说，当从一个复合主键中删除一列后，如果剩下的列构成的主键仍能满足唯一性原则，那么这个复合主键是不正确的。</p>
+<p>（4）一个列名在复合主键的列表中只能出现一次。</p>
+<p>示例：创建学生信息表tb_student时，将学号（stu_id）字段设置为主键。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#00a8c8">CREATE</span> <span style="color:#00a8c8">TABLE</span> <span style="color:#111">tb_student</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">(</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">stu_id</span> <span style="color:#111">INT</span> <span style="color:#111">AUTO_INCREMENT</span> <span style="color:#00a8c8">PRIMARY</span> <span style="color:#00a8c8">KEY</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">name</span> <span style="color:#111">VARCHAR</span><span style="color:#111">(</span><span style="color:#ae81ff">30</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">);</span>
+</span></span></code></pre></div><p>示例：创建用户信息表tb_student时，将学号（stu_id）和所在班级号（class_id）字段设置为复合主键。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#00a8c8">CREATE</span> <span style="color:#00a8c8">TABLE</span> <span style="color:#111">tb_student</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">(</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">stu_id</span> <span style="color:#111">INT</span> <span style="color:#111">AUTO_INCREMENT</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">name</span> <span style="color:#111">VARCHAR</span><span style="color:#111">(</span><span style="color:#ae81ff">30</span><span style="color:#111">),</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">class_id</span> <span style="color:#111">INT</span> <span style="color:#00a8c8">NOT</span> <span style="color:#00a8c8">NULL</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">PRIMARY</span> <span style="color:#00a8c8">KEY</span> <span style="color:#111">(</span><span style="color:#111">stu_id</span><span style="color:#111">,</span><span style="color:#111">class_id</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">);</span>
+</span></span></code></pre></div><p>示例：通过修改数据表结构，添加主键约束。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#00a8c8">ALTER</span> <span style="color:#00a8c8">TABLE</span> <span style="color:#111">tb_student</span> <span style="color:#00a8c8">ADD</span> <span style="color:#00a8c8">CONSTRAINT</span> <span style="color:#00a8c8">PRIMARY</span> <span style="color:#00a8c8">KEY</span><span style="color:#111">(</span><span style="color:#111">stu_id</span><span style="color:#111">);</span>
+</span></span></code></pre></div><h2 id="唯一约束">唯一约束</h2>
+<p>唯一约束使用UNIQUE关键字来定义。唯一约束的值必须是唯一的，且不能为空（NULL）。</p>
+<p>在MySQL中，唯一约束与主键之间存在以下两点区别。</p>
+<p>（1）一个表只能创建一个主键，但可以定义多个唯一约束。</p>
+<p>（2）定义主键约束时，系统会自动创建PRIMARY KEY索引，而定义候选键约束时，系统会自动创建UNIQUE索引。</p>
+<p>示例：创建用户信息表tb_student时，将学号（stu_id）和姓名（name）设置为唯一约束。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#00a8c8">CREATE</span> <span style="color:#00a8c8">TABLE</span> <span style="color:#111">tb_student</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">(</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">stu_id</span> <span style="color:#111">INT</span> <span style="color:#00a8c8">UNIQUE</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">name</span> <span style="color:#111">VARCHAR</span><span style="color:#111">(</span><span style="color:#ae81ff">30</span><span style="color:#111">)</span> <span style="color:#00a8c8">UNIQUE</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">);</span>
+</span></span></code></pre></div><p>示例：创建用户信息表tb_student时，将学号（stu_id）和姓名（name）字段设置为复合唯一约束。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#00a8c8">CREATE</span> <span style="color:#00a8c8">TABLE</span> <span style="color:#111">tb_student</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">(</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">stu_id</span> <span style="color:#111">INT</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">name</span> <span style="color:#111">VARCHAR</span><span style="color:#111">(</span><span style="color:#ae81ff">30</span><span style="color:#111">),</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">UNIQUE</span> <span style="color:#111">uniq_id_name</span> <span style="color:#111">(</span><span style="color:#111">stu_id</span><span style="color:#111">,</span><span style="color:#111">name</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">);</span>
+</span></span></code></pre></div><p>示例：通过修改数据表结构，添加唯一约束。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#00a8c8">ALTER</span> <span style="color:#00a8c8">TABLE</span> <span style="color:#111">tb_student</span> <span style="color:#00a8c8">ADD</span> <span style="color:#00a8c8">CONSTRAINT</span> <span style="color:#111">uniq_id_name</span> <span style="color:#00a8c8">UNIQUE</span><span style="color:#111">(</span><span style="color:#111">stu_id</span><span style="color:#111">,</span><span style="color:#111">name</span><span style="color:#111">);</span>
+</span></span></code></pre></div><h2 id="外键约束">外键约束</h2>
+<p>MySQL有两种常用的引擎类型（MyISAM和InnoDB），目前，只用InnoDB引擎类型支持外键约束。</p>
+<p>示例：创建班级信息表（tb_class）和学生信息表（tb_student），并设置学生信息表中班级编号（class_id）字段的外键约束。</p>
+<p>&ndash; 创建班级信息表</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#00a8c8">CREATE</span> <span style="color:#00a8c8">TABLE</span> <span style="color:#111">tb_class</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">(</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">class_id</span> <span style="color:#111">INT</span> <span style="color:#111">AUTO_INCREMENT</span> <span style="color:#00a8c8">PRIMARY</span> <span style="color:#00a8c8">KEY</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">class_name</span> <span style="color:#111">VARCHAR</span><span style="color:#111">(</span><span style="color:#ae81ff">30</span><span style="color:#111">)</span> <span style="color:#00a8c8">NOT</span> <span style="color:#00a8c8">NULL</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">);</span>
+</span></span></code></pre></div><p>&ndash; 创建学生信息表，并设置班级ID的外键约束</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#00a8c8">CREATE</span> <span style="color:#00a8c8">TABLE</span> <span style="color:#111">tb_student</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">(</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">stu_id</span> <span style="color:#111">INT</span> <span style="color:#111">AUTO_INCREMENT</span> <span style="color:#00a8c8">PRIMARY</span> <span style="color:#00a8c8">KEY</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">name</span> <span style="color:#111">VARCHAR</span><span style="color:#111">(</span><span style="color:#ae81ff">30</span><span style="color:#111">),</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">class_id</span> <span style="color:#111">INT</span> <span style="color:#00a8c8">NOT</span> <span style="color:#00a8c8">NULL</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">FOREIGN</span> <span style="color:#00a8c8">KEY</span> <span style="color:#111">fk_class_id</span> <span style="color:#111">(</span><span style="color:#111">class_id</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">REFERENCES</span> <span style="color:#111">tb_class</span><span style="color:#111">(</span><span style="color:#111">class_id</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">);</span>
+</span></span></code></pre></div><p>示例：通过修改数据表结构，添加外键约束。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#00a8c8">ALTER</span> <span style="color:#00a8c8">TABLE</span> <span style="color:#111">tb_student</span> <span style="color:#00a8c8">ADD</span> <span style="color:#00a8c8">CONSTRAINT</span> <span style="color:#00a8c8">FOREIGN</span> <span style="color:#00a8c8">KEY</span> <span style="color:#111">fk_class_id</span> <span style="color:#111">(</span><span style="color:#111">class_id</span><span style="color:#111">)</span> <span style="color:#00a8c8">REFERENCES</span> <span style="color:#111">tb_class</span><span style="color:#111">(</span><span style="color:#111">class_id</span><span style="color:#111">);</span>
+</span></span></code></pre></div><h2 id="非空约束">非空约束</h2>
+<p>非空约约束就是限制必须为某个列提供值。空值（NULL）是不存在值，它既不是数字0，也不是空字符串，而是不存在、未知的情况。</p>
+<p>示例：创建学生信息表tb_student时，将姓名（name）字段添加为非空约束。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#00a8c8">CREATE</span> <span style="color:#00a8c8">TABLE</span> <span style="color:#111">tb_student</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">(</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">stu_id</span> <span style="color:#111">INT</span> <span style="color:#111">AUTO_INCREMENT</span> <span style="color:#00a8c8">PRIMARY</span> <span style="color:#00a8c8">KEY</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">name</span> <span style="color:#111">VARCHAR</span><span style="color:#111">(</span><span style="color:#ae81ff">30</span><span style="color:#111">)</span> <span style="color:#00a8c8">NOT</span> <span style="color:#00a8c8">NULL</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">);</span>
+</span></span></code></pre></div><p>示例：通过修改数据表结构，将姓名（name）字段修改为非空。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#00a8c8">ALTER</span> <span style="color:#00a8c8">TABLE</span> <span style="color:#111">tb_student</span> <span style="color:#00a8c8">MODIFY</span> <span style="color:#00a8c8">COLUMN</span> <span style="color:#111">name</span> <span style="color:#111">VARCHAR</span><span style="color:#111">(</span><span style="color:#ae81ff">30</span><span style="color:#111">)</span> <span style="color:#00a8c8">NOT</span> <span style="color:#00a8c8">NULL</span><span style="color:#111">;</span>
+</span></span></code></pre></div><h2 id="检查约束">检查约束</h2>
+<p>检查约束用来指定某列的可取值的范围，它通过限制输入到列中的值来强制域的完整性。</p>
+<p>示例：创建学生信息表tb_student时，将年龄（age）的值设置在7至18之间（不包括18）的数值。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#00a8c8">CREATE</span> <span style="color:#00a8c8">TABLE</span> <span style="color:#111">tb_student</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">(</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">stu_id</span> <span style="color:#111">INT</span> <span style="color:#111">AUTO_INCREMENT</span> <span style="color:#00a8c8">PRIMARY</span> <span style="color:#00a8c8">KEY</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">name</span> <span style="color:#111">VARCHAR</span><span style="color:#111">(</span><span style="color:#ae81ff">30</span><span style="color:#111">),</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">age</span> <span style="color:#111">INT</span> <span style="color:#00a8c8">NOT</span> <span style="color:#00a8c8">NULL</span> <span style="color:#00a8c8">CHECK</span><span style="color:#111">(</span><span style="color:#111">age</span><span style="color:#f92672">&gt;=</span><span style="color:#ae81ff">7</span> <span style="color:#00a8c8">AND</span> <span style="color:#111">age</span><span style="color:#f92672">&lt;</span><span style="color:#ae81ff">18</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">);</span>
+</span></span></code></pre></div><p>注意：目前的MySQL版本只是对CHECK约束进行了分析处理，但会被直接忽略，并不会报错。</p>
+<h2 id="约束的删除">约束的删除</h2>
+<p>删除约束语法：</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#00a8c8">ALTER</span> <span style="color:#00a8c8">TABLE</span> <span style="color:#960050;background-color:#1e0010">表名</span> <span style="color:#00a8c8">DROP</span> <span style="color:#111">[</span><span style="color:#00a8c8">FOREIGN</span> <span style="color:#00a8c8">KEY</span><span style="color:#f92672">|</span> <span style="color:#00a8c8">INDEX</span> <span style="color:#960050;background-color:#1e0010">约束名称</span><span style="color:#111">]</span><span style="color:#f92672">|</span><span style="color:#111">[</span><span style="color:#00a8c8">PRIMARY</span> <span style="color:#00a8c8">KEY</span><span style="color:#111">]</span>
+</span></span></code></pre></div><p>示例：删除约束。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#00a8c8">CREATE</span> <span style="color:#00a8c8">TABLE</span> <span style="color:#111">tb_student</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">(</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">stu_id</span> <span style="color:#111">INT</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">name</span> <span style="color:#111">VARCHAR</span><span style="color:#111">(</span><span style="color:#ae81ff">30</span><span style="color:#111">)</span> <span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">class_id</span> <span style="color:#111">INT</span> <span style="color:#00a8c8">NOT</span> <span style="color:#00a8c8">NULL</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">-- 主键约束
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#00a8c8">PRIMARY</span> <span style="color:#00a8c8">KEY</span><span style="color:#111">(</span><span style="color:#111">stu_id</span><span style="color:#111">),</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">-- 外键约束
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#00a8c8">FOREIGN</span> <span style="color:#00a8c8">KEY</span> <span style="color:#111">fk_class_id</span> <span style="color:#111">(</span><span style="color:#111">class_id</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">REFERENCES</span> <span style="color:#111">tb_class</span><span style="color:#111">(</span><span style="color:#111">class_id</span><span style="color:#111">),</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">-- 唯一性约束
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#00a8c8">UNIQUE</span> <span style="color:#111">uniq_name</span> <span style="color:#111">(</span><span style="color:#111">name</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#111">);</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">-- 删除主键约束
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#00a8c8">ALTER</span> <span style="color:#00a8c8">TABLE</span> <span style="color:#111">tb_student</span> <span style="color:#00a8c8">DROP</span> <span style="color:#00a8c8">PRIMARY</span> <span style="color:#00a8c8">KEY</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">-- 删除外键约束
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#00a8c8">ALTER</span> <span style="color:#00a8c8">TABLE</span> <span style="color:#111">tb_student</span> <span style="color:#00a8c8">DROP</span> <span style="color:#00a8c8">FOREIGN</span> <span style="color:#00a8c8">KEY</span> <span style="color:#111">fk_class_id</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">-- 删除唯一性约束
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#00a8c8">ALTER</span> <span style="color:#00a8c8">TABLE</span> <span style="color:#111">tb_student</span> <span style="color:#00a8c8">DROP</span> <span style="color:#00a8c8">INDEX</span> <span style="color:#111">uniq_name</span><span style="color:#111">;</span>
+</span></span></code></pre></div><h2 id="文章转自">文章转自：</h2>
+<p><a href="https://blog.csdn.net/pan_junbiao/article/details/86158117">https://blog.csdn.net/pan_junbiao/article/details/86158117</a></p>
+]]></content:encoded><category>database</category><category>mysql</category></item></channel></rss>

@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>Lua on Daemon365</title><link>https://daemon365.dev/tags/lua/</link><description>Don't let yourself stop.</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><lastBuildDate>Tue, 25 Oct 2022 00:00:00 +0800</lastBuildDate><atom:link href="https://daemon365.dev/tags/lua/index.xml" rel="self" type="application/rss+xml"/><item><title>lua基础</title><link>https://daemon365.dev/post/others/lua_basics/</link><pubDate>Tue, 25 Oct 2022 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/others/lua_basics/</guid><description>&lt;h2 id="什么是lua"&gt;什么是lua&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://www.lua.org/"&gt;Lua&lt;/a&gt;是一个小巧的&lt;a href="https://baike.baidu.com/item/%E8%84%9A%E6%9C%AC%E8%AF%AD%E8%A8%80"&gt;脚本语言&lt;/a&gt;。它是&lt;a href="https://baike.baidu.com/item/%E5%B7%B4%E8%A5%BF/5422"&gt;巴西&lt;/a&gt;&lt;a href="https://baike.baidu.com/item/%E9%87%8C%E7%BA%A6%E7%83%AD%E5%86%85%E5%8D%A2%E5%A4%A9%E4%B8%BB%E6%95%99%E5%A4%A7%E5%AD%A6/1050607"&gt;里约热内卢天主教大学&lt;/a&gt;（Pontifical Catholic University of Rio de Janeiro）里的一个由Roberto Ierusalimschy、Waldemar Celes 和 Luiz Henrique de Figueiredo三人所组成的研究小组于1993年开发的。 其设计目的是为了通过灵活嵌入应用程序中从而为应用程序提供灵活的扩展和定制功能。Lua由标准C编写而成，几乎在所有操作系统和平台上都可以编译，运行。Lua并没有提供强大的库，这是由它的定位决定的。所以Lua不适合作为开发独立应用程序的语言。Lua 有一个同时进行的JIT项目，提供在特定平台上的即时编译功能。&lt;/p&gt;
+&lt;h2 id="安装"&gt;安装&lt;/h2&gt;
+&lt;p&gt;mac：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;brew install lua
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;检验：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-go" data-lang="go"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75af00"&gt;lua&lt;/span&gt; &lt;span style="color:#f92672"&gt;-&lt;/span&gt;&lt;span style="color:#75af00"&gt;v&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75af00"&gt;Lua&lt;/span&gt; &lt;span style="color:#ae81ff"&gt;5.4.2&lt;/span&gt; &lt;span style="color:#75af00"&gt;Copyright&lt;/span&gt; &lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#75af00"&gt;C&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#ae81ff"&gt;1994&lt;/span&gt;&lt;span style="color:#f92672"&gt;-&lt;/span&gt;&lt;span style="color:#ae81ff"&gt;2020&lt;/span&gt; &lt;span style="color:#75af00"&gt;Lua&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;org&lt;/span&gt;&lt;span style="color:#111"&gt;,&lt;/span&gt; &lt;span style="color:#75af00"&gt;PUC&lt;/span&gt;&lt;span style="color:#f92672"&gt;-&lt;/span&gt;&lt;span style="color:#75af00"&gt;Rio&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id="注释"&gt;注释&lt;/h2&gt;
+&lt;h3 id="单行注释"&gt;单行注释&lt;/h3&gt;
+&lt;p&gt;两个减号是单行注释:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-lua" data-lang="lua"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;--&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id="多行注释"&gt;多行注释&lt;/h3&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-lua" data-lang="lua"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;--[[
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt; 多行注释
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt; 多行注释
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt; --]]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id="标示符"&gt;标示符&lt;/h2&gt;
+&lt;p&gt;Lua 标示符用于定义一个变量，函数获取其他用户定义的项。标示符以一个字母 A 到 Z 或 a 到 z 或下划线 &lt;strong&gt;_&lt;/strong&gt; 开头后加上 0 个或多个字母，下划线，数字（0 到 9）。&lt;/p&gt;
+&lt;p&gt;最好不要使用下划线加大写字母的标示符，因为Lua的保留字也是这样的。&lt;/p&gt;
+&lt;p&gt;Lua 不允许使用特殊字符如 &lt;strong&gt;@&lt;/strong&gt;, &lt;strong&gt;$&lt;/strong&gt;, 和 &lt;strong&gt;%&lt;/strong&gt; 来定义标示符。 Lua 是一个区分大小写的编程语言。&lt;/p&gt;
+&lt;h2 id="关键词"&gt;关键词&lt;/h2&gt;
+&lt;p&gt;以下列出了 Lua 的保留关键词。保留关键字不能作为常量或变量或其他用户自定义标示符：&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;and&lt;/th&gt;
+&lt;th&gt;break&lt;/th&gt;
+&lt;th&gt;do&lt;/th&gt;
+&lt;th&gt;else&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;elseif&lt;/td&gt;
+&lt;td&gt;end&lt;/td&gt;
+&lt;td&gt;false&lt;/td&gt;
+&lt;td&gt;for&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;function&lt;/td&gt;
+&lt;td&gt;if&lt;/td&gt;
+&lt;td&gt;in&lt;/td&gt;
+&lt;td&gt;local&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;nil&lt;/td&gt;
+&lt;td&gt;not&lt;/td&gt;
+&lt;td&gt;or&lt;/td&gt;
+&lt;td&gt;repeat&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;return&lt;/td&gt;
+&lt;td&gt;then&lt;/td&gt;
+&lt;td&gt;true&lt;/td&gt;
+&lt;td&gt;until&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;while&lt;/td&gt;
+&lt;td&gt;goto&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;一般约定，以下划线开头连接一串大写字母的名字（比如 _VERSION）被保留用于 Lua 内部全局变量。&lt;/p&gt;</description><content:encoded><![CDATA[<h2 id="什么是lua">什么是lua</h2>
+<p><a href="https://www.lua.org/">Lua</a>是一个小巧的<a href="https://baike.baidu.com/item/%E8%84%9A%E6%9C%AC%E8%AF%AD%E8%A8%80">脚本语言</a>。它是<a href="https://baike.baidu.com/item/%E5%B7%B4%E8%A5%BF/5422">巴西</a><a href="https://baike.baidu.com/item/%E9%87%8C%E7%BA%A6%E7%83%AD%E5%86%85%E5%8D%A2%E5%A4%A9%E4%B8%BB%E6%95%99%E5%A4%A7%E5%AD%A6/1050607">里约热内卢天主教大学</a>（Pontifical Catholic University of Rio de Janeiro）里的一个由Roberto Ierusalimschy、Waldemar Celes 和 Luiz Henrique de Figueiredo三人所组成的研究小组于1993年开发的。 其设计目的是为了通过灵活嵌入应用程序中从而为应用程序提供灵活的扩展和定制功能。Lua由标准C编写而成，几乎在所有操作系统和平台上都可以编译，运行。Lua并没有提供强大的库，这是由它的定位决定的。所以Lua不适合作为开发独立应用程序的语言。Lua 有一个同时进行的JIT项目，提供在特定平台上的即时编译功能。</p>
+<h2 id="安装">安装</h2>
+<p>mac：</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>brew install lua
+</span></span></code></pre></div><p>检验：</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75af00">lua</span> <span style="color:#f92672">-</span><span style="color:#75af00">v</span>
+</span></span><span style="display:flex;"><span><span style="color:#75af00">Lua</span> <span style="color:#ae81ff">5.4.2</span>  <span style="color:#75af00">Copyright</span> <span style="color:#111">(</span><span style="color:#75af00">C</span><span style="color:#111">)</span> <span style="color:#ae81ff">1994</span><span style="color:#f92672">-</span><span style="color:#ae81ff">2020</span> <span style="color:#75af00">Lua</span><span style="color:#111">.</span><span style="color:#75af00">org</span><span style="color:#111">,</span> <span style="color:#75af00">PUC</span><span style="color:#f92672">-</span><span style="color:#75af00">Rio</span>
+</span></span></code></pre></div><h2 id="注释">注释</h2>
+<h3 id="单行注释">单行注释</h3>
+<p>两个减号是单行注释:</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-lua" data-lang="lua"><span style="display:flex;"><span><span style="color:#75715e">--</span>
+</span></span></code></pre></div><h3 id="多行注释">多行注释</h3>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-lua" data-lang="lua"><span style="display:flex;"><span><span style="color:#75715e">--[[
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> 多行注释
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> 多行注释
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> --]]</span>
+</span></span></code></pre></div><h2 id="标示符">标示符</h2>
+<p>Lua 标示符用于定义一个变量，函数获取其他用户定义的项。标示符以一个字母 A 到 Z 或 a 到 z 或下划线 <strong>_</strong> 开头后加上 0 个或多个字母，下划线，数字（0 到 9）。</p>
+<p>最好不要使用下划线加大写字母的标示符，因为Lua的保留字也是这样的。</p>
+<p>Lua 不允许使用特殊字符如 <strong>@</strong>, <strong>$</strong>, 和 <strong>%</strong> 来定义标示符。 Lua 是一个区分大小写的编程语言。</p>
+<h2 id="关键词">关键词</h2>
+<p>以下列出了 Lua 的保留关键词。保留关键字不能作为常量或变量或其他用户自定义标示符：</p>
+<table>
+  <thead>
+      <tr>
+          <th>and</th>
+          <th>break</th>
+          <th>do</th>
+          <th>else</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>elseif</td>
+          <td>end</td>
+          <td>false</td>
+          <td>for</td>
+      </tr>
+      <tr>
+          <td>function</td>
+          <td>if</td>
+          <td>in</td>
+          <td>local</td>
+      </tr>
+      <tr>
+          <td>nil</td>
+          <td>not</td>
+          <td>or</td>
+          <td>repeat</td>
+      </tr>
+      <tr>
+          <td>return</td>
+          <td>then</td>
+          <td>true</td>
+          <td>until</td>
+      </tr>
+      <tr>
+          <td>while</td>
+          <td>goto</td>
+          <td></td>
+          <td></td>
+      </tr>
+  </tbody>
+</table>
+<p>一般约定，以下划线开头连接一串大写字母的名字（比如 _VERSION）被保留用于 Lua 内部全局变量。</p>
+<h2 id="全局变量">全局变量</h2>
+<p>在默认情况下，变量总是认为是全局的。</p>
+<p>全局变量不需要声明，给一个变量赋值后即创建了这个全局变量，访问一个没有初始化的全局变量也不会出错，只不过得到的结果是：nil。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-lua" data-lang="lua"><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">\</span><span style="color:#f92672">&gt;</span> <span style="color:#111">print</span><span style="color:#111">(</span><span style="color:#111">b</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">nil</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">\</span><span style="color:#f92672">&gt;</span> <span style="color:#111">b</span><span style="color:#f92672">=</span><span style="color:#ae81ff">10</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">\</span><span style="color:#f92672">&gt;</span> <span style="color:#111">print</span><span style="color:#111">(</span><span style="color:#111">b</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">10</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">\</span><span style="color:#f92672">&gt;</span>
+</span></span></code></pre></div><p>如果你想删除一个全局变量，只需要将变量赋值为nil。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-lua" data-lang="lua"><span style="display:flex;"><span><span style="color:#111">b</span> <span style="color:#f92672">=</span> <span style="color:#00a8c8">nil</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">print</span><span style="color:#111">(</span><span style="color:#111">b</span><span style="color:#111">)</span>      <span style="color:#75715e">--&gt; nil</span>
+</span></span></code></pre></div><p>这样变量b就好像从没被使用过一样。换句话说, 当且仅当一个变量不等于nil时，这个变量即存在。</p>
+<h1 id="lua-数据类型">Lua 数据类型</h1>
+<p>Lua 是动态类型语言，变量不要类型定义,只需要为变量赋值。 值可以存储在变量中，作为参数传递或结果返回。</p>
+<p>Lua 中有 8 个基本类型分别为：nil、boolean、number、string、userdata、function、thread 和 table。</p>
+<table>
+  <thead>
+      <tr>
+          <th style="text-align: left">数据类型</th>
+          <th style="text-align: left">描述</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: left">nil</td>
+          <td style="text-align: left">这个最简单，只有值nil属于该类，表示一个无效值（在条件表达式中相当于false）。</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">boolean</td>
+          <td style="text-align: left">包含两个值：false和true。</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">number</td>
+          <td style="text-align: left">表示双精度类型的实浮点数</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">string</td>
+          <td style="text-align: left">字符串由一对双引号或单引号来表示</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">function</td>
+          <td style="text-align: left">由 C 或 Lua 编写的函数</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">userdata</td>
+          <td style="text-align: left">表示任意存储在变量中的C数据结构</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">thread</td>
+          <td style="text-align: left">表示执行的独立线路，用于执行协同程序</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">table</td>
+          <td style="text-align: left">Lua 中的表（table）其实是一个&quot;关联数组&quot;（associative arrays），数组的索引可以是数字、字符串或表类型。在 Lua 里，table 的创建是通过&quot;构造表达式&quot;来完成，最简单构造表达式是{}，用来创建一个空表。</td>
+      </tr>
+  </tbody>
+</table>
+<h3 id="table">table</h3>
+<p>Lua 中的表（table）其实是一个&quot;关联数组&quot;（associative arrays），数组的索引可以是数字或者是字符串。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-lua" data-lang="lua"><span style="display:flex;"><span><span style="color:#111">a</span> <span style="color:#f92672">=</span> <span style="color:#111">{</span><span style="color:#d88200">&#34;zhaohaiyu&#34;</span><span style="color:#111">,</span> <span style="color:#d88200">&#34;baidu&#34;</span><span style="color:#111">,</span> <span style="color:#d88200">&#34;taobao&#34;</span><span style="color:#111">,</span> <span style="color:#d88200">&#34;qq&#34;</span><span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">for</span> <span style="color:#111">key</span><span style="color:#111">,</span> <span style="color:#111">val</span> <span style="color:#00a8c8">in</span> <span style="color:#111">pairs</span><span style="color:#111">(</span><span style="color:#111">a</span><span style="color:#111">)</span> <span style="color:#00a8c8">do</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">print</span><span style="color:#111">(</span><span style="color:#d88200">&#34;Key&#34;</span><span style="color:#111">,</span> <span style="color:#111">key</span><span style="color:#111">,</span><span style="color:#d88200">&#34;value&#34;</span><span style="color:#111">,</span><span style="color:#111">val</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">end</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-lua" data-lang="lua"><span style="display:flex;"><span><span style="color:#111">lua</span> <span style="color:#ae81ff">1.</span><span style="color:#111">lua</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">Key</span>	<span style="color:#ae81ff">1</span>	<span style="color:#111">value</span>	<span style="color:#111">zhaohaiyu</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">Key</span>	<span style="color:#ae81ff">2</span>	<span style="color:#111">value</span>	<span style="color:#111">baidu</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">Key</span>	<span style="color:#ae81ff">3</span>	<span style="color:#111">value</span>	<span style="color:#111">taobao</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">Key</span>	<span style="color:#ae81ff">4</span>	<span style="color:#111">value</span>	<span style="color:#111">qq</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-lua" data-lang="lua"><span style="display:flex;"><span><span style="color:#111">a</span> <span style="color:#f92672">=</span> <span style="color:#111">{}</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">a</span><span style="color:#111">[</span><span style="color:#d88200">&#34;zhaohaiyu&#34;</span><span style="color:#111">]</span> <span style="color:#f92672">=</span> <span style="color:#d88200">&#34;https://www.zhaohaiyu.com/&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">a</span><span style="color:#111">[</span><span style="color:#d88200">&#34;百度&#34;</span><span style="color:#111">]</span> <span style="color:#f92672">=</span> <span style="color:#d88200">&#34;https://www.baidu.com/&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">a</span><span style="color:#111">[</span><span style="color:#d88200">&#34;淘宝&#34;</span><span style="color:#111">]</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">11</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">a</span><span style="color:#111">[</span><span style="color:#d88200">&#34;淘宝&#34;</span><span style="color:#111">]</span> <span style="color:#f92672">=</span> <span style="color:#111">a</span><span style="color:#111">[</span><span style="color:#d88200">&#34;淘宝&#34;</span><span style="color:#111">]</span> <span style="color:#f92672">+</span>  <span style="color:#ae81ff">12</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">for</span> <span style="color:#111">k</span><span style="color:#111">,</span> <span style="color:#111">v</span> <span style="color:#00a8c8">in</span> <span style="color:#111">pairs</span><span style="color:#111">(</span><span style="color:#111">a</span><span style="color:#111">)</span> <span style="color:#00a8c8">do</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">print</span><span style="color:#111">(</span><span style="color:#111">k</span> <span style="color:#f92672">..</span> <span style="color:#d88200">&#34; : &#34;</span> <span style="color:#f92672">..</span> <span style="color:#111">v</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">end</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-lua" data-lang="lua"><span style="display:flex;"><span><span style="color:#111">lua</span> <span style="color:#ae81ff">1.</span><span style="color:#111">lua</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">zhaohaiyu</span> <span style="color:#111">:</span> <span style="color:#111">https</span><span style="color:#111">:</span><span style="color:#f92672">//</span><span style="color:#111">www.zhaohaiyu</span><span style="color:#111">.</span><span style="color:#111">com</span><span style="color:#f92672">/</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">淘宝</span> <span style="color:#111">:</span> <span style="color:#ae81ff">23</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">百度</span> <span style="color:#111">:</span> <span style="color:#111">https</span><span style="color:#111">:</span><span style="color:#f92672">//</span><span style="color:#111">www.baidu</span><span style="color:#111">.</span><span style="color:#111">com</span><span style="color:#f92672">/</span>
+</span></span></code></pre></div><h3 id="function函数">function（函数）</h3>
+<p>在 Lua 中，函数是被看作是&quot;第一类值（First-Class Value）&quot;，函数可以存在变量里:</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-lua" data-lang="lua"><span style="display:flex;"><span><span style="color:#75715e">-- function_test.lua 脚本文件</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">function</span> <span style="color:#75af00">factorial1</span><span style="color:#111">(</span><span style="color:#111">n</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">if</span> <span style="color:#111">n</span> <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span> <span style="color:#00a8c8">then</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#00a8c8">return</span> <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">else</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#00a8c8">return</span> <span style="color:#111">n</span> <span style="color:#f92672">*</span> <span style="color:#111">factorial1</span><span style="color:#111">(</span><span style="color:#111">n</span> <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">end</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">end</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">print</span><span style="color:#111">(</span><span style="color:#111">factorial1</span><span style="color:#111">(</span><span style="color:#ae81ff">5</span><span style="color:#111">))</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">factorial2</span> <span style="color:#f92672">=</span> <span style="color:#111">factorial1</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">print</span><span style="color:#111">(</span><span style="color:#111">factorial2</span><span style="color:#111">(</span><span style="color:#ae81ff">5</span><span style="color:#111">))</span>
+</span></span></code></pre></div><p>脚本执行结果为：</p>
+<pre tabindex="0"><code>$ lua function_test.lua 
+120
+120
+</code></pre><h3 id="thread线程">thread（线程）</h3>
+<p>在 Lua 里，最主要的线程是协同程序（coroutine）。它跟线程（thread）差不多，拥有自己独立的栈、局部变量和指令指针，可以跟其他协同程序共享全局变量和其他大部分东西。</p>
+<p>线程跟协程的区别：线程可以同时多个运行，而协程任意时刻只能运行一个，并且处于运行状态的协程只有被挂起（suspend）时才会暂停。</p>
+<h3 id="userdata自定义类型">userdata（自定义类型）</h3>
+<p>userdata 是一种用户自定义数据，用于表示一种由应用程序或 C/C++ 语言库所创建的类型，可以将任意 C/C++ 的任意数据类型的数据（通常是 struct 和 指针）存储到 Lua 变量中调用。</p>
+<h2 id="lua-变量">Lua 变量</h2>
+<p>变量在使用前，需要在代码中进行声明，即创建该变量。</p>
+<p>编译程序执行代码之前编译器需要知道如何给语句变量开辟存储区，用于存储变量的值。</p>
+<p>Lua 变量有三种类型：全局变量、局部变量、表中的域。</p>
+<p>Lua 中的变量全是全局变量，那怕是语句块或是函数里，除非用 local 显式声明为局部变量。</p>
+<p>局部变量的作用域为从声明位置开始到所在语句块结束。</p>
+<p>变量的默认值均为 nil。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-lua" data-lang="lua"><span style="display:flex;"><span><span style="color:#111">a</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">5</span>               <span style="color:#75715e">-- 全局变量</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">local</span> <span style="color:#111">b</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">5</span>         <span style="color:#75715e">-- 局部变量</span>
+</span></span></code></pre></div><h2 id="for-while-if">for while if</h2>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-lua" data-lang="lua"><span style="display:flex;"><span><span style="color:#111">a</span> <span style="color:#f92672">=</span> <span style="color:#111">{</span><span style="color:#ae81ff">1</span><span style="color:#111">,</span><span style="color:#ae81ff">2</span><span style="color:#111">,</span><span style="color:#ae81ff">3</span><span style="color:#111">,</span><span style="color:#ae81ff">4</span><span style="color:#111">,</span><span style="color:#ae81ff">5</span><span style="color:#111">,</span><span style="color:#ae81ff">6</span><span style="color:#111">,</span><span style="color:#ae81ff">7</span><span style="color:#111">,</span><span style="color:#ae81ff">8</span><span style="color:#111">,</span><span style="color:#ae81ff">9</span><span style="color:#111">,</span><span style="color:#ae81ff">10</span><span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">for</span> <span style="color:#111">i</span><span style="color:#111">,</span> <span style="color:#111">v</span> <span style="color:#00a8c8">in</span> <span style="color:#111">ipairs</span><span style="color:#111">(</span><span style="color:#111">a</span><span style="color:#111">)</span> <span style="color:#00a8c8">do</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">print</span><span style="color:#111">(</span><span style="color:#111">i</span><span style="color:#111">,</span><span style="color:#111">v</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">end</span>
+</span></span></code></pre></div><h3 id="数值for循环">数值for循环</h3>
+<p>Lua 编程语言中数值 for 循环语法格式:</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-lua" data-lang="lua"><span style="display:flex;"><span><span style="color:#00a8c8">for</span> <span style="color:#111">var</span><span style="color:#f92672">=</span><span style="color:#111">exp1</span><span style="color:#111">,</span><span style="color:#111">exp2</span><span style="color:#111">,</span><span style="color:#111">exp3</span> <span style="color:#00a8c8">do</span>  
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;</span><span style="color:#960050;background-color:#1e0010">执行体</span><span style="color:#f92672">&gt;</span>  
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">end</span>  
+</span></span></code></pre></div><p>var 从 exp1 变化到 exp2，每次变化以 exp3 为步长递增 var，并执行一次 <strong>&ldquo;执行体&rdquo;</strong>。exp3 是可选的，如果不指定，默认为1。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-lua" data-lang="lua"><span style="display:flex;"><span><span style="color:#00a8c8">for</span> <span style="color:#111">i</span><span style="color:#f92672">=</span><span style="color:#ae81ff">10</span><span style="color:#111">,</span><span style="color:#ae81ff">1</span><span style="color:#111">,</span><span style="color:#f92672">-</span><span style="color:#ae81ff">1</span> <span style="color:#00a8c8">do</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">print</span><span style="color:#111">(</span><span style="color:#111">i</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">end</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-lua" data-lang="lua"><span style="display:flex;"><span><span style="color:#75715e">--while</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">a</span><span style="color:#f92672">=</span><span style="color:#ae81ff">10</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">while</span><span style="color:#111">(</span> <span style="color:#111">a</span> <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">20</span> <span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">do</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#111">print</span><span style="color:#111">(</span><span style="color:#d88200">&#34;a 的值为:&#34;</span><span style="color:#111">,</span> <span style="color:#111">a</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#111">a</span> <span style="color:#f92672">=</span> <span style="color:#111">a</span><span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">end</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-lua" data-lang="lua"><span style="display:flex;"><span><span style="color:#75715e">-- repeat</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">a</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">10</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">repeat</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#111">print</span><span style="color:#111">(</span><span style="color:#d88200">&#34;a的值为:&#34;</span><span style="color:#111">,</span> <span style="color:#111">a</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#111">a</span> <span style="color:#f92672">=</span> <span style="color:#111">a</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">until</span><span style="color:#111">(</span> <span style="color:#111">a</span> <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">15</span> <span style="color:#111">)</span>
+</span></span></code></pre></div><h3 id="break">break</h3>
+<p>Lua 编程语言 break 语句插入在循环体中，用于退出当前循环或语句，并开始脚本执行紧接着的语句。</p>
+<p>如果你使用循环嵌套，break语句将停止最内层循环的执行，并开始执行的外层的循环语句。</p>
+<h3 id="goto">goto</h3>
+<p>Lua 语言中的 goto 语句允许将控制流程无条件地转到被标记的语句处。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-lua" data-lang="lua"><span style="display:flex;"><span><span style="color:#00a8c8">local</span> <span style="color:#111">a</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">::</span><span style="color:#111">label</span><span style="color:#111">::</span> <span style="color:#111">print</span><span style="color:#111">(</span><span style="color:#d88200">&#34;--- goto label ---&#34;</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#111">a</span> <span style="color:#f92672">=</span> <span style="color:#111">a</span><span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">if</span> <span style="color:#111">a</span> <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">3</span> <span style="color:#00a8c8">then</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">goto</span> <span style="color:#111">label</span>   <span style="color:#75715e">-- a 小于 3 的时候跳转到标签 label</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">end</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-lua" data-lang="lua"><span style="display:flex;"><span><span style="color:#75715e">--if</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">if</span><span style="color:#111">(</span><span style="color:#ae81ff">0</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">then</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">print</span><span style="color:#111">(</span><span style="color:#d88200">&#34;0 为 true&#34;</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">end</span>
+</span></span></code></pre></div><h2 id="lua-函数">Lua 函数</h2>
+<p>在Lua中，函数是对语句和表达式进行抽象的主要方法。既可以用来处理一些特殊的工作，也可以用来计算一些值。</p>
+<p>Lua 提供了许多的内建函数，你可以很方便的在程序中调用它们，如print()函数可以将传入的参数打印在控制台上。</p>
+<p>Lua 函数主要有两种用途：</p>
+<ul>
+<li>1.完成指定的任务，这种情况下函数作为调用语句使用；</li>
+<li>2.计算并返回值，这种情况下函数作为赋值语句的表达式使用。</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-lua" data-lang="lua"><span style="display:flex;"><span><span style="color:#75715e">--[[ 函数返回两个值的最大值 --]]</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">function</span> <span style="color:#75af00">max</span><span style="color:#111">(</span><span style="color:#111">num1</span><span style="color:#111">,</span> <span style="color:#111">num2</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>   <span style="color:#00a8c8">if</span> <span style="color:#111">(</span><span style="color:#111">num1</span> <span style="color:#f92672">&gt;</span> <span style="color:#111">num2</span><span style="color:#111">)</span> <span style="color:#00a8c8">then</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#111">result</span> <span style="color:#f92672">=</span> <span style="color:#111">num1</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#00a8c8">else</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#111">result</span> <span style="color:#f92672">=</span> <span style="color:#111">num2</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#00a8c8">end</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>   <span style="color:#00a8c8">return</span> <span style="color:#111">result</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">end</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">-- 调用函数</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">print</span><span style="color:#111">(</span><span style="color:#d88200">&#34;两值比较最大值为 &#34;</span><span style="color:#111">,</span><span style="color:#111">max</span><span style="color:#111">(</span><span style="color:#ae81ff">10</span><span style="color:#111">,</span><span style="color:#ae81ff">4</span><span style="color:#111">))</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">print</span><span style="color:#111">(</span><span style="color:#d88200">&#34;两值比较最大值为 &#34;</span><span style="color:#111">,</span><span style="color:#111">max</span><span style="color:#111">(</span><span style="color:#ae81ff">5</span><span style="color:#111">,</span><span style="color:#ae81ff">6</span><span style="color:#111">))</span>
+</span></span></code></pre></div>]]></content:encoded><category>others</category><category>lua</category></item></channel></rss>

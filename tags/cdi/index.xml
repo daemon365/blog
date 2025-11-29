@@ -1,0 +1,836 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>Cdi on Daemon365</title><link>https://daemon365.dev/tags/cdi/</link><description>Don't let yourself stop.</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><lastBuildDate>Sun, 19 Nov 2023 00:00:00 +0800</lastBuildDate><atom:link href="https://daemon365.dev/tags/cdi/index.xml" rel="self" type="application/rss+xml"/><item><title>kubernetes container device interface (CDI)</title><link>https://daemon365.dev/post/cloud/kubernetes_container_device_interface_cdi/</link><pubDate>Sun, 19 Nov 2023 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/kubernetes_container_device_interface_cdi/</guid><description>&lt;h2 id="cdi-是什么"&gt;CDI 是什么？&lt;/h2&gt;
+&lt;p&gt;Container Device Interface (CDI) 是一个提议的标准，它定义了如何在容器运行时环境中向容器提供设备。这个提议的目的是使得设备供应商能够更容易地将其设备集成到 Kubernetes 集群中，而不必修改 Kubernetes 核心代码。&lt;/p&gt;
+&lt;p&gt;CDI 插件通常负责：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;配置设备以供容器使用（例如，分配设备文件或设置必要的环境变量）。&lt;/li&gt;
+&lt;li&gt;在容器启动时将设备资源注入到容器中。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;strong&gt;官网&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="https://github.com/cncf-tags/container-device-interface"&gt;https://github.com/cncf-tags/container-device-interface&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="为什么需要cdi"&gt;为什么需要CDI？&lt;/h2&gt;
+&lt;p&gt;如果我们想在容器内使用 nvidia 的 gpu，在没有 CDI 之前，我们需要修改 containerd 的 low-level container runtime(runc) 到 nvidia runtime。这么做的原因就是使用 gpu 不单单要绑定 gpu device 文件到容器内，还需要绑定一些驱动文件和可执行命令（比如 nvidia-smi）等到容器内，还有就执行一些 hooks。 nvidia runtime 的作用就是绑定一些文件和执行一些 hooks 然后调用 runc。&lt;/p&gt;
+&lt;p&gt;现在我们可以使用 CDI 做这些事情，除了无需修改 runtime 外，还有抽象和插件化等优点。&lt;/p&gt;
+&lt;h2 id="版本及准备工作"&gt;版本及准备工作&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;kubelet version &amp;gt;= 1.28.0&lt;/li&gt;
+&lt;li&gt;containerd version &amp;gt;= 1.7.0&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;而且这在 k8s 1.28 (1.29版本是 beta 了 默认就打开了) 版本中是一个 alpha 版本的功能，所以我们需要在 kubelet 的启动参数中加入开启特性门：&lt;code&gt;--feature-gates=DevicePluginCDIDevices =true&lt;/code&gt;。&lt;/p&gt;</description><content:encoded><![CDATA[<h2 id="cdi-是什么">CDI 是什么？</h2>
+<p>Container Device Interface (CDI) 是一个提议的标准，它定义了如何在容器运行时环境中向容器提供设备。这个提议的目的是使得设备供应商能够更容易地将其设备集成到 Kubernetes 集群中，而不必修改 Kubernetes 核心代码。</p>
+<p>CDI 插件通常负责：</p>
+<ol>
+<li>配置设备以供容器使用（例如，分配设备文件或设置必要的环境变量）。</li>
+<li>在容器启动时将设备资源注入到容器中。</li>
+</ol>
+<p><strong>官网</strong></p>
+<ul>
+<li><a href="https://github.com/cncf-tags/container-device-interface">https://github.com/cncf-tags/container-device-interface</a></li>
+</ul>
+<h2 id="为什么需要cdi">为什么需要CDI？</h2>
+<p>如果我们想在容器内使用 nvidia 的 gpu，在没有 CDI 之前，我们需要修改 containerd 的 low-level container runtime(runc) 到 nvidia runtime。这么做的原因就是使用 gpu 不单单要绑定 gpu device 文件到容器内，还需要绑定一些驱动文件和可执行命令（比如 nvidia-smi）等到容器内，还有就执行一些 hooks。 nvidia runtime 的作用就是绑定一些文件和执行一些 hooks 然后调用 runc。</p>
+<p>现在我们可以使用 CDI 做这些事情，除了无需修改 runtime 外，还有抽象和插件化等优点。</p>
+<h2 id="版本及准备工作">版本及准备工作</h2>
+<ul>
+<li>kubelet version &gt;= 1.28.0</li>
+<li>containerd version &gt;= 1.7.0</li>
+</ul>
+<p>而且这在 k8s 1.28 (1.29版本是 beta 了 默认就打开了) 版本中是一个 alpha 版本的功能，所以我们需要在 kubelet 的启动参数中加入开启特性门：<code>--feature-gates=DevicePluginCDIDevices =true</code>。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo vim /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+</span></span><span style="display:flex;"><span><span style="color:#111">ExecStart</span><span style="color:#f92672">=</span>/usr/bin/kubelet <span style="color:#111">$KUBELET_KUBECONFIG_ARGS</span> <span style="color:#111">$KUBELET_CONFIG_ARGS</span> <span style="color:#111">$KUBELET_KUBEADM_ARGS</span> <span style="color:#111">$KUBELET_EXTRA_ARGS</span> --feature-gates<span style="color:#f92672">=</span><span style="color:#111">DevicePluginCDIDevices</span><span style="color:#f92672">=</span><span style="color:#111">true</span>
+</span></span></code></pre></div><p>containerd 也需要开启 CDI cdi_spec_dirs 为 cdi 配置文件的目录，enable_cdi 为开启 CDI 功能。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo vim /etc/containerd/config.toml
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#111">cdi_spec_dirs</span> <span style="color:#f92672">=</span> <span style="color:#f92672">[</span><span style="color:#d88200">&#34;/etc/cdi&#34;</span>, <span style="color:#d88200">&#34;/var/run/cdi&#34;</span><span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">enable_cdi</span> <span style="color:#f92672">=</span> <span style="color:#111">true</span>
+</span></span></code></pre></div><p>重启 containerd 和 kubelet</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo systemctl restart kubelet.service containerd.service
+</span></span></code></pre></div><h2 id="mock">mock</h2>
+<p>因为我的集群里没有 gpu , 所以我就随便 mock 几个文件作为 device 了。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo mkdir /dev/mock
+</span></span><span style="display:flex;"><span><span style="color:#111">cd</span> /dev/mock
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>sudo mknod /dev/mock/device_0 c <span style="color:#ae81ff">89</span> <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>sudo mknod /dev/mock/device_1 c <span style="color:#ae81ff">89</span> <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>sudo mknod /dev/mock/device_2 c <span style="color:#ae81ff">89</span> <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>sudo mknod /dev/mock/device_3 c <span style="color:#ae81ff">89</span> <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>sudo mknod /dev/mock/device_4 c <span style="color:#ae81ff">89</span> <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>sudo mknod /dev/mock/device_5 c <span style="color:#ae81ff">89</span> <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>sudo mknod /dev/mock/device_6 c <span style="color:#ae81ff">89</span> <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>sudo mknod /dev/mock/device_7 c <span style="color:#ae81ff">89</span> <span style="color:#ae81ff">1</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo vim /mock/bin/list_device.sh
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#!/bin/bash</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 定义目录数组</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">directories</span><span style="color:#f92672">=(</span>/dev /dev/mock<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 遍历目录数组</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">for</span> dir in <span style="color:#d88200">&#34;</span><span style="color:#d88200">${</span><span style="color:#111">directories</span><span style="color:#111">[@]</span><span style="color:#d88200">}</span><span style="color:#d88200">&#34;</span><span style="color:#111">;</span> <span style="color:#00a8c8">do</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># 检查目录是否存在</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#00a8c8">if</span> <span style="color:#f92672">[</span> -d <span style="color:#d88200">&#34;</span><span style="color:#111">$dir</span><span style="color:#d88200">&#34;</span> <span style="color:#f92672">]</span><span style="color:#111">;</span> <span style="color:#00a8c8">then</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># 目录存在，打印目录下的所有文件</span>
+</span></span><span style="display:flex;"><span>    ls  <span style="color:#d88200">&#34;</span><span style="color:#111">$dir</span><span style="color:#d88200">&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#00a8c8">fi</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">done</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>sudo chmod a+x /mock/bin/list_device.sh
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo mkdir /mock/so
+</span></span><span style="display:flex;"><span><span style="color:#111">cd</span> /mock/so
+</span></span><span style="display:flex;"><span>sudo touch device_0.so device_1.so device_2.so device_3.so device_5.so device_6.so device_7.so device_4.so
+</span></span></code></pre></div><h2 id="开启-kubelet-的-device-plugin">开启 kubelet 的 device plugin</h2>
+<p>下面是简单写的一个 device plugin，及其 dockerfile 还有部署到 k8s 的 yaml 文件。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;context&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;fmt&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;time&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;github.com/kubevirt/device-plugin-manager/pkg/dpm&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">pluginapi</span> <span style="color:#d88200">&#34;k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">type</span> <span style="color:#75af00">PluginLister</span> <span style="color:#00a8c8">struct</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">ResUpdateChan</span> <span style="color:#00a8c8">chan</span> <span style="color:#75af00">dpm</span><span style="color:#111">.</span><span style="color:#75af00">PluginNameList</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">var</span> <span style="color:#75af00">ResourceNamespace</span> <span style="color:#111">=</span> <span style="color:#d88200">&#34;mock.com&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">var</span> <span style="color:#75af00">PluginName</span> <span style="color:#111">=</span> <span style="color:#d88200">&#34;gpu&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#111">(</span><span style="color:#75af00">p</span> <span style="color:#f92672">*</span><span style="color:#75af00">PluginLister</span><span style="color:#111">)</span> <span style="color:#75af00">GetResourceNamespace</span><span style="color:#111">()</span> <span style="color:#00a8c8">string</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">return</span> <span style="color:#75af00">ResourceNamespace</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#111">(</span><span style="color:#75af00">p</span> <span style="color:#f92672">*</span><span style="color:#75af00">PluginLister</span><span style="color:#111">)</span> <span style="color:#75af00">Discover</span><span style="color:#111">(</span><span style="color:#75af00">pluginListCh</span> <span style="color:#00a8c8">chan</span> <span style="color:#75af00">dpm</span><span style="color:#111">.</span><span style="color:#75af00">PluginNameList</span><span style="color:#111">)</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">pluginListCh</span> <span style="color:#f92672">&lt;-</span> <span style="color:#75af00">dpm</span><span style="color:#111">.</span><span style="color:#75af00">PluginNameList</span><span style="color:#111">{</span><span style="color:#75af00">PluginName</span><span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#111">(</span><span style="color:#75af00">p</span> <span style="color:#f92672">*</span><span style="color:#75af00">PluginLister</span><span style="color:#111">)</span> <span style="color:#75af00">NewPlugin</span><span style="color:#111">(</span><span style="color:#75af00">name</span> <span style="color:#00a8c8">string</span><span style="color:#111">)</span> <span style="color:#75af00">dpm</span><span style="color:#111">.</span><span style="color:#75af00">PluginInterface</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">return</span> <span style="color:#f92672">&amp;</span><span style="color:#75af00">Plugin</span><span style="color:#111">{}</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">type</span> <span style="color:#75af00">Plugin</span> <span style="color:#00a8c8">struct</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#111">(</span><span style="color:#75af00">p</span> <span style="color:#f92672">*</span><span style="color:#75af00">Plugin</span><span style="color:#111">)</span> <span style="color:#75af00">GetDevicePluginOptions</span><span style="color:#111">(</span><span style="color:#75af00">ctx</span> <span style="color:#75af00">context</span><span style="color:#111">.</span><span style="color:#75af00">Context</span><span style="color:#111">,</span> <span style="color:#75af00">e</span> <span style="color:#f92672">*</span><span style="color:#75af00">pluginapi</span><span style="color:#111">.</span><span style="color:#75af00">Empty</span><span style="color:#111">)</span> <span style="color:#111">(</span><span style="color:#f92672">*</span><span style="color:#75af00">pluginapi</span><span style="color:#111">.</span><span style="color:#75af00">DevicePluginOptions</span><span style="color:#111">,</span> <span style="color:#00a8c8">error</span><span style="color:#111">)</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">options</span> <span style="color:#f92672">:=</span> <span style="color:#f92672">&amp;</span><span style="color:#75af00">pluginapi</span><span style="color:#111">.</span><span style="color:#75af00">DevicePluginOptions</span><span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">PreStartRequired</span><span style="color:#111">:</span> <span style="color:#00a8c8">true</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">return</span> <span style="color:#75af00">options</span><span style="color:#111">,</span> <span style="color:#00a8c8">nil</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#111">(</span><span style="color:#75af00">p</span> <span style="color:#f92672">*</span><span style="color:#75af00">Plugin</span><span style="color:#111">)</span> <span style="color:#75af00">PreStartContainer</span><span style="color:#111">(</span><span style="color:#75af00">ctx</span> <span style="color:#75af00">context</span><span style="color:#111">.</span><span style="color:#75af00">Context</span><span style="color:#111">,</span> <span style="color:#75af00">r</span> <span style="color:#f92672">*</span><span style="color:#75af00">pluginapi</span><span style="color:#111">.</span><span style="color:#75af00">PreStartContainerRequest</span><span style="color:#111">)</span> <span style="color:#111">(</span><span style="color:#f92672">*</span><span style="color:#75af00">pluginapi</span><span style="color:#111">.</span><span style="color:#75af00">PreStartContainerResponse</span><span style="color:#111">,</span> <span style="color:#00a8c8">error</span><span style="color:#111">)</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">return</span> <span style="color:#f92672">&amp;</span><span style="color:#75af00">pluginapi</span><span style="color:#111">.</span><span style="color:#75af00">PreStartContainerResponse</span><span style="color:#111">{},</span> <span style="color:#00a8c8">nil</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#111">(</span><span style="color:#75af00">p</span> <span style="color:#f92672">*</span><span style="color:#75af00">Plugin</span><span style="color:#111">)</span> <span style="color:#75af00">GetPreferredAllocation</span><span style="color:#111">(</span><span style="color:#75af00">ctx</span> <span style="color:#75af00">context</span><span style="color:#111">.</span><span style="color:#75af00">Context</span><span style="color:#111">,</span> <span style="color:#75af00">r</span> <span style="color:#f92672">*</span><span style="color:#75af00">pluginapi</span><span style="color:#111">.</span><span style="color:#75af00">PreferredAllocationRequest</span><span style="color:#111">)</span> <span style="color:#111">(</span><span style="color:#f92672">*</span><span style="color:#75af00">pluginapi</span><span style="color:#111">.</span><span style="color:#75af00">PreferredAllocationResponse</span><span style="color:#111">,</span> <span style="color:#00a8c8">error</span><span style="color:#111">)</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">return</span> <span style="color:#f92672">&amp;</span><span style="color:#75af00">pluginapi</span><span style="color:#111">.</span><span style="color:#75af00">PreferredAllocationResponse</span><span style="color:#111">{},</span> <span style="color:#00a8c8">nil</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#111">(</span><span style="color:#75af00">p</span> <span style="color:#f92672">*</span><span style="color:#75af00">Plugin</span><span style="color:#111">)</span> <span style="color:#75af00">ListAndWatch</span><span style="color:#111">(</span><span style="color:#75af00">e</span> <span style="color:#f92672">*</span><span style="color:#75af00">pluginapi</span><span style="color:#111">.</span><span style="color:#75af00">Empty</span><span style="color:#111">,</span> <span style="color:#75af00">r</span> <span style="color:#75af00">pluginapi</span><span style="color:#111">.</span><span style="color:#75af00">DevicePlugin_ListAndWatchServer</span><span style="color:#111">)</span> <span style="color:#00a8c8">error</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">devices</span> <span style="color:#f92672">:=</span> <span style="color:#111">[]</span><span style="color:#f92672">*</span><span style="color:#75af00">pluginapi</span><span style="color:#111">.</span><span style="color:#75af00">Device</span><span style="color:#111">{}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">for</span> <span style="color:#75af00">i</span> <span style="color:#f92672">:=</span> <span style="color:#ae81ff">0</span><span style="color:#111">;</span> <span style="color:#75af00">i</span> <span style="color:#111">&lt;</span> <span style="color:#ae81ff">8</span><span style="color:#111">;</span> <span style="color:#75af00">i</span><span style="color:#f92672">++</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">devices</span> <span style="color:#111">=</span> <span style="color:#111">append</span><span style="color:#111">(</span><span style="color:#75af00">devices</span><span style="color:#111">,</span> <span style="color:#f92672">&amp;</span><span style="color:#75af00">pluginapi</span><span style="color:#111">.</span><span style="color:#75af00">Device</span><span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#75715e">// 和 device 名称保持一致</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#75af00">ID</span><span style="color:#111">:</span>     <span style="color:#75af00">fmt</span><span style="color:#111">.</span><span style="color:#75af00">Sprintf</span><span style="color:#111">(</span><span style="color:#d88200">&#34;device_%d&#34;</span><span style="color:#111">,</span> <span style="color:#75af00">i</span><span style="color:#111">),</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#75af00">Health</span><span style="color:#111">:</span> <span style="color:#75af00">pluginapi</span><span style="color:#111">.</span><span style="color:#75af00">Healthy</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#111">})</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">for</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">fmt</span><span style="color:#111">.</span><span style="color:#75af00">Println</span><span style="color:#111">(</span><span style="color:#d88200">&#34;register devices&#34;</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75715e">// 每分钟注册一次</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">r</span><span style="color:#111">.</span><span style="color:#75af00">Send</span><span style="color:#111">(</span><span style="color:#f92672">&amp;</span><span style="color:#75af00">pluginapi</span><span style="color:#111">.</span><span style="color:#75af00">ListAndWatchResponse</span><span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#75af00">Devices</span><span style="color:#111">:</span> <span style="color:#75af00">devices</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#111">})</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">time</span><span style="color:#111">.</span><span style="color:#75af00">Sleep</span><span style="color:#111">(</span><span style="color:#75af00">time</span><span style="color:#111">.</span><span style="color:#75af00">Second</span> <span style="color:#f92672">*</span> <span style="color:#ae81ff">60</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#111">(</span><span style="color:#75af00">p</span> <span style="color:#f92672">*</span><span style="color:#75af00">Plugin</span><span style="color:#111">)</span> <span style="color:#75af00">Allocate</span><span style="color:#111">(</span><span style="color:#75af00">ctx</span> <span style="color:#75af00">context</span><span style="color:#111">.</span><span style="color:#75af00">Context</span><span style="color:#111">,</span> <span style="color:#75af00">r</span> <span style="color:#f92672">*</span><span style="color:#75af00">pluginapi</span><span style="color:#111">.</span><span style="color:#75af00">AllocateRequest</span><span style="color:#111">)</span> <span style="color:#111">(</span><span style="color:#f92672">*</span><span style="color:#75af00">pluginapi</span><span style="color:#111">.</span><span style="color:#75af00">AllocateResponse</span><span style="color:#111">,</span> <span style="color:#00a8c8">error</span><span style="color:#111">)</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 使用cdi插件</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">responses</span> <span style="color:#f92672">:=</span> <span style="color:#f92672">&amp;</span><span style="color:#75af00">pluginapi</span><span style="color:#111">.</span><span style="color:#75af00">AllocateResponse</span><span style="color:#111">{}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">for</span> <span style="color:#75af00">_</span><span style="color:#111">,</span> <span style="color:#75af00">req</span> <span style="color:#f92672">:=</span> <span style="color:#00a8c8">range</span> <span style="color:#75af00">r</span><span style="color:#111">.</span><span style="color:#75af00">ContainerRequests</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">cdidevices</span> <span style="color:#f92672">:=</span> <span style="color:#111">[]</span><span style="color:#f92672">*</span><span style="color:#75af00">pluginapi</span><span style="color:#111">.</span><span style="color:#75af00">CDIDevice</span><span style="color:#111">{}</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#00a8c8">for</span> <span style="color:#75af00">_</span><span style="color:#111">,</span> <span style="color:#75af00">id</span> <span style="color:#f92672">:=</span> <span style="color:#00a8c8">range</span> <span style="color:#75af00">req</span><span style="color:#111">.</span><span style="color:#75af00">DevicesIDs</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#75af00">cdidevices</span> <span style="color:#111">=</span> <span style="color:#111">append</span><span style="color:#111">(</span><span style="color:#75af00">cdidevices</span><span style="color:#111">,</span> <span style="color:#f92672">&amp;</span><span style="color:#75af00">pluginapi</span><span style="color:#111">.</span><span style="color:#75af00">CDIDevice</span><span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>				<span style="color:#75af00">Name</span><span style="color:#111">:</span> <span style="color:#75af00">fmt</span><span style="color:#111">.</span><span style="color:#75af00">Sprintf</span><span style="color:#111">(</span><span style="color:#d88200">&#34;%s/%s=%s&#34;</span><span style="color:#111">,</span> <span style="color:#75af00">ResourceNamespace</span><span style="color:#111">,</span> <span style="color:#75af00">PluginName</span><span style="color:#111">,</span> <span style="color:#75af00">id</span><span style="color:#111">),</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#111">})</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">responses</span><span style="color:#111">.</span><span style="color:#75af00">ContainerResponses</span> <span style="color:#111">=</span> <span style="color:#111">append</span><span style="color:#111">(</span><span style="color:#75af00">responses</span><span style="color:#111">.</span><span style="color:#75af00">ContainerResponses</span><span style="color:#111">,</span> <span style="color:#f92672">&amp;</span><span style="color:#75af00">pluginapi</span><span style="color:#111">.</span><span style="color:#75af00">ContainerAllocateResponse</span><span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#75af00">CDIDevices</span><span style="color:#111">:</span> <span style="color:#75af00">cdidevices</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#111">})</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">return</span> <span style="color:#75af00">responses</span><span style="color:#111">,</span> <span style="color:#00a8c8">nil</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#75af00">main</span><span style="color:#111">()</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">m</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">dpm</span><span style="color:#111">.</span><span style="color:#75af00">NewManager</span><span style="color:#111">(</span><span style="color:#f92672">&amp;</span><span style="color:#75af00">PluginLister</span><span style="color:#111">{})</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">m</span><span style="color:#111">.</span><span style="color:#75af00">Run</span><span style="color:#111">()</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-Dockerfile" data-lang="Dockerfile"><span style="display:flex;"><span><span style="color:#00a8c8">FROM</span> <span style="color:#d88200">golang:1.21.3</span> <span style="color:#00a8c8">as</span> <span style="color:#d88200">builder</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  <span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#00a8c8">COPY</span> . /src<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#00a8c8">WORKDIR</span> <span style="color:#d88200">/src</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#00a8c8">RUN</span> go env -w <span style="color:#111">GO111MODULE</span><span style="color:#f92672">=</span>on <span style="color:#f92672">&amp;&amp;</span> go env -w <span style="color:#111">GOPROXY</span><span style="color:#f92672">=</span>https://goproxy.io,direct<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#00a8c8">RUN</span> go build<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  <span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#00a8c8">FROM</span> <span style="color:#d88200">debian:bookworm-slim</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  <span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#00a8c8">RUN</span> sed -i <span style="color:#d88200">&#39;s/deb.debian.org/mirrors.ustc.edu.cn/g&#39;</span> /etc/apt/sources.list.d/debian.sources<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  <span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#00a8c8">RUN</span> apt-get update <span style="color:#f92672">&amp;&amp;</span> apt-get install -y --no-install-recommends <span style="color:#8045ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#8045ff"></span>      ca-certificates   <span style="color:#8045ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#8045ff"></span>      netbase <span style="color:#8045ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#8045ff"></span>      pciutils <span style="color:#8045ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#8045ff"></span>      curl <span style="color:#8045ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#8045ff"></span>      <span style="color:#f92672">&amp;&amp;</span> rm -rf /var/lib/apt/lists/ <span style="color:#8045ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#8045ff"></span>      <span style="color:#f92672">&amp;&amp;</span> apt-get autoremove -y <span style="color:#f92672">&amp;&amp;</span> apt-get autoclean -y<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  <span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#00a8c8">RUN</span> update-pciids<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  <span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#00a8c8">COPY</span> --from<span style="color:#f92672">=</span>builder /src /app<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  <span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#00a8c8">WORKDIR</span> <span style="color:#d88200">/app</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span><span style="color:#111">:</span> <span style="color:#ae81ff">v1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span><span style="color:#111">:</span> <span style="color:#ae81ff">Namespace</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span><span style="color:#111">:</span> <span style="color:#ae81ff">mock-plugin</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">---</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span><span style="color:#111">:</span> <span style="color:#ae81ff">apps/v1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span><span style="color:#111">:</span> <span style="color:#ae81ff">DaemonSet</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span><span style="color:#111">:</span> <span style="color:#ae81ff">mock-plugin-daemonset</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">namespace</span><span style="color:#111">:</span> <span style="color:#ae81ff">mock-plugin</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">selector</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">matchLabels</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">name</span><span style="color:#111">:</span> <span style="color:#ae81ff">mock-plugin</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">template</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">metadata</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">labels</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">name</span><span style="color:#111">:</span> <span style="color:#ae81ff">mock-plugin</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">app.kubernetes.io/component</span><span style="color:#111">:</span> <span style="color:#ae81ff">mock-plugin</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">app.kubernetes.io/name</span><span style="color:#111">:</span> <span style="color:#ae81ff">mock-plugin</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">spec</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">containers</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#f92672">image</span><span style="color:#111">:</span> <span style="color:#ae81ff">zhaohaiyu/mock:v1</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">name</span><span style="color:#111">:</span> <span style="color:#ae81ff">mock-plugin</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">command</span><span style="color:#111">:</span> <span style="color:#111">[</span><span style="color:#d88200">&#39;/app/mock&#39;</span><span style="color:#111">]</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">imagePullPolicy</span><span style="color:#111">:</span> <span style="color:#ae81ff">Always</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">securityContext</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">privileged</span><span style="color:#111">:</span> <span style="color:#00a8c8">true</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">tty</span><span style="color:#111">:</span> <span style="color:#00a8c8">true</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">volumeMounts</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>        - <span style="color:#f92672">name</span><span style="color:#111">:</span> <span style="color:#ae81ff">kubelet</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">mountPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/var/lib/kubelet</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">volumes</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#f92672">name</span><span style="color:#111">:</span> <span style="color:#ae81ff">kubelet</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">hostPath</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">path</span><span style="color:#111">:</span> <span style="color:#ae81ff">/var/lib/kubelet</span>
+</span></span></code></pre></div><p>执行完毕使用 kubectl 查看</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>❯ kubectl -n mock-plugin get pod
+</span></span><span style="display:flex;"><span>NAME                          READY   STATUS    RESTARTS   AGE
+</span></span><span style="display:flex;"><span>mock-plugin-daemonset-8w2r8   1/1     Running   <span style="color:#ae81ff">0</span>          3m27s
+</span></span></code></pre></div><p>查看 node 是否已经注册了 device plugin</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>kubectl describe node node1
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Capacity:
+</span></span><span style="display:flex;"><span>  cpu:                <span style="color:#ae81ff">8</span>
+</span></span><span style="display:flex;"><span>  ephemeral-storage:  102626232Ki
+</span></span><span style="display:flex;"><span>  hugepages-1Gi:      <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>  hugepages-2Mi:      <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>  memory:             24570324Ki
+</span></span><span style="display:flex;"><span>  mock.com/gpu:       <span style="color:#ae81ff">8</span>
+</span></span><span style="display:flex;"><span>  pods:               <span style="color:#ae81ff">110</span>
+</span></span><span style="display:flex;"><span>Allocatable:
+</span></span><span style="display:flex;"><span>  cpu:                <span style="color:#ae81ff">8</span>
+</span></span><span style="display:flex;"><span>  ephemeral-storage:  <span style="color:#ae81ff">94580335255</span>
+</span></span><span style="display:flex;"><span>  hugepages-1Gi:      <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>  hugepages-2Mi:      <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>  memory:             24467924Ki
+</span></span><span style="display:flex;"><span>  mock.com/gpu:       <span style="color:#ae81ff">8</span>
+</span></span><span style="display:flex;"><span>  pods:               <span style="color:#ae81ff">110</span>
+</span></span></code></pre></div><p>可以看到已经注册了 8 个 gpu 设备 名字叫 mock.com/gpu 也就是我们代码中定义的。</p>
+<h2 id="cdi配置文件">CDI配置文件</h2>
+<p>CDI Spec: <a href="https://github.com/cncf-tags/container-device-interface/blob/main/SPEC.md">https://github.com/cncf-tags/container-device-interface/blob/main/SPEC.md</a></p>
+<p>我们也生成了一个 CDI 的配置文件，这个配置文件会被 containerd 读取，然后根据配置文件中的信息去调用 device plugin。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#75715e"># vim /etc/cdi/mock.yaml</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">cdiVersion</span><span style="color:#111">:</span> <span style="color:#ae81ff">0.5.0</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span><span style="color:#111">:</span> <span style="color:#ae81ff">mock.com/gpu</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">devices</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>- <span style="color:#f92672">name</span><span style="color:#111">:</span> <span style="color:#ae81ff">device_0</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">containerEdits</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">deviceNodes</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;/dev/mock/device_0&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">path</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;/dev/mock/device_0&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">type</span><span style="color:#111">:</span> <span style="color:#ae81ff">c</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">permissions</span><span style="color:#111">:</span> <span style="color:#ae81ff">rw</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">mounts</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;/mock/so/device_0.so&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">containerPath</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;/mock/so/device_0.so&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">options</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">ro</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">nosuid</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">nodev</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">bind</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>- <span style="color:#f92672">name</span><span style="color:#111">:</span> <span style="color:#ae81ff">device_1</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">containerEdits</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">deviceNodes</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;/dev/mock/device_1&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">path</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;/dev/mock/device_1&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">type</span><span style="color:#111">:</span> <span style="color:#ae81ff">c</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">permissions</span><span style="color:#111">:</span> <span style="color:#ae81ff">rw</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">mounts</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;/mock/so/device_1.so&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">containerPath</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;/mock/so/device_1.so&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">options</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">ro</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">nosuid</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">nodev</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">bind</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>- <span style="color:#f92672">name</span><span style="color:#111">:</span> <span style="color:#ae81ff">device_2</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">containerEdits</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">deviceNodes</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;/dev/mock/device_2&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">path</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;/dev/mock/device_2&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">type</span><span style="color:#111">:</span> <span style="color:#ae81ff">c</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">permissions</span><span style="color:#111">:</span> <span style="color:#ae81ff">rw</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">mounts</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;/mock/so/device_2.so&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">containerPath</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;/mock/so/device_2.so&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">options</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">ro</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">nosuid</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">nodev</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">bind</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>- <span style="color:#f92672">name</span><span style="color:#111">:</span> <span style="color:#ae81ff">device_3</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">containerEdits</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">deviceNodes</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;/dev/mock/device_3&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">path</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;/dev/mock/device_3&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">type</span><span style="color:#111">:</span> <span style="color:#ae81ff">c</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">permissions</span><span style="color:#111">:</span> <span style="color:#ae81ff">rw</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">mounts</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;/mock/so/device_3.so&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">containerPath</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;/mock/so/device_3.so&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">options</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">ro</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">nosuid</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">nodev</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">bind</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>- <span style="color:#f92672">name</span><span style="color:#111">:</span> <span style="color:#ae81ff">device_4</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">containerEdits</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">deviceNodes</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;/dev/mock/device_4&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">path</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;/dev/mock/device_4&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">type</span><span style="color:#111">:</span> <span style="color:#ae81ff">c</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">permissions</span><span style="color:#111">:</span> <span style="color:#ae81ff">rw</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">mounts</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;/mock/so/device_4.so&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">containerPath</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;/mock/so/device_4.so&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">options</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">ro</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">nosuid</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">nodev</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">bind</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>- <span style="color:#f92672">name</span><span style="color:#111">:</span> <span style="color:#ae81ff">device_5</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">containerEdits</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">deviceNodes</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;/dev/mock/device_5&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">path</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;/dev/mock/device_5&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">type</span><span style="color:#111">:</span> <span style="color:#ae81ff">c</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">permissions</span><span style="color:#111">:</span> <span style="color:#ae81ff">rw</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">mounts</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;/mock/so/device_5.so&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">containerPath</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;/mock/so/device_5.so&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">options</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">ro</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">nosuid</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">nodev</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">bind</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>- <span style="color:#f92672">name</span><span style="color:#111">:</span> <span style="color:#ae81ff">device_6</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">containerEdits</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">deviceNodes</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;/dev/mock/device_6&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">path</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;/dev/mock/device_6&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">type</span><span style="color:#111">:</span> <span style="color:#ae81ff">c</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">permissions</span><span style="color:#111">:</span> <span style="color:#ae81ff">rw</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">mounts</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;/mock/so/device_6.so&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">containerPath</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;/mock/so/device_6.so&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">options</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">ro</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">nosuid</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">nodev</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">bind</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>- <span style="color:#f92672">name</span><span style="color:#111">:</span> <span style="color:#ae81ff">device_7</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">containerEdits</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">deviceNodes</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;/dev/mock/device_7&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">path</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;/dev/mock/device_7&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">type</span><span style="color:#111">:</span> <span style="color:#ae81ff">c</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">permissions</span><span style="color:#111">:</span> <span style="color:#ae81ff">rw</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">mounts</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;/mock/so/device_7.so&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">containerPath</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;/mock/so/device_7.so&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">options</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">ro</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">nosuid</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">nodev</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">bind</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">containerEdits</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">mounts</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;/mock/bin/list_device.sh&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">containerPath</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;/usr/local/bin/list_device.sh&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">options</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">ro</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nosuid</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nodev</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">bind</span>
+</span></span></code></pre></div><p>这里我只是简单示例，还有 hooks 和 env 等用法查看官方文档。</p>
+<h2 id="部署-pod">部署 pod</h2>
+<p>我部署一个 pod 使用 mock gpu 这个资源 4个。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-YAML" data-lang="YAML"><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span><span style="color:#111">:</span> <span style="color:#ae81ff">v1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span><span style="color:#111">:</span> <span style="color:#ae81ff">Pod</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span><span style="color:#111">:</span> <span style="color:#ae81ff">ubuntu1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">containers</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">name</span><span style="color:#111">:</span> <span style="color:#ae81ff">ubuntu-container</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">image</span><span style="color:#111">:</span> <span style="color:#ae81ff">ubuntu:latest</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">command</span><span style="color:#111">:</span> <span style="color:#111">[</span><span style="color:#d88200">&#34;sleep&#34;</span><span style="color:#111">]</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">args</span><span style="color:#111">:</span> <span style="color:#111">[</span><span style="color:#d88200">&#34;3600&#34;</span><span style="color:#111">]</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">resources</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">requests</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">memory</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;64Mi&#34;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">cpu</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;250m&#34;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">mock.com/gpu</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;4&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">limits</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">memory</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;128Mi&#34;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">cpu</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;500m&#34;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">mock.com/gpu</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;4&#34;</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>ubuntu1   1/1     Running   <span style="color:#ae81ff">0</span>          49s
+</span></span></code></pre></div><p>现在我们 使用 <code>kubectl exec -it ubuntu1 bash</code> 进入容器看一看。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>ls /dev/mock/
+</span></span><span style="display:flex;"><span>device_0  device_1  device_6  device_7
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>ls /mock/so/
+</span></span><span style="display:flex;"><span>device_0.so  device_1.so  device_6.so  device_7.so
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>list_device.sh
+</span></span><span style="display:flex;"><span>so
+</span></span><span style="display:flex;"><span>device_0  device_1  device_6  device_7
+</span></span></code></pre></div><p>可以看到我们 cdi 配置文件配置的 device 和 so 文件和还有我们的 list_device.sh 都已经挂载到容器内了。</p>
+<p>我现在再启动一个 pod 使用 mock gpu 这个资源 3 个。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-YAML" data-lang="YAML"><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span><span style="color:#111">:</span> <span style="color:#ae81ff">v1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span><span style="color:#111">:</span> <span style="color:#ae81ff">Pod</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span><span style="color:#111">:</span> <span style="color:#ae81ff">ubuntu2</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">containers</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">name</span><span style="color:#111">:</span> <span style="color:#ae81ff">ubuntu-container</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">image</span><span style="color:#111">:</span> <span style="color:#ae81ff">ubuntu:latest</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">command</span><span style="color:#111">:</span> <span style="color:#111">[</span><span style="color:#d88200">&#34;sleep&#34;</span><span style="color:#111">]</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">args</span><span style="color:#111">:</span> <span style="color:#111">[</span><span style="color:#d88200">&#34;3600&#34;</span><span style="color:#111">]</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">resources</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">requests</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">memory</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;64Mi&#34;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">cpu</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;250m&#34;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">mock.com/gpu</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;3&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">limits</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">memory</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;128Mi&#34;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">cpu</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;500m&#34;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">mock.com/gpu</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;3&#34;</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>ls /dev/mock/
+</span></span><span style="display:flex;"><span>device_2  device_3  device_5
+</span></span></code></pre></div><p>查看node使用了多少资源</p>
+<pre tabindex="0"><code>Allocated resources:
+  (Total limits may be over 100 percent, i.e., overcommitted.)
+  Resource           Requests     Limits
+  --------           --------     ------
+  cpu                1550m (19%)  1 (12%)
+  memory             668Mi (2%)   596Mi (2%)
+  ephemeral-storage  0 (0%)       0 (0%)
+  hugepages-1Gi      0 (0%)       0 (0%)
+  hugepages-2Mi      0 (0%)       0 (0%)
+  mock.com/gpu       7            7
+</code></pre><p>可以看到我们使用了 7 个 mock.com/gpu 资源，还剩下 1 个。</p>
+<h2 id="nvdia-gpu">nvdia gpu</h2>
+<p>我找了一台带有 nvidia gpu 的机器，然后安装了 nvidia-container-toolkit-base。</p>
+<p>使用 <code>nvidia-ctk cdi generate --output=/etc/cdi/nvidia.yaml</code> 生产 cdi 配置文件。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#111">---</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">cdiVersion</span><span style="color:#111">:</span> <span style="color:#ae81ff">0.5.0</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">containerEdits</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">deviceNodes</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">path</span><span style="color:#111">:</span> <span style="color:#ae81ff">/dev/nvidia-modeset</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">path</span><span style="color:#111">:</span> <span style="color:#ae81ff">/dev/nvidia-uvm</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">path</span><span style="color:#111">:</span> <span style="color:#ae81ff">/dev/nvidia-uvm-tools</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">path</span><span style="color:#111">:</span> <span style="color:#ae81ff">/dev/nvidiactl</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">hooks</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">args</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nvidia-ctk</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">hook</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">create-symlinks</span>
+</span></span><span style="display:flex;"><span>    - --<span style="color:#ae81ff">link</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">libglxserver_nvidia.so.525.147.05::/usr/lib/x86_64-linux-gnu/nvidia/xorg/libglxserver_nvidia.so</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">hookName</span><span style="color:#111">:</span> <span style="color:#ae81ff">createContainer</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">path</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/bin/nvidia-ctk</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">args</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nvidia-ctk</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">hook</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">update-ldcache</span>
+</span></span><span style="display:flex;"><span>    - --<span style="color:#ae81ff">folder</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">hookName</span><span style="color:#111">:</span> <span style="color:#ae81ff">createContainer</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">path</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/bin/nvidia-ctk</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">mounts</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">containerPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/run/nvidia-persistenced/socket</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/run/nvidia-persistenced/socket</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">options</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">ro</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nosuid</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nodev</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">bind</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">noexec</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">containerPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/bin/nvidia-cuda-mps-control</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/bin/nvidia-cuda-mps-control</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">options</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">ro</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nosuid</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nodev</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">bind</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">containerPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/bin/nvidia-cuda-mps-server</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/bin/nvidia-cuda-mps-server</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">options</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">ro</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nosuid</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nodev</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">bind</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">containerPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/bin/nvidia-debugdump</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/bin/nvidia-debugdump</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">options</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">ro</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nosuid</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nodev</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">bind</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">containerPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/bin/nvidia-persistenced</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/bin/nvidia-persistenced</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">options</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">ro</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nosuid</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nodev</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">bind</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">containerPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/bin/nvidia-smi</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/bin/nvidia-smi</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">options</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">ro</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nosuid</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nodev</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">bind</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">containerPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libEGL_nvidia.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libEGL_nvidia.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">options</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">ro</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nosuid</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nodev</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">bind</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">containerPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libGLESv1_CM_nvidia.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libGLESv1_CM_nvidia.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">options</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">ro</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nosuid</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nodev</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">bind</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">containerPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libGLESv2_nvidia.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libGLESv2_nvidia.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">options</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">ro</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nosuid</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nodev</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">bind</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">containerPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libGLX_nvidia.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libGLX_nvidia.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">options</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">ro</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nosuid</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nodev</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">bind</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">containerPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libcuda.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libcuda.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">options</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">ro</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nosuid</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nodev</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">bind</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">containerPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libcudadebugger.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libcudadebugger.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">options</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">ro</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nosuid</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nodev</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">bind</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">containerPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libnvcuvid.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libnvcuvid.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">options</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">ro</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nosuid</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nodev</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">bind</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">containerPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libnvidia-allocator.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libnvidia-allocator.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">options</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">ro</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nosuid</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nodev</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">bind</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">containerPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libnvidia-cfg.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libnvidia-cfg.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">options</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">ro</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nosuid</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nodev</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">bind</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">containerPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libnvidia-compiler.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libnvidia-compiler.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">options</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">ro</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nosuid</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nodev</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">bind</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">containerPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libnvidia-egl-gbm.so.1.1.0</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libnvidia-egl-gbm.so.1.1.0</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">options</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">ro</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nosuid</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nodev</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">bind</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">containerPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libnvidia-eglcore.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libnvidia-eglcore.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">options</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">ro</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nosuid</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nodev</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">bind</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">containerPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libnvidia-encode.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libnvidia-encode.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">options</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">ro</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nosuid</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nodev</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">bind</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">containerPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libnvidia-fbc.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libnvidia-fbc.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">options</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">ro</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nosuid</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nodev</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">bind</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">containerPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libnvidia-glcore.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libnvidia-glcore.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">options</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">ro</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nosuid</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nodev</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">bind</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">containerPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libnvidia-glsi.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libnvidia-glsi.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">options</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">ro</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nosuid</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nodev</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">bind</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">containerPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libnvidia-glvkspirv.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libnvidia-glvkspirv.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">options</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">ro</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nosuid</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nodev</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">bind</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">containerPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libnvidia-ml.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libnvidia-ml.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">options</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">ro</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nosuid</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nodev</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">bind</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">containerPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libnvidia-ngx.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libnvidia-ngx.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">options</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">ro</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nosuid</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nodev</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">bind</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">containerPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libnvidia-nvvm.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libnvidia-nvvm.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">options</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">ro</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nosuid</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nodev</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">bind</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">containerPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libnvidia-opencl.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libnvidia-opencl.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">options</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">ro</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nosuid</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nodev</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">bind</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">containerPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libnvidia-opticalflow.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libnvidia-opticalflow.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">options</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">ro</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nosuid</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nodev</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">bind</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">containerPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libnvidia-ptxjitcompiler.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libnvidia-ptxjitcompiler.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">options</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">ro</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nosuid</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nodev</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">bind</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">containerPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libnvidia-rtcore.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libnvidia-rtcore.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">options</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">ro</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nosuid</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nodev</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">bind</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">containerPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libnvidia-tls.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libnvidia-tls.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">options</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">ro</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nosuid</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nodev</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">bind</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">containerPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libnvoptix.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/libnvoptix.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">options</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">ro</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nosuid</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nodev</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">bind</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">containerPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/lib/firmware/nvidia/525.147.05/gsp_ad10x.bin</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/lib/firmware/nvidia/525.147.05/gsp_ad10x.bin</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">options</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">ro</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nosuid</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nodev</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">bind</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">containerPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/lib/firmware/nvidia/525.147.05/gsp_tu10x.bin</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/lib/firmware/nvidia/525.147.05/gsp_tu10x.bin</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">options</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">ro</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nosuid</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nodev</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">bind</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">containerPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/share/X11/xorg.conf.d/10-nvidia.conf</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/share/X11/xorg.conf.d/10-nvidia.conf</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">options</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">ro</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nosuid</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nodev</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">bind</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">containerPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/share/egl/egl_external_platform.d/15_nvidia_gbm.json</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/share/egl/egl_external_platform.d/15_nvidia_gbm.json</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">options</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">ro</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nosuid</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nodev</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">bind</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">containerPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/share/glvnd/egl_vendor.d/10_nvidia.json</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/share/glvnd/egl_vendor.d/10_nvidia.json</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">options</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">ro</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nosuid</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nodev</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">bind</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">containerPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/share/vulkan/icd.d/nvidia_icd.json</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/share/vulkan/icd.d/nvidia_icd.json</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">options</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">ro</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nosuid</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nodev</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">bind</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">containerPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/nvidia/xorg/libglxserver_nvidia.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/nvidia/xorg/libglxserver_nvidia.so.525.147.05</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">options</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">ro</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nosuid</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nodev</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">bind</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">containerPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/nvidia/xorg/nvidia_drv.so</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">hostPath</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/lib/x86_64-linux-gnu/nvidia/xorg/nvidia_drv.so</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">options</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">ro</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nosuid</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">nodev</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">bind</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">devices</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>- <span style="color:#f92672">containerEdits</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">deviceNodes</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">path</span><span style="color:#111">:</span> <span style="color:#ae81ff">/dev/nvidia0</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">path</span><span style="color:#111">:</span> <span style="color:#ae81ff">/dev/dri/card0</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">path</span><span style="color:#111">:</span> <span style="color:#ae81ff">/dev/dri/renderD128</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">hooks</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">args</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">nvidia-ctk</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">hook</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">create-symlinks</span>
+</span></span><span style="display:flex;"><span>      - --<span style="color:#ae81ff">link</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">../card0::/dev/dri/by-path/pci-0000:01:00.0-card</span>
+</span></span><span style="display:flex;"><span>      - --<span style="color:#ae81ff">link</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">../renderD128::/dev/dri/by-path/pci-0000:01:00.0-render</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">hookName</span><span style="color:#111">:</span> <span style="color:#ae81ff">createContainer</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">path</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/bin/nvidia-ctk</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">args</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">nvidia-ctk</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">hook</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">chmod</span>
+</span></span><span style="display:flex;"><span>      - --<span style="color:#ae81ff">mode</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#d88200">&#34;755&#34;</span>
+</span></span><span style="display:flex;"><span>      - --<span style="color:#ae81ff">path</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">/dev/dri</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">hookName</span><span style="color:#111">:</span> <span style="color:#ae81ff">createContainer</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">path</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/bin/nvidia-ctk</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;0&#34;</span>
+</span></span><span style="display:flex;"><span>- <span style="color:#f92672">containerEdits</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">deviceNodes</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">path</span><span style="color:#111">:</span> <span style="color:#ae81ff">/dev/nvidia0</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">path</span><span style="color:#111">:</span> <span style="color:#ae81ff">/dev/dri/card0</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">path</span><span style="color:#111">:</span> <span style="color:#ae81ff">/dev/dri/renderD128</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">hooks</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">args</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">nvidia-ctk</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">hook</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">create-symlinks</span>
+</span></span><span style="display:flex;"><span>      - --<span style="color:#ae81ff">link</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">../card0::/dev/dri/by-path/pci-0000:01:00.0-card</span>
+</span></span><span style="display:flex;"><span>      - --<span style="color:#ae81ff">link</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">../renderD128::/dev/dri/by-path/pci-0000:01:00.0-render</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">hookName</span><span style="color:#111">:</span> <span style="color:#ae81ff">createContainer</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">path</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/bin/nvidia-ctk</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">args</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">nvidia-ctk</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">hook</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">chmod</span>
+</span></span><span style="display:flex;"><span>      - --<span style="color:#ae81ff">mode</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#d88200">&#34;755&#34;</span>
+</span></span><span style="display:flex;"><span>      - --<span style="color:#ae81ff">path</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">/dev/dri</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">hookName</span><span style="color:#111">:</span> <span style="color:#ae81ff">createContainer</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">path</span><span style="color:#111">:</span> <span style="color:#ae81ff">/usr/bin/nvidia-ctk</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span><span style="color:#111">:</span> <span style="color:#ae81ff">all</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span><span style="color:#111">:</span> <span style="color:#ae81ff">nvidia.com/gpu</span>
+</span></span></code></pre></div><p>可以看到 nvidia 的 cdi 配置文件比 mock 的要复杂很多，因为 nvidia 的 gpu 需要绑定很多文件到容器内，还有 hooks 等。这些工作之前都是在 runtime 中做的，现在都可以通过 cdi 插件来做了。</p>
+]]></content:encoded><category>cloud</category><category>cdi</category><category>kubernetes</category></item></channel></rss>

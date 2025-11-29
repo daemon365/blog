@@ -1,351 +1,83 @@
-<!doctype html><html lang=zh-CN data-theme=light><head><meta charset=UTF-8><meta name=viewport content="width=device-width"><meta name=theme-color content="#222" media="(prefers-color-scheme: light)"><meta name=generator content="Hugo 0.140.1"><link rel="shortcut icon" type=image/x-icon href=/imgs/icons/favicon.ico><link rel=icon type=image/x-icon href=/imgs/icons/favicon.ico><link rel=icon type=image/png sizes=16x16 href=/imgs/icons/favicon.ico><link rel=icon type=image/png sizes=32x32 href=/imgs/icons/favicon.ico><link rel=apple-touch-icon sizes=180x180 href=/imgs/icons/favicon.ico><meta itemprop=name content="Daemon"><meta itemprop=description content="Don't let yourself stop."><meta name=description content="Don't let yourself stop."><meta itemprop=image content="https://daemon365.dev/imgs/daemon365.png"><meta itemprop=keywords content="Go, Golang, Linux, Docker, Kubernetes, DevOps, Cloud Native, Open Source, Daemon365"><meta property="og:type" content="website"><meta property="og:title" content="Daemon"><meta property="og:description" content="Don't let yourself stop."><meta property="og:image" content="/imgs/daemon365.png"><meta property="og:image:width" content="312"><meta property="og:image:height" content="312"><meta property="og:image:type" content="image/jpeg/png/svg/jpg"><meta property="og:url" content="https://daemon365.dev/"><meta property="og:site_name" content="Daemon"><meta property="og:locale" content="zh-CN"><link type=text/css rel=stylesheet href=https://daemon365.dev/3rd/font-awesome/6.6.0/css/all.min.css><link type=text/css rel=stylesheet href=https://daemon365.dev/3rd/animate.css/4.1.1/animate.min.css><link type=text/css rel=stylesheet href=https://daemon365.dev/3rd/viewerjs/1.11.6/viewer.min.css><link rel=stylesheet href=/css/main.min.5ec1f63635756d664e619fe2d87a11c7394f519beff240c124743433c9861792.css><script type=text/javascript>(function(){localDB={set:function(e,t,n){if(n===0)return;const s=new Date,o=n*864e5,i={value:t,expiry:s.getTime()+o};localStorage.setItem(e,JSON.stringify(i))},get:function(e){const t=localStorage.getItem(e);if(!t)return void 0;const n=JSON.parse(t),s=new Date;return s.getTime()>n.expiry?(localStorage.removeItem(e),void 0):n.value}},theme={active:function(){const e=localDB.get("theme");if(e==null)return;theme.toggle(e),window.matchMedia("(prefers-color-scheme: dark)").addListener(function(e){theme.toggle(e.matches?"dark":"light")})},toggle:function(e){document.documentElement.setAttribute("data-theme",e),localDB.set("theme",e,2);const t=document.querySelector("iframe.giscus-frame");if(t){const n={setConfig:{theme:e}};t.contentWindow.postMessage({giscus:n},"https://giscus.app")}}},theme.active()})(window)</script><script class=next-config data-name=page type=application/json>{"comments":true,"isHome":true,"isPage":false,"path":"daemon365.dev","permalink":"https://daemon365.dev/","title":"Daemon","waline":{"js":[{"alias":"@waline/client","alias_name":"waline","file":"dist/pageview.js","name":"pageview","version":"2.15.8"},{"alias":"@waline/client","alias_name":"waline","file":"dist/comment.js","name":"comment","version":"2.15.8"}]}}</script><script type=text/javascript>document.addEventListener("DOMContentLoaded",()=>{var e=document.createElement("script");e.charset="UTF-8",e.id="LA_COLLECT",e.src="https://sdk.51.la/js-sdk-pro.min.js",e.async="true",e.onload=function(){LA.init({id:"JmAHxEAUVgyS8B1c",ck:"JmAHxEAUVgyS8B1c",autoTrack:!0})},document.head.appendChild(e)})</script><script type=text/javascript>document.addEventListener("DOMContentLoaded",()=>{var e=document.createElement("script");e.charset="UTF-8",e.src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js",e.async=!1,e.defer=!0,document.head.appendChild(e),e.onload=function(){NexT.utils.fmtBusuanzi()}})</script><title>Daemon</title><noscript><link rel=stylesheet href=/css/noscript.css></noscript></head><body itemscope itemtype=http://schema.org/WebPage><div class=headband></div><main class=main><header class=header itemscope itemtype=http://schema.org/WPHeader><div class=header-inner><div class=site-brand-container><div class=site-nav-toggle><div class=toggle aria-label role=button><span class=toggle-line></span>
-<span class=toggle-line></span>
-<span class=toggle-line></span></div></div><div class=site-meta><a href=/ class=brand rel=start><i class=logo-line></i><h1 class=site-title>Daemon</h1><i class=logo-line></i></a><p class=site-subtitle itemprop=description>Don't let yourself stop.</p></div><div class=site-nav-right><div class="toggle popup-trigger"><i class="fa fa-search fa-fw fa-lg"></i></div></div></div><nav class=site-nav><ul class="main-menu menu"><li class="menu-item menu-item-home"><a href=/ class="hvr-icon-pulse menu-item-active" rel=section><i class="fa fa-home hvr-icon"></i>Home</a></li><li class="menu-item menu-item-about"><a href=/about/ class=hvr-icon-pulse rel=section><i class="fa fa-user hvr-icon"></i>About</a></li><li class="menu-item menu-item-archives"><a href=/archives/ class=hvr-icon-pulse rel=section><i class="fa fa-archive hvr-icon"></i>Archives</a></li><li class="menu-item menu-item-commonweal"><a href=/404.html class=hvr-icon-pulse rel=section><i class="fa fa-heartbeat hvr-icon"></i>Commonweal</a></li><li class="menu-item menu-item-search"><a role=button class="popup-trigger hvr-icon-pulse"><i class="fa fa-search fa-fw hvr-icon"></i>搜索</a></li></ul></nav><div class=search-pop-overlay><div class="popup search-popup"><div class=search-header><span class=search-icon><i class="fa fa-search"></i></span><div class=search-input-container><input autocomplete=off autocapitalize=off maxlength=80 placeholder=搜索... spellcheck=false type=search class=search-input></div><span class=popup-btn-close role=button><i class="fa fa-times-circle"></i></span></div><div class="search-result-container no-result"><div class=search-result-icon><i class="fa fa-spinner fa-pulse fa-5x"></i></div></div></div></div></div><div class="toggle sidebar-toggle" role=button><span class=toggle-line></span>
-<span class=toggle-line></span>
-<span class=toggle-line></span></div><aside class=sidebar><div class="sidebar-inner sidebar-overview-active"><ul class=sidebar-nav><li class=sidebar-nav-toc>文章目录</li><li class=sidebar-nav-overview>站点概览</li></ul><div class=sidebar-panel-container><div class="post-toc-wrap sidebar-panel"><div class="post-toc animated"><nav id=TableOfContents></nav></div></div><div class="site-overview-wrap sidebar-panel"><div class="site-author site-overview-item animated" itemprop=author itemscope itemtype=http://schema.org/Person><img class=site-author-image itemprop=image alt=daemon365 src=/imgs/img-lazy-loading.gif data-src=/imgs/daemon365.png><p class=site-author-name itemprop=name>daemon365</p><div class=site-description itemprop=description>Don't let yourself stop.</div></div><div class="site-state-wrap site-overview-item animated"><nav class=site-state><div class="site-state-item site-state-posts"><a href=/archives/><span class=site-state-item-count>97</span>
-<span class=site-state-item-name>日志</span></a></div><div class="site-state-item site-state-categories"><a href=/categories/><span class=site-state-item-count>7</span>
-<span class=site-state-item-name>分类</span></a></div><div class="site-state-item site-state-tags"><a href=/tags/><span class=site-state-item-count>52</span>
-<span class=site-state-item-name>标签</span></a></div></nav></div><div class="links-of-social site-overview-item animated"><span class=links-of-social-item><a href=https://github.com/daemon365 title="Github → https://github.com/daemon365" rel=noopener target=_blank><i class="fab fa-github fa-fw"></i>
-Github</a></span></div><div class="cc-license animated" itemprop=license><a href=https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh class=cc-opacity rel=noopener target=_blank title=共享知识><img src=/imgs/img-lazy-loading.gif data-src=/imgs/cc/big/by_nc_sa.svg alt=共享知识></a></div><div class="links-of-blogroll site-overview-item animated"><div class=links-of-blogroll-title><i class="fa fa-globe fa-fw"></i>
-友情链接</div><ul class=links-of-blogroll-list><li class=links-of-blogroll-item><a href=https://go-kratos.dev title=https://go-kratos.dev target=_blank>kratos</a></li></ul></div></div></div></div></aside><div class=sidebar-dimmer></div></header><div class=tool-buttons><div id=goto-comments class="button goto-comments" title=直达评论><i class="fas fa-comments"></i></div><div id=toggle-theme class=button title=深浅模式切换><i class="fas fa-adjust"></i></div><div class=back-to-top role=button title=返回顶部><i class="fa fa-arrow-up"></i>
-<span>0%</span></div></div><div class=reading-progress-bar></div><script type=text/javascript src=//sidecar.gitter.im/dist/sidecar.v1.js async></script><script type=text/javascript>((window.gitter={}).chat={}).options={room:"hugo-next/community"}</script><noscript><div class=noscript-warning>Theme NexT works best with JavaScript enabled</div></noscript><div class="main-inner index posts-expand"><div class=post-block><article itemscope itemtype=http://schema.org/Article class=post-content lang><link itemprop=mainEntityOfPage href=https://daemon365.dev/post/database/redis_basics/><span hidden itemprop=author itemscope itemtype=http://schema.org/Person><meta itemprop=image content="/imgs/daemon365.png"><meta itemprop=name content="daemon365"></span><span hidden itemprop=publisher itemscope itemtype=http://schema.org/Organization><meta itemprop=name content="daemon365"><meta itemprop=description content="Don't let yourself stop."></span><span hidden itemprop=post itemscope itemtype=http://schema.org/CreativeWork><meta itemprop=name content="redis基础"><meta itemprop=description content="redis介绍
-
-Redis 是完全开源的，遵守 BSD 协议，是一个高性能的 key-value 数据库。
+<!doctype html><html lang=en><head><meta name=generator content="Hugo 0.152.2"><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Daemon365</title><link rel=icon href=/imgs/favicon.ico><link rel=manifest href=/manifest.json><meta name=theme-color content="#007aff"><meta name=mobile-web-app-capable content="yes"><meta name=apple-mobile-web-app-capable content="yes"><meta name=apple-mobile-web-app-status-bar-style content="default"><meta name=apple-mobile-web-app-title content="Daemon365"><link rel=alternate type=application/rss+xml title=Daemon365 href=https://daemon365.dev/index.xml><meta name=description content="Don't let yourself stop."><meta name=keywords content="[Go Golang Linux Docker Kubernetes DevOps Cloud Native Open Source Daemon365]"><meta name=author content="daemon365"><meta property="og:type" content="website"><meta property="og:url" content="https://daemon365.dev/"><meta property="og:title" content="Daemon365"><meta property="og:description" content="Don't let yourself stop."><meta property="og:image" content="https://daemon365.dev/imgs/avatar.svg"><meta property="og:locale" content="en"><meta property="og:site_name" content="Daemon365"><meta name=twitter:card content="summary_large_image"><meta name=twitter:url content="https://daemon365.dev/"><meta name=twitter:title content="Daemon365"><meta name=twitter:description content="Don't let yourself stop."><meta name=twitter:image content="https://daemon365.dev/imgs/avatar.svg"><link rel=canonical href=https://daemon365.dev/><link rel=alternate type=application/rss+xml title=Daemon365 href=https://daemon365.dev/index.xml><script type=application/ld+json>{"@context":"https://schema.org","@type":"WebSite","name":"Daemon365","url":"https:\/\/daemon365.dev\/","description":"Don\u0027t let yourself stop.","publisher":{"@type":"Organization","name":"Daemon365"},"inLanguage":"en"}</script><meta name=robots content="index, follow"><meta name=googlebot content="index, follow"><link rel=stylesheet href=/css/components/variables.css><link rel=stylesheet href=/css/components/base.css><link rel=stylesheet href=/css/components/layout.css><link rel=stylesheet href=/css/main.css><link rel=stylesheet href=/css/components/search.css><link rel=stylesheet href=/css/components/toc.css><link rel=stylesheet href=/css/components/image-preview.css><link rel=stylesheet href=/css/components/reading-progress.css><style>:root{font-family:-apple-system,BlinkMacSystemFont,segoe ui,Roboto,helvetica neue,Arial,sans-serif}</style></head><body><div class=reading-progress-bar></div><header class=site-header><div class=container><div class=header-content><div class=site-branding><a href=/ class=site-logo><span class=site-title>Daemon365</span></a></div><nav class=site-nav><ul class=nav-menu><li><a href=/ class=active><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+Home</a></li><li><a href=/about><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+About</a></li><li><a href=/archives><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+Archives</a></li><li><a href=/categories><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+Categories</a></li><li><a href=/tags><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83.0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+Tags</a></li><li><button class=search-trigger aria-label=Search>
+<svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+Search</button></li></ul></nav></div></div></header><main class=main-content><div class=home-container><div class=container><section class=recent-posts><div class=posts-list><article class=post-card><div class=post-card-content><h3 class=post-title><a href=/post/database/redis_basics/>redis基础</a></h3><div class=post-meta><time datetime=2020-03-20><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+2020-03-20
+</time><span class=post-category><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+database
+</span><span class=reading-time><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+4 min read</span></div><p class=post-summary>redis介绍 Redis 是完全开源的，遵守 BSD 协议，是一个高性能的 key-value 数据库。
 Redis 与其他 key - value 缓存产品有以下三个特点：
-
-Redis支持数据的持久化，可以将内存中的数据保存在磁盘中，重启的时候可以再次加载进行使用。
-Redis不仅仅支持简单的key-value类型的数据，同时还提供list，set，zset，hash等数据结构的存储。
-Redis支持数据的备份，即master-slave模式的数据备份。
-
-redis的安装
-
-brew install redis(mac)
-yum install redis(centos)
-apt-get install redis(ubuntu)
-redis的命令网站
-
-
-
-    Redis 命令参考 — Redis 命令参考 (redisfans.com)
-    
-    
-    
-"></span><header class=post-header><h2 class=post-title itemprop="name headline"><a href=/post/database/redis_basics/ itemprop=url class=post-title-link>redis基础</a></h2><div class=post-meta-container><div class=post-meta-items><span class=post-meta-item><span class=post-meta-item-icon><i class="fas fa-solid fa-calendar"></i>
-</span><span class=post-meta-item-text title=发表于>发表于：
-</span><time title="创建时间：2020-03-20 00:00:00 +0800 +0800" itemprop="dateCreated datePublished" datetime="2020-03-20 00:00:00 +0800 +0800">2020-03-20
-</time></span><span class=post-meta-item><span class=post-meta-item-icon><i class="fas fa-solid fa-folder-open"></i>
-</span><span class=post-meta-item-text title=分类于>分类于：
-</span><span itemprop=about itemscope itemtype=http://schema.org/Thing><a href=/categories/database itemprop=url rel=index><span itemprop=name>database</span></a></span></span></div></div></header><div class=post-body itemprop=articleBody><h2 id=redis介绍>redis介绍
-<a class=header-anchor href=#redis%e4%bb%8b%e7%bb%8d></a></h2><p>Redis 是完全开源的，遵守 BSD 协议，是一个高性能的 key-value 数据库。</p><p>Redis 与其他 key - value 缓存产品有以下三个特点：</p><ul><li>Redis支持数据的持久化，可以将内存中的数据保存在磁盘中，重启的时候可以再次加载进行使用。</li><li>Redis不仅仅支持简单的key-value类型的数据，同时还提供list，set，zset，hash等数据结构的存储。</li><li>Redis支持数据的备份，即master-slave模式的数据备份。</li></ul><h3 id=redis的安装>redis的安装
-<a class=header-anchor href=#redis%e7%9a%84%e5%ae%89%e8%a3%85></a></h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-bash data-lang=bash><span style=display:flex><span>brew install redis<span style=color:#f92672>(</span>mac<span style=color:#f92672>)</span>
-</span></span><span style=display:flex><span>yum install redis<span style=color:#f92672>(</span>centos<span style=color:#f92672>)</span>
-</span></span><span style=display:flex><span>apt-get install redis<span style=color:#f92672>(</span>ubuntu<span style=color:#f92672>)</span>
-</span></span></code></pre></div><h2 id=redis的命令网站>redis的命令网站
-<a class=header-anchor href=#redis%e7%9a%84%e5%91%bd%e4%bb%a4%e7%bd%91%e7%ab%99></a></h2><p><a href=http://doc.redisfans.com/ title="Redis 命令参考 — Redis 命令参考 (redisfans.com)" rel="noopener external nofollow noreferrer" target=_blank class=exturl>Redis 命令参考 — Redis 命令参考 (redisfans.com)
-<i class="fa fa-external-link-alt"></i></a></p></div><footer class=post-footer><div class=post-button><a class=btn href=/post/database/redis_basics/#more rel=contents>阅读全文 &#187;</a></div><div class=post-eof></div></footer></article></div><div class=post-block><article itemscope itemtype=http://schema.org/Article class=post-content lang><link itemprop=mainEntityOfPage href=https://daemon365.dev/post/cloud/introduction_to_nginx__usage/><span hidden itemprop=author itemscope itemtype=http://schema.org/Person><meta itemprop=image content="/imgs/daemon365.png"><meta itemprop=name content="daemon365"></span><span hidden itemprop=publisher itemscope itemtype=http://schema.org/Organization><meta itemprop=name content="daemon365"><meta itemprop=description content="Don't let yourself stop."></span><span hidden itemprop=post itemscope itemtype=http://schema.org/CreativeWork><meta itemprop=name content="nginx简介,使用"><meta itemprop=description content="nginx是什么
-
-nginx是一个开源的，支持高性能，高并发的www服务和代理服务软件。
-
-
+Redis支持数据的持久化，可以将内存中的数据保存在磁盘中，重启的时候可以再次加载进行使用。 Redis不仅仅支持简单的 …</p><div class=post-tags><a href=/tags/redis class=tag>redis</a></div></div></article><article class=post-card><div class=post-card-content><h3 class=post-title><a href=/post/cloud/introduction_to_nginx__usage/>nginx简介,使用</a></h3><div class=post-meta><time datetime=2020-03-10><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+2020-03-10
+</time><span class=post-category><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+cloud
+</span><span class=reading-time><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+4 min read</span></div><p class=post-summary>nginx是什么 nginx是一个开源的，支持高性能，高并发的www服务和代理服务软件。
 支持高并发，能支持几万并发连接
-
-
-资源消耗少，在3万并发连接下开启10个nginx线程消耗的内存不到200M"></span><header class=post-header><h2 class=post-title itemprop="name headline"><a href=/post/cloud/introduction_to_nginx__usage/ itemprop=url class=post-title-link>nginx简介,使用</a></h2><div class=post-meta-container><div class=post-meta-items><span class=post-meta-item><span class=post-meta-item-icon><i class="fas fa-solid fa-calendar"></i>
-</span><span class=post-meta-item-text title=发表于>发表于：
-</span><time title="创建时间：2020-03-10 00:00:00 +0800 +0800" itemprop="dateCreated datePublished" datetime="2020-03-10 00:00:00 +0800 +0800">2020-03-10
-</time></span><span class=post-meta-item><span class=post-meta-item-icon><i class="fas fa-solid fa-folder-open"></i>
-</span><span class=post-meta-item-text title=分类于>分类于：
-</span><span itemprop=about itemscope itemtype=http://schema.org/Thing><a href=/categories/cloud itemprop=url rel=index><span itemprop=name>cloud</span></a></span></span></div></div></header><div class=post-body itemprop=articleBody><h2 id=nginx是什么>nginx是什么
-<a class=header-anchor href=#nginx%e6%98%af%e4%bb%80%e4%b9%88></a></h2><p>nginx是一个开源的，支持高性能，高并发的www服务和代理服务软件。</p><ul><li><p>支持高并发，能支持几万并发连接</p></li><li><p>资源消耗少，在3万并发连接下开启10个nginx线程消耗的内存不到200M</p></div><footer class=post-footer><div class=post-button><a class=btn href=/post/cloud/introduction_to_nginx__usage/#more rel=contents>阅读全文 &#187;</a></div><div class=post-eof></div></footer></article></div><div class=post-block><article itemscope itemtype=http://schema.org/Article class=post-content lang><link itemprop=mainEntityOfPage href=https://daemon365.dev/post/go/golang_sqlx/><span hidden itemprop=author itemscope itemtype=http://schema.org/Person><meta itemprop=image content="/imgs/daemon365.png"><meta itemprop=name content="daemon365"></span><span hidden itemprop=publisher itemscope itemtype=http://schema.org/Organization><meta itemprop=name content="daemon365"><meta itemprop=description content="Don't let yourself stop."></span><span hidden itemprop=post itemscope itemtype=http://schema.org/CreativeWork><meta itemprop=name content="golang sqlx"><meta itemprop=description content="在项目中我们通常可能会使用database/sql连接MySQL数据库。本文借助使用sqlx实现批量插入数据的例子，介绍了sqlx中可能被你忽视了的sqlx.In和DB.NamedExec方法。"></span><header class=post-header><h2 class=post-title itemprop="name headline"><a href=/post/go/golang_sqlx/ itemprop=url class=post-title-link>golang sqlx</a></h2><div class=post-meta-container><div class=post-meta-items><span class=post-meta-item><span class=post-meta-item-icon><i class="fas fa-solid fa-calendar"></i>
-</span><span class=post-meta-item-text title=发表于>发表于：
-</span><time title="创建时间：2020-01-13 00:00:00 +0800 +0800" itemprop="dateCreated datePublished" datetime="2020-01-13 00:00:00 +0800 +0800">2020-01-13
-</time></span><span class=post-meta-item><span class=post-meta-item-icon><i class="fas fa-solid fa-folder-open"></i>
-</span><span class=post-meta-item-text title=分类于>分类于：
-</span><span itemprop=about itemscope itemtype=http://schema.org/Thing><a href=/categories/go itemprop=url rel=index><span itemprop=name>go</span></a></span></span></div></div></header><div class=post-body itemprop=articleBody><p>在项目中我们通常可能会使用<code>database/sql</code>连接MySQL数据库。本文借助使用<code>sqlx</code>实现批量插入数据的例子，介绍了<code>sqlx</code>中可能被你忽视了的<code>sqlx.In</code>和<code>DB.NamedExec</code>方法。</p></div><footer class=post-footer><div class=post-button><a class=btn href=/post/go/golang_sqlx/#more rel=contents>阅读全文 &#187;</a></div><div class=post-eof></div></footer></article></div><div class=post-block><article itemscope itemtype=http://schema.org/Article class=post-content lang><link itemprop=mainEntityOfPage href=https://daemon365.dev/post/go/golang_redis/><span hidden itemprop=author itemscope itemtype=http://schema.org/Person><meta itemprop=image content="/imgs/daemon365.png"><meta itemprop=name content="daemon365"></span><span hidden itemprop=publisher itemscope itemtype=http://schema.org/Organization><meta itemprop=name content="daemon365"><meta itemprop=description content="Don't let yourself stop."></span><span hidden itemprop=post itemscope itemtype=http://schema.org/CreativeWork><meta itemprop=name content="golang redis"><meta itemprop=description content='安装
-
-下载第三方包:
-go get -u github.com/go-redis/redis/v9
-连接
-
-// 定义一个rdis客户端
-var redisdb *redis.Client
-// 初始化
-func initClient() (err error) {
-	redisdb = redis.NewClient(&amp;redis.Options{
-		Addr:     "localhost:6379", // post端口
-		Password: "", // 密码
-		DB:       0,  // 使用redis的库
-	})
-	_, err = redisdb.Ping(context.Background()).Result()
-	if err != nil {
-		fmt.Println("连接失败")
-		return
-	}
-	return
-}
-使用
-
-set/get示例
-
-func redisExample() {
-	ctx := context.Background()
-	err := redisdb.Set(ctx, "score", 100, 0).Err()
-	if err != nil {
-		fmt.Printf("set score failed, err:%v\n", err)
-		return
-	}
-	val, err := redisdb.Get(ctx, "score").Result()
-	if err != nil {
-		fmt.Printf("get score failed, err:%v\n", err)
-		return
-	}
-	fmt.Println("score", val)
-	val2, err := redisdb.Get(ctx, "name").Result()
-	if err == redis.Nil {
-		fmt.Println("name does not exist")
-	} else if err != nil {
-		fmt.Printf("get name failed, err:%v\n", err)
-		return
-	} else {
-		fmt.Println("name", val2)
-	}
-}
-zset示例
-
-func redisExample2() {
-	ctx := context.Background()
-	zsetKey := "language_rank"
-	languages := []*redis.Z{
-		&amp;redis.Z{Score: 90.0, Member: "Golang"},
-		&amp;redis.Z{Score: 98.0, Member: "Java"},
-		&amp;redis.Z{Score: 95.0, Member: "Python"},
-		&amp;redis.Z{Score: 97.0, Member: "JavaScript"},
-		&amp;redis.Z{Score: 99.0, Member: "C/C++"},
-	}
-	// ZADD
-	num, err := redisdb.ZAdd(ctx, zsetKey, languages...).Result()
-	if err != nil {
-		fmt.Printf("zadd failed, err:%v\n", err)
-		return
-	}
-	fmt.Printf("zadd %d succ.\n", num)
-	// 把Golang的分数加10
-	newScore, err := redisdb.ZIncrBy(ctx, zsetKey, 10.0, "Golang").Result()
-	if err != nil {
-		fmt.Printf("zincrby failed, err:%v\n", err)
-		return
-	}
-	fmt.Printf("Golang&#39;s score is %f now.\n", newScore)
-	// 取分数最高的3个
-	ret, err := redisdb.ZRevRangeWithScores(ctx, zsetKey, 0, 2).Result()
-	if err != nil {
-		fmt.Printf("zrevrange failed, err:%v\n", err)
-		return
-	}
-	for _, z := range ret {
-		fmt.Println(z.Member, z.Score)
-	}
-	// 取95~100分的
-	op := &amp;redis.ZRangeBy{
-		Min: "95",
-		Max: "100",
-	}
-	ret, err = redisdb.ZRangeByScoreWithScores(ctx, zsetKey, op).Result()
-	if err != nil {
-		fmt.Printf("zrangebyscore failed, err:%v\n", err)
-		return
-	}
-	for _, z := range ret {
-		fmt.Println(z.Member, z.Score)
-	}
-}
-输出结果如下：'></span><header class=post-header><h2 class=post-title itemprop="name headline"><a href=/post/go/golang_redis/ itemprop=url class=post-title-link>golang redis</a></h2><div class=post-meta-container><div class=post-meta-items><span class=post-meta-item><span class=post-meta-item-icon><i class="fas fa-solid fa-calendar"></i>
-</span><span class=post-meta-item-text title=发表于>发表于：
-</span><time title="创建时间：2020-01-12 00:00:00 +0800 +0800" itemprop="dateCreated datePublished" datetime="2020-01-12 00:00:00 +0800 +0800">2020-01-12
-</time></span><span class=post-meta-item><span class=post-meta-item-icon><i class="fas fa-solid fa-folder-open"></i>
-</span><span class=post-meta-item-text title=分类于>分类于：
-</span><span itemprop=about itemscope itemtype=http://schema.org/Thing><a href=/categories/go itemprop=url rel=index><span itemprop=name>go</span></a></span></span></div></div></header><div class=post-body itemprop=articleBody><h2 id=安装>安装
-<a class=header-anchor href=#%e5%ae%89%e8%a3%85></a></h2><p>下载第三方包:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-bash data-lang=bash><span style=display:flex><span>go get -u github.com/go-redis/redis/v9
-</span></span></code></pre></div><h2 id=连接>连接
-<a class=header-anchor href=#%e8%bf%9e%e6%8e%a5></a></h2><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#75715e>// 定义一个rdis客户端
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>var</span> <span style=color:#a6e22e>redisdb</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>redis</span>.<span style=color:#a6e22e>Client</span>
-</span></span><span style=display:flex><span><span style=color:#75715e>// 初始化
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>initClient</span>() (<span style=color:#a6e22e>err</span> <span style=color:#66d9ef>error</span>) {
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>redisdb</span> = <span style=color:#a6e22e>redis</span>.<span style=color:#a6e22e>NewClient</span>(<span style=color:#f92672>&amp;</span><span style=color:#a6e22e>redis</span>.<span style=color:#a6e22e>Options</span>{
-</span></span><span style=display:flex><span>		<span style=color:#a6e22e>Addr</span>:     <span style=color:#e6db74>&#34;localhost:6379&#34;</span>, <span style=color:#75715e>// post端口
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>		<span style=color:#a6e22e>Password</span>: <span style=color:#e6db74>&#34;&#34;</span>, <span style=color:#75715e>// 密码
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>		<span style=color:#a6e22e>DB</span>:       <span style=color:#ae81ff>0</span>,  <span style=color:#75715e>// 使用redis的库
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	})
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>_</span>, <span style=color:#a6e22e>err</span> = <span style=color:#a6e22e>redisdb</span>.<span style=color:#a6e22e>Ping</span>(<span style=color:#a6e22e>context</span>.<span style=color:#a6e22e>Background</span>()).<span style=color:#a6e22e>Result</span>()
-</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
-</span></span><span style=display:flex><span>		<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;连接失败&#34;</span>)
-</span></span><span style=display:flex><span>		<span style=color:#66d9ef>return</span>
-</span></span><span style=display:flex><span>	}
-</span></span><span style=display:flex><span>	<span style=color:#66d9ef>return</span>
-</span></span><span style=display:flex><span>}
-</span></span></code></pre></div><h2 id=使用>使用
-<a class=header-anchor href=#%e4%bd%bf%e7%94%a8></a></h2><h3 id=setget示例>set/get示例
-<a class=header-anchor href=#setget%e7%a4%ba%e4%be%8b></a></h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>redisExample</span>() {
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>ctx</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>context</span>.<span style=color:#a6e22e>Background</span>()
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>redisdb</span>.<span style=color:#a6e22e>Set</span>(<span style=color:#a6e22e>ctx</span>, <span style=color:#e6db74>&#34;score&#34;</span>, <span style=color:#ae81ff>100</span>, <span style=color:#ae81ff>0</span>).<span style=color:#a6e22e>Err</span>()
-</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
-</span></span><span style=display:flex><span>		<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Printf</span>(<span style=color:#e6db74>&#34;set score failed, err:%v\n&#34;</span>, <span style=color:#a6e22e>err</span>)
-</span></span><span style=display:flex><span>		<span style=color:#66d9ef>return</span>
-</span></span><span style=display:flex><span>	}
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>val</span>, <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>redisdb</span>.<span style=color:#a6e22e>Get</span>(<span style=color:#a6e22e>ctx</span>, <span style=color:#e6db74>&#34;score&#34;</span>).<span style=color:#a6e22e>Result</span>()
-</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
-</span></span><span style=display:flex><span>		<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Printf</span>(<span style=color:#e6db74>&#34;get score failed, err:%v\n&#34;</span>, <span style=color:#a6e22e>err</span>)
-</span></span><span style=display:flex><span>		<span style=color:#66d9ef>return</span>
-</span></span><span style=display:flex><span>	}
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;score&#34;</span>, <span style=color:#a6e22e>val</span>)
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>val2</span>, <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>redisdb</span>.<span style=color:#a6e22e>Get</span>(<span style=color:#a6e22e>ctx</span>, <span style=color:#e6db74>&#34;name&#34;</span>).<span style=color:#a6e22e>Result</span>()
-</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>==</span> <span style=color:#a6e22e>redis</span>.<span style=color:#a6e22e>Nil</span> {
-</span></span><span style=display:flex><span>		<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;name does not exist&#34;</span>)
-</span></span><span style=display:flex><span>	} <span style=color:#66d9ef>else</span> <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
-</span></span><span style=display:flex><span>		<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Printf</span>(<span style=color:#e6db74>&#34;get name failed, err:%v\n&#34;</span>, <span style=color:#a6e22e>err</span>)
-</span></span><span style=display:flex><span>		<span style=color:#66d9ef>return</span>
-</span></span><span style=display:flex><span>	} <span style=color:#66d9ef>else</span> {
-</span></span><span style=display:flex><span>		<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;name&#34;</span>, <span style=color:#a6e22e>val2</span>)
-</span></span><span style=display:flex><span>	}
-</span></span><span style=display:flex><span>}
-</span></span></code></pre></div><h3 id=zset示例>zset示例
-<a class=header-anchor href=#zset%e7%a4%ba%e4%be%8b></a></h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>redisExample2</span>() {
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>ctx</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>context</span>.<span style=color:#a6e22e>Background</span>()
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>zsetKey</span> <span style=color:#f92672>:=</span> <span style=color:#e6db74>&#34;language_rank&#34;</span>
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>languages</span> <span style=color:#f92672>:=</span> []<span style=color:#f92672>*</span><span style=color:#a6e22e>redis</span>.<span style=color:#a6e22e>Z</span>{
-</span></span><span style=display:flex><span>		<span style=color:#f92672>&amp;</span><span style=color:#a6e22e>redis</span>.<span style=color:#a6e22e>Z</span>{<span style=color:#a6e22e>Score</span>: <span style=color:#ae81ff>90.0</span>, <span style=color:#a6e22e>Member</span>: <span style=color:#e6db74>&#34;Golang&#34;</span>},
-</span></span><span style=display:flex><span>		<span style=color:#f92672>&amp;</span><span style=color:#a6e22e>redis</span>.<span style=color:#a6e22e>Z</span>{<span style=color:#a6e22e>Score</span>: <span style=color:#ae81ff>98.0</span>, <span style=color:#a6e22e>Member</span>: <span style=color:#e6db74>&#34;Java&#34;</span>},
-</span></span><span style=display:flex><span>		<span style=color:#f92672>&amp;</span><span style=color:#a6e22e>redis</span>.<span style=color:#a6e22e>Z</span>{<span style=color:#a6e22e>Score</span>: <span style=color:#ae81ff>95.0</span>, <span style=color:#a6e22e>Member</span>: <span style=color:#e6db74>&#34;Python&#34;</span>},
-</span></span><span style=display:flex><span>		<span style=color:#f92672>&amp;</span><span style=color:#a6e22e>redis</span>.<span style=color:#a6e22e>Z</span>{<span style=color:#a6e22e>Score</span>: <span style=color:#ae81ff>97.0</span>, <span style=color:#a6e22e>Member</span>: <span style=color:#e6db74>&#34;JavaScript&#34;</span>},
-</span></span><span style=display:flex><span>		<span style=color:#f92672>&amp;</span><span style=color:#a6e22e>redis</span>.<span style=color:#a6e22e>Z</span>{<span style=color:#a6e22e>Score</span>: <span style=color:#ae81ff>99.0</span>, <span style=color:#a6e22e>Member</span>: <span style=color:#e6db74>&#34;C/C++&#34;</span>},
-</span></span><span style=display:flex><span>	}
-</span></span><span style=display:flex><span>	<span style=color:#75715e>// ZADD
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>num</span>, <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>redisdb</span>.<span style=color:#a6e22e>ZAdd</span>(<span style=color:#a6e22e>ctx</span>, <span style=color:#a6e22e>zsetKey</span>, <span style=color:#a6e22e>languages</span><span style=color:#f92672>...</span>).<span style=color:#a6e22e>Result</span>()
-</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
-</span></span><span style=display:flex><span>		<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Printf</span>(<span style=color:#e6db74>&#34;zadd failed, err:%v\n&#34;</span>, <span style=color:#a6e22e>err</span>)
-</span></span><span style=display:flex><span>		<span style=color:#66d9ef>return</span>
-</span></span><span style=display:flex><span>	}
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Printf</span>(<span style=color:#e6db74>&#34;zadd %d succ.\n&#34;</span>, <span style=color:#a6e22e>num</span>)
-</span></span><span style=display:flex><span>	<span style=color:#75715e>// 把Golang的分数加10
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>newScore</span>, <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>redisdb</span>.<span style=color:#a6e22e>ZIncrBy</span>(<span style=color:#a6e22e>ctx</span>, <span style=color:#a6e22e>zsetKey</span>, <span style=color:#ae81ff>10.0</span>, <span style=color:#e6db74>&#34;Golang&#34;</span>).<span style=color:#a6e22e>Result</span>()
-</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
-</span></span><span style=display:flex><span>		<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Printf</span>(<span style=color:#e6db74>&#34;zincrby failed, err:%v\n&#34;</span>, <span style=color:#a6e22e>err</span>)
-</span></span><span style=display:flex><span>		<span style=color:#66d9ef>return</span>
-</span></span><span style=display:flex><span>	}
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Printf</span>(<span style=color:#e6db74>&#34;Golang&#39;s score is %f now.\n&#34;</span>, <span style=color:#a6e22e>newScore</span>)
-</span></span><span style=display:flex><span>	<span style=color:#75715e>// 取分数最高的3个
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>ret</span>, <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>redisdb</span>.<span style=color:#a6e22e>ZRevRangeWithScores</span>(<span style=color:#a6e22e>ctx</span>, <span style=color:#a6e22e>zsetKey</span>, <span style=color:#ae81ff>0</span>, <span style=color:#ae81ff>2</span>).<span style=color:#a6e22e>Result</span>()
-</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
-</span></span><span style=display:flex><span>		<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Printf</span>(<span style=color:#e6db74>&#34;zrevrange failed, err:%v\n&#34;</span>, <span style=color:#a6e22e>err</span>)
-</span></span><span style=display:flex><span>		<span style=color:#66d9ef>return</span>
-</span></span><span style=display:flex><span>	}
-</span></span><span style=display:flex><span>	<span style=color:#66d9ef>for</span> <span style=color:#a6e22e>_</span>, <span style=color:#a6e22e>z</span> <span style=color:#f92672>:=</span> <span style=color:#66d9ef>range</span> <span style=color:#a6e22e>ret</span> {
-</span></span><span style=display:flex><span>		<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#a6e22e>z</span>.<span style=color:#a6e22e>Member</span>, <span style=color:#a6e22e>z</span>.<span style=color:#a6e22e>Score</span>)
-</span></span><span style=display:flex><span>	}
-</span></span><span style=display:flex><span>	<span style=color:#75715e>// 取95~100分的
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>op</span> <span style=color:#f92672>:=</span> <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>redis</span>.<span style=color:#a6e22e>ZRangeBy</span>{
-</span></span><span style=display:flex><span>		<span style=color:#a6e22e>Min</span>: <span style=color:#e6db74>&#34;95&#34;</span>,
-</span></span><span style=display:flex><span>		<span style=color:#a6e22e>Max</span>: <span style=color:#e6db74>&#34;100&#34;</span>,
-</span></span><span style=display:flex><span>	}
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>ret</span>, <span style=color:#a6e22e>err</span> = <span style=color:#a6e22e>redisdb</span>.<span style=color:#a6e22e>ZRangeByScoreWithScores</span>(<span style=color:#a6e22e>ctx</span>, <span style=color:#a6e22e>zsetKey</span>, <span style=color:#a6e22e>op</span>).<span style=color:#a6e22e>Result</span>()
-</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
-</span></span><span style=display:flex><span>		<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Printf</span>(<span style=color:#e6db74>&#34;zrangebyscore failed, err:%v\n&#34;</span>, <span style=color:#a6e22e>err</span>)
-</span></span><span style=display:flex><span>		<span style=color:#66d9ef>return</span>
-</span></span><span style=display:flex><span>	}
-</span></span><span style=display:flex><span>	<span style=color:#66d9ef>for</span> <span style=color:#a6e22e>_</span>, <span style=color:#a6e22e>z</span> <span style=color:#f92672>:=</span> <span style=color:#66d9ef>range</span> <span style=color:#a6e22e>ret</span> {
-</span></span><span style=display:flex><span>		<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#a6e22e>z</span>.<span style=color:#a6e22e>Member</span>, <span style=color:#a6e22e>z</span>.<span style=color:#a6e22e>Score</span>)
-</span></span><span style=display:flex><span>	}
-</span></span><span style=display:flex><span>}
-</span></span></code></pre></div><p>输出结果如下：</p></div><footer class=post-footer><div class=post-button><a class=btn href=/post/go/golang_redis/#more rel=contents>阅读全文 &#187;</a></div><div class=post-eof></div></footer></article></div><div class=post-block><article itemscope itemtype=http://schema.org/Article class=post-content lang><link itemprop=mainEntityOfPage href=https://daemon365.dev/post/go/golang_nethttp_package/><span hidden itemprop=author itemscope itemtype=http://schema.org/Person><meta itemprop=image content="/imgs/daemon365.png"><meta itemprop=name content="daemon365"></span><span hidden itemprop=publisher itemscope itemtype=http://schema.org/Organization><meta itemprop=name content="daemon365"><meta itemprop=description content="Don't let yourself stop."></span><span hidden itemprop=post itemscope itemtype=http://schema.org/CreativeWork><meta itemprop=name content="golang nethttp包"><meta itemprop=description content="http协议
-
-超文本传输协议（HTTP，HyperText Transfer Protocol)是互联网上应用最为广泛的一种网络传输协议，所有的WWW文件都必须遵守这个标准。设计HTTP最初的目的是为了提供一种发布和接收HTML页面的方法。"></span><header class=post-header><h2 class=post-title itemprop="name headline"><a href=/post/go/golang_nethttp_package/ itemprop=url class=post-title-link>golang nethttp包</a></h2><div class=post-meta-container><div class=post-meta-items><span class=post-meta-item><span class=post-meta-item-icon><i class="fas fa-solid fa-calendar"></i>
-</span><span class=post-meta-item-text title=发表于>发表于：
-</span><time title="创建时间：2020-01-11 00:00:00 +0800 +0800" itemprop="dateCreated datePublished" datetime="2020-01-11 00:00:00 +0800 +0800">2020-01-11
-</time></span><span class=post-meta-item><span class=post-meta-item-icon><i class="fas fa-solid fa-folder-open"></i>
-</span><span class=post-meta-item-text title=分类于>分类于：
-</span><span itemprop=about itemscope itemtype=http://schema.org/Thing><a href=/categories/go itemprop=url rel=index><span itemprop=name>go</span></a></span></span></div></div></header><div class=post-body itemprop=articleBody><h2 id=http协议>http协议
-<a class=header-anchor href=#http%e5%8d%8f%e8%ae%ae></a></h2><p>超文本传输协议（HTTP，HyperText Transfer Protocol)是互联网上应用最为广泛的一种网络传输协议，所有的WWW文件都必须遵守这个标准。设计HTTP最初的目的是为了提供一种发布和接收HTML页面的方法。</p></div><footer class=post-footer><div class=post-button><a class=btn href=/post/go/golang_nethttp_package/#more rel=contents>阅读全文 &#187;</a></div><div class=post-eof></div></footer></article></div><div class=post-block><article itemscope itemtype=http://schema.org/Article class=post-content lang><link itemprop=mainEntityOfPage href=https://daemon365.dev/post/go/nethttp_and_gin_routing/><span hidden itemprop=author itemscope itemtype=http://schema.org/Person><meta itemprop=image content="/imgs/daemon365.png"><meta itemprop=name content="daemon365"></span><span hidden itemprop=publisher itemscope itemtype=http://schema.org/Organization><meta itemprop=name content="daemon365"><meta itemprop=description content="Don't let yourself stop."></span><span hidden itemprop=post itemscope itemtype=http://schema.org/CreativeWork><meta itemprop=name content="nethttp和gin 路由"><meta itemprop=description content='net/http 路由注册
-
-func test1() {
-    http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-        fmt.Fprintf(w, "Hello world!")
-    })
-    err := http.ListenAndServe(":9001", nil)
-    if err != nil {
-        log.Fatal("ListenAndServer:", err)
-    }
-}
-在使用ListenAndServe这个方法时，系统就会给我们指派一个路由器，DefaultServeMux是系统默认使用的路由器，如果ListenAndServe这个方法的第2个参数传入nil，系统就会默认使用DefaultServeMux。当然，这里也可以传入自定义的路由器。'></span><header class=post-header><h2 class=post-title itemprop="name headline"><a href=/post/go/nethttp_and_gin_routing/ itemprop=url class=post-title-link>nethttp和gin 路由</a></h2><div class=post-meta-container><div class=post-meta-items><span class=post-meta-item><span class=post-meta-item-icon><i class="fas fa-solid fa-calendar"></i>
-</span><span class=post-meta-item-text title=发表于>发表于：
-</span><time title="创建时间：2019-12-23 00:00:00 +0800 +0800" itemprop="dateCreated datePublished" datetime="2019-12-23 00:00:00 +0800 +0800">2019-12-23
-</time></span><span class=post-meta-item><span class=post-meta-item-icon><i class="fas fa-solid fa-folder-open"></i>
-</span><span class=post-meta-item-text title=分类于>分类于：
-</span><span itemprop=about itemscope itemtype=http://schema.org/Thing><a href=/categories/go itemprop=url rel=index><span itemprop=name>go</span></a></span></span></div></div></header><div class=post-body itemprop=articleBody><h2 id=nethttp-路由注册>net/http 路由注册
-<a class=header-anchor href=#nethttp-%e8%b7%af%e7%94%b1%e6%b3%a8%e5%86%8c></a></h2><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>test1</span>() {
-</span></span><span style=display:flex><span>    <span style=color:#a6e22e>http</span>.<span style=color:#a6e22e>HandleFunc</span>(<span style=color:#e6db74>&#34;/&#34;</span>, <span style=color:#66d9ef>func</span>(<span style=color:#a6e22e>w</span> <span style=color:#a6e22e>http</span>.<span style=color:#a6e22e>ResponseWriter</span>, <span style=color:#a6e22e>r</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>http</span>.<span style=color:#a6e22e>Request</span>) {
-</span></span><span style=display:flex><span>        <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Fprintf</span>(<span style=color:#a6e22e>w</span>, <span style=color:#e6db74>&#34;Hello world!&#34;</span>)
-</span></span><span style=display:flex><span>    })
-</span></span><span style=display:flex><span>    <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>http</span>.<span style=color:#a6e22e>ListenAndServe</span>(<span style=color:#e6db74>&#34;:9001&#34;</span>, <span style=color:#66d9ef>nil</span>)
-</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
-</span></span><span style=display:flex><span>        <span style=color:#a6e22e>log</span>.<span style=color:#a6e22e>Fatal</span>(<span style=color:#e6db74>&#34;ListenAndServer:&#34;</span>, <span style=color:#a6e22e>err</span>)
-</span></span><span style=display:flex><span>    }
-</span></span><span style=display:flex><span>}
-</span></span></code></pre></div><p>在使用<code>ListenAndServe</code>这个方法时，系统就会给我们指派一个路由器，<code>DefaultServeMux</code>是系统默认使用的路由器，如果<code>ListenAndServe</code>这个方法的第2个参数传入nil，系统就会默认使用<code>DefaultServeMux</code>。当然，这里也可以传入自定义的路由器。</p></div><footer class=post-footer><div class=post-button><a class=btn href=/post/go/nethttp_and_gin_routing/#more rel=contents>阅读全文 &#187;</a></div><div class=post-eof></div></footer></article></div><div class=post-block><article itemscope itemtype=http://schema.org/Article class=post-content lang><link itemprop=mainEntityOfPage href=https://daemon365.dev/post/network/network_programming/><span hidden itemprop=author itemscope itemtype=http://schema.org/Person><meta itemprop=image content="/imgs/daemon365.png"><meta itemprop=name content="daemon365"></span><span hidden itemprop=publisher itemscope itemtype=http://schema.org/Organization><meta itemprop=name content="daemon365"><meta itemprop=description content="Don't let yourself stop."></span><span hidden itemprop=post itemscope itemtype=http://schema.org/CreativeWork><meta itemprop=name content="网络编程"><meta itemprop=description content='网络层次划分
-
-为了使不同计算机厂家生产的计算机能够相互通信，以便在更大的范围内建立计算机网络，国际标准化组织（ISO）在1978年提出了"开放系统互联参考模型"，即著名的OSI/RM模型（Open System Interconnection/Reference Model）。它将计算机网络体系结构的通信协议划分为七层，自下而上依次为：物理层（Physics Layer）、数据链路层（Data Link Layer）、网络层（Network Layer）、传输层（Transport Layer）、会话层（Session Layer）、表示层（Presentation Layer）、应用层（Application Layer）。其中第四层完成数据传送服务，上面三层面向用户。'></span><header class=post-header><h2 class=post-title itemprop="name headline"><a href=/post/network/network_programming/ itemprop=url class=post-title-link>网络编程</a></h2><div class=post-meta-container><div class=post-meta-items><span class=post-meta-item><span class=post-meta-item-icon><i class="fas fa-solid fa-calendar"></i>
-</span><span class=post-meta-item-text title=发表于>发表于：
-</span><time title="创建时间：2019-12-21 00:00:00 +0800 +0800" itemprop="dateCreated datePublished" datetime="2019-12-21 00:00:00 +0800 +0800">2019-12-21
-</time></span><span class=post-meta-item><span class=post-meta-item-icon><i class="fas fa-solid fa-folder-open"></i>
-</span><span class=post-meta-item-text title=分类于>分类于：
-</span><span itemprop=about itemscope itemtype=http://schema.org/Thing><a href=/categories/network itemprop=url rel=index><span itemprop=name>network</span></a></span></span></div></div></header><div class=post-body itemprop=articleBody><h2 id=网络层次划分>网络层次划分
-<a class=header-anchor href=#%e7%bd%91%e7%bb%9c%e5%b1%82%e6%ac%a1%e5%88%92%e5%88%86></a></h2><p>为了使不同计算机厂家生产的计算机能够相互通信，以便在更大的范围内建立计算机网络，国际标准化组织（ISO）在1978年提出了"开放系统互联参考模型"，即著名的OSI/RM模型（Open System Interconnection/Reference Model）。它将计算机网络体系结构的通信协议划分为七层，自下而上依次为：物理层（Physics Layer）、数据链路层（Data Link Layer）、网络层（Network Layer）、传输层（Transport Layer）、会话层（Session Layer）、表示层（Presentation Layer）、应用层（Application Layer）。其中第四层完成数据传送服务，上面三层面向用户。</p></div><footer class=post-footer><div class=post-button><a class=btn href=/post/network/network_programming/#more rel=contents>阅读全文 &#187;</a></div><div class=post-eof></div></footer></article></div><div class=post-block><article itemscope itemtype=http://schema.org/Article class=post-content lang><link itemprop=mainEntityOfPage href=https://daemon365.dev/post/microservice/protocol_buffer/><span hidden itemprop=author itemscope itemtype=http://schema.org/Person><meta itemprop=image content="/imgs/daemon365.png"><meta itemprop=name content="daemon365"></span><span hidden itemprop=publisher itemscope itemtype=http://schema.org/Organization><meta itemprop=name content="daemon365"><meta itemprop=description content="Don't let yourself stop."></span><span hidden itemprop=post itemscope itemtype=http://schema.org/CreativeWork><meta itemprop=name content="proto buffer"><meta itemprop=description content="protobuf是一种高效的数据格式，平台无关、语言无关、可扩展，可用于 RPC 系统和持续数据存储系统。
-protobuf介绍
-
-Protobuf是Protocol Buffer的简称，它是Google公司于2008年开源的一种高效的平台无关、语言无关、可扩展的数据格式，目前Protobuf作为接口规范的描述语言，可以作为Go语言RPC接口的基础工具。"></span><header class=post-header><h2 class=post-title itemprop="name headline"><a href=/post/microservice/protocol_buffer/ itemprop=url class=post-title-link>proto buffer</a></h2><div class=post-meta-container><div class=post-meta-items><span class=post-meta-item><span class=post-meta-item-icon><i class="fas fa-solid fa-calendar"></i>
-</span><span class=post-meta-item-text title=发表于>发表于：
-</span><time title="创建时间：2019-12-01 00:00:00 +0800 +0800" itemprop="dateCreated datePublished" datetime="2019-12-01 00:00:00 +0800 +0800">2019-12-01
-</time></span><span class=post-meta-item><span class=post-meta-item-icon><i class="fas fa-solid fa-folder-open"></i>
-</span><span class=post-meta-item-text title=分类于>分类于：
-</span><span itemprop=about itemscope itemtype=http://schema.org/Thing><a href=/categories/microservice itemprop=url rel=index><span itemprop=name>microservice</span></a></span></span></div></div></header><div class=post-body itemprop=articleBody><p>protobuf是一种高效的数据格式，平台无关、语言无关、可扩展，可用于 RPC 系统和持续数据存储系统。</p><h2 id=protobuf介绍>protobuf介绍
-<a class=header-anchor href=#protobuf%e4%bb%8b%e7%bb%8d></a></h2><p>Protobuf是Protocol Buffer的简称，它是Google公司于2008年开源的一种高效的平台无关、语言无关、可扩展的数据格式，目前Protobuf作为接口规范的描述语言，可以作为Go语言RPC接口的基础工具。</p></div><footer class=post-footer><div class=post-button><a class=btn href=/post/microservice/protocol_buffer/#more rel=contents>阅读全文 &#187;</a></div><div class=post-eof></div></footer></article></div><div class=post-block><article itemscope itemtype=http://schema.org/Article class=post-content lang><link itemprop=mainEntityOfPage href=https://daemon365.dev/post/go/go_mod/><span hidden itemprop=author itemscope itemtype=http://schema.org/Person><meta itemprop=image content="/imgs/daemon365.png"><meta itemprop=name content="daemon365"></span><span hidden itemprop=publisher itemscope itemtype=http://schema.org/Organization><meta itemprop=name content="daemon365"><meta itemprop=description content="Don't let yourself stop."></span><span hidden itemprop=post itemscope itemtype=http://schema.org/CreativeWork><meta itemprop=name content="go mod"><meta itemprop=description content="go module是 Go1.11版本之后官方推出的版本管理工具，并且从Go1.13版本开始，go module将是Go语言默认的依赖管理工具。
-GO111MODULE
-
-要启用go module支持首先要设置环境变量GO111MODULE，通过它可以开启或关闭模块支持，它有三个可选值：off、on、auto，默认值是auto。"></span><header class=post-header><h2 class=post-title itemprop="name headline"><a href=/post/go/go_mod/ itemprop=url class=post-title-link>go mod</a></h2><div class=post-meta-container><div class=post-meta-items><span class=post-meta-item><span class=post-meta-item-icon><i class="fas fa-solid fa-calendar"></i>
-</span><span class=post-meta-item-text title=发表于>发表于：
-</span><time title="创建时间：2019-10-01 00:00:00 +0800 +0800" itemprop="dateCreated datePublished" datetime="2019-10-01 00:00:00 +0800 +0800">2019-10-01
-</time></span><span class=post-meta-item><span class=post-meta-item-icon><i class="fas fa-solid fa-folder-open"></i>
-</span><span class=post-meta-item-text title=分类于>分类于：
-</span><span itemprop=about itemscope itemtype=http://schema.org/Thing><a href=/categories/go itemprop=url rel=index><span itemprop=name>go</span></a></span></span></div></div></header><div class=post-body itemprop=articleBody><p>go module是 Go1.11版本之后官方推出的版本管理工具，并且从Go1.13版本开始，go module将是Go语言默认的依赖管理工具。</p><h2 id=go111module>GO111MODULE
-<a class=header-anchor href=#go111module></a></h2><p>要启用go module支持首先要设置环境变量GO111MODULE，通过它可以开启或关闭模块支持，它有三个可选值：off、on、auto，默认值是auto。</p></div><footer class=post-footer><div class=post-button><a class=btn href=/post/go/go_mod/#more rel=contents>阅读全文 &#187;</a></div><div class=post-eof></div></footer></article></div><div class=post-block><article itemscope itemtype=http://schema.org/Article class=post-content lang><link itemprop=mainEntityOfPage href=https://daemon365.dev/post/go/golang_template_htmltemplate_and_texttemplate/><span hidden itemprop=author itemscope itemtype=http://schema.org/Person><meta itemprop=image content="/imgs/daemon365.png"><meta itemprop=name content="daemon365"></span><span hidden itemprop=publisher itemscope itemtype=http://schema.org/Organization><meta itemprop=name content="daemon365"><meta itemprop=description content="Don't let yourself stop."></span><span hidden itemprop=post itemscope itemtype=http://schema.org/CreativeWork><meta itemprop=name content="golang 模板 htmltemplate与texttemplate"><meta itemprop=description content="html模板生成:
-
-
-html/template包实现了数据驱动的模板，用于生成可对抗代码注入的安全HTML输出。它提供了和text/template包相同的接口，Go语言中输出HTML的场景都应使用text/template包。
-
-模板语法
-
-{{.}}
-
-
-
-模板语法都包含在{{和}}中间，其中{{.}}中的点表示当前对象。"></span><header class=post-header><h2 class=post-title itemprop="name headline"><a href=/post/go/golang_template_htmltemplate_and_texttemplate/ itemprop=url class=post-title-link>golang 模板 htmltemplate与texttemplate</a></h2><div class=post-meta-container><div class=post-meta-items><span class=post-meta-item><span class=post-meta-item-icon><i class="fas fa-solid fa-calendar"></i>
-</span><span class=post-meta-item-text title=发表于>发表于：
-</span><time title="创建时间：2019-07-13 00:00:00 +0800 +0800" itemprop="dateCreated datePublished" datetime="2019-07-13 00:00:00 +0800 +0800">2019-07-13
-</time></span><span class=post-meta-item><span class=post-meta-item-icon><i class="fas fa-solid fa-folder-open"></i>
-</span><span class=post-meta-item-text title=分类于>分类于：
-</span><span itemprop=about itemscope itemtype=http://schema.org/Thing><a href=/categories/go itemprop=url rel=index><span itemprop=name>go</span></a></span></span></div></div></header><div class=post-body itemprop=articleBody><h2 id=html模板生成>html模板生成:
-<a class=header-anchor href=#html%e6%a8%a1%e6%9d%bf%e7%94%9f%e6%88%90></a></h2><ul><li>html/template包实现了数据驱动的模板，用于生成可对抗代码注入的安全HTML输出。它提供了和text/template包相同的接口，Go语言中输出HTML的场景都应使用text/template包。</li></ul><h2 id=模板语法>模板语法
-<a class=header-anchor href=#%e6%a8%a1%e6%9d%bf%e8%af%ad%e6%b3%95></a></h2><h3 id=heading>{{.}}
-<a class=header-anchor href=#heading></a></h3><ul><li><p>模板语法都包含在{{和}}中间，其中{{.}}中的点表示当前对象。</p></div><footer class=post-footer><div class=post-button><a class=btn href=/post/go/golang_template_htmltemplate_and_texttemplate/#more rel=contents>阅读全文 &#187;</a></div><div class=post-eof></div></footer></article></div><nav class=pagination><a class="extend prev" rel=prev href=/page/7/><i class="fa fa-angle-left"></i>
-</a><a class=page-number href=/page/2/>2</a>
-<a class=page-number href=/page/3/>3</a>
-<a class=page-number href=/page/4/>4</a>
-<a class=page-number href=/page/5/>5</a>
-<a class=page-number href=/page/6/>6</a>
-<a class=page-number href=/page/7/>7</a>
-<span class="page-number current">8</span>
-<a class=page-number href=/page/9/>9</a>
-<a class=page-number href=/page/10/>10</a>
-<a class="extend next" rel=next href=/page/9/><i class="fa fa-angle-right"></i></a></nav></div></main><footer class=footer><div class=footer-inner><div class=copyright>&copy;
-<span itemprop=copyrightYear>2019 - 2024
-</span><span class=with-love><i class="fa fa-heart"></i>
-</span><span class=author itemprop=copyrightHolder>daemon365</span></div><div class=powered-by>由 <a href=https://gohugo.io title=0.140.1 target=_blank>Hugo</a> & <a href=https://github.com/hugo-next/hugo-theme-next title=4.6.3 target=_blank>Hugo NexT.Gemini</a> 强力驱动</div></div></footer><script type=text/javascript src=https://daemon365.dev/3rd/animejs/3.2.2/anime.min.js crossorigin=anonymous defer></script><script type=text/javascript src=https://daemon365.dev/3rd/viewerjs/1.11.6/viewer.min.js crossorigin=anonymous defer></script><script class=next-config data-name=main type=application/json>{"bookmark":{"color":"#222","enable":false,"save":"manual"},"copybtn":true,"darkmode":false,"hostname":"https://daemon365.dev/","i18n":{"ds_day":" 天前","ds_days":" 天 ","ds_hour":" 小时前","ds_hours":" 小时 ","ds_just":"刚刚","ds_min":" 分钟前","ds_mins":" 分钟","ds_month":" 个月前","ds_years":" 年 ","empty":"没有找到任何搜索结果：${query}","hits":"找到 ${hits} 个搜索结果","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","placeholder":"搜索..."},"lang":"zh-CN","lawidget":{"id":"JmAHxEAUVgyS8B1c","js":"https://v6-widget.51.la/v6/laId/quote.js?theme=0\u0026col=true\u0026f=12\u0026display=0,0,0,1,0,1,1,1"},"lazyload":false,"localSearch":{"enable":true,"limit":1e3,"path":"/searchindexes.xml","preload":false,"topnperarticle":-1,"trigger":"auto","unescape":false},"motion":{"async":false,"enable":false,"transition":{"collheader":"fadeInLeft","postblock":"fadeIn","postbody":"fadeInDown","postheader":"fadeInDown","sidebar":"fadeInUp"}},"postmeta":{"comments":{"enable":false,"plugin":"waline"},"views":{"enable":true,"plugin":"busuanzi"}},"root":"/","scheme":"Gemini","sidebar":{"display":"post","offset":12,"padding":18,"position":"left","width":256},"utterances":{"cfg":{"issueterm":"pathname","label":"comments","repo":"daemon365/blog","theme":"preferred-color-scheme"},"js":"https://utteranc.es/client.js"},"vendor":{"plugins":"local","router":{"name":"local","type":"modern","url":"https://daemon365.dev/3rd"}},"version":"4.6.3"}</script><script type=text/javascript src=/js/main.min.412b2d7d9cead6dbf9b4df1d9dcc9b5b7818e8e434f664050b4498e888bb3009.js defer></script></body></html>
+资源消耗少，在3万并发连接下开启10个nginx线程消耗的内存不到200M
+可以做http反向代理和负载均衡
+支持异步网络i/o事件模型epoll
+Tengine是由淘宝网发起的 …</p><div class=post-tags><a href=/tags/nginx class=tag>nginx</a>
+<a href=/tags/linux class=tag>linux</a></div></div></article><article class=post-card><div class=post-card-content><h3 class=post-title><a href=/post/go/golang_sqlx/>golang sqlx</a></h3><div class=post-meta><time datetime=2020-01-13><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+2020-01-13
+</time><span class=post-category><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+go
+</span><span class=reading-time><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+6 min read</span></div><p class=post-summary>在项目中我们通常可能会使用database/sql连接MySQL数据库。本文借助使用sqlx实现批量插入数据的例子，介绍了sqlx中可能被你忽视了的sqlx.In和DB.NamedExec方法。
+sqlx介绍 在项目中我们通常可能会使用database/sql连接MySQL数据库。sqlx可以认为是 …</p><div class=post-tags><a href=/tags/golang class=tag>golang</a>
+<a href=/tags/sqlx class=tag>sqlx</a></div></div></article><article class=post-card><div class=post-card-content><h3 class=post-title><a href=/post/go/golang_redis/>golang redis</a></h3><div class=post-meta><time datetime=2020-01-12><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+2020-01-12
+</time><span class=post-category><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+go
+</span><span class=reading-time><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+2 min read</span></div><p class=post-summary>安装 下载第三方包:
+go get -u github.com/go-redis/redis/v9 连接 // 定义一个rdis客户端 var redisdb *redis.Client // 初始化 func initClient() (err error) { redisdb = …</p><div class=post-tags><a href=/tags/golang class=tag>golang</a>
+<a href=/tags/redis class=tag>redis</a></div></div></article><article class=post-card><div class=post-card-content><h3 class=post-title><a href=/post/go/golang_nethttp_package/>golang nethttp包</a></h3><div class=post-meta><time datetime=2020-01-11><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+2020-01-11
+</time><span class=post-category><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+go
+</span><span class=reading-time><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+4 min read</span></div><p class=post-summary>http协议 超文本传输协议（HTTP，HyperText Transfer Protocol)是互联网上应用最为广泛的一种网络传输协议，所有的WWW文件都必须遵守这个标准。设计HTTP最初的目的是为了提供一种发布和接收HTML页面的方法。
+关于http(https)协议: …</p><div class=post-tags><a href=/tags/go class=tag>go</a></div></div></article><article class=post-card><div class=post-card-content><h3 class=post-title><a href=/post/go/nethttp_and_gin_routing/>nethttp和gin 路由</a></h3><div class=post-meta><time datetime=2019-12-23><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+2019-12-23
+</time><span class=post-category><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+go
+</span><span class=reading-time><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+8 min read</span></div><p class=post-summary>net/http 路由注册 func test1() { http.HandleFunc(&amp;#34;/&amp;#34;, func(w http.ResponseWriter, r *http.Request) { fmt.Fprintf(w, &amp;#34;Hello world!&amp;#34;) }) err …</p><div class=post-tags><a href=/tags/go class=tag>go</a>
+<a href=/tags/gin class=tag>gin</a></div></div></article><article class=post-card><div class=post-card-content><h3 class=post-title><a href=/post/network/network_programming/>网络编程</a></h3><div class=post-meta><time datetime=2019-12-21><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+2019-12-21
+</time><span class=post-category><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+network
+</span><span class=reading-time><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+7 min read</span></div><p class=post-summary>网络层次划分 为了使不同计算机厂家生产的计算机能够相互通信，以便在更大的范围内建立计算机网络，国际标准化组织（ISO）在1978年提出了&amp;quot;开放系统互联参考模型&amp;quot;，即著名的OSI/RM模型（Open System Interconnection/Reference Model）。它 …</p><div class=post-tags><a href=/tags/network class=tag>network</a></div></div></article><article class=post-card><div class=post-card-content><h3 class=post-title><a href=/post/microservice/protocol_buffer/>proto buffer</a></h3><div class=post-meta><time datetime=2019-12-01><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+2019-12-01
+</time><span class=post-category><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+microservice
+</span><span class=reading-time><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+1 min read</span></div><p class=post-summary>protobuf是一种高效的数据格式，平台无关、语言无关、可扩展，可用于 RPC 系统和持续数据存储系统。
+protobuf介绍 Protobuf是Protocol Buffer的简称，它是Google公司于2008年开源的一种高效的平台无关、语言无关、可扩展的数据格式，目前Protobuf作为接口 …</p><div class=post-tags><a href=/tags/go class=tag>go</a>
+<a href=/tags/protobuf class=tag>protobuf</a></div></div></article><article class=post-card><div class=post-card-content><h3 class=post-title><a href=/post/go/go_mod/>go mod</a></h3><div class=post-meta><time datetime=2019-10-01><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+2019-10-01
+</time><span class=post-category><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+go
+</span><span class=reading-time><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+1 min read</span></div><p class=post-summary>go module是 Go1.11版本之后官方推出的版本管理工具，并且从Go1.13版本开始，go module将是Go语言默认的依赖管理工具。
+GO111MODULE 要启用go module支持首先要设置环境变量GO111MODULE，通过它可以开启或关闭模块支持，它有三个可选值 …</p><div class=post-tags><a href=/tags/go class=tag>go</a></div></div></article><article class=post-card><div class=post-card-content><h3 class=post-title><a href=/post/go/golang_template_htmltemplate_and_texttemplate/>golang 模板 htmltemplate与texttemplate</a></h3><div class=post-meta><time datetime=2019-07-13><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+2019-07-13
+</time><span class=post-category><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+go
+</span><span class=reading-time><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+3 min read</span></div><p class=post-summary>html模板生成: html/template包实现了数据驱动的模板，用于生成可对抗代码注入的安全HTML输出。它提供了和text/template包相同的接口，Go语言中输出HTML的场景都应使用text/template包。 模板语法 {{.}} 模板语法都包含在{{和}}中间，其中{{.}}中 …</p><div class=post-tags><a href=/tags/go class=tag>go</a></div></div></article></div><nav class=pagination><a href=/page/7/ class="pagination-nav pagination-prev"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></a><div class=pagination-numbers><a href=/ class=pagination-number>1</a>
+<span class=pagination-ellipsis>...</span>
+<a href=/page/7/ class=pagination-number>7</a>
+<span class="pagination-number active">8</span>
+<a href=/page/9/ class=pagination-number>9</a>
+<a href=/page/10/ class=pagination-number>10</a></div><a href=/page/9/ class="pagination-nav pagination-next"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></a></nav></section></div></div></main><footer class=site-footer><div class=container><div class=footer-content><div class=footer-info><p class=copyright>© 2025 daemon365</p><p class=powered-by>Powered by <a href=https://gohugo.io/ target=_blank rel=noopener>Hugo</a> & <a href=https://github.com/daemon365/hugo-theme-daemon target=_blank rel=noopener>Daemon</a></p></div><div class=social-links><a href=https://github.com/daemon365 target=_blank rel=noopener aria-label=GitHub><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.374.0.0 5.373.0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931.0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176.0.0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221.0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
+</a><a href=mailto:daemon365@foxmail.com aria-label=Email><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1.0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1.0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></a></div></div></div></footer><div class=search-modal id=searchModal><div class=search-modal-backdrop></div><div class=search-modal-content><div class=search-modal-header><input type=text class=search-input id=searchInput placeholder="Search articles..." autofocus>
+<button class=search-close aria-label="Close search">
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div><div class=search-results id=searchResults><p class=search-hint>Enter 2 or more characters to start searching</p></div></div></div><script src=/js/components/search.js></script><script src=/js/components/toc.js></script><script src=/js/components/scroll-effects.js></script><script src=/js/components/code-copy.js></script><script src=/js/components/lazy-loading.js></script><script src=/js/components/image-preview.js></script><script src=/js/components/back-to-top.js></script><script src=/js/main-new.js></script><script>"serviceWorker"in navigator&&window.addEventListener("load",()=>{navigator.serviceWorker.register("/sw.js").then(e=>{console.log("Service Worker registered:",e.scope)}).catch(e=>{console.log("Service Worker registration failed:",e)})})</script></body></html>

@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>Ipvs on Daemon365</title><link>https://daemon365.dev/tags/ipvs/</link><description>Don't let yourself stop.</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><lastBuildDate>Wed, 08 May 2024 17:40:00 +0800</lastBuildDate><atom:link href="https://daemon365.dev/tags/ipvs/index.xml" rel="self" type="application/rss+xml"/><item><title>kube-proxy 流量流转方式</title><link>https://daemon365.dev/post/cloud/kube_proxy_traffic_flow_mode/</link><pubDate>Wed, 08 May 2024 17:40:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/kube_proxy_traffic_flow_mode/</guid><description>&lt;h2 id="简介"&gt;简介&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;kube-proxy&lt;/code&gt; 是 Kubernetes 集群中负责服务发现和负载均衡的组件之一。它是一个网络代理，运行在每个节点上, 用于 service 资源的负载均衡。它有两种模式：&lt;code&gt;iptables&lt;/code&gt; 和 &lt;code&gt;ipvs&lt;/code&gt;。&lt;/p&gt;
+&lt;h2 id="iptables"&gt;iptables&lt;/h2&gt;
+&lt;p&gt;iptables 是 Linux 系统中的一个用户空间实用程序，用于配置内核的网络包过滤和网络地址转换（NAT）规则。它是 Linux 内核中的 netfilter 框架的一部分，并负责在网络包进入、转发或离开计算机时进行筛选和处理。其主要功能和用途包括：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;防火墙：iptables 提供了强大的防火墙功能，可以根据不同的规则来过滤和拒绝不需要的网络包。管理员可以创建自定义的规则集，允许或拒绝从特定 IP 地址、端口或协议的数据包。&lt;/li&gt;
+&lt;li&gt;NAT（网络地址转换）：iptables 支持 NAT 功能，可以用来将私有网络中的计算机与外部网络连接。例如，它可以在一个 NAT 路由器上将内部网络的多个设备映射到单个外部 IP 地址。&lt;/li&gt;
+&lt;li&gt;端口转发：iptables 可以将特定的端口流量从一个网络接口转发到另一个接口或目标 IP 地址，通常用于内部网络的服务公开。&lt;/li&gt;
+&lt;li&gt;负载均衡：它也可以通过 DNAT（目标网络地址转换）功能将流量转发给多个内部服务器，实现简单的负载均衡。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;iptables 是通过链（chains）和表（tables）来组织规则的。每个链由一组规则组成，当网络数据包经过时，这些规则会逐一执行。常用的表包括：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;filter 表：用于包过滤，是最常用的表。&lt;/li&gt;
+&lt;li&gt;nat 表：用于网络地址转换。&lt;/li&gt;
+&lt;li&gt;mangle 表：用于修改数据包的 IP 层字段。&lt;/li&gt;
+&lt;li&gt;raw 表：用于绕过连接跟踪。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;链的流向为：&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://daemon365.dev/images/8e758512-8544-4997-9d2b-d7e9ae72b227.png" alt=""&gt;&lt;/p&gt;
+&lt;p&gt;所以，根据上图，我们能够想象出某些常用场景中，报文的流向：&lt;/p&gt;
+&lt;p&gt;到本机某进程的报文：&lt;code&gt;PREROUTING&lt;/code&gt; –&amp;gt; &lt;code&gt;INPUT&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;由本机转发的报文：&lt;code&gt;PREROUTING&lt;/code&gt; –&amp;gt; &lt;code&gt;FORWARD&lt;/code&gt; –&amp;gt; &lt;code&gt;POSTROUTING&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;由本机的某进程发出报文（通常为响应报文）：&lt;code&gt;OUTPUT&lt;/code&gt; –&amp;gt; &lt;code&gt;POSTROUTING&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;尽管在某些情况下配置 iptables 规则可能复杂，但它提供了高度的灵活性和强大的功能，使其成为 Linux 网络安全的重要组成部分。&lt;/p&gt;
+&lt;h2 id="service-负载均衡"&gt;service 负载均衡&lt;/h2&gt;
+&lt;p&gt;我启动了一个 3 个 nginx pod，和一个对应的 service，service 的类型是 &lt;code&gt;ClusterIP&lt;/code&gt;，这样 service 就会有一个虚拟 IP，这个 IP 会被 kube-proxy 代理到后端的 pod 上。&lt;/p&gt;</description><content:encoded><![CDATA[<h2 id="简介">简介</h2>
+<p><code>kube-proxy</code> 是 Kubernetes 集群中负责服务发现和负载均衡的组件之一。它是一个网络代理，运行在每个节点上, 用于 service 资源的负载均衡。它有两种模式：<code>iptables</code> 和 <code>ipvs</code>。</p>
+<h2 id="iptables">iptables</h2>
+<p>iptables 是 Linux 系统中的一个用户空间实用程序，用于配置内核的网络包过滤和网络地址转换（NAT）规则。它是 Linux 内核中的 netfilter 框架的一部分，并负责在网络包进入、转发或离开计算机时进行筛选和处理。其主要功能和用途包括：</p>
+<ol>
+<li>防火墙：iptables 提供了强大的防火墙功能，可以根据不同的规则来过滤和拒绝不需要的网络包。管理员可以创建自定义的规则集，允许或拒绝从特定 IP 地址、端口或协议的数据包。</li>
+<li>NAT（网络地址转换）：iptables 支持 NAT 功能，可以用来将私有网络中的计算机与外部网络连接。例如，它可以在一个 NAT 路由器上将内部网络的多个设备映射到单个外部 IP 地址。</li>
+<li>端口转发：iptables 可以将特定的端口流量从一个网络接口转发到另一个接口或目标 IP 地址，通常用于内部网络的服务公开。</li>
+<li>负载均衡：它也可以通过 DNAT（目标网络地址转换）功能将流量转发给多个内部服务器，实现简单的负载均衡。</li>
+</ol>
+<p>iptables 是通过链（chains）和表（tables）来组织规则的。每个链由一组规则组成，当网络数据包经过时，这些规则会逐一执行。常用的表包括：</p>
+<ul>
+<li>filter 表：用于包过滤，是最常用的表。</li>
+<li>nat 表：用于网络地址转换。</li>
+<li>mangle 表：用于修改数据包的 IP 层字段。</li>
+<li>raw 表：用于绕过连接跟踪。</li>
+</ul>
+<p>链的流向为：</p>
+<p><img src="/images/8e758512-8544-4997-9d2b-d7e9ae72b227.png" alt=""></p>
+<p>所以，根据上图，我们能够想象出某些常用场景中，报文的流向：</p>
+<p>到本机某进程的报文：<code>PREROUTING</code> –&gt; <code>INPUT</code></p>
+<p>由本机转发的报文：<code>PREROUTING</code> –&gt; <code>FORWARD</code> –&gt; <code>POSTROUTING</code></p>
+<p>由本机的某进程发出报文（通常为响应报文）：<code>OUTPUT</code> –&gt; <code>POSTROUTING</code></p>
+<p>尽管在某些情况下配置 iptables 规则可能复杂，但它提供了高度的灵活性和强大的功能，使其成为 Linux 网络安全的重要组成部分。</p>
+<h2 id="service-负载均衡">service 负载均衡</h2>
+<p>我启动了一个 3 个 nginx pod，和一个对应的 service，service 的类型是 <code>ClusterIP</code>，这样 service 就会有一个虚拟 IP，这个 IP 会被 kube-proxy 代理到后端的 pod 上。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>~ » k get pod -owide
+</span></span><span style="display:flex;"><span>NAME                                READY   STATUS    RESTARTS      AGE   IP            NODE       NOMINATED NODE   READINESS GATES
+</span></span><span style="display:flex;"><span>nginx-deployment-59f546cb79-2k9ng   1/1     Running   <span style="color:#ae81ff">2</span> <span style="color:#f92672">(</span>31m ago<span style="color:#f92672">)</span>   50m   10.244.0.28   minikube   &lt;none&gt;           &lt;none&gt;
+</span></span><span style="display:flex;"><span>nginx-deployment-59f546cb79-wfw84   1/1     Running   <span style="color:#ae81ff">2</span> <span style="color:#f92672">(</span>31m ago<span style="color:#f92672">)</span>   50m   10.244.0.30   minikube   &lt;none&gt;           &lt;none&gt;
+</span></span><span style="display:flex;"><span>nginx-deployment-59f546cb79-zr9xm   1/1     Running   <span style="color:#ae81ff">2</span> <span style="color:#f92672">(</span>31m ago<span style="color:#f92672">)</span>   50m   10.244.0.27   minikube   &lt;none&gt;           &lt;none&gt;
+</span></span><span style="display:flex;"><span>----------------------------------------------------------------------------------------------------------------------------------------------------
+</span></span><span style="display:flex;"><span>~ » k get svc nginx-service
+</span></span><span style="display:flex;"><span>NAME            TYPE        CLUSTER-IP     EXTERNAL-IP   PORT<span style="color:#f92672">(</span>S<span style="color:#f92672">)</span>   AGE
+</span></span><span style="display:flex;"><span>nginx-service   ClusterIP   10.101.57.97   &lt;none&gt;        80/TCP    29m
+</span></span></code></pre></div><p>当我们在 master 使用 <code>curl 10.101.57.97</code> 访问 service 的时候，首先会进入 <code>PREROUTING</code> 链：</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-BASH" data-lang="BASH"><span style="display:flex;"><span>root@minikube:/# iptables-save <span style="color:#111">|</span>grep PREROUTING
+</span></span><span style="display:flex;"><span>:PREROUTING ACCEPT <span style="color:#f92672">[</span>0:0<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>:PREROUTING ACCEPT <span style="color:#f92672">[</span>34:2040<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>-A PREROUTING -m comment --comment <span style="color:#d88200">&#34;kubernetes service portals&#34;</span> -j KUBE-SERVICES
+</span></span><span style="display:flex;"><span>-A PREROUTING -d 192.168.49.1/32 -j DOCKER_OUTPUT
+</span></span><span style="display:flex;"><span>-A PREROUTING -m addrtype --dst-type LOCAL -j DOCKER
+</span></span></code></pre></div><p>首先会尝试匹配 <code>KUBE-SERVICES</code> 链，这个链是 kube-proxy 生成的，用于处理 service 的请求。后两个是 docker 的链，用于处理 docker 的请求。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>root@minikube:/#  iptables-save <span style="color:#111">|</span>grep <span style="color:#d88200">&#34;\-A KUBE-SERVICES&#34;</span>
+</span></span><span style="display:flex;"><span>-A KUBE-SERVICES -d 10.96.0.1/32 -p tcp -m comment --comment <span style="color:#d88200">&#34;default/kubernetes:https cluster IP&#34;</span> -j KUBE-SVC-NPX46M4PTMTKRN6Y
+</span></span><span style="display:flex;"><span>-A KUBE-SERVICES -d 10.101.57.97/32 -p tcp -m comment --comment <span style="color:#d88200">&#34;default/nginx-service cluster IP&#34;</span> -j KUBE-SVC-V2OKYYMBY3REGZOG
+</span></span><span style="display:flex;"><span>-A KUBE-SERVICES -d 10.96.0.10/32 -p udp -m comment --comment <span style="color:#d88200">&#34;kube-system/kube-dns:dns cluster IP&#34;</span> -j KUBE-SVC-TCOU7JCQXEZGVUNU
+</span></span><span style="display:flex;"><span>-A KUBE-SERVICES -d 10.96.0.10/32 -p tcp -m comment --comment <span style="color:#d88200">&#34;kube-system/kube-dns:dns-tcp cluster IP&#34;</span> -j KUBE-SVC-ERIFXISQEP7F7OF4
+</span></span><span style="display:flex;"><span>-A KUBE-SERVICES -d 10.96.0.10/32 -p tcp -m comment --comment <span style="color:#d88200">&#34;kube-system/kube-dns:metrics cluster IP&#34;</span> -j KUBE-SVC-JD5MR3NA4I4DYORP
+</span></span><span style="display:flex;"><span>-A KUBE-SERVICES -m comment --comment <span style="color:#d88200">&#34;kubernetes service nodeports; NOTE: this must be the last rule in this chain&#34;</span> -m addrtype --dst-type LOCAL -j KUBE-NODEPORTS
+</span></span></code></pre></div><p>我们这个 nginx-service 的 cluster IP 是 <code>10.101.57.97</code>, 所以会走 <code>KUBE-SVC-V2OKYYMBY3REGZOG</code> 链：</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>root@minikube:/#  iptables-save <span style="color:#111">|</span>grep <span style="color:#d88200">&#34;\-A KUBE-SVC-V2OKYYMBY3REGZOG&#34;</span>
+</span></span><span style="display:flex;"><span>-A KUBE-SVC-V2OKYYMBY3REGZOG ! -s 10.244.0.0/16 -d 10.101.57.97/32 -p tcp -m comment --comment <span style="color:#d88200">&#34;default/nginx-service cluster IP&#34;</span> -j KUBE-MARK-MASQ
+</span></span><span style="display:flex;"><span>-A KUBE-SVC-V2OKYYMBY3REGZOG -m comment --comment <span style="color:#d88200">&#34;default/nginx-service -&gt; 10.244.0.27:80&#34;</span> -m statistic --mode random --probability 0.33333333349 -j KUBE-SEP-POZMZY2HDLRATSJV
+</span></span><span style="display:flex;"><span>-A KUBE-SVC-V2OKYYMBY3REGZOG -m comment --comment <span style="color:#d88200">&#34;default/nginx-service -&gt; 10.244.0.28:80&#34;</span> -m statistic --mode random --probability 0.50000000000 -j KUBE-SEP-Z3HXRORN5VDCFRJU
+</span></span><span style="display:flex;"><span>-A KUBE-SVC-V2OKYYMBY3REGZOG -m comment --comment <span style="color:#d88200">&#34;default/nginx-service -&gt; 10.244.0.30:80&#34;</span> -j KUBE-SEP-S46ZL6MIFVWDY42O
+</span></span></code></pre></div><p><code>-A KUBE-SVC-V2OKYYMBY3REGZOG ! -s 10.244.0.0/16 -d 10.101.57.97/32 -p tcp -m comment --comment &quot;default/nginx-service cluster IP&quot; -j KUBE-MARK-MASQ</code> 这条规则的如果源ip 不是 <code>10.244.0.0/16</code> 的 ip（也就是不是 pod发出来的请求），目的ip 是 service ip，jump 跳转到 这个链 <code>KUBE-MARK-MASQ</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>root@minikube:/# iptables-save <span style="color:#111">|</span>grep <span style="color:#d88200">&#34;\-A KUBE-MARK-MASQ&#34;</span>
+</span></span><span style="display:flex;"><span>-A KUBE-MARK-MASQ -j MARK --set-xmark 0x4000/0x4000
+</span></span></code></pre></div><p>这条规则的作用是给数据包打上 <code>0x4000</code> 这个标记。这个标记会被后续的 NAT 规则识别到，从而让这些数据包通过特定的 NAT 规则进行 IP 地址转换。</p>
+<p>接下来看主要的三条规则：</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-BASH" data-lang="BASH"><span style="display:flex;"><span>-A KUBE-SVC-V2OKYYMBY3REGZOG -m comment --comment <span style="color:#d88200">&#34;default/nginx-service -&gt; 10.244.0.27:80&#34;</span> -m statistic --mode random --probability 0.33333333349 -j KUBE-SEP-POZMZY2HDLRATSJV
+</span></span><span style="display:flex;"><span>-A KUBE-SVC-V2OKYYMBY3REGZOG -m comment --comment <span style="color:#d88200">&#34;default/nginx-service -&gt; 10.244.0.28:80&#34;</span> -m statistic --mode random --probability 0.50000000000 -j KUBE-SEP-Z3HXRORN5VDCFRJU
+</span></span><span style="display:flex;"><span>-A KUBE-SVC-V2OKYYMBY3REGZOG -m comment --comment <span style="color:#d88200">&#34;default/nginx-service -&gt; 10.244.0.30:80&#34;</span> -j KUBE-SEP-S46ZL6MIFVWDY42O
+</span></span></code></pre></div><p>第一条是说有 33.33% 的几率会被转发到 <code>KUBE-SEP-POZMZY2HDLRATSJV</code>, 第二条是 50% 的几率会被转发到 <code>KUBE-SEP-Z3HXRORN5VDCFRJU</code>, 第三条是一定会被转发到 <code>KUBE-SEP-S46ZL6MIFVWDY42O</code>。
+转到第一条的概率是 33.33%，转到第二条的概率是 66.67%（没有到第一条的概率） * 50% = 33.33%，第三条就是 66.67%（没有到第一条的概率） * 50%（没有到第二条的概率） = 33.33%。所以这三条规则的概率是一样的。都是 33.33%。
+那么 <code>KUBE-SEP-POZMZY2HDLRATSJV</code> 又是什么呢？</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>root@minikube:/# iptables-save <span style="color:#111">|</span>grep <span style="color:#d88200">&#34;\-A KUBE-SEP-POZMZY2HDLRATSJV&#34;</span>
+</span></span><span style="display:flex;"><span>-A KUBE-SEP-POZMZY2HDLRATSJV -s 10.244.0.27/32 -m comment --comment <span style="color:#d88200">&#34;default/nginx-service&#34;</span> -j KUBE-MARK-MASQ
+</span></span><span style="display:flex;"><span>-A KUBE-SEP-POZMZY2HDLRATSJV -p tcp -m comment --comment <span style="color:#d88200">&#34;default/nginx-service&#34;</span> -m tcp -j DNAT --to-destination 10.244.0.27:80
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>root@minikube:/# iptables-save <span style="color:#111">|</span>grep <span style="color:#d88200">&#34;\-A KUBE-SEP-POZMZY2HDLRATSJV&#34;</span>
+</span></span><span style="display:flex;"><span>-A KUBE-SEP-Z3HXRORN5VDCFRJU -s 10.244.0.28/32 -m comment --comment <span style="color:#d88200">&#34;default/nginx-service&#34;</span> -j KUBE-MARK-MASQ
+</span></span><span style="display:flex;"><span>-A KUBE-SEP-Z3HXRORN5VDCFRJU -p tcp -m comment --comment <span style="color:#d88200">&#34;default/nginx-service&#34;</span> -m tcp -j DNAT --to-destination 10.244.0.28:80
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>root@minikube:/# iptables-save <span style="color:#111">|</span>grep <span style="color:#d88200">&#34;\-A KUBE-SEP-S46ZL6MIFVWDY42O&#34;</span>
+</span></span><span style="display:flex;"><span>-A KUBE-SEP-S46ZL6MIFVWDY42O -s 10.244.0.30/32 -m comment --comment <span style="color:#d88200">&#34;default/nginx-service&#34;</span> -j KUBE-MARK-MASQ
+</span></span><span style="display:flex;"><span>-A KUBE-SEP-S46ZL6MIFVWDY42O -p tcp -m comment --comment <span style="color:#d88200">&#34;default/nginx-service&#34;</span> -m tcp -j DNAT --to-destination 10.244.0.30:80
+</span></span></code></pre></div><p>第一条规则确保流量从 10.244.0.20 发出时被打上 MASQUERADE 标记，以便通过 NAT 机制进行 IP 伪装。
+第二条是将流量转发到 <code>10.244.0.20:80</code> 并使用 DNAT 机制进行目标地址转换, 转换的 ip <code>10.244.0.27:80</code> 就是 pod 的 ip 和端口。
+<code>KUBE-SEP-Z3HXRORN5VDCFRJU</code> 和 <code>KUBE-SEP-S46ZL6MIFVWDY42O</code> 的规则和这条同理。</p>
+<h2 id="ipvs">ipvs</h2>
+<p>IPVS（IP Virtual Server）是 Linux 内核中实现负载均衡功能的模块。是一种高效的负载均衡技术，可以在第 4 层（传输层）进行流量转发和调度。IPVS 通常被用于构建高性能、高可用性的负载均衡集群。</p>
+<p>查看 ipvs 的规则：</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>root@minikube:/etc/apt# sudo ipvsadm -Ln<span style="color:#111">|</span>grep -A <span style="color:#ae81ff">4</span> 10.101.57.97
+</span></span><span style="display:flex;"><span>Prot LocalAddress:Port Scheduler Flags
+</span></span><span style="display:flex;"><span>  -&gt; RemoteAddress:Port           Forward Weight ActiveConn InActConn
+</span></span><span style="display:flex;"><span>TCP  10.101.57.97:80 rr
+</span></span><span style="display:flex;"><span>  -&gt; 10.244.0.27:80               Masq    <span style="color:#ae81ff">1</span>      <span style="color:#ae81ff">0</span>          <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>  -&gt; 10.244.0.28:80               Masq    <span style="color:#ae81ff">1</span>      <span style="color:#ae81ff">0</span>          <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>  -&gt; 10.244.0.30:80               Masq    <span style="color:#ae81ff">1</span>      <span style="color:#ae81ff">0</span>          <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>UDP  10.96.0.10:53 rr
+</span></span></code></pre></div><p>这个的意思是到<code>10.101.57.97:80</code> 的 tcp 浏览会使用 rr（轮询）的方式转发到 <code>10.244.0.27:80</code>，<code>10.244.0.28:80</code>，<code>10.244.0.30:80</code> 这三个 pod 上。Masq：指示 &ldquo;Masquerading&rdquo;，表示通过 NAT 来处理网络流量。
+所以 ipvs 的模式比 iptables 性能高的多，第一因为 ipvs 是轮询选，iptables 是逐条百分比匹配的，这个还是可以接受的。更要命的是第二条，当 pod 频繁变更的时候 service 对应的 endpoint 的 ENDPOINTS 就会增加或者是减少。那么 iptables 对应 service 的所有规则的百分比都会变化，就会导致一个 service 的规则全部要重刷，当 pod 变化太频繁时，会吃掉大量的 CPU。</p>
+<p>不是说开启了 ipvs 就不会有 iptables 了，还需要 iptables 的 SNAT 规则来处理返回的数据包。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>-A POSTROUTING -m comment --comment <span style="color:#d88200">&#34;kubernetes postrouting rules&#34;</span> -j KUBE-POSTROUTING
+</span></span><span style="display:flex;"><span>-A KUBE-POSTROUTING -m comment --comment <span style="color:#d88200">&#34;Kubernetes endpoints dst ip:port, source ip for solving hairpin purpose&#34;</span> -m <span style="color:#111">set</span> --match-set KUBE-LOOP-BACK dst,dst,src -j MASQUERADE
+</span></span></code></pre></div><p><code>-m set --match-set KUBE-LOOP-BACK dst,dst,src </code> 的意思是匹配 <code>KUBE-LOOP-BACK</code> 这个 set，这个 set 里面存放的是 pod 的 ip，这个规则的作用是将数据包的源地址替换为本机的地址，以便数据包能够正确返回到客户端。
+为什么是 pod ip 而不是 service cluster ip 呢？因为已经通过 ipvs DNAT 过了，所以这里是 pod ip。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>root@minikube:/etc/apt# ipset -L<span style="color:#111">|</span>grep -A <span style="color:#ae81ff">15</span> KUBE-LOOP-BACK
+</span></span><span style="display:flex;"><span>Name: KUBE-LOOP-BACK
+</span></span><span style="display:flex;"><span>Type: hash:ip,port,ip
+</span></span><span style="display:flex;"><span>Revision: <span style="color:#ae81ff">6</span>
+</span></span><span style="display:flex;"><span>Header: family inet hashsize <span style="color:#ae81ff">1024</span> maxelem <span style="color:#ae81ff">65536</span> bucketsize <span style="color:#ae81ff">12</span> initval 0xe4e21451
+</span></span><span style="display:flex;"><span>Size in memory: <span style="color:#ae81ff">544</span>
+</span></span><span style="display:flex;"><span>References: <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>Number of entries: <span style="color:#ae81ff">6</span>
+</span></span><span style="display:flex;"><span>Members:
+</span></span><span style="display:flex;"><span>10.244.0.28,tcp:80,10.244.0.28
+</span></span><span style="display:flex;"><span>10.244.0.30,tcp:80,10.244.0.30
+</span></span><span style="display:flex;"><span>10.244.0.29,tcp:9153,10.244.0.29
+</span></span><span style="display:flex;"><span>10.244.0.29,tcp:53,10.244.0.29
+</span></span><span style="display:flex;"><span>10.244.0.27,tcp:80,10.244.0.27
+</span></span><span style="display:flex;"><span>10.244.0.29,udp:53,10.244.0.29
+</span></span></code></pre></div><p>很明显我们的三个 pod 都在这个 set 里面。</p>
+<p><code>-A KUBE-POSTROUTING -m comment --comment &quot;Kubernetes endpoints dst ip:port, source ip for solving hairpin purpose&quot; -m set --match-set KUBE-LOOP-BACK dst,dst,src -j MASQUERADE</code>
+这条规则的作用是将数据包的源地址替换为本机的地址，以便数据包能够正确返回到客户端。现在我们使用 curl 发出的包目标 ip 是 pod ip了，源 ip 是 node ip。等到数据包返回的时候，kernel 会根据 <a href="https://baike.baidu.com/item/conntrack/11034728">链路追踪</a> 中的数据记录，会把包的源ip 的pod ip 替换为 serice cluster ip, 目标 ip 从 node ip 替换为我发起请求的 ip。这样包就能正确返回到客户端了。</p>
+<h2 id="references">References</h2>
+<ul>
+<li><a href="https://www.zsythink.net/archives/1199">https://www.zsythink.net/archives/1199</a></li>
+</ul>
+]]></content:encoded><category>cloud</category><category>kube-proxy</category><category>iptables</category><category>ipvs</category><category>kubernetes</category></item></channel></rss>

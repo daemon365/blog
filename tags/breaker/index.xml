@@ -1,0 +1,349 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>Breaker on Daemon365</title><link>https://daemon365.dev/tags/breaker/</link><description>Don't let yourself stop.</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><lastBuildDate>Sat, 04 Sep 2021 17:55:01 +0800</lastBuildDate><atom:link href="https://daemon365.dev/tags/breaker/index.xml" rel="self" type="application/rss+xml"/><item><title>从kratos分析breaker熔断器源码实现</title><link>https://daemon365.dev/post/kratos/analyzing_the_breaker_fuse_source_code_implementation_from_kratos/</link><pubDate>Sat, 04 Sep 2021 17:55:01 +0800</pubDate><guid>https://daemon365.dev/post/kratos/analyzing_the_breaker_fuse_source_code_implementation_from_kratos/</guid><description>&lt;h2 id="为什么要用熔断"&gt;为什么要用熔断&lt;/h2&gt;
+&lt;p&gt;前面我们讲过限流保证服务的可用性，不被突如其来的流量打爆。但是两种情况是限流解决不了的。&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;如果我们服务只能处理1000QPS，但是有10wQPS打过来，服务还是会炸。因为拒绝请求也需要成本。&lt;/li&gt;
+&lt;li&gt;服务但是io型的，会把mysql，redis，mq等中间件打挂。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;所以，我们遵循一个思路，可不可以client端在失败的多的时候就不调用了，直接返回错误呢？&lt;/p&gt;
+&lt;h2 id="什么是熔断"&gt;什么是熔断&lt;/h2&gt;
+&lt;p&gt;熔断器是为了当依赖的服务已经出现故障时，主动阻止对依赖服务的请求。保证自身服务的正常运行不受依赖服务影响，防止雪崩效应。&lt;/p&gt;
+&lt;h2 id="源码分析"&gt;源码分析&lt;/h2&gt;
+&lt;h3 id="源码地址"&gt;源码地址&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="https://github.com/go-kratos/aegis/tree/main/circuitbreaker"&gt;https://github.com/go-kratos/aegis/tree/main/circuitbreaker&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="circuitbreaker-接口"&gt;CircuitBreaker 接口&lt;/h3&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-go" data-lang="go"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;type&lt;/span&gt; &lt;span style="color:#75af00"&gt;CircuitBreaker&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;interface&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;Allow&lt;/span&gt;&lt;span style="color:#111"&gt;()&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;error&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;MarkSuccess&lt;/span&gt;&lt;span style="color:#111"&gt;()&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;MarkFailed&lt;/span&gt;&lt;span style="color:#111"&gt;()&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#111"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ol&gt;
+&lt;li&gt;Allow()
+&lt;ul&gt;
+&lt;li&gt;判断熔断器是否允许通过&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;MarkSuccess()
+&lt;ul&gt;
+&lt;li&gt;熔断器成功的回调&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;MarkFailed()
+&lt;ul&gt;
+&lt;li&gt;熔断器失败的回调&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id="group-结构体"&gt;Group 结构体&lt;/h3&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-go" data-lang="go"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;type&lt;/span&gt; &lt;span style="color:#75af00"&gt;Group&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;struct&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;mutex&lt;/span&gt; &lt;span style="color:#75af00"&gt;sync&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;Mutex&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;val&lt;/span&gt; &lt;span style="color:#75af00"&gt;atomic&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;Value&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;New&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;func&lt;/span&gt;&lt;span style="color:#111"&gt;()&lt;/span&gt; &lt;span style="color:#75af00"&gt;CircuitBreaker&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#111"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ol&gt;
+&lt;li&gt;&lt;code&gt;mutex&lt;/code&gt;
+&lt;ul&gt;
+&lt;li&gt;互斥锁，使val这个map不产生数据竞争&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;val&lt;/code&gt;
+&lt;ul&gt;
+&lt;li&gt;map，存储name -&amp;gt; CircuitBreaker&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;New&lt;/code&gt;
+&lt;ul&gt;
+&lt;li&gt;生成一个CircuitBreaker&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h4 id="get方法"&gt;Get方法&lt;/h4&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-go" data-lang="go"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;// Get .&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;func&lt;/span&gt; &lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#75af00"&gt;g&lt;/span&gt; &lt;span style="color:#f92672"&gt;*&lt;/span&gt;&lt;span style="color:#75af00"&gt;Group&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#75af00"&gt;Get&lt;/span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#75af00"&gt;name&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;string&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#75af00"&gt;CircuitBreaker&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;m&lt;/span&gt;&lt;span style="color:#111"&gt;,&lt;/span&gt; &lt;span style="color:#75af00"&gt;ok&lt;/span&gt; &lt;span style="color:#f92672"&gt;:=&lt;/span&gt; &lt;span style="color:#75af00"&gt;g&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;val&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;Load&lt;/span&gt;&lt;span style="color:#111"&gt;().(&lt;/span&gt;&lt;span style="color:#00a8c8"&gt;map&lt;/span&gt;&lt;span style="color:#111"&gt;[&lt;/span&gt;&lt;span style="color:#00a8c8"&gt;string&lt;/span&gt;&lt;span style="color:#111"&gt;]&lt;/span&gt;&lt;span style="color:#75af00"&gt;CircuitBreaker&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#00a8c8"&gt;if&lt;/span&gt; &lt;span style="color:#75af00"&gt;ok&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;breaker&lt;/span&gt;&lt;span style="color:#111"&gt;,&lt;/span&gt; &lt;span style="color:#75af00"&gt;ok&lt;/span&gt; &lt;span style="color:#f92672"&gt;:=&lt;/span&gt; &lt;span style="color:#75af00"&gt;m&lt;/span&gt;&lt;span style="color:#111"&gt;[&lt;/span&gt;&lt;span style="color:#75af00"&gt;name&lt;/span&gt;&lt;span style="color:#111"&gt;]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#00a8c8"&gt;if&lt;/span&gt; &lt;span style="color:#75af00"&gt;ok&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#00a8c8"&gt;return&lt;/span&gt; &lt;span style="color:#75af00"&gt;breaker&lt;/span&gt; &lt;span style="color:#75715e"&gt;// 很具name从val拿出 breaker 如果存在返回&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// slowpath for group don`t have specified name breaker.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;g&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;mutex&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;Lock&lt;/span&gt;&lt;span style="color:#111"&gt;()&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;nm&lt;/span&gt; &lt;span style="color:#f92672"&gt;:=&lt;/span&gt; &lt;span style="color:#111"&gt;make&lt;/span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#00a8c8"&gt;map&lt;/span&gt;&lt;span style="color:#111"&gt;[&lt;/span&gt;&lt;span style="color:#00a8c8"&gt;string&lt;/span&gt;&lt;span style="color:#111"&gt;]&lt;/span&gt;&lt;span style="color:#75af00"&gt;CircuitBreaker&lt;/span&gt;&lt;span style="color:#111"&gt;,&lt;/span&gt; &lt;span style="color:#111"&gt;len&lt;/span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#75af00"&gt;m&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt;&lt;span style="color:#f92672"&gt;+&lt;/span&gt;&lt;span style="color:#ae81ff"&gt;1&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#00a8c8"&gt;for&lt;/span&gt; &lt;span style="color:#75af00"&gt;k&lt;/span&gt;&lt;span style="color:#111"&gt;,&lt;/span&gt; &lt;span style="color:#75af00"&gt;v&lt;/span&gt; &lt;span style="color:#f92672"&gt;:=&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;range&lt;/span&gt; &lt;span style="color:#75af00"&gt;m&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;nm&lt;/span&gt;&lt;span style="color:#111"&gt;[&lt;/span&gt;&lt;span style="color:#75af00"&gt;k&lt;/span&gt;&lt;span style="color:#111"&gt;]&lt;/span&gt; &lt;span style="color:#111"&gt;=&lt;/span&gt; &lt;span style="color:#75af00"&gt;v&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;breaker&lt;/span&gt; &lt;span style="color:#f92672"&gt;:=&lt;/span&gt; &lt;span style="color:#75af00"&gt;g&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;New&lt;/span&gt;&lt;span style="color:#111"&gt;()&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;nm&lt;/span&gt;&lt;span style="color:#111"&gt;[&lt;/span&gt;&lt;span style="color:#75af00"&gt;name&lt;/span&gt;&lt;span style="color:#111"&gt;]&lt;/span&gt; &lt;span style="color:#111"&gt;=&lt;/span&gt; &lt;span style="color:#75af00"&gt;breaker&lt;/span&gt; &lt;span style="color:#75715e"&gt;// 如果不存在 生成一个 并放入map 并返回&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;g&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;val&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;Store&lt;/span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#75af00"&gt;nm&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;g&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;mutex&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;Unlock&lt;/span&gt;&lt;span style="color:#111"&gt;()&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#00a8c8"&gt;return&lt;/span&gt; &lt;span style="color:#75af00"&gt;breaker&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#111"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id="breaker-结构体"&gt;Breaker 结构体&lt;/h3&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-go" data-lang="go"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;// Breaker is a sre CircuitBreaker pattern.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;type&lt;/span&gt; &lt;span style="color:#75af00"&gt;Breaker&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;struct&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;stat&lt;/span&gt; &lt;span style="color:#75af00"&gt;window&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;RollingCounter&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;r&lt;/span&gt; &lt;span style="color:#f92672"&gt;*&lt;/span&gt;&lt;span style="color:#75af00"&gt;rand&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;Rand&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// rand.New(...) returns a non thread safe object&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;randLock&lt;/span&gt; &lt;span style="color:#75af00"&gt;sync&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;Mutex&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// Reducing the k will make adaptive throttling behave more aggressively,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// Increasing the k will make adaptive throttling behave less aggressively.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;k&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;float64&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;request&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;int64&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;state&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;int32&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#111"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ol&gt;
+&lt;li&gt;stat
+&lt;ul&gt;
+&lt;li&gt;滑动窗口，记录成功失败&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;r
+&lt;ul&gt;
+&lt;li&gt;随机数&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;randLock
+&lt;ul&gt;
+&lt;li&gt;读写锁&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;k 成功系数
+&lt;ul&gt;
+&lt;li&gt;total(总数) = success * k&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;request 请求数
+&lt;ul&gt;
+&lt;li&gt;当总数 &amp;lt; request时，不判断是否熔断&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;state
+&lt;ul&gt;
+&lt;li&gt;熔断器状态 打开或者关闭&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id="allow方法"&gt;Allow()方法&lt;/h3&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-go" data-lang="go"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;// Allow request if error returns nil.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;func&lt;/span&gt; &lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#75af00"&gt;b&lt;/span&gt; &lt;span style="color:#f92672"&gt;*&lt;/span&gt;&lt;span style="color:#75af00"&gt;Breaker&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#75af00"&gt;Allow&lt;/span&gt;&lt;span style="color:#111"&gt;()&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;error&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;success&lt;/span&gt;&lt;span style="color:#111"&gt;,&lt;/span&gt; &lt;span style="color:#75af00"&gt;total&lt;/span&gt; &lt;span style="color:#f92672"&gt;:=&lt;/span&gt; &lt;span style="color:#75af00"&gt;b&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;summary&lt;/span&gt;&lt;span style="color:#111"&gt;()&lt;/span&gt; &lt;span style="color:#75715e"&gt;// 从活动窗口获取成功数和总数&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;k&lt;/span&gt; &lt;span style="color:#f92672"&gt;:=&lt;/span&gt; &lt;span style="color:#75af00"&gt;b&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;k&lt;/span&gt; &lt;span style="color:#f92672"&gt;*&lt;/span&gt; &lt;span style="color:#111"&gt;float64&lt;/span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#75af00"&gt;success&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#75715e"&gt;// 根据k成功系数 获取&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// check overflow requests = K * success&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#00a8c8"&gt;if&lt;/span&gt; &lt;span style="color:#75af00"&gt;total&lt;/span&gt; &lt;span style="color:#111"&gt;&amp;lt;&lt;/span&gt; &lt;span style="color:#75af00"&gt;b&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;request&lt;/span&gt; &lt;span style="color:#f92672"&gt;||&lt;/span&gt; &lt;span style="color:#111"&gt;float64&lt;/span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#75af00"&gt;total&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#111"&gt;&amp;lt;&lt;/span&gt; &lt;span style="color:#75af00"&gt;k&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt; &lt;span style="color:#75715e"&gt;// 如果总数&amp;lt;request 或者 总数 &amp;lt; k &lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#00a8c8"&gt;if&lt;/span&gt; &lt;span style="color:#75af00"&gt;atomic&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;LoadInt32&lt;/span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#f92672"&gt;&amp;amp;&lt;/span&gt;&lt;span style="color:#75af00"&gt;b&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;state&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#f92672"&gt;==&lt;/span&gt; &lt;span style="color:#75af00"&gt;StateOpen&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;atomic&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;CompareAndSwapInt32&lt;/span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#f92672"&gt;&amp;amp;&lt;/span&gt;&lt;span style="color:#75af00"&gt;b&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;state&lt;/span&gt;&lt;span style="color:#111"&gt;,&lt;/span&gt; &lt;span style="color:#75af00"&gt;StateOpen&lt;/span&gt;&lt;span style="color:#111"&gt;,&lt;/span&gt; &lt;span style="color:#75af00"&gt;StateClosed&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#75715e"&gt;// 如果state是打开 关闭&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#00a8c8"&gt;return&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;nil&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#00a8c8"&gt;if&lt;/span&gt; &lt;span style="color:#75af00"&gt;atomic&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;LoadInt32&lt;/span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#f92672"&gt;&amp;amp;&lt;/span&gt;&lt;span style="color:#75af00"&gt;b&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;state&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#f92672"&gt;==&lt;/span&gt; &lt;span style="color:#75af00"&gt;StateClosed&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;atomic&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;CompareAndSwapInt32&lt;/span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#f92672"&gt;&amp;amp;&lt;/span&gt;&lt;span style="color:#75af00"&gt;b&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;state&lt;/span&gt;&lt;span style="color:#111"&gt;,&lt;/span&gt; &lt;span style="color:#75af00"&gt;StateClosed&lt;/span&gt;&lt;span style="color:#111"&gt;,&lt;/span&gt; &lt;span style="color:#75af00"&gt;StateOpen&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#75715e"&gt;// 如果state是关闭 打开&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;dr&lt;/span&gt; &lt;span style="color:#f92672"&gt;:=&lt;/span&gt; &lt;span style="color:#75af00"&gt;math&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;Max&lt;/span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#ae81ff"&gt;0&lt;/span&gt;&lt;span style="color:#111"&gt;,&lt;/span&gt; &lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#111"&gt;float64&lt;/span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#75af00"&gt;total&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt;&lt;span style="color:#f92672"&gt;-&lt;/span&gt;&lt;span style="color:#75af00"&gt;k&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt;&lt;span style="color:#f92672"&gt;/&lt;/span&gt;&lt;span style="color:#111"&gt;float64&lt;/span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#75af00"&gt;total&lt;/span&gt;&lt;span style="color:#f92672"&gt;+&lt;/span&gt;&lt;span style="color:#ae81ff"&gt;1&lt;/span&gt;&lt;span style="color:#111"&gt;))&lt;/span&gt; &lt;span style="color:#75715e"&gt;// 获取系数，当k越大 dr越小&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;drop&lt;/span&gt; &lt;span style="color:#f92672"&gt;:=&lt;/span&gt; &lt;span style="color:#75af00"&gt;b&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;trueOnProba&lt;/span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#75af00"&gt;dr&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// trueOnProba 获取水机数&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// 返回是否&amp;lt;dr&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#00a8c8"&gt;if&lt;/span&gt; &lt;span style="color:#75af00"&gt;drop&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt; &lt;span style="color:#75715e"&gt;// 如果是 拒绝请求&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#00a8c8"&gt;return&lt;/span&gt; &lt;span style="color:#75af00"&gt;circuitbreaker&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;ErrNotAllowed&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#00a8c8"&gt;return&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;nil&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#111"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;func&lt;/span&gt; &lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#75af00"&gt;b&lt;/span&gt; &lt;span style="color:#f92672"&gt;*&lt;/span&gt;&lt;span style="color:#75af00"&gt;Breaker&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#75af00"&gt;trueOnProba&lt;/span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#75af00"&gt;proba&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;float64&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#75af00"&gt;truth&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;bool&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;b&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;randLock&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;Lock&lt;/span&gt;&lt;span style="color:#111"&gt;()&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;truth&lt;/span&gt; &lt;span style="color:#111"&gt;=&lt;/span&gt; &lt;span style="color:#75af00"&gt;b&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;r&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;Float64&lt;/span&gt;&lt;span style="color:#111"&gt;()&lt;/span&gt; &lt;span style="color:#111"&gt;&amp;lt;&lt;/span&gt; &lt;span style="color:#75af00"&gt;proba&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;b&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;randLock&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;Unlock&lt;/span&gt;&lt;span style="color:#111"&gt;()&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#00a8c8"&gt;return&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#111"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;使用trueOnProba的原因是，当熔断器关闭时，随机让一部分请求通过，当success越大，请求的通过的数量就越多。用这些数据成功与否，放入窗口统计，当成功数达到要求时，就可以关闭熔断器了。&lt;/p&gt;</description><content:encoded><![CDATA[<h2 id="为什么要用熔断">为什么要用熔断</h2>
+<p>前面我们讲过限流保证服务的可用性，不被突如其来的流量打爆。但是两种情况是限流解决不了的。</p>
+<ol>
+<li>如果我们服务只能处理1000QPS，但是有10wQPS打过来，服务还是会炸。因为拒绝请求也需要成本。</li>
+<li>服务但是io型的，会把mysql，redis，mq等中间件打挂。</li>
+</ol>
+<p>所以，我们遵循一个思路，可不可以client端在失败的多的时候就不调用了，直接返回错误呢？</p>
+<h2 id="什么是熔断">什么是熔断</h2>
+<p>熔断器是为了当依赖的服务已经出现故障时，主动阻止对依赖服务的请求。保证自身服务的正常运行不受依赖服务影响，防止雪崩效应。</p>
+<h2 id="源码分析">源码分析</h2>
+<h3 id="源码地址">源码地址</h3>
+<ul>
+<li><a href="https://github.com/go-kratos/aegis/tree/main/circuitbreaker">https://github.com/go-kratos/aegis/tree/main/circuitbreaker</a></li>
+</ul>
+<h3 id="circuitbreaker-接口">CircuitBreaker 接口</h3>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#00a8c8">type</span> <span style="color:#75af00">CircuitBreaker</span> <span style="color:#00a8c8">interface</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">Allow</span><span style="color:#111">()</span> <span style="color:#00a8c8">error</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">MarkSuccess</span><span style="color:#111">()</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">MarkFailed</span><span style="color:#111">()</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span></code></pre></div><ol>
+<li>Allow()
+<ul>
+<li>判断熔断器是否允许通过</li>
+</ul>
+</li>
+<li>MarkSuccess()
+<ul>
+<li>熔断器成功的回调</li>
+</ul>
+</li>
+<li>MarkFailed()
+<ul>
+<li>熔断器失败的回调</li>
+</ul>
+</li>
+</ol>
+<h3 id="group-结构体">Group 结构体</h3>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#00a8c8">type</span> <span style="color:#75af00">Group</span> <span style="color:#00a8c8">struct</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#75af00">mutex</span> <span style="color:#75af00">sync</span><span style="color:#111">.</span><span style="color:#75af00">Mutex</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#75af00">val</span>   <span style="color:#75af00">atomic</span><span style="color:#111">.</span><span style="color:#75af00">Value</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>   <span style="color:#75af00">New</span> <span style="color:#00a8c8">func</span><span style="color:#111">()</span> <span style="color:#75af00">CircuitBreaker</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span></code></pre></div><ol>
+<li><code>mutex</code>
+<ul>
+<li>互斥锁，使val这个map不产生数据竞争</li>
+</ul>
+</li>
+<li><code>val</code>
+<ul>
+<li>map，存储name -&gt; CircuitBreaker</li>
+</ul>
+</li>
+<li><code>New</code>
+<ul>
+<li>生成一个CircuitBreaker</li>
+</ul>
+</li>
+</ol>
+<h4 id="get方法">Get方法</h4>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// Get .</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#111">(</span><span style="color:#75af00">g</span> <span style="color:#f92672">*</span><span style="color:#75af00">Group</span><span style="color:#111">)</span> <span style="color:#75af00">Get</span><span style="color:#111">(</span><span style="color:#75af00">name</span> <span style="color:#00a8c8">string</span><span style="color:#111">)</span> <span style="color:#75af00">CircuitBreaker</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">m</span><span style="color:#111">,</span> <span style="color:#75af00">ok</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">g</span><span style="color:#111">.</span><span style="color:#75af00">val</span><span style="color:#111">.</span><span style="color:#75af00">Load</span><span style="color:#111">().(</span><span style="color:#00a8c8">map</span><span style="color:#111">[</span><span style="color:#00a8c8">string</span><span style="color:#111">]</span><span style="color:#75af00">CircuitBreaker</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">ok</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">breaker</span><span style="color:#111">,</span> <span style="color:#75af00">ok</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">m</span><span style="color:#111">[</span><span style="color:#75af00">name</span><span style="color:#111">]</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#00a8c8">if</span> <span style="color:#75af00">ok</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#00a8c8">return</span> <span style="color:#75af00">breaker</span> <span style="color:#75715e">// 很具name从val拿出 breaker 如果存在返回</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// slowpath for group don`t have specified name breaker.</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">g</span><span style="color:#111">.</span><span style="color:#75af00">mutex</span><span style="color:#111">.</span><span style="color:#75af00">Lock</span><span style="color:#111">()</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">nm</span> <span style="color:#f92672">:=</span> <span style="color:#111">make</span><span style="color:#111">(</span><span style="color:#00a8c8">map</span><span style="color:#111">[</span><span style="color:#00a8c8">string</span><span style="color:#111">]</span><span style="color:#75af00">CircuitBreaker</span><span style="color:#111">,</span> <span style="color:#111">len</span><span style="color:#111">(</span><span style="color:#75af00">m</span><span style="color:#111">)</span><span style="color:#f92672">+</span><span style="color:#ae81ff">1</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">for</span> <span style="color:#75af00">k</span><span style="color:#111">,</span> <span style="color:#75af00">v</span> <span style="color:#f92672">:=</span> <span style="color:#00a8c8">range</span> <span style="color:#75af00">m</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">nm</span><span style="color:#111">[</span><span style="color:#75af00">k</span><span style="color:#111">]</span> <span style="color:#111">=</span> <span style="color:#75af00">v</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">breaker</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">g</span><span style="color:#111">.</span><span style="color:#75af00">New</span><span style="color:#111">()</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">nm</span><span style="color:#111">[</span><span style="color:#75af00">name</span><span style="color:#111">]</span> <span style="color:#111">=</span> <span style="color:#75af00">breaker</span> <span style="color:#75715e">// 如果不存在 生成一个 并放入map 并返回</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">g</span><span style="color:#111">.</span><span style="color:#75af00">val</span><span style="color:#111">.</span><span style="color:#75af00">Store</span><span style="color:#111">(</span><span style="color:#75af00">nm</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">g</span><span style="color:#111">.</span><span style="color:#75af00">mutex</span><span style="color:#111">.</span><span style="color:#75af00">Unlock</span><span style="color:#111">()</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">return</span> <span style="color:#75af00">breaker</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span></code></pre></div><h3 id="breaker-结构体">Breaker 结构体</h3>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// Breaker is a sre CircuitBreaker pattern.</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">type</span> <span style="color:#75af00">Breaker</span> <span style="color:#00a8c8">struct</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#75af00">stat</span> <span style="color:#75af00">window</span><span style="color:#111">.</span><span style="color:#75af00">RollingCounter</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#75af00">r</span>    <span style="color:#f92672">*</span><span style="color:#75af00">rand</span><span style="color:#111">.</span><span style="color:#75af00">Rand</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#75715e">// rand.New(...) returns a non thread safe object</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#75af00">randLock</span> <span style="color:#75af00">sync</span><span style="color:#111">.</span><span style="color:#75af00">Mutex</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>   <span style="color:#75715e">// Reducing the k will make adaptive throttling behave more aggressively,</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#75715e">// Increasing the k will make adaptive throttling behave less aggressively.</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#75af00">k</span>       <span style="color:#00a8c8">float64</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#75af00">request</span> <span style="color:#00a8c8">int64</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>   <span style="color:#75af00">state</span> <span style="color:#00a8c8">int32</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span></code></pre></div><ol>
+<li>stat
+<ul>
+<li>滑动窗口，记录成功失败</li>
+</ul>
+</li>
+<li>r
+<ul>
+<li>随机数</li>
+</ul>
+</li>
+<li>randLock
+<ul>
+<li>读写锁</li>
+</ul>
+</li>
+<li>k 成功系数
+<ul>
+<li>total(总数) = success * k</li>
+</ul>
+</li>
+<li>request 请求数
+<ul>
+<li>当总数 &lt; request时，不判断是否熔断</li>
+</ul>
+</li>
+<li>state
+<ul>
+<li>熔断器状态 打开或者关闭</li>
+</ul>
+</li>
+</ol>
+<h3 id="allow方法">Allow()方法</h3>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// Allow request if error returns nil.</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#111">(</span><span style="color:#75af00">b</span> <span style="color:#f92672">*</span><span style="color:#75af00">Breaker</span><span style="color:#111">)</span> <span style="color:#75af00">Allow</span><span style="color:#111">()</span> <span style="color:#00a8c8">error</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">success</span><span style="color:#111">,</span> <span style="color:#75af00">total</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">b</span><span style="color:#111">.</span><span style="color:#75af00">summary</span><span style="color:#111">()</span> <span style="color:#75715e">// 从活动窗口获取成功数和总数</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">k</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">b</span><span style="color:#111">.</span><span style="color:#75af00">k</span> <span style="color:#f92672">*</span> <span style="color:#111">float64</span><span style="color:#111">(</span><span style="color:#75af00">success</span><span style="color:#111">)</span> <span style="color:#75715e">// 根据k成功系数 获取</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// check overflow requests = K * success</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">total</span> <span style="color:#111">&lt;</span> <span style="color:#75af00">b</span><span style="color:#111">.</span><span style="color:#75af00">request</span> <span style="color:#f92672">||</span> <span style="color:#111">float64</span><span style="color:#111">(</span><span style="color:#75af00">total</span><span style="color:#111">)</span> <span style="color:#111">&lt;</span> <span style="color:#75af00">k</span> <span style="color:#111">{</span> <span style="color:#75715e">// 如果总数&lt;request 或者  总数 &lt; k </span>
+</span></span><span style="display:flex;"><span>		<span style="color:#00a8c8">if</span> <span style="color:#75af00">atomic</span><span style="color:#111">.</span><span style="color:#75af00">LoadInt32</span><span style="color:#111">(</span><span style="color:#f92672">&amp;</span><span style="color:#75af00">b</span><span style="color:#111">.</span><span style="color:#75af00">state</span><span style="color:#111">)</span> <span style="color:#f92672">==</span> <span style="color:#75af00">StateOpen</span> <span style="color:#111">{</span> 
+</span></span><span style="display:flex;"><span>			<span style="color:#75af00">atomic</span><span style="color:#111">.</span><span style="color:#75af00">CompareAndSwapInt32</span><span style="color:#111">(</span><span style="color:#f92672">&amp;</span><span style="color:#75af00">b</span><span style="color:#111">.</span><span style="color:#75af00">state</span><span style="color:#111">,</span> <span style="color:#75af00">StateOpen</span><span style="color:#111">,</span> <span style="color:#75af00">StateClosed</span><span style="color:#111">)</span> <span style="color:#75715e">// 如果state是打开 关闭</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#00a8c8">return</span> <span style="color:#00a8c8">nil</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">atomic</span><span style="color:#111">.</span><span style="color:#75af00">LoadInt32</span><span style="color:#111">(</span><span style="color:#f92672">&amp;</span><span style="color:#75af00">b</span><span style="color:#111">.</span><span style="color:#75af00">state</span><span style="color:#111">)</span> <span style="color:#f92672">==</span> <span style="color:#75af00">StateClosed</span> <span style="color:#111">{</span> 
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">atomic</span><span style="color:#111">.</span><span style="color:#75af00">CompareAndSwapInt32</span><span style="color:#111">(</span><span style="color:#f92672">&amp;</span><span style="color:#75af00">b</span><span style="color:#111">.</span><span style="color:#75af00">state</span><span style="color:#111">,</span> <span style="color:#75af00">StateClosed</span><span style="color:#111">,</span> <span style="color:#75af00">StateOpen</span><span style="color:#111">)</span> <span style="color:#75715e">// 如果state是关闭 打开</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">dr</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">math</span><span style="color:#111">.</span><span style="color:#75af00">Max</span><span style="color:#111">(</span><span style="color:#ae81ff">0</span><span style="color:#111">,</span> <span style="color:#111">(</span><span style="color:#111">float64</span><span style="color:#111">(</span><span style="color:#75af00">total</span><span style="color:#111">)</span><span style="color:#f92672">-</span><span style="color:#75af00">k</span><span style="color:#111">)</span><span style="color:#f92672">/</span><span style="color:#111">float64</span><span style="color:#111">(</span><span style="color:#75af00">total</span><span style="color:#f92672">+</span><span style="color:#ae81ff">1</span><span style="color:#111">))</span> <span style="color:#75715e">// 获取系数，当k越大 dr越小</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">drop</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">b</span><span style="color:#111">.</span><span style="color:#75af00">trueOnProba</span><span style="color:#111">(</span><span style="color:#75af00">dr</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// trueOnProba 获取水机数</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// 返回是否&lt;dr</span>
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">drop</span> <span style="color:#111">{</span> <span style="color:#75715e">// 如果是 拒绝请求</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#00a8c8">return</span> <span style="color:#75af00">circuitbreaker</span><span style="color:#111">.</span><span style="color:#75af00">ErrNotAllowed</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">return</span> <span style="color:#00a8c8">nil</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#111">(</span><span style="color:#75af00">b</span> <span style="color:#f92672">*</span><span style="color:#75af00">Breaker</span><span style="color:#111">)</span> <span style="color:#75af00">trueOnProba</span><span style="color:#111">(</span><span style="color:#75af00">proba</span> <span style="color:#00a8c8">float64</span><span style="color:#111">)</span> <span style="color:#111">(</span><span style="color:#75af00">truth</span> <span style="color:#00a8c8">bool</span><span style="color:#111">)</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">b</span><span style="color:#111">.</span><span style="color:#75af00">randLock</span><span style="color:#111">.</span><span style="color:#75af00">Lock</span><span style="color:#111">()</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">truth</span> <span style="color:#111">=</span> <span style="color:#75af00">b</span><span style="color:#111">.</span><span style="color:#75af00">r</span><span style="color:#111">.</span><span style="color:#75af00">Float64</span><span style="color:#111">()</span> <span style="color:#111">&lt;</span> <span style="color:#75af00">proba</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">b</span><span style="color:#111">.</span><span style="color:#75af00">randLock</span><span style="color:#111">.</span><span style="color:#75af00">Unlock</span><span style="color:#111">()</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">return</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span></code></pre></div><p>使用trueOnProba的原因是，当熔断器关闭时，随机让一部分请求通过，当success越大，请求的通过的数量就越多。用这些数据成功与否，放入窗口统计，当成功数达到要求时，就可以关闭熔断器了。</p>
+<h3 id="marksuccess以及markfailed方法">MarkSuccess()以及MarkFailed()方法</h3>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// MarkSuccess mark requeest is success.</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#111">(</span><span style="color:#75af00">b</span> <span style="color:#f92672">*</span><span style="color:#75af00">Breaker</span><span style="color:#111">)</span> <span style="color:#75af00">MarkSuccess</span><span style="color:#111">()</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">b</span><span style="color:#111">.</span><span style="color:#75af00">stat</span><span style="color:#111">.</span><span style="color:#75af00">Add</span><span style="color:#111">(</span><span style="color:#ae81ff">1</span><span style="color:#111">)</span> <span style="color:#75715e">// 成功数+1</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// MarkFailed mark request is failed.</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#111">(</span><span style="color:#75af00">b</span> <span style="color:#f92672">*</span><span style="color:#75af00">Breaker</span><span style="color:#111">)</span> <span style="color:#75af00">MarkFailed</span><span style="color:#111">()</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// NOTE: when client reject requets locally, continue add counter let the</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// drop ratio higher.</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">b</span><span style="color:#111">.</span><span style="color:#75af00">stat</span><span style="color:#111">.</span><span style="color:#75af00">Add</span><span style="color:#111">(</span><span style="color:#ae81ff">0</span><span style="color:#111">)</span> <span style="color:#75715e">// 失败数+1</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span></code></pre></div><h2 id="流程图">流程图</h2>
+<p><img src="/images/304df75e-973a-4a9f-8bcd-c1f5315092b4.png" alt=""></p>
+<h2 id="原文地址">原文地址</h2>
+<ul>
+<li><a href="https://zhaohaiyu.com/posts/microservice/breaker/">https://zhaohaiyu.com/posts/microservice/breaker/</a></li>
+</ul>
+<hr>
+<p><img src="/images/5a7a74d9-0f0f-415c-825a-7da85dcbd4d9.png" alt=""></p>
+<p><img src="/images/e3bfa05c-c2aa-4ae9-94b2-a8a12aa4bd7e.gif" alt=""></p>
+]]></content:encoded><category>kratos</category><category>go</category><category>kratos</category><category>breaker</category><category>源码分析</category></item></channel></rss>

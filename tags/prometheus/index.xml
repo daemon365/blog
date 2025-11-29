@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>Prometheus on Daemon365</title><link>https://daemon365.dev/tags/prometheus/</link><description>Don't let yourself stop.</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><lastBuildDate>Fri, 20 Aug 2021 00:00:00 +0800</lastBuildDate><atom:link href="https://daemon365.dev/tags/prometheus/index.xml" rel="self" type="application/rss+xml"/><item><title>Prometheus</title><link>https://daemon365.dev/post/cloud/prometheus/</link><pubDate>Fri, 20 Aug 2021 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/prometheus/</guid><description>&lt;h2 id="prometheus简介"&gt;Prometheus简介&lt;/h2&gt;
+&lt;h3 id="什么是-prometheus"&gt;什么是 Prometheus&lt;/h3&gt;
+&lt;p&gt;&lt;a href="https://github.com/prometheus"&gt;Prometheus&lt;/a&gt; 是在 &lt;a href="http://soundcloud.com/"&gt;Soundcloud&lt;/a&gt; 以开源软件的形式进行研发的系统监控和告警工具包，自此以后，许多公司和组织都采用了 Prometheus 作为监控告警工具。Prometheus 的开发者和用户社区非常活跃，它现在是一个独立的开源项目，可以独立于任何公司进行维护。Prometheus 于 2016 年 5 月加入 &lt;a href="https://cncf.io/"&gt;CNCF&lt;/a&gt; 基金会，成为继 &lt;a href="http://kubernetes.io/"&gt;Kubernetes&lt;/a&gt; 之后的第二个 CNCF 托管项目。&lt;/p&gt;
+&lt;h3 id="prometheus-的优势"&gt;Prometheus 的优势&lt;/h3&gt;
+&lt;p&gt;Prometheus 的主要优势有：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;由指标名称和和键/值对标签标识的时间序列数据组成的多维&lt;a href="https://prometheus.io/docs/concepts/data_model/"&gt;数据模型&lt;/a&gt;。&lt;/li&gt;
+&lt;li&gt;强大的&lt;a href="https://prometheus.io/docs/prometheus/latest/querying/basics/"&gt;查询语言 PromQL&lt;/a&gt;。&lt;/li&gt;
+&lt;li&gt;不依赖分布式存储；单个服务节点具有自治能力。&lt;/li&gt;
+&lt;li&gt;时间序列数据是服务端通过 HTTP 协议主动拉取获得的。&lt;/li&gt;
+&lt;li&gt;也可以通过中间网关来&lt;a href="https://prometheus.io/docs/instrumenting/pushing/"&gt;推送时间序列数据&lt;/a&gt;。&lt;/li&gt;
+&lt;li&gt;可以通过静态配置文件或服务发现来获取监控目标。&lt;/li&gt;
+&lt;li&gt;支持多种类型的图表和仪表盘。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="prometheus-的组件"&gt;Prometheus 的组件&lt;/h3&gt;
+&lt;p&gt;Prometheus 生态系统由多个组件组成，其中有许多组件是可选的：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="https://github.com/prometheus/prometheus"&gt;Prometheus Server&lt;/a&gt; 作为服务端，用来存储时间序列数据。&lt;/li&gt;
+&lt;li&gt;&lt;a href="https://prometheus.io/docs/instrumenting/clientlibs/"&gt;客户端库&lt;/a&gt;用来检测应用程序代码。&lt;/li&gt;
+&lt;li&gt;用于支持临时任务的&lt;a href="https://github.com/prometheus/pushgateway"&gt;推送网关&lt;/a&gt;。&lt;/li&gt;
+&lt;li&gt;&lt;a href="https://prometheus.io/docs/instrumenting/exporters/"&gt;Exporter&lt;/a&gt; 用来监控 HAProxy，StatsD，Graphite 等特殊的监控目标，并向 Prometheus 提供标准格式的监控样本数据。&lt;/li&gt;
+&lt;li&gt;&lt;a href="https://github.com/prometheus/alertmanager"&gt;alartmanager&lt;/a&gt; 用来处理告警。&lt;/li&gt;
+&lt;li&gt;其他各种周边工具。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;其中大多数组件都是用 &lt;a href="https://golang.org/"&gt;Go&lt;/a&gt; 编写的，因此很容易构建和部署为静态二进制文件。&lt;/p&gt;
+&lt;h3 id="prometheus-的架构"&gt;Prometheus 的架构&lt;/h3&gt;
+&lt;p&gt;Prometheus 的整体架构以及生态系统组件如下图所示：&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://daemon365.dev/images/3ccedc87-d3d7-4cc3-ac2a-0c3863888932.png" alt=""&gt;&lt;/p&gt;
+&lt;p&gt;Prometheus Server 直接从监控目标中或者间接通过推送网关来拉取监控指标，它在本地存储所有抓取到的样本数据，并对此数据执行一系列规则，以汇总和记录现有数据的新时间序列或生成告警。可以通过 &lt;a href="https://grafana.com/"&gt;Grafana&lt;/a&gt; 或者其他工具来实现监控数据的可视化。&lt;/p&gt;
+&lt;h2 id="数据类型"&gt;数据类型&lt;/h2&gt;
+&lt;p&gt;Prometheus 所有采集的监控数据均以指标（metric）的形式保存在内置的&lt;a href="https://www.wikiwand.com/zh/%E6%99%82%E9%96%93%E5%BA%8F%E5%88%97"&gt;时间序列&lt;/a&gt;数据库当中（TSDB）：属于同一指标名称，同一标签集合的、有时间戳标记的数据流。除了存储的时间序列，Prometheus 还可以根据查询请求产生临时的、衍生的时间序列作为返回结果。&lt;/p&gt;
+&lt;h3 id="指标名称和标签"&gt;指标名称和标签&lt;/h3&gt;
+&lt;p&gt;每一条时间序列由指标名称（Metrics Name）以及一组标签（键值对）唯一标识。其中指标的名称（metric name）可以反映被监控样本的含义（例如，http_requests_total— 表示当前系统接收到的 HTTP 请求总量），指标名称只能由 ASCII 字符、数字、下划线以及冒号组成，同时必须匹配正则表达式[a-zA-Z_:][a-zA-Z0-9_:]*。&lt;/p&gt;</description><content:encoded><![CDATA[<h2 id="prometheus简介">Prometheus简介</h2>
+<h3 id="什么是-prometheus">什么是 Prometheus</h3>
+<p><a href="https://github.com/prometheus">Prometheus</a> 是在 <a href="http://soundcloud.com/">Soundcloud</a> 以开源软件的形式进行研发的系统监控和告警工具包，自此以后，许多公司和组织都采用了 Prometheus 作为监控告警工具。Prometheus 的开发者和用户社区非常活跃，它现在是一个独立的开源项目，可以独立于任何公司进行维护。Prometheus 于 2016 年 5 月加入 <a href="https://cncf.io/">CNCF</a> 基金会，成为继 <a href="http://kubernetes.io/">Kubernetes</a> 之后的第二个 CNCF 托管项目。</p>
+<h3 id="prometheus-的优势">Prometheus 的优势</h3>
+<p>Prometheus 的主要优势有：</p>
+<ul>
+<li>由指标名称和和键/值对标签标识的时间序列数据组成的多维<a href="https://prometheus.io/docs/concepts/data_model/">数据模型</a>。</li>
+<li>强大的<a href="https://prometheus.io/docs/prometheus/latest/querying/basics/">查询语言 PromQL</a>。</li>
+<li>不依赖分布式存储；单个服务节点具有自治能力。</li>
+<li>时间序列数据是服务端通过 HTTP 协议主动拉取获得的。</li>
+<li>也可以通过中间网关来<a href="https://prometheus.io/docs/instrumenting/pushing/">推送时间序列数据</a>。</li>
+<li>可以通过静态配置文件或服务发现来获取监控目标。</li>
+<li>支持多种类型的图表和仪表盘。</li>
+</ul>
+<h3 id="prometheus-的组件">Prometheus 的组件</h3>
+<p>Prometheus 生态系统由多个组件组成，其中有许多组件是可选的：</p>
+<ul>
+<li><a href="https://github.com/prometheus/prometheus">Prometheus Server</a> 作为服务端，用来存储时间序列数据。</li>
+<li><a href="https://prometheus.io/docs/instrumenting/clientlibs/">客户端库</a>用来检测应用程序代码。</li>
+<li>用于支持临时任务的<a href="https://github.com/prometheus/pushgateway">推送网关</a>。</li>
+<li><a href="https://prometheus.io/docs/instrumenting/exporters/">Exporter</a> 用来监控 HAProxy，StatsD，Graphite 等特殊的监控目标，并向 Prometheus 提供标准格式的监控样本数据。</li>
+<li><a href="https://github.com/prometheus/alertmanager">alartmanager</a> 用来处理告警。</li>
+<li>其他各种周边工具。</li>
+</ul>
+<p>其中大多数组件都是用 <a href="https://golang.org/">Go</a> 编写的，因此很容易构建和部署为静态二进制文件。</p>
+<h3 id="prometheus-的架构">Prometheus 的架构</h3>
+<p>Prometheus 的整体架构以及生态系统组件如下图所示：</p>
+<p><img src="/images/3ccedc87-d3d7-4cc3-ac2a-0c3863888932.png" alt=""></p>
+<p>Prometheus Server 直接从监控目标中或者间接通过推送网关来拉取监控指标，它在本地存储所有抓取到的样本数据，并对此数据执行一系列规则，以汇总和记录现有数据的新时间序列或生成告警。可以通过 <a href="https://grafana.com/">Grafana</a> 或者其他工具来实现监控数据的可视化。</p>
+<h2 id="数据类型">数据类型</h2>
+<p>Prometheus 所有采集的监控数据均以指标（metric）的形式保存在内置的<a href="https://www.wikiwand.com/zh/%E6%99%82%E9%96%93%E5%BA%8F%E5%88%97">时间序列</a>数据库当中（TSDB）：属于同一指标名称，同一标签集合的、有时间戳标记的数据流。除了存储的时间序列，Prometheus 还可以根据查询请求产生临时的、衍生的时间序列作为返回结果。</p>
+<h3 id="指标名称和标签">指标名称和标签</h3>
+<p>每一条时间序列由指标名称（Metrics Name）以及一组标签（键值对）唯一标识。其中指标的名称（metric name）可以反映被监控样本的含义（例如，http_requests_total— 表示当前系统接收到的 HTTP 请求总量），指标名称只能由 ASCII 字符、数字、下划线以及冒号组成，同时必须匹配正则表达式[a-zA-Z_:][a-zA-Z0-9_:]*。</p>
+<h3 id="样本">样本</h3>
+<p>在时间序列中的每一个点称为一个样本（sample），样本由以下三部分组成：</p>
+<ul>
+<li>指标（metric）：指标名称和描述当前样本特征的 labelsets；</li>
+<li>时间戳（timestamp）：一个精确到毫秒的时间戳；</li>
+<li>样本值（value）： 一个 folat64 的浮点型数据表示当前样本的值。</li>
+</ul>
+<h3 id="表示方式">表示方式</h3>
+<p>通过如下表达方式表示指定指标名称和指定标签集合的时间序列：</p>
+<pre tabindex="0"><code>{=, ...}
+</code></pre><p>例如，指标名称为api_http_requests_total，标签为method=&ldquo;POST&quot;和handler=&quot;/messages&quot;的时间序列可以表示为：</p>
+<pre tabindex="0"><code>api_http_requests_total{method=&#34;POST&#34;, handler=&#34;/messages&#34;}
+</code></pre><p>这与 <a href="http://opentsdb.net/">OpenTSDB</a> 中使用的标记法相同。</p>
+<h2 id="指标类型">指标类型</h2>
+<h3 id="counter计数器">Counter（计数器）</h3>
+<p>Counter 类型代表一种样本数据单调递增的指标，即只增不减，除非监控系统发生了重置。例如，你可以使用 counter 类型的指标来表示服务的请求数、已完成的任务数、错误发生的次数等。counter 主要有两个方法：</p>
+<pre tabindex="0"><code>//将counter值加1.
+Inc()
+// 将指定值加到counter值上，如果指定值&lt;0 会panic.
+Add(float64)
+</code></pre><p>Counter 类型数据可以让用户方便的了解事件产生的速率的变化，在 PromQL 内置的相关操作函数可以提供相应的分析，比如以 HTTP 应用请求量来进行说明：</p>
+<pre tabindex="0"><code>//通过rate()函数获取HTTP请求量的增长率
+rate(http_requests_total[5m])
+//查询当前系统中，访问量前10的HTTP地址
+topk(10, http_requests_total)
+</code></pre><p>不要将 counter 类型应用于样本数据非单调递增的指标，例如：当前运行的进程数量（应该用 Guage 类型）。</p>
+<p>不同语言关于 Counter 的客户端库使用文档：</p>
+<ul>
+<li><a href="http://godoc.org/github.com/prometheus/client_golang/prometheus#Counter">Go</a></li>
+<li><a href="https://github.com/prometheus/client_java/blob/master/simpleclient/src/main/java/io/prometheus/client/Counter.java">Java</a></li>
+<li><a href="https://github.com/prometheus/client_python#counter">Python</a></li>
+<li><a href="https://github.com/prometheus/client_ruby#counter">Ruby</a></li>
+</ul>
+<h3 id="guage仪表盘">Guage（仪表盘）</h3>
+<p>Guage 类型代表一种样本数据可以任意变化的指标，即可增可减。guage 通常用于像温度或者内存使用率这种指标数据，也可以表示能随时增加或减少的“总数”，例如：当前并发请求的数量。</p>
+<p>对于 Gauge 类型的监控指标，通过 PromQL 内置函数 <a href="https://www.yangcs.net/prometheus/3-prometheus/functions.html#delta">delta()</a> 可以获取样本在一段时间内的变化情况，例如，计算 CPU 温度在两小时内的差异：</p>
+<pre tabindex="0"><code>dalta(cpu_temp_celsius{host=&#34;zeus&#34;}[2h])
+</code></pre><p>你还可以通过PromQL 内置函数 <a href="https://www.yangcs.net/prometheus/3-prometheus/functions.html#predictlinear">predict_linear()</a> 基于简单线性回归的方式，对样本数据的变化趋势做出预测。例如，基于 2 小时的样本数据，来预测主机可用磁盘空间在 4 个小时之后的剩余情况：</p>
+<pre tabindex="0"><code>predict_linear(node_filesystem_free{job=&#34;node&#34;}[2h], 4 * 3600) &lt; 0
+</code></pre><p>不同语言关于 Guage 的客户端库使用文档：</p>
+<ul>
+<li><a href="http://godoc.org/github.com/prometheus/client_golang/prometheus#Gauge">Go</a></li>
+<li><a href="https://github.com/prometheus/client_java/blob/master/simpleclient/src/main/java/io/prometheus/client/Gauge.java">Java</a></li>
+<li><a href="https://github.com/prometheus/client_python#gauge">Python</a></li>
+<li><a href="https://github.com/prometheus/client_ruby#gauge">Ruby</a></li>
+</ul>
+<h3 id="histogram直方图">Histogram（直方图）</h3>
+<p>在大多数情况下人们都倾向于使用某些量化指标的平均值，例如 CPU 的平均使用率、页面的平均响应时间。这种方式的问题很明显，以系统 API 调用的平均响应时间为例：如果大多数 API 请求都维持在 100ms 的响应时间范围内，而个别请求的响应时间需要 5s，那么就会导致某些 WEB 页面的响应时间落到中位数的情况，而这种现象被称为<strong>长尾问题</strong>。</p>
+<p>为了区分是平均的慢还是长尾的慢，最简单的方式就是按照请求延迟的范围进行分组。例如，统计延迟在 0<del>10ms 之间的请求数有多少而 10</del>20ms 之间的请求数又有多少。通过这种方式可以快速分析系统慢的原因。Histogram 和 Summary 都是为了能够解决这样问题的存在，通过 Histogram 和 Summary 类型的监控指标，我们可以快速了解监控样本的分布情况。</p>
+<p>Histogram 在一段时间范围内对数据进行采样（通常是请求持续时间或响应大小等），并将其计入可配置的存储桶（bucket）中，后续可通过指定区间筛选样本，也可以统计样本总数，最后一般将数据展示为直方图。</p>
+<p>Histogram 类型的样本会提供三种指标（假设指标名称为）：</p>
+<ul>
+<li>
+<p>样本的值分布在 bucket 中的数量，命名为_bucket{le=&rdquo;&quot;}。解释的更通俗易懂一点，这个值表示指标值小于等于上边界的所有样本数量。</p>
+<pre tabindex="0"><code>// 在总共2次请求当中。http 请求响应时间 &lt;=0.005 秒 的请求次数为0
+  io_namespace_http_requests_latency_seconds_histogram_bucket{path=&#34;/&#34;,method=&#34;GET&#34;,code=&#34;200&#34;,le=&#34;0.005&#34;,} 0.0
+  // 在总共2次请求当中。http 请求响应时间 &lt;=0.01 秒 的请求次数为0
+  io_namespace_http_requests_latency_seconds_histogram_bucket{path=&#34;/&#34;,method=&#34;GET&#34;,code=&#34;200&#34;,le=&#34;0.01&#34;,} 0.0
+  // 在总共2次请求当中。http 请求响应时间 &lt;=0.025 秒 的请求次数为0
+  io_namespace_http_requests_latency_seconds_histogram_bucket{path=&#34;/&#34;,method=&#34;GET&#34;,code=&#34;200&#34;,le=&#34;0.025&#34;,} 0.0
+  io_namespace_http_requests_latency_seconds_histogram_bucket{path=&#34;/&#34;,method=&#34;GET&#34;,code=&#34;200&#34;,le=&#34;0.05&#34;,} 0.0
+  io_namespace_http_requests_latency_seconds_histogram_bucket{path=&#34;/&#34;,method=&#34;GET&#34;,code=&#34;200&#34;,le=&#34;0.075&#34;,} 0.0
+  io_namespace_http_requests_latency_seconds_histogram_bucket{path=&#34;/&#34;,method=&#34;GET&#34;,code=&#34;200&#34;,le=&#34;0.1&#34;,} 0.0
+  io_namespace_http_requests_latency_seconds_histogram_bucket{path=&#34;/&#34;,method=&#34;GET&#34;,code=&#34;200&#34;,le=&#34;0.25&#34;,} 0.0
+  io_namespace_http_requests_latency_seconds_histogram_bucket{path=&#34;/&#34;,method=&#34;GET&#34;,code=&#34;200&#34;,le=&#34;0.5&#34;,} 0.0
+  io_namespace_http_requests_latency_seconds_histogram_bucket{path=&#34;/&#34;,method=&#34;GET&#34;,code=&#34;200&#34;,le=&#34;0.75&#34;,} 0.0
+  io_namespace_http_requests_latency_seconds_histogram_bucket{path=&#34;/&#34;,method=&#34;GET&#34;,code=&#34;200&#34;,le=&#34;1.0&#34;,} 0.0
+  io_namespace_http_requests_latency_seconds_histogram_bucket{path=&#34;/&#34;,method=&#34;GET&#34;,code=&#34;200&#34;,le=&#34;2.5&#34;,} 0.0
+  io_namespace_http_requests_latency_seconds_histogram_bucket{path=&#34;/&#34;,method=&#34;GET&#34;,code=&#34;200&#34;,le=&#34;5.0&#34;,} 0.0
+  io_namespace_http_requests_latency_seconds_histogram_bucket{path=&#34;/&#34;,method=&#34;GET&#34;,code=&#34;200&#34;,le=&#34;7.5&#34;,} 2.0
+  // 在总共2次请求当中。http 请求响应时间 &lt;=10 秒 的请求次数为 2
+  io_namespace_http_requests_latency_seconds_histogram_bucket{path=&#34;/&#34;,method=&#34;GET&#34;,code=&#34;200&#34;,le=&#34;10.0&#34;,} 2.0
+  io_namespace_http_requests_latency_seconds_histogram_bucket{path=&#34;/&#34;,method=&#34;GET&#34;,code=&#34;200&#34;,le=&#34;+Inf&#34;,} 2.0
+</code></pre></li>
+<li>
+<p>所有样本值的大小总和，命名为_sum。</p>
+<pre tabindex="0"><code>// 实际含义： 发生的2次 http 请求总的响应时间为 13.107670803000001 秒
+  io_namespace_http_requests_latency_seconds_histogram_sum{path=&#34;/&#34;,method=&#34;GET&#34;,code=&#34;200&#34;,} 13.107670803000001
+</code></pre></li>
+<li>
+<p>样本总数，命名为_count。值和_bucket{le=&quot;+Inf&quot;}相同。</p>
+<pre tabindex="0"><code>// 实际含义： 当前一共发生了 2 次 http 请求
+  io_namespace_http_requests_latency_seconds_histogram_count{path=&#34;/&#34;,method=&#34;GET&#34;,code=&#34;200&#34;,} 2.0
+</code></pre></li>
+</ul>
+<blockquote>
+<p><strong>注意</strong></p>
+<p>bucket 可以理解为是对数据指标值域的一个划分，划分的依据应该基于数据值的分布。注意后面的采样点是包含前面的采样点的，假设xxx_bucket{&hellip;,le=&ldquo;0.01&rdquo;}的值为 10，而xxx_bucket{&hellip;,le=&ldquo;0.05&rdquo;}的值为 30，那么意味着这 30 个采样点中，有 10 个是小于 10 ms 的，其余 20 个采样点的响应时间是介于 10 ms 和 50 ms 之间的。</p>
+</blockquote>
+<p>可以通过 <a href="https://www.yangcs.net/prometheus/3-prometheus/functions.html#histogramquantile">histogram_quantile() 函数</a>来计算 Histogram 类型样本的<a href="https://www.wikiwand.com/zh-hans/%E5%88%86%E4%BD%8D%E6%95%B0">分位数</a>。分位数可能不太好理解，你可以理解为分割数据的点。我举个例子，假设样本的 9 分位数（quantile=0.9）的值为 x，即表示小于 x 的采样值的数量占总体采样值的 90%。Histogram 还可以用来计算应用性能指标值（<a href="https://www.wikiwand.com/en/Apdex">Apdex score</a>）。</p>
+<p>不同语言关于 Histogram 的客户端库使用文档：</p>
+<ul>
+<li><a href="http://godoc.org/github.com/prometheus/client_golang/prometheus#Histogram">Go</a></li>
+<li><a href="https://github.com/prometheus/client_java/blob/master/simpleclient/src/main/java/io/prometheus/client/Histogram.java">Java</a></li>
+<li><a href="https://github.com/prometheus/client_python#histogram">Python</a></li>
+<li><a href="https://github.com/prometheus/client_ruby#histogram">Ruby</a></li>
+</ul>
+<h3 id="summary摘要">Summary（摘要）</h3>
+<p>与 Histogram 类型类似，用于表示一段时间内的数据采样结果（通常是请求持续时间或响应大小等），但它直接存储了分位数（通过客户端计算，然后展示出来），而不是通过区间来计算。</p>
+<p>Summary 类型的样本也会提供三种指标（假设指标名称为 ）：</p>
+<ul>
+<li>
+<p>样本值的分位数分布情况，命名为{quantile=&quot;&quot;}。</p>
+<pre tabindex="0"><code>// 含义：这 12 次 http 请求中有 50% 的请求响应时间是 3.052404983s
+  io_namespace_http_requests_latency_seconds_summary{path=&#34;/&#34;,method=&#34;GET&#34;,code=&#34;200&#34;,quantile=&#34;0.5&#34;,} 3.052404983
+  // 含义：这 12 次 http 请求中有 90% 的请求响应时间是 8.003261666s
+  io_namespace_http_requests_latency_seconds_summary{path=&#34;/&#34;,method=&#34;GET&#34;,code=&#34;200&#34;,quantile=&#34;0.9&#34;,} 8.003261666
+</code></pre></li>
+<li>
+<p>所有样本值的大小总和，命名为_sum。</p>
+<pre tabindex="0"><code>// 含义：这12次 http 请求的总响应时间为 51.029495508s
+  io_namespace_http_requests_latency_seconds_summary_sum{path=&#34;/&#34;,method=&#34;GET&#34;,code=&#34;200&#34;,} 51.029495508
+</code></pre></li>
+<li>
+<p>样本总数，命名为_count。</p>
+<pre tabindex="0"><code>// 含义：当前一共发生了 12 次 http 请求
+  io_namespace_http_requests_latency_seconds_summary_count{path=&#34;/&#34;,method=&#34;GET&#34;,code=&#34;200&#34;,} 12.0
+</code></pre></li>
+</ul>
+<p>现在可以总结一下 Histogram 与 Summary 的异同：</p>
+<ul>
+<li>它们都包含了_sum和_count指标</li>
+<li>Histogram 需要通过_bucket来计算分位数，而 Summary 则直接存储了分位数的值。</li>
+</ul>
+<p>关于 Summary 与 Histogram 的详细用法，请参考 <a href="https://prometheus.io/docs/practices/histograms">histograms and summaries</a>。</p>
+<p>不同语言关于 Summary 的客户端库使用文档：</p>
+<ul>
+<li><a href="http://godoc.org/github.com/prometheus/client_golang/prometheus#Summary">Go</a></li>
+<li><a href="https://github.com/prometheus/client_java/blob/master/simpleclient/src/main/java/io/prometheus/client/Summary.java">Java</a></li>
+<li><a href="https://github.com/prometheus/client_python#summary">Python</a></li>
+<li><a href="https://github.com/prometheus/client_ruby#summary">Ruby</a></li>
+</ul>
+<h2 id="下载">下载</h2>
+<ul>
+<li>下载地址: <a href="https://prometheus.io/download">https://prometheus.io/download</a> 下载对应版本安装</li>
+</ul>
+<h2 id="golang使用prometheus">golang使用prometheus</h2>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;log&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;math/rand&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;net/http&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;time&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;github.com/prometheus/client_golang/prometheus&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;github.com/prometheus/client_golang/prometheus/promhttp&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">var</span> <span style="color:#111">(</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">cpuTemp</span> <span style="color:#111">=</span> <span style="color:#75af00">prometheus</span><span style="color:#111">.</span><span style="color:#75af00">NewGauge</span><span style="color:#111">(</span><span style="color:#75af00">prometheus</span><span style="color:#111">.</span><span style="color:#75af00">GaugeOpts</span><span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">Name</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;cpu_temperature_celsius&#34;</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">Help</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;Current temperature of the CPU.&#34;</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">})</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">hdFailures</span> <span style="color:#111">=</span> <span style="color:#75af00">prometheus</span><span style="color:#111">.</span><span style="color:#75af00">NewCounterVec</span><span style="color:#111">(</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">prometheus</span><span style="color:#111">.</span><span style="color:#75af00">CounterOpts</span><span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#75af00">Name</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;hd_errors_total&#34;</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#75af00">Help</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;Number of hard-disk errors.&#34;</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#111">},</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#111">[]</span><span style="color:#00a8c8">string</span><span style="color:#111">{</span><span style="color:#d88200">&#34;device&#34;</span><span style="color:#111">,</span> <span style="color:#d88200">&#34;service&#34;</span><span style="color:#111">},</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#75af00">init</span><span style="color:#111">()</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// Metrics have to be registered to be exposed:</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">prometheus</span><span style="color:#111">.</span><span style="color:#75af00">MustRegister</span><span style="color:#111">(</span><span style="color:#75af00">cpuTemp</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">prometheus</span><span style="color:#111">.</span><span style="color:#75af00">MustRegister</span><span style="color:#111">(</span><span style="color:#75af00">hdFailures</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#75af00">main</span><span style="color:#111">()</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">go</span> <span style="color:#00a8c8">func</span><span style="color:#111">()</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#00a8c8">for</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#75af00">val</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">rand</span><span style="color:#111">.</span><span style="color:#75af00">Float64</span><span style="color:#111">()</span> <span style="color:#f92672">*</span> <span style="color:#ae81ff">100</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#75af00">cpuTemp</span><span style="color:#111">.</span><span style="color:#75af00">Set</span><span style="color:#111">(</span><span style="color:#75af00">val</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#75af00">hdFailures</span><span style="color:#111">.</span><span style="color:#75af00">With</span><span style="color:#111">(</span><span style="color:#75af00">prometheus</span><span style="color:#111">.</span><span style="color:#75af00">Labels</span><span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>				<span style="color:#d88200">&#34;device&#34;</span><span style="color:#111">:</span>  <span style="color:#d88200">&#34;/dev/sda&#34;</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>				<span style="color:#d88200">&#34;service&#34;</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;hello.world&#34;</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#111">}).</span><span style="color:#75af00">Inc</span><span style="color:#111">()</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#75af00">time</span><span style="color:#111">.</span><span style="color:#75af00">Sleep</span><span style="color:#111">(</span><span style="color:#75af00">time</span><span style="color:#111">.</span><span style="color:#75af00">Second</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}()</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// The Handler function provides a default handler to expose metrics</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// via an HTTP server. &#34;/metrics&#34; is the usual endpoint for that.</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">http</span><span style="color:#111">.</span><span style="color:#75af00">Handle</span><span style="color:#111">(</span><span style="color:#d88200">&#34;/metrics&#34;</span><span style="color:#111">,</span> <span style="color:#75af00">promhttp</span><span style="color:#111">.</span><span style="color:#75af00">Handler</span><span style="color:#111">())</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">log</span><span style="color:#111">.</span><span style="color:#75af00">Fatal</span><span style="color:#111">(</span><span style="color:#75af00">http</span><span style="color:#111">.</span><span style="color:#75af00">ListenAndServe</span><span style="color:#111">(</span><span style="color:#d88200">&#34;:8080&#34;</span><span style="color:#111">,</span> <span style="color:#00a8c8">nil</span><span style="color:#111">))</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span></code></pre></div><p>执行代码 并访问</p>
+<p><img src="/images/e74aeb5a-f187-4885-b3c9-d376763dde41.png" alt=""></p>
+]]></content:encoded><category>cloud</category><category>prometheus</category><category>kubernetes</category></item></channel></rss>

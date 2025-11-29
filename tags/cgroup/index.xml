@@ -1,0 +1,463 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>Cgroup on Daemon365</title><link>https://daemon365.dev/tags/cgroup/</link><description>Don't let yourself stop.</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><lastBuildDate>Sat, 24 Jun 2023 00:00:00 +0800</lastBuildDate><atom:link href="https://daemon365.dev/tags/cgroup/index.xml" rel="self" type="application/rss+xml"/><item><title>容器基础-- namespace,Cgroup 和 UnionFS</title><link>https://daemon365.dev/post/cloud/container_basics___namespace__cgroup_and_unionfs/</link><pubDate>Sat, 24 Jun 2023 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/container_basics___namespace__cgroup_and_unionfs/</guid><description>&lt;h2 id="namespace"&gt;Namespace&lt;/h2&gt;
+&lt;h3 id="什么是-namespace-"&gt;什么是 Namespace ？&lt;/h3&gt;
+&lt;p&gt;这里的 &amp;ldquo;namespace&amp;rdquo; 指的是 Linux namespace 技术，它是 Linux 内核实现的一种隔离方案。简而言之，Linux 操作系统能够为不同的进程分配不同的 namespace，每个 namespace 都具有独立的资源分配，从而实现了进程间的隔离。如果你的 Linux 安装了 GCC，可以通过运行 &lt;code&gt;man namespaces&lt;/code&gt; 命令来查看相关文档，或者你也可以访问&lt;a href="http://man7.org/linux/man-pages/man7/namespaces.7.html"&gt;在线手册&lt;/a&gt;获取更多信息。&lt;/p&gt;
+&lt;h3 id="介绍"&gt;介绍&lt;/h3&gt;
+&lt;p&gt;下图为各种 namespace 的参数，支持的起始内核版本，以及隔离内容。&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Namespace&lt;/th&gt;
+&lt;th&gt;系统调用参数&lt;/th&gt;
+&lt;th&gt;内核版本&lt;/th&gt;
+&lt;th&gt;隔离内容&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;UTS (Unix Time-sharing System)&lt;/td&gt;
+&lt;td&gt;CLONE_NEWUTS&lt;/td&gt;
+&lt;td&gt;Linux 2.4.19&lt;/td&gt;
+&lt;td&gt;主机名与域名&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;IPC (Inter-Process Communication)&lt;/td&gt;
+&lt;td&gt;CLONE_NEWIPC&lt;/td&gt;
+&lt;td&gt;Linux 2.6.19&lt;/td&gt;
+&lt;td&gt;信号量、消息队列和共享内存&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;PID (Process ID)&lt;/td&gt;
+&lt;td&gt;CLONE_NEWPID&lt;/td&gt;
+&lt;td&gt;Linux 2.6.19&lt;/td&gt;
+&lt;td&gt;进程编号&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Network&lt;/td&gt;
+&lt;td&gt;CLONE_NEWNET&lt;/td&gt;
+&lt;td&gt;Linux 2.6.24&lt;/td&gt;
+&lt;td&gt;网络设备、网络栈、端口等等&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Mount&lt;/td&gt;
+&lt;td&gt;CLONE_NEWNS&lt;/td&gt;
+&lt;td&gt;Linux 2.6.29&lt;/td&gt;
+&lt;td&gt;挂载点（文件系统）&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;User&lt;/td&gt;
+&lt;td&gt;CLONE_NEWUSER&lt;/td&gt;
+&lt;td&gt;Linux 3.8&lt;/td&gt;
+&lt;td&gt;用户和用户组&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;ol&gt;
+&lt;li&gt;PID Namespace：&lt;/li&gt;
+&lt;/ol&gt;
+&lt;ul&gt;
+&lt;li&gt;不同用户的进程通过 PID Namespace 进行隔离，并且不同的 Namespace 中可以有相同的进程 ID。在 Docker 中，所有的 LXC（Linux 容器）进程的父进程是 Docker 进程，每个 LXC 进程具有不同的 Namespace。由于支持嵌套 Namespace，因此可以方便地实现 Docker 中的 Docker（Docker in Docker）。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;ol start="2"&gt;
+&lt;li&gt;Net Namespace：&lt;/li&gt;
+&lt;/ol&gt;
+&lt;ul&gt;
+&lt;li&gt;有了 PID Namespace，每个 Namespace 中的进程能够相互隔离，但是网络端口仍然共享主机的端口。通过 Net Namespace 实现网络隔离，每个 Net Namespace 具有独立的网络设备、IP 地址、IP 路由表和 /proc/net 目录。这样，每个容器的网络就能够得到隔离。Docker 默认使用 veth（虚拟以太网）方式将容器中的虚拟网卡与主机上的 Docker 桥接器（docker0）连接起来。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;ol start="3"&gt;
+&lt;li&gt;IPC Namespace：&lt;/li&gt;
+&lt;/ol&gt;
+&lt;ul&gt;
+&lt;li&gt;容器中的进程仍然使用常见的 Linux 进程间通信（IPC）方法，包括信号量、消息队列和共享内存。然而，与虚拟机不同的是，容器中的进程实际上是在具有相同 PID Namespace 的主机进程之间进行通信，因此在申请 IPC 资源时需要加入 Namespace 信息，每个 IPC 资源都有一个唯一的 32 位 ID。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;ol start="4"&gt;
+&lt;li&gt;MNT Namespace：&lt;/li&gt;
+&lt;/ol&gt;
+&lt;ul&gt;
+&lt;li&gt;类似于 chroot，将进程限制在特定的目录下执行。MNT Namespace 允许不同 Namespace 的进程看到不同的文件结构，从而隔离了每个 Namespace 中进程所看到的文件目录。与 chroot 不同的是，每个 Namespace 中的容器在 /proc/mounts 中的信息仅包含所在 Namespace 的挂载点。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;ol start="5"&gt;
+&lt;li&gt;UTS Namespace：&lt;/li&gt;
+&lt;/ol&gt;
+&lt;ul&gt;
+&lt;li&gt;UTS（&amp;ldquo;UNIX Time-sharing System&amp;rdquo;）Namespace 允许每个容器拥有独立的主机名和域名，使其在网络上可以被视为一个独立的节点，而不仅仅是主机上的一个进程。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;ol start="6"&gt;
+&lt;li&gt;User Namespace：&lt;/li&gt;
+&lt;/ol&gt;
+&lt;ul&gt;
+&lt;li&gt;每个容器可以具有不同的用户和组 ID，这意味着容器内部的程序可以使用容器内部的用户执行，而不是主机上的用户。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;涉及到三个系统调用（system call）的 API：&lt;/p&gt;</description><content:encoded><![CDATA[<h2 id="namespace">Namespace</h2>
+<h3 id="什么是-namespace-">什么是 Namespace ？</h3>
+<p>这里的 &ldquo;namespace&rdquo; 指的是 Linux namespace 技术，它是 Linux 内核实现的一种隔离方案。简而言之，Linux 操作系统能够为不同的进程分配不同的 namespace，每个 namespace 都具有独立的资源分配，从而实现了进程间的隔离。如果你的 Linux 安装了 GCC，可以通过运行 <code>man namespaces</code> 命令来查看相关文档，或者你也可以访问<a href="http://man7.org/linux/man-pages/man7/namespaces.7.html">在线手册</a>获取更多信息。</p>
+<h3 id="介绍">介绍</h3>
+<p>下图为各种 namespace 的参数，支持的起始内核版本，以及隔离内容。</p>
+<table>
+  <thead>
+      <tr>
+          <th>Namespace</th>
+          <th>系统调用参数</th>
+          <th>内核版本</th>
+          <th>隔离内容</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>UTS (Unix Time-sharing System)</td>
+          <td>CLONE_NEWUTS</td>
+          <td>Linux 2.4.19</td>
+          <td>主机名与域名</td>
+      </tr>
+      <tr>
+          <td>IPC (Inter-Process Communication)</td>
+          <td>CLONE_NEWIPC</td>
+          <td>Linux 2.6.19</td>
+          <td>信号量、消息队列和共享内存</td>
+      </tr>
+      <tr>
+          <td>PID (Process ID)</td>
+          <td>CLONE_NEWPID</td>
+          <td>Linux 2.6.19</td>
+          <td>进程编号</td>
+      </tr>
+      <tr>
+          <td>Network</td>
+          <td>CLONE_NEWNET</td>
+          <td>Linux 2.6.24</td>
+          <td>网络设备、网络栈、端口等等</td>
+      </tr>
+      <tr>
+          <td>Mount</td>
+          <td>CLONE_NEWNS</td>
+          <td>Linux 2.6.29</td>
+          <td>挂载点（文件系统）</td>
+      </tr>
+      <tr>
+          <td>User</td>
+          <td>CLONE_NEWUSER</td>
+          <td>Linux 3.8</td>
+          <td>用户和用户组</td>
+      </tr>
+  </tbody>
+</table>
+<ol>
+<li>PID Namespace：</li>
+</ol>
+<ul>
+<li>不同用户的进程通过 PID Namespace 进行隔离，并且不同的 Namespace 中可以有相同的进程 ID。在 Docker 中，所有的 LXC（Linux 容器）进程的父进程是 Docker 进程，每个 LXC 进程具有不同的 Namespace。由于支持嵌套 Namespace，因此可以方便地实现 Docker 中的 Docker（Docker in Docker）。</li>
+</ul>
+<ol start="2">
+<li>Net Namespace：</li>
+</ol>
+<ul>
+<li>有了 PID Namespace，每个 Namespace 中的进程能够相互隔离，但是网络端口仍然共享主机的端口。通过 Net Namespace 实现网络隔离，每个 Net Namespace 具有独立的网络设备、IP 地址、IP 路由表和 /proc/net 目录。这样，每个容器的网络就能够得到隔离。Docker 默认使用 veth（虚拟以太网）方式将容器中的虚拟网卡与主机上的 Docker 桥接器（docker0）连接起来。</li>
+</ul>
+<ol start="3">
+<li>IPC Namespace：</li>
+</ol>
+<ul>
+<li>容器中的进程仍然使用常见的 Linux 进程间通信（IPC）方法，包括信号量、消息队列和共享内存。然而，与虚拟机不同的是，容器中的进程实际上是在具有相同 PID Namespace 的主机进程之间进行通信，因此在申请 IPC 资源时需要加入 Namespace 信息，每个 IPC 资源都有一个唯一的 32 位 ID。</li>
+</ul>
+<ol start="4">
+<li>MNT Namespace：</li>
+</ol>
+<ul>
+<li>类似于 chroot，将进程限制在特定的目录下执行。MNT Namespace 允许不同 Namespace 的进程看到不同的文件结构，从而隔离了每个 Namespace 中进程所看到的文件目录。与 chroot 不同的是，每个 Namespace 中的容器在 /proc/mounts 中的信息仅包含所在 Namespace 的挂载点。</li>
+</ul>
+<ol start="5">
+<li>UTS Namespace：</li>
+</ol>
+<ul>
+<li>UTS（&ldquo;UNIX Time-sharing System&rdquo;）Namespace 允许每个容器拥有独立的主机名和域名，使其在网络上可以被视为一个独立的节点，而不仅仅是主机上的一个进程。</li>
+</ul>
+<ol start="6">
+<li>User Namespace：</li>
+</ol>
+<ul>
+<li>每个容器可以具有不同的用户和组 ID，这意味着容器内部的程序可以使用容器内部的用户执行，而不是主机上的用户。</li>
+</ul>
+<p>涉及到三个系统调用（system call）的 API：</p>
+<ol>
+<li><strong>clone()</strong>：用于创建新进程。与 fork() 创建新进程不同的是，clone() 创建进程时可以传递 CLONE_NEW* 类型的命名空间隔离参数，以控制子进程共享的内容。要了解更多信息，请查阅<a href="http://man7.org/linux/man-pages/man2/clone.2.html">clone 手册</a>。</li>
+<li><strong>setns()</strong>：用于将某个进程与指定的命名空间分离。通过 setns()，进程可以脱离一个特定的命名空间，使其不再与该命名空间中的其他进程共享资源。</li>
+<li><strong>unshare()</strong>：用于将某个进程加入到指定的命名空间中。通过 unshare()，进程可以加入到一个特定的命名空间，与该命名空间中的其他进程共享资源。</li>
+</ol>
+<h3 id="namespace-的操作">namespace 的操作</h3>
+<ul>
+<li>查看当前系统的 namespace</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>lsns –t &lt;type&gt;
+</span></span></code></pre></div><ul>
+<li>查看某进程的 namespace</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>ls -la /proc/&lt;pid&gt;/ns/
+</span></span></code></pre></div><ul>
+<li>进入某 namespace 运行命令</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>nsenter -t &lt;pid&gt; -n ip addr
+</span></span></code></pre></div><p><strong>Test:</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># Linux命令行中，可以使用`unshare`命令结合`clone()`创建一个新的进程，并在其中使用命名空间隔离参数。</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 创建一个新的进程，并在其中使用命名空间隔离参数</span>
+</span></span><span style="display:flex;"><span>unshare --pid --net -- sleep <span style="color:#ae81ff">600</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>ps -ef<span style="color:#111">|</span>grep sleep
+</span></span><span style="display:flex;"><span>root       <span style="color:#ae81ff">37915</span>   <span style="color:#ae81ff">34572</span>  <span style="color:#ae81ff">0</span> 08:53 pts/1    00:00:00 sudo unshare --pid --net -- sleep <span style="color:#ae81ff">600</span>
+</span></span><span style="display:flex;"><span>root       <span style="color:#ae81ff">37916</span>   <span style="color:#ae81ff">37915</span>  <span style="color:#ae81ff">0</span> 08:53 pts/3    00:00:00 sudo unshare --pid --net -- sleep <span style="color:#ae81ff">600</span>
+</span></span><span style="display:flex;"><span>root       <span style="color:#ae81ff">37917</span>   <span style="color:#ae81ff">37916</span>  <span style="color:#ae81ff">0</span> 08:53 pts/3    00:00:00 sleep <span style="color:#ae81ff">600</span>
+</span></span><span style="display:flex;"><span>zhy        <span style="color:#ae81ff">37919</span>   <span style="color:#ae81ff">37896</span>  <span style="color:#ae81ff">0</span> 08:53 pts/2    00:00:00 grep --color<span style="color:#f92672">=</span>auto sleep
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>sudo lsns -t net
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>sudo<span style="color:#f92672">]</span> password <span style="color:#00a8c8">for</span> zhy:
+</span></span><span style="display:flex;"><span>        NS TYPE NPROCS   PID USER    NETNSID NSFS                           COMMAND
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">4026531840</span> net     <span style="color:#ae81ff">277</span>     <span style="color:#ae81ff">1</span> root unassigned                                /sbin/init
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">4026532656</span> net       <span style="color:#ae81ff">1</span> <span style="color:#ae81ff">37347</span> root          <span style="color:#ae81ff">0</span> /run/docker/netns/c986b82be683 bash
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">4026532718</span> net       <span style="color:#ae81ff">1</span> <span style="color:#ae81ff">37917</span> root unassigned                                sleep <span style="color:#ae81ff">600</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>sudo nsenter -t <span style="color:#ae81ff">37917</span> -n ip a
+</span></span><span style="display:flex;"><span>1: lo: &lt;LOOPBACK&gt; mtu <span style="color:#ae81ff">65536</span> qdisc noop state DOWN group default qlen <span style="color:#ae81ff">1000</span>
+</span></span><span style="display:flex;"><span>    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+</span></span></code></pre></div><ol>
+<li>docker 启动一个 ubuntu</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>docker run --rm -it docker.m.daocloud.io/ubuntu:22.10 bash
+</span></span></code></pre></div><ol start="2">
+<li>用另一个窗口 找到这个进程</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>ps -ef<span style="color:#111">|</span>grep ubuntu
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># zhy        37247   34017  0 08:20 pts/0    00:00:00 docker run --rm -it docker.m.daocloud.io/ubuntu:22.10 bash</span>
+</span></span></code></pre></div><ol start="3">
+<li>查看这个进程的 namespace</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>ls -la /proc/37247/ns/
+</span></span><span style="display:flex;"><span>total <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>dr-x--x--x <span style="color:#ae81ff">2</span> zhy zhy <span style="color:#ae81ff">0</span> May <span style="color:#ae81ff">27</span> 08:24 .
+</span></span><span style="display:flex;"><span>dr-xr-xr-x <span style="color:#ae81ff">9</span> zhy zhy <span style="color:#ae81ff">0</span> May <span style="color:#ae81ff">27</span> 08:23 ..
+</span></span><span style="display:flex;"><span>lrwxrwxrwx <span style="color:#ae81ff">1</span> zhy zhy <span style="color:#ae81ff">0</span> May <span style="color:#ae81ff">27</span> 08:24 cgroup -&gt; <span style="color:#d88200">&#39;cgroup:[4026531835]&#39;</span>
+</span></span><span style="display:flex;"><span>lrwxrwxrwx <span style="color:#ae81ff">1</span> zhy zhy <span style="color:#ae81ff">0</span> May <span style="color:#ae81ff">27</span> 08:24 ipc -&gt; <span style="color:#d88200">&#39;ipc:[4026531839]&#39;</span>
+</span></span><span style="display:flex;"><span>lrwxrwxrwx <span style="color:#ae81ff">1</span> zhy zhy <span style="color:#ae81ff">0</span> May <span style="color:#ae81ff">27</span> 08:24 mnt -&gt; <span style="color:#d88200">&#39;mnt:[4026531841]&#39;</span>
+</span></span><span style="display:flex;"><span>lrwxrwxrwx <span style="color:#ae81ff">1</span> zhy zhy <span style="color:#ae81ff">0</span> May <span style="color:#ae81ff">27</span> 08:24 net -&gt; <span style="color:#d88200">&#39;net:[4026531840]&#39;</span>
+</span></span><span style="display:flex;"><span>lrwxrwxrwx <span style="color:#ae81ff">1</span> zhy zhy <span style="color:#ae81ff">0</span> May <span style="color:#ae81ff">27</span> 08:24 pid -&gt; <span style="color:#d88200">&#39;pid:[4026531836]&#39;</span>
+</span></span><span style="display:flex;"><span>lrwxrwxrwx <span style="color:#ae81ff">1</span> zhy zhy <span style="color:#ae81ff">0</span> May <span style="color:#ae81ff">27</span> 08:24 pid_for_children -&gt; <span style="color:#d88200">&#39;pid:[4026531836]&#39;</span>
+</span></span><span style="display:flex;"><span>lrwxrwxrwx <span style="color:#ae81ff">1</span> zhy zhy <span style="color:#ae81ff">0</span> May <span style="color:#ae81ff">27</span> 08:24 <span style="color:#111">time</span> -&gt; <span style="color:#d88200">&#39;time:[4026531834]&#39;</span>
+</span></span><span style="display:flex;"><span>lrwxrwxrwx <span style="color:#ae81ff">1</span> zhy zhy <span style="color:#ae81ff">0</span> May <span style="color:#ae81ff">27</span> 08:24 time_for_children -&gt; <span style="color:#d88200">&#39;time:[4026531834]&#39;</span>
+</span></span><span style="display:flex;"><span>lrwxrwxrwx <span style="color:#ae81ff">1</span> zhy zhy <span style="color:#ae81ff">0</span> May <span style="color:#ae81ff">27</span> 08:24 user -&gt; <span style="color:#d88200">&#39;user:[4026531837]&#39;</span>
+</span></span><span style="display:flex;"><span>lrwxrwxrwx <span style="color:#ae81ff">1</span> zhy zhy <span style="color:#ae81ff">0</span> May <span style="color:#ae81ff">27</span> 08:24 uts -&gt; <span style="color:#d88200">&#39;uts:[4026531838]&#39;</span>
+</span></span></code></pre></div><ol start="4">
+<li>查看namespace</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75af00">sudo</span> <span style="color:#75af00">lsns</span> <span style="color:#f92672">-</span><span style="color:#75af00">t</span> <span style="color:#75af00">pid</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">NS</span> <span style="color:#75af00">TYPE</span> <span style="color:#75af00">NPROCS</span>   <span style="color:#75af00">PID</span> <span style="color:#75af00">USER</span> <span style="color:#75af00">COMMAND</span>
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">4026531836</span> <span style="color:#75af00">pid</span>     <span style="color:#ae81ff">275</span>     <span style="color:#ae81ff">1</span> <span style="color:#75af00">root</span> <span style="color:#f92672">/</span><span style="color:#75af00">sbin</span><span style="color:#f92672">/</span><span style="color:#75af00">init</span>
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">4026532654</span> <span style="color:#75af00">pid</span>       <span style="color:#ae81ff">1</span> <span style="color:#ae81ff">37347</span> <span style="color:#75af00">root</span> <span style="color:#75af00">bash</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75af00">sudo</span> <span style="color:#75af00">lsns</span> <span style="color:#f92672">-</span><span style="color:#75af00">t</span> <span style="color:#75af00">net</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">NS</span> <span style="color:#75af00">TYPE</span> <span style="color:#75af00">NPROCS</span>   <span style="color:#75af00">PID</span> <span style="color:#75af00">USER</span>    <span style="color:#75af00">NETNSID</span> <span style="color:#75af00">NSFS</span>                           <span style="color:#75af00">COMMAND</span>
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">4026531840</span> <span style="color:#75af00">net</span>     <span style="color:#ae81ff">275</span>     <span style="color:#ae81ff">1</span> <span style="color:#75af00">root</span> <span style="color:#75af00">unassigned</span>                                <span style="color:#f92672">/</span><span style="color:#75af00">sbin</span><span style="color:#f92672">/</span><span style="color:#75af00">init</span>
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">4026532656</span> <span style="color:#75af00">net</span>       <span style="color:#ae81ff">1</span> <span style="color:#ae81ff">37347</span> <span style="color:#75af00">root</span>          <span style="color:#ae81ff">0</span> <span style="color:#f92672">/</span><span style="color:#75af00">run</span><span style="color:#f92672">/</span><span style="color:#75af00">docker</span><span style="color:#f92672">/</span><span style="color:#75af00">netns</span><span style="color:#f92672">/</span><span style="color:#75af00">c986b82be683</span> <span style="color:#75af00">bash</span>
+</span></span></code></pre></div><p><strong>为什么查出来执行 <strong><code>**bash**</code></strong> 的 pid 和 <strong><code>**ps -ef**</code></strong> 的不一样？</strong></p>
+<p>一个是<code>docker run</code>的进程 PID</p>
+<p>一个是 容器内部 &lsquo;bash&rsquo; 进程的 PID  这个进程是由<code>docker run</code>的进程通过进程复制（process cloning）创建的子进程。</p>
+<ol start="5">
+<li>在 ubuntu 中执行 <code>ip addr</code> 在主机执行 <code>nsenter -t &lt;pid&gt; -n ip addr</code></li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># 容器内</span>
+</span></span><span style="display:flex;"><span>ip addr
+</span></span><span style="display:flex;"><span>1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu <span style="color:#ae81ff">65536</span> qdisc noqueue state UNKNOWN group default qlen <span style="color:#ae81ff">1000</span>
+</span></span><span style="display:flex;"><span>    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+</span></span><span style="display:flex;"><span>    inet 127.0.0.1/8 scope host lo
+</span></span><span style="display:flex;"><span>       valid_lft forever preferred_lft forever
+</span></span><span style="display:flex;"><span>11: eth0@if12: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu <span style="color:#ae81ff">1500</span> qdisc noqueue state UP group default
+</span></span><span style="display:flex;"><span>    link/ether 02:42:ac:11:00:02 brd ff:ff:ff:ff:ff:ff link-netnsid <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>    inet 172.17.0.2/16 brd 172.17.255.255 scope global eth0
+</span></span><span style="display:flex;"><span>       valid_lft forever preferred_lft forever
+</span></span><span style="display:flex;"><span>       
+</span></span><span style="display:flex;"><span>ps -ef
+</span></span><span style="display:flex;"><span>UID          PID    PPID  C STIME TTY          TIME CMD
+</span></span><span style="display:flex;"><span>root           <span style="color:#ae81ff">1</span>       <span style="color:#ae81ff">0</span>  <span style="color:#ae81ff">0</span> 08:23 pts/0    00:00:00 bash
+</span></span><span style="display:flex;"><span>root         <span style="color:#ae81ff">360</span>       <span style="color:#ae81ff">1</span>  <span style="color:#ae81ff">0</span> 09:12 pts/0    00:00:00 ps -ef
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 主机</span>
+</span></span><span style="display:flex;"><span>sudo nsenter -t <span style="color:#ae81ff">37347</span> -n -- ip addr <span style="color:#75715e"># -n 进入网络namespace执行</span>
+</span></span><span style="display:flex;"><span>1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu <span style="color:#ae81ff">65536</span> qdisc noqueue state UNKNOWN group default qlen <span style="color:#ae81ff">1000</span>
+</span></span><span style="display:flex;"><span>    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+</span></span><span style="display:flex;"><span>    inet 127.0.0.1/8 scope host lo
+</span></span><span style="display:flex;"><span>       valid_lft forever preferred_lft forever
+</span></span><span style="display:flex;"><span>11: eth0@if12: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu <span style="color:#ae81ff">1500</span> qdisc noqueue state UP group default
+</span></span><span style="display:flex;"><span>    link/ether 02:42:ac:11:00:02 brd ff:ff:ff:ff:ff:ff link-netnsid <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>    inet 172.17.0.2/16 brd 172.17.255.255 scope global eth0
+</span></span><span style="display:flex;"><span>       valid_lft forever preferred_lft forever
+</span></span><span style="display:flex;"><span>      
+</span></span><span style="display:flex;"><span>sudo nsenter -t <span style="color:#ae81ff">37347</span> -a -- ps -ef <span style="color:#75715e"># -a 进入所有namespace执行</span>
+</span></span><span style="display:flex;"><span>UID          PID    PPID  C STIME TTY          TIME CMD
+</span></span><span style="display:flex;"><span>root           <span style="color:#ae81ff">1</span>       <span style="color:#ae81ff">0</span>  <span style="color:#ae81ff">0</span> 08:23 pts/0    00:00:00 bash
+</span></span><span style="display:flex;"><span>root         <span style="color:#ae81ff">359</span>       <span style="color:#ae81ff">0</span>  <span style="color:#ae81ff">0</span> 09:12 ?        00:00:00 ps -ef
+</span></span></code></pre></div><h2 id="cgroup">Cgroup</h2>
+<h3 id="什么是-cgroup">什么是 Cgroup</h3>
+<p>Linux cgroups 的全称是 Linux Control Groups，它是 Linux 内核的特性，主要作用是<strong>限制、记录和隔离进程组（process groups）使用的物理资源（cpu、memory、IO 等）</strong>。</p>
+<h3 id="为什么要使用cgroup"><strong>为什么要使用Cgroup?</strong></h3>
+<p>可以做到对 cpu，内存等资源实现精细化的控制，容器技术就使用了 cgroups 提供的资源限制能力来完成cpu，内存等部分的资源控制。</p>
+<h3 id="核心概念">核心概念</h3>
+<ul>
+<li><strong>task</strong>：任务，对应于系统中运行的一个实体，一般是指进程</li>
+<li><strong>subsystem</strong>：子系统，具体的资源控制器（resource class 或者 resource controller），控制某个特定的资源使用。比如 CPU 子系统可以控制 CPU 时间，memory 子系统可以控制内存使用量</li>
+<li><strong>cgroup</strong>：控制组，一组任务和子系统的关联关系，表示对这些任务进行怎样的资源管理策略</li>
+<li><strong>hierarchy</strong>：层级有一系列 cgroup 以一个树状结构排列而成，每个层级通过绑定对应的子系统进行资源控制。层级中的 cgroup 节点可以包含零个或多个子节点，子节点继承父节点挂载的子系统。一个操作系统中可以有多个层级。</li>
+</ul>
+<h4 id="subsystem">subsystem</h4>
+<p>subsystem 是一组资源控制的模块，一般包含有：</p>
+<ul>
+<li>blkio 设置对块设备 (比如硬盘) 的输入输出的访问控制 (block/io)</li>
+<li>cpu 设置 cgroup 中的进程的 CPU 被调度的策略</li>
+<li>cpuacct 可以统计 cgroup 中的进程的 CPU 占用 (cpu account)</li>
+<li>cpuset 在多核机器上设置 cgroup 中的进程可以使用的 CPU 和内存 (此处内存仅使用于 NUMA 架构)</li>
+<li>devices 控制 cgroup 中进程对设备的访问</li>
+<li>freezer 用于挂起 (suspends) 和恢复 (resumes) cgroup 中的进程</li>
+<li>memory 用于控制 cgroup 中进程的内存占用</li>
+<li>net_cls 用于将 cgroup 中进程产生的网络包分类 (classify)，以便 Linux 的 tc (traffic controller) (net_classify) 可以根据分类 (classid) 区分出来自某个 cgroup 的包并做限流或监控。</li>
+<li>net_prio 设置 cgroup 中进程产生的网络流量的优先级</li>
+<li>ns 这个 subsystem 比较特殊，它的作用是 cgroup 中进程在新的 namespace fork 新进程 (NEWNS) 时，创建出一个新的 cgroup，这个 cgroup 包含新的 namespace 中进程。</li>
+</ul>
+<h3 id="v2">v2</h3>
+<p>Cgroup v2<a href="https://www.kernel.org/doc/html/latest/admin-guide/cgroup-v2.html">手册</a></p>
+<p>是否加载了Cgroup v2内核模块</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75af00">cat</span> <span style="color:#f92672">/</span><span style="color:#75af00">sys</span><span style="color:#f92672">/</span><span style="color:#75af00">fs</span><span style="color:#f92672">/</span><span style="color:#75af00">cgroup</span><span style="color:#f92672">/</span><span style="color:#75af00">cgroup</span><span style="color:#111">.</span><span style="color:#75af00">controllers</span>
+</span></span><span style="display:flex;"><span><span style="color:#75af00">cpuset</span> <span style="color:#75af00">cpu</span> <span style="color:#75af00">io</span> <span style="color:#75af00">memory</span> <span style="color:#75af00">hugetlb</span> <span style="color:#75af00">pids</span> <span style="color:#75af00">rdma</span> <span style="color:#75af00">misc</span>
+</span></span></code></pre></div><h4 id="test">test</h4>
+<h5 id="cpu">Cpu</h5>
+<p>执行一段go代码</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#75af00">main</span><span style="color:#111">()</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">go</span> <span style="color:#00a8c8">func</span><span style="color:#111">()</span> <span style="color:#111">{</span> <span style="color:#00a8c8">for</span><span style="color:#111">{}</span> <span style="color:#111">}()</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">for</span> <span style="color:#111">{}</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">/*
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">执行 go run test.go
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">top
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">  39268 zhy       20   0  709572    868    584 R 200.0   0.0   2:12.27 test
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">  
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">  可以看到使用了2个cpu 因为开个两个goroutine for阻塞
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">*/</span>
+</span></span></code></pre></div><p>限制cpu</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo mkdir /sys/fs/cgroup/test
+</span></span><span style="display:flex;"><span>sudo <span style="color:#111">echo</span> <span style="color:#d88200">&#34;100000 100000&#34;</span> <span style="color:#111">|</span> sudo tee /sys/fs/cgroup/test/cpu.max &gt;/dev/null
+</span></span><span style="display:flex;"><span>sudo <span style="color:#111">echo</span> <span style="color:#d88200">&#34;39268&#34;</span> <span style="color:#111">|</span> sudo tee /sys/fs/cgroup/test/cgroup.procs &gt;/dev/null
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># top</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#    PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#  39268 zhy       20   0  709572    868    584 R 100.3   0.0   7:45.04 test</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 马上就只占用一个cpu了</span>
+</span></span></code></pre></div><h5 id="memory">Memory</h5>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">#</span><span style="color:#75af00">include</span> <span style="color:#111">&lt;</span><span style="color:#75af00">stdlib</span><span style="color:#111">.</span><span style="color:#75af00">h</span><span style="color:#111">&gt;</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">#</span><span style="color:#75af00">include</span> <span style="color:#111">&lt;</span><span style="color:#75af00">stdio</span><span style="color:#111">.</span><span style="color:#75af00">h</span><span style="color:#111">&gt;</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">#</span><span style="color:#75af00">include</span> <span style="color:#111">&lt;</span><span style="color:#00a8c8">string</span><span style="color:#111">.</span><span style="color:#75af00">h</span><span style="color:#111">&gt;</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">#</span><span style="color:#75af00">include</span> <span style="color:#111">&lt;</span><span style="color:#75af00">unistd</span><span style="color:#111">.</span><span style="color:#75af00">h</span><span style="color:#111">&gt;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">#</span><span style="color:#75af00">define</span> <span style="color:#75af00">BLOCK_SIZE</span> <span style="color:#111">(</span><span style="color:#ae81ff">100</span> <span style="color:#f92672">*</span> <span style="color:#ae81ff">1024</span> <span style="color:#f92672">*</span> <span style="color:#ae81ff">1024</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">#</span><span style="color:#75af00">define</span> <span style="color:#75af00">NUM_ALLOCATIONS</span> <span style="color:#ae81ff">10</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">#</span><span style="color:#75af00">define</span> <span style="color:#75af00">SLEEP_SECONDS</span> <span style="color:#ae81ff">30</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75af00">char</span><span style="color:#f92672">*</span> <span style="color:#75af00">allocMemory</span><span style="color:#111">(</span><span style="color:#00a8c8">int</span> <span style="color:#75af00">size</span><span style="color:#111">)</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75af00">char</span><span style="color:#f92672">*</span> <span style="color:#75af00">out</span> <span style="color:#111">=</span> <span style="color:#111">(</span><span style="color:#75af00">char</span><span style="color:#f92672">*</span><span style="color:#111">)</span><span style="color:#75af00">malloc</span><span style="color:#111">(</span><span style="color:#75af00">size</span><span style="color:#111">);</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75af00">memset</span><span style="color:#111">(</span><span style="color:#75af00">out</span><span style="color:#111">,</span> <span style="color:#d88200">&#39;A&#39;</span><span style="color:#111">,</span> <span style="color:#75af00">size</span><span style="color:#111">);</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">return</span> <span style="color:#75af00">out</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">int</span> <span style="color:#75af00">main</span><span style="color:#111">()</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">int</span> <span style="color:#75af00">i</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">for</span> <span style="color:#111">(</span><span style="color:#75af00">i</span> <span style="color:#111">=</span> <span style="color:#ae81ff">1</span><span style="color:#111">;</span> <span style="color:#75af00">i</span> <span style="color:#f92672">&lt;=</span> <span style="color:#75af00">NUM_ALLOCATIONS</span><span style="color:#111">;</span> <span style="color:#75af00">i</span><span style="color:#f92672">++</span><span style="color:#111">)</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">char</span><span style="color:#f92672">*</span> <span style="color:#75af00">block</span> <span style="color:#111">=</span> <span style="color:#75af00">allocMemory</span><span style="color:#111">(</span><span style="color:#75af00">i</span> <span style="color:#f92672">*</span> <span style="color:#75af00">BLOCK_SIZE</span><span style="color:#111">);</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">printf</span><span style="color:#111">(</span><span style="color:#d88200">&#34;Allocated memory block of size %dMB at address: %p\n&#34;</span><span style="color:#111">,</span> <span style="color:#75af00">i</span> <span style="color:#f92672">*</span> <span style="color:#ae81ff">100</span><span style="color:#111">,</span> <span style="color:#75af00">block</span><span style="color:#111">);</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">sleep</span><span style="color:#111">(</span><span style="color:#75af00">SLEEP_SECONDS</span><span style="color:#111">);</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">return</span> <span style="color:#ae81ff">0</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">/*
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> ps -p 3243 -o rss=,unit=M,cmd=
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">      M
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">308512 session-4.scope                ./test2
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">*/</span>
+</span></span></code></pre></div><p>限制内存</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo <span style="color:#111">echo</span> <span style="color:#d88200">&#34;300000000&#34;</span> <span style="color:#111">|</span>sudo tee /sys/fs/cgroup/test/memory.max &gt;/dev/null
+</span></span><span style="display:flex;"><span>sudo <span style="color:#111">echo</span> <span style="color:#d88200">&#34;64417&#34;</span> <span style="color:#111">|</span> sudo tee /sys/fs/cgroup/test/cgroup.procs &gt;/dev/null
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#cat memory.current</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#299839488</span>
+</span></span></code></pre></div><h2 id="unionfs">UnionFS</h2>
+<p>联合文件系统（<a href="http://en.wikipedia.org/wiki/UnionFS">UnionFS</a>）是一种分层、轻量级并且高性能的文件系统，它支持对文件系统的修改作为一次提交来一层层的叠加，同时可以将不同目录挂载到同一个虚拟文件系统下 (unite several directories into a single virtual filesystem)。</p>
+<p>联合文件系统是 Docker 镜像的基础。镜像可以通过分层来进行继承，基于基础镜像（没有父镜像），可以制作各种具体的应用镜像。</p>
+<p>另外，不同 Docker 容器就可以共享一些基础的文件系统层，同时再加上自己独有的改动层，大大提高了存储的效率。</p>
+<p>最新版 Docker 使用的是 overlay2。</p>
+<h3 id="overlay2">overlay2</h3>
+<p>现在主流基本都是 overlayFS</p>
+<p>OverlayFS 属于文件级的存储驱动，包含了最初的 Overlay 和更新更稳定的 overlay2。</p>
+<p>Overlay 只有两层：upper 层和 lower 层，Lower 层代表镜像层，upper 层代表容器可写层。</p>
+<p><img src="/images/33f6f11b-03ff-428c-b68d-07a80f83f3cf.png" alt="image.png"></p>
+<h4 id="test-1">test</h4>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>mkdir <span style="color:#111">test</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#111">cd</span> <span style="color:#111">test</span>
+</span></span><span style="display:flex;"><span>mkdir upper lower merged work
+</span></span><span style="display:flex;"><span><span style="color:#111">echo</span> <span style="color:#d88200">&#34;file1 from lower&#34;</span> &gt; lower/file1.txt
+</span></span><span style="display:flex;"><span><span style="color:#111">echo</span> <span style="color:#d88200">&#34;file2 from lowerr&#34;</span> &gt; lower/file2.txt
+</span></span><span style="display:flex;"><span><span style="color:#111">echo</span> <span style="color:#d88200">&#34;file3 from lower&#34;</span> &gt; lower/file3.txt
+</span></span><span style="display:flex;"><span><span style="color:#111">echo</span> <span style="color:#d88200">&#34;file2 from upper&#34;</span> &gt; upper/file2.txt
+</span></span><span style="display:flex;"><span><span style="color:#111">echo</span> <span style="color:#d88200">&#34;file4 from upper&#34;</span> &gt; upper/file4.txt
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#111">current_dir</span><span style="color:#f92672">=</span><span style="color:#00a8c8">$(</span><span style="color:#111">pwd</span><span style="color:#00a8c8">)</span>
+</span></span><span style="display:flex;"><span>sudo mount -t overlay -o <span style="color:#111">lowerdir</span><span style="color:#f92672">=</span><span style="color:#d88200">&#34;</span><span style="color:#111">$current_dir</span><span style="color:#d88200">/lower&#34;</span>,upperdir<span style="color:#f92672">=</span><span style="color:#d88200">&#34;</span><span style="color:#111">$current_dir</span><span style="color:#d88200">/upper&#34;</span>,workdir<span style="color:#f92672">=</span><span style="color:#d88200">&#34;</span><span style="color:#111">$current_dir</span><span style="color:#d88200">/work&#34;</span> overlay <span style="color:#d88200">&#34;</span><span style="color:#111">$current_dir</span><span style="color:#d88200">/merged&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>cat merged/file1.txt
+</span></span><span style="display:flex;"><span>file1 from lower
+</span></span><span style="display:flex;"><span>cat merged/file2.txt
+</span></span><span style="display:flex;"><span>file2 from upper
+</span></span><span style="display:flex;"><span>cat merged/file3.txt
+</span></span><span style="display:flex;"><span>file3 from lower
+</span></span><span style="display:flex;"><span>cat merged/file4.txt
+</span></span><span style="display:flex;"><span>file4 from upper
+</span></span></code></pre></div><h3 id="docker-image">docker image</h3>
+<p><img src="/images/a5461710-720a-40a5-9707-e2dc086f5925.png" alt="image.png"></p>
+<p>每一条指令是一层, 下层可以共用</p>
+<h3 id="docker-的文件系统">Docker 的文件系统</h3>
+<p>典型的Linux文件系统组成如下：</p>
+<ul>
+<li>Bootfs（引导文件系统）
+<ul>
+<li>Bootloader（引导加载程序）：负责加载内核。</li>
+<li>Kernel（内核）：一旦内核加载到内存中，就会卸载bootfs。</li>
+</ul>
+</li>
+<li>Rootfs（根文件系统）
+<ul>
+<li>/dev、/proc、/bin、/etc等标准目录和文件。</li>
+<li>对于不同的Linux发行版，bootfs基本上是一致的，但rootfs会有所差异。</li>
+</ul>
+</li>
+</ul>
+<h3 id="docker-启动">Docker 启动</h3>
+<p>Linux</p>
+<ul>
+<li>在启动后，首先将 rootfs 设置为 readonly, 进行一系列检查，然后将其切换为 “readwrite” 供用户使用。</li>
+</ul>
+<p>Docker 启动</p>
+<ul>
+<li>初始化时也是将 rootfs 以 readonly 方式加载并检查，然而接下来利用 union mount 的方式将一个 readwrite 文件系统挂载在 readonly 的 rootfs 之上；</li>
+<li>并且允许再次将下层的 FS（file system） 设定为 readonly 并且向上叠加。 这样一组 readonly 和一个 writeable 的结构构成一个 container 的运行时态，每一个 FS 被称作一个 FS 层。</li>
+</ul>
+<h3 id="写操作">写操作</h3>
+<p>由于镜像具有共享特性，所以对容器可写层的操作需要依赖存储驱动提供的写时复制和用时分配机制，以此来 支持对容器可写层的修改，进而提高对存储和内存资源的利用率。</p>
+<ul>
+<li>写时复制 即 Copy-on-Write。
+<ul>
+<li>一个镜像可以被多个容器使用，但是不需要在内存和磁盘上做多个拷贝。</li>
+<li>在需要对镜像提供的文件进行修改时，该文件会从镜像的文件系统被复制到容器的可写层的文件系统 进行修改，而镜像里面的文件不会改变。</li>
+<li>不同容器对文件的修改都相互独立、互不影响。</li>
+</ul>
+</li>
+<li>用时分配</li>
+<li>按需分配空间，而非提前分配，即当一个文件被创建出来后，才会分配空间。</li>
+</ul>
+]]></content:encoded><category>cloud</category><category>docker</category><category>containerd</category><category>kubernetes</category><category>namespace</category><category>Cgroup</category><category>UnionFS</category></item></channel></rss>

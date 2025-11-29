@@ -1,0 +1,481 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>Zap on Daemon365</title><link>https://daemon365.dev/tags/zap/</link><description>Don't let yourself stop.</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><lastBuildDate>Tue, 23 Mar 2021 00:00:00 +0800</lastBuildDate><atom:link href="https://daemon365.dev/tags/zap/index.xml" rel="self" type="application/rss+xml"/><item><title>zap高性能日志</title><link>https://daemon365.dev/post/go/zap_high_performance_log/</link><pubDate>Tue, 23 Mar 2021 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/go/zap_high_performance_log/</guid><description>&lt;h2 id="摘要"&gt;摘要&lt;/h2&gt;
+&lt;p&gt;日志在整个工程实践中的重要性不言而喻，在选择日志组件的时候也有多方面的考量。详细、正确和及时的反馈是必不可少的，但是整个性能表现是否也是必要考虑的点呢？在长期的实践中发现有的日志组件对于计算资源的消耗十分巨大，这将导致整个服务成本的居高不下。此文从设计原理深度分析了 zap 的设计与实现上的权衡，也希望整个的选择、考量的过程能给其他的技术团队在开发高性能的 Go 组件时带来一定的借鉴意义。&lt;/p&gt;
+&lt;h2 id="前言"&gt;前言&lt;/h2&gt;
+&lt;p&gt;日志作为整个代码行为的记录，是程序执行逻辑和异常最直接的反馈。对于整个系统来说，日志是至关重要的组成部分。通过分析日志我们不仅可以发现系统的问题，同时日志中也蕴含了大量有价值可以被挖掘的信息，因此合理地记录日志是十分必要的。&lt;/p&gt;
+&lt;p&gt;我们的业务通常会记录大量的 Debug 日志，但在实际测试过程中，发现我们使用的日志库 seelog 性能存在严重的瓶颈，在我们的对比结果中发现：zap 表现非常突出，单线程 Qps 也是 logrus、seelog 的数倍。&lt;/p&gt;
+&lt;p&gt;在分析源码后 zap 设计与实现上的考量让我感到受益颇多，在这里我们主要分享一下以下几个方面：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;zap 为何有这么高的性能&lt;/li&gt;
+&lt;li&gt;对于我们自己的开发有什么值得借鉴的地方&lt;/li&gt;
+&lt;li&gt;如何正确的使用 Go 开发高性能的组件&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id="为什么选择使用zap"&gt;为什么选择使用ZAP&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;它同时提供了结构化日志记录和printf风格的日志记录&lt;/li&gt;
+&lt;li&gt;它非常的快&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;根据Uber-go Zap的文档，它的性能比类似的结构化日志包更好——也比标准库更快。 以下是Zap发布的基准测试信息&lt;/p&gt;
+&lt;p&gt;记录一条消息和10个字段:&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th style="text-align: center"&gt;Package&lt;/th&gt;
+&lt;th style="text-align: center"&gt;Time&lt;/th&gt;
+&lt;th style="text-align: center"&gt;Time % to zap&lt;/th&gt;
+&lt;th style="text-align: center"&gt;Objects Allocated&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td style="text-align: center"&gt;⚡️ zap&lt;/td&gt;
+&lt;td style="text-align: center"&gt;862 ns/op&lt;/td&gt;
+&lt;td style="text-align: center"&gt;+0%&lt;/td&gt;
+&lt;td style="text-align: center"&gt;5 allocs/op&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style="text-align: center"&gt;⚡️ zap (sugared)&lt;/td&gt;
+&lt;td style="text-align: center"&gt;1250 ns/op&lt;/td&gt;
+&lt;td style="text-align: center"&gt;+45%&lt;/td&gt;
+&lt;td style="text-align: center"&gt;11 allocs/op&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style="text-align: center"&gt;zerolog&lt;/td&gt;
+&lt;td style="text-align: center"&gt;4021 ns/op&lt;/td&gt;
+&lt;td style="text-align: center"&gt;+366%&lt;/td&gt;
+&lt;td style="text-align: center"&gt;76 allocs/op&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style="text-align: center"&gt;go-kit&lt;/td&gt;
+&lt;td style="text-align: center"&gt;4542 ns/op&lt;/td&gt;
+&lt;td style="text-align: center"&gt;+427%&lt;/td&gt;
+&lt;td style="text-align: center"&gt;105 allocs/op&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style="text-align: center"&gt;apex/log&lt;/td&gt;
+&lt;td style="text-align: center"&gt;26785 ns/op&lt;/td&gt;
+&lt;td style="text-align: center"&gt;+3007%&lt;/td&gt;
+&lt;td style="text-align: center"&gt;115 allocs/op&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style="text-align: center"&gt;logrus&lt;/td&gt;
+&lt;td style="text-align: center"&gt;29501 ns/op&lt;/td&gt;
+&lt;td style="text-align: center"&gt;+3322%&lt;/td&gt;
+&lt;td style="text-align: center"&gt;125 allocs/op&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style="text-align: center"&gt;log15&lt;/td&gt;
+&lt;td style="text-align: center"&gt;29906 ns/op&lt;/td&gt;
+&lt;td style="text-align: center"&gt;+3369%&lt;/td&gt;
+&lt;td style="text-align: center"&gt;122 allocs/op&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;记录一个静态字符串，没有任何上下文或printf风格的模板：&lt;/p&gt;</description><content:encoded><![CDATA[<h2 id="摘要">摘要</h2>
+<p>日志在整个工程实践中的重要性不言而喻，在选择日志组件的时候也有多方面的考量。详细、正确和及时的反馈是必不可少的，但是整个性能表现是否也是必要考虑的点呢？在长期的实践中发现有的日志组件对于计算资源的消耗十分巨大，这将导致整个服务成本的居高不下。此文从设计原理深度分析了 zap 的设计与实现上的权衡，也希望整个的选择、考量的过程能给其他的技术团队在开发高性能的 Go 组件时带来一定的借鉴意义。</p>
+<h2 id="前言">前言</h2>
+<p>日志作为整个代码行为的记录，是程序执行逻辑和异常最直接的反馈。对于整个系统来说，日志是至关重要的组成部分。通过分析日志我们不仅可以发现系统的问题，同时日志中也蕴含了大量有价值可以被挖掘的信息，因此合理地记录日志是十分必要的。</p>
+<p>我们的业务通常会记录大量的 Debug 日志，但在实际测试过程中，发现我们使用的日志库 seelog 性能存在严重的瓶颈，在我们的对比结果中发现：zap 表现非常突出，单线程 Qps 也是 logrus、seelog 的数倍。</p>
+<p>在分析源码后 zap 设计与实现上的考量让我感到受益颇多，在这里我们主要分享一下以下几个方面：</p>
+<ol>
+<li>zap 为何有这么高的性能</li>
+<li>对于我们自己的开发有什么值得借鉴的地方</li>
+<li>如何正确的使用 Go 开发高性能的组件</li>
+</ol>
+<h2 id="为什么选择使用zap">为什么选择使用ZAP</h2>
+<ul>
+<li>它同时提供了结构化日志记录和printf风格的日志记录</li>
+<li>它非常的快</li>
+</ul>
+<p>根据Uber-go Zap的文档，它的性能比类似的结构化日志包更好——也比标准库更快。 以下是Zap发布的基准测试信息</p>
+<p>记录一条消息和10个字段:</p>
+<table>
+  <thead>
+      <tr>
+          <th style="text-align: center">Package</th>
+          <th style="text-align: center">Time</th>
+          <th style="text-align: center">Time % to zap</th>
+          <th style="text-align: center">Objects Allocated</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: center">⚡️ zap</td>
+          <td style="text-align: center">862 ns/op</td>
+          <td style="text-align: center">+0%</td>
+          <td style="text-align: center">5 allocs/op</td>
+      </tr>
+      <tr>
+          <td style="text-align: center">⚡️ zap (sugared)</td>
+          <td style="text-align: center">1250 ns/op</td>
+          <td style="text-align: center">+45%</td>
+          <td style="text-align: center">11 allocs/op</td>
+      </tr>
+      <tr>
+          <td style="text-align: center">zerolog</td>
+          <td style="text-align: center">4021 ns/op</td>
+          <td style="text-align: center">+366%</td>
+          <td style="text-align: center">76 allocs/op</td>
+      </tr>
+      <tr>
+          <td style="text-align: center">go-kit</td>
+          <td style="text-align: center">4542 ns/op</td>
+          <td style="text-align: center">+427%</td>
+          <td style="text-align: center">105 allocs/op</td>
+      </tr>
+      <tr>
+          <td style="text-align: center">apex/log</td>
+          <td style="text-align: center">26785 ns/op</td>
+          <td style="text-align: center">+3007%</td>
+          <td style="text-align: center">115 allocs/op</td>
+      </tr>
+      <tr>
+          <td style="text-align: center">logrus</td>
+          <td style="text-align: center">29501 ns/op</td>
+          <td style="text-align: center">+3322%</td>
+          <td style="text-align: center">125 allocs/op</td>
+      </tr>
+      <tr>
+          <td style="text-align: center">log15</td>
+          <td style="text-align: center">29906 ns/op</td>
+          <td style="text-align: center">+3369%</td>
+          <td style="text-align: center">122 allocs/op</td>
+      </tr>
+  </tbody>
+</table>
+<p>记录一个静态字符串，没有任何上下文或printf风格的模板：</p>
+<table>
+  <thead>
+      <tr>
+          <th style="text-align: center">Package</th>
+          <th style="text-align: center">Time</th>
+          <th style="text-align: center">Time % to zap</th>
+          <th style="text-align: center">Objects Allocated</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: center">⚡️ zap</td>
+          <td style="text-align: center">118 ns/op</td>
+          <td style="text-align: center">+0%</td>
+          <td style="text-align: center">0 allocs/op</td>
+      </tr>
+      <tr>
+          <td style="text-align: center">⚡️ zap (sugared)</td>
+          <td style="text-align: center">191 ns/op</td>
+          <td style="text-align: center">+62%</td>
+          <td style="text-align: center">2 allocs/op</td>
+      </tr>
+      <tr>
+          <td style="text-align: center">zerolog</td>
+          <td style="text-align: center">93 ns/op</td>
+          <td style="text-align: center">-21%</td>
+          <td style="text-align: center">0 allocs/op</td>
+      </tr>
+      <tr>
+          <td style="text-align: center">go-kit</td>
+          <td style="text-align: center">280 ns/op</td>
+          <td style="text-align: center">+137%</td>
+          <td style="text-align: center">11 allocs/op</td>
+      </tr>
+      <tr>
+          <td style="text-align: center">standard library</td>
+          <td style="text-align: center">499 ns/op</td>
+          <td style="text-align: center">+323%</td>
+          <td style="text-align: center">2 allocs/op</td>
+      </tr>
+      <tr>
+          <td style="text-align: center">apex/log</td>
+          <td style="text-align: center">1990 ns/op</td>
+          <td style="text-align: center">+1586%</td>
+          <td style="text-align: center">10 allocs/op</td>
+      </tr>
+      <tr>
+          <td style="text-align: center">logrus</td>
+          <td style="text-align: center">3129 ns/op</td>
+          <td style="text-align: center">+2552%</td>
+          <td style="text-align: center">24 allocs/op</td>
+      </tr>
+      <tr>
+          <td style="text-align: center">log15</td>
+          <td style="text-align: center">3887 ns/op</td>
+          <td style="text-align: center">+3194%</td>
+          <td style="text-align: center">23 allocs/op</td>
+      </tr>
+  </tbody>
+</table>
+<h2 id="安装">安装</h2>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>go get -u go.uber.org/zap
+</span></span></code></pre></div><h2 id="示例">示例</h2>
+<h3 id="简单示例">简单示例</h3>
+<h4 id="格式化输出">格式化输出</h4>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#d88200">&#34;go.uber.org/zap&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#d88200">&#34;time&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#75af00">main</span><span style="color:#111">()</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// zap.NewDevelopment 格式化输出</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75af00">logger</span><span style="color:#111">,</span> <span style="color:#75af00">_</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">zap</span><span style="color:#111">.</span><span style="color:#75af00">ewDevelopment</span><span style="color:#111">()</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">defer</span> <span style="color:#75af00">logger</span><span style="color:#111">.</span><span style="color:#75af00">Sync</span><span style="color:#111">()</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75af00">logger</span><span style="color:#111">.</span><span style="color:#75af00">Info</span><span style="color:#111">(</span><span style="color:#d88200">&#34;无法获取网址&#34;</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">zap</span><span style="color:#111">.</span><span style="color:#75af00">String</span><span style="color:#111">(</span><span style="color:#d88200">&#34;url&#34;</span><span style="color:#111">,</span> <span style="color:#d88200">&#34;http://www.baidu.com&#34;</span><span style="color:#111">),</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">zap</span><span style="color:#111">.</span><span style="color:#75af00">Int</span><span style="color:#111">(</span><span style="color:#d88200">&#34;attempt&#34;</span><span style="color:#111">,</span> <span style="color:#ae81ff">3</span><span style="color:#111">),</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">zap</span><span style="color:#111">.</span><span style="color:#75af00">Duration</span><span style="color:#111">(</span><span style="color:#d88200">&#34;backoff&#34;</span><span style="color:#111">,</span> <span style="color:#75af00">time</span><span style="color:#111">.</span><span style="color:#75af00">Second</span><span style="color:#111">),</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span></code></pre></div><p>格式化输出打印结果：</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#ae81ff">2019</span><span style="color:#f92672">-</span><span style="color:#ae81ff">01</span><span style="color:#f92672">-</span><span style="color:#ae81ff">02</span><span style="color:#75af00">T15</span><span style="color:#111">:</span><span style="color:#ae81ff">01</span><span style="color:#111">:</span><span style="color:#ae81ff">13.923</span><span style="color:#f92672">+</span><span style="color:#ae81ff">0800</span>    <span style="color:#75af00">INFO</span>    <span style="color:#75af00">spikeProxy</span><span style="color:#f92672">/</span><span style="color:#75af00">main</span><span style="color:#111">.</span><span style="color:#00a8c8">go</span><span style="color:#111">:</span><span style="color:#ae81ff">17</span>   <span style="color:#75af00">failed</span> <span style="color:#75af00">to</span> <span style="color:#75af00">fetch</span> <span style="color:#75af00">URL</span> <span style="color:#111">{</span><span style="color:#d88200">&#34;url&#34;</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;http://www.baidu.com&#34;</span><span style="color:#111">,</span> <span style="color:#d88200">&#34;attempt&#34;</span><span style="color:#111">:</span> <span style="color:#ae81ff">3</span><span style="color:#111">,</span> <span style="color:#d88200">&#34;backoff&#34;</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;1s&#34;</span><span style="color:#111">}</span>
+</span></span></code></pre></div><h4 id="json-序列化输出">json 序列化输出</h4>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#d88200">&#34;go.uber.org/zap&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#d88200">&#34;time&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#75af00">main</span><span style="color:#111">()</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#75715e">// zap.NewProduction json序列化输出</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75af00">logger</span><span style="color:#111">,</span> <span style="color:#75af00">_</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">zap</span><span style="color:#111">.</span><span style="color:#75af00">NewProduction</span><span style="color:#111">()</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">defer</span> <span style="color:#75af00">logger</span><span style="color:#111">.</span><span style="color:#75af00">Sync</span><span style="color:#111">()</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75af00">logger</span><span style="color:#111">.</span><span style="color:#75af00">Info</span><span style="color:#111">(</span><span style="color:#d88200">&#34;无法获取网址&#34;</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">zap</span><span style="color:#111">.</span><span style="color:#75af00">String</span><span style="color:#111">(</span><span style="color:#d88200">&#34;url&#34;</span><span style="color:#111">,</span> <span style="color:#d88200">&#34;http://www.baidu.com&#34;</span><span style="color:#111">),</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">zap</span><span style="color:#111">.</span><span style="color:#75af00">Int</span><span style="color:#111">(</span><span style="color:#d88200">&#34;attempt&#34;</span><span style="color:#111">,</span> <span style="color:#ae81ff">3</span><span style="color:#111">),</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">zap</span><span style="color:#111">.</span><span style="color:#75af00">Duration</span><span style="color:#111">(</span><span style="color:#d88200">&#34;backoff&#34;</span><span style="color:#111">,</span> <span style="color:#75af00">time</span><span style="color:#111">.</span><span style="color:#75af00">Second</span><span style="color:#111">),</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span></code></pre></div><p>json序列化输出打印结果：</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#111">{</span><span style="color:#d88200">&#34;level&#34;</span><span style="color:#111">:</span><span style="color:#d88200">&#34;info&#34;</span><span style="color:#111">,</span><span style="color:#d88200">&#34;ts&#34;</span><span style="color:#111">:</span><span style="color:#ae81ff">1546413239.1466308</span><span style="color:#111">,</span><span style="color:#d88200">&#34;caller&#34;</span><span style="color:#111">:</span><span style="color:#d88200">&#34;spikeProxy/main.go:16&#34;</span><span style="color:#111">,</span><span style="color:#d88200">&#34;msg&#34;</span><span style="color:#111">:</span><span style="color:#d88200">&#34;无法获取网址&#34;</span><span style="color:#111">,</span><span style="color:#d88200">&#34;url&#34;</span><span style="color:#111">:</span><span style="color:#d88200">&#34;http://www.baidu.com&#34;</span><span style="color:#111">,</span><span style="color:#d88200">&#34;attempt&#34;</span><span style="color:#111">:</span><span style="color:#ae81ff">3</span><span style="color:#111">,</span><span style="color:#d88200">&#34;backoff&#34;</span><span style="color:#111">:</span><span style="color:#ae81ff">1</span><span style="color:#111">}</span>
+</span></span></code></pre></div><h3 id="自定义示例">自定义示例</h3>
+<p>选择一个日志库除了高性能是考量的一个标准，高扩展也非常重要，例如：json key 自定义、时间格式化、日志级别等。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#d88200">&#34;go.uber.org/zap&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#d88200">&#34;go.uber.org/zap/zapcore&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#d88200">&#34;fmt&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#d88200">&#34;time&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#75af00">main</span><span style="color:#111">()</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75af00">encoderConfig</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">zapcore</span><span style="color:#111">.</span><span style="color:#75af00">EncoderConfig</span><span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">TimeKey</span><span style="color:#111">:</span>        <span style="color:#d88200">&#34;time&#34;</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">LevelKey</span><span style="color:#111">:</span>       <span style="color:#d88200">&#34;level&#34;</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">NameKey</span><span style="color:#111">:</span>        <span style="color:#d88200">&#34;logger&#34;</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">CallerKey</span><span style="color:#111">:</span>      <span style="color:#d88200">&#34;caller&#34;</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">MessageKey</span><span style="color:#111">:</span>     <span style="color:#d88200">&#34;msg&#34;</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">StacktraceKey</span><span style="color:#111">:</span>  <span style="color:#d88200">&#34;stacktrace&#34;</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">LineEnding</span><span style="color:#111">:</span>     <span style="color:#75af00">zapcore</span><span style="color:#111">.</span><span style="color:#75af00">DefaultLineEnding</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">EncodeLevel</span><span style="color:#111">:</span>    <span style="color:#75af00">zapcore</span><span style="color:#111">.</span><span style="color:#75af00">LowercaseLevelEncoder</span><span style="color:#111">,</span>  <span style="color:#75715e">// 小写编码器</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">EncodeTime</span><span style="color:#111">:</span>     <span style="color:#75af00">zapcore</span><span style="color:#111">.</span><span style="color:#75af00">ISO8601TimeEncoder</span><span style="color:#111">,</span>     <span style="color:#75715e">// ISO8601 UTC 时间格式</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">EncodeDuration</span><span style="color:#111">:</span> <span style="color:#75af00">zapcore</span><span style="color:#111">.</span><span style="color:#75af00">SecondsDurationEncoder</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">EncodeCaller</span><span style="color:#111">:</span>   <span style="color:#75af00">zapcore</span><span style="color:#111">.</span><span style="color:#75af00">FullCallerEncoder</span><span style="color:#111">,</span>      <span style="color:#75715e">// 全路径编码器</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 设置日志级别</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75af00">atom</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">zap</span><span style="color:#111">.</span><span style="color:#75af00">NewAtomicLevelAt</span><span style="color:#111">(</span><span style="color:#75af00">zap</span><span style="color:#111">.</span><span style="color:#75af00">DebugLevel</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75af00">config</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">zap</span><span style="color:#111">.</span><span style="color:#75af00">Config</span><span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">Level</span><span style="color:#111">:</span>            <span style="color:#75af00">atom</span><span style="color:#111">,</span>                                                <span style="color:#75715e">// 日志级别</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">Development</span><span style="color:#111">:</span>      <span style="color:#00a8c8">true</span><span style="color:#111">,</span>                                                <span style="color:#75715e">// 开发模式，堆栈跟踪</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">Encoding</span><span style="color:#111">:</span>         <span style="color:#d88200">&#34;json&#34;</span><span style="color:#111">,</span>                                              <span style="color:#75715e">// 输出格式 console 或 json</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">EncoderConfig</span><span style="color:#111">:</span>    <span style="color:#75af00">encoderConfig</span><span style="color:#111">,</span>                                       <span style="color:#75715e">// 编码器配置</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">InitialFields</span><span style="color:#111">:</span>    <span style="color:#00a8c8">map</span><span style="color:#111">[</span><span style="color:#00a8c8">string</span><span style="color:#111">]</span><span style="color:#00a8c8">interface</span><span style="color:#111">{}{</span><span style="color:#d88200">&#34;serviceName&#34;</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;spikeProxy&#34;</span><span style="color:#111">},</span> <span style="color:#75715e">// 初始化字段，如：添加一个服务器名称</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">OutputPaths</span><span style="color:#111">:</span>      <span style="color:#111">[]</span><span style="color:#00a8c8">string</span><span style="color:#111">{</span><span style="color:#d88200">&#34;stdout&#34;</span><span style="color:#111">,</span> <span style="color:#d88200">&#34;./logs/spikeProxy.log&#34;</span><span style="color:#111">},</span>         <span style="color:#75715e">// 输出到指定文件 stdout（标准输出，正常颜色） stderr（错误输出，红色）</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">ErrorOutputPaths</span><span style="color:#111">:</span> <span style="color:#111">[]</span><span style="color:#00a8c8">string</span><span style="color:#111">{</span><span style="color:#d88200">&#34;stderr&#34;</span><span style="color:#111">},</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 构建日志</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75af00">logger</span><span style="color:#111">,</span> <span style="color:#75af00">err</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">config</span><span style="color:#111">.</span><span style="color:#75af00">Build</span><span style="color:#111">()</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">if</span> <span style="color:#75af00">err</span> <span style="color:#f92672">!=</span> <span style="color:#00a8c8">nil</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#111">panic</span><span style="color:#111">(</span><span style="color:#75af00">fmt</span><span style="color:#111">.</span><span style="color:#75af00">Sprintf</span><span style="color:#111">(</span><span style="color:#d88200">&#34;log 初始化失败: %v&#34;</span><span style="color:#111">,</span> <span style="color:#75af00">err</span><span style="color:#111">))</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75af00">logger</span><span style="color:#111">.</span><span style="color:#75af00">Info</span><span style="color:#111">(</span><span style="color:#d88200">&#34;log 初始化成功&#34;</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75af00">logger</span><span style="color:#111">.</span><span style="color:#75af00">Info</span><span style="color:#111">(</span><span style="color:#d88200">&#34;无法获取网址&#34;</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">zap</span><span style="color:#111">.</span><span style="color:#75af00">String</span><span style="color:#111">(</span><span style="color:#d88200">&#34;url&#34;</span><span style="color:#111">,</span> <span style="color:#d88200">&#34;http://www.baidu.com&#34;</span><span style="color:#111">),</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">zap</span><span style="color:#111">.</span><span style="color:#75af00">Int</span><span style="color:#111">(</span><span style="color:#d88200">&#34;attempt&#34;</span><span style="color:#111">,</span> <span style="color:#ae81ff">3</span><span style="color:#111">),</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">zap</span><span style="color:#111">.</span><span style="color:#75af00">Duration</span><span style="color:#111">(</span><span style="color:#d88200">&#34;backoff&#34;</span><span style="color:#111">,</span> <span style="color:#75af00">time</span><span style="color:#111">.</span><span style="color:#75af00">Second</span><span style="color:#111">),</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span></code></pre></div><p>打印结果：</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#111">{</span><span style="color:#d88200">&#34;level&#34;</span><span style="color:#111">:</span><span style="color:#d88200">&#34;info&#34;</span><span style="color:#111">,</span><span style="color:#d88200">&#34;time&#34;</span><span style="color:#111">:</span><span style="color:#d88200">&#34;2019-01-02T15:38:33.778+0800&#34;</span><span style="color:#111">,</span><span style="color:#d88200">&#34;caller&#34;</span><span style="color:#111">:</span><span style="color:#d88200">&#34;/Users/lcl/go/src/spikeProxy/main.go:54&#34;</span><span style="color:#111">,</span><span style="color:#d88200">&#34;msg&#34;</span><span style="color:#111">:</span><span style="color:#d88200">&#34;log 初始化成功&#34;</span><span style="color:#111">,</span><span style="color:#d88200">&#34;serviceName&#34;</span><span style="color:#111">:</span><span style="color:#d88200">&#34;spikeProxy&#34;</span><span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">{</span><span style="color:#d88200">&#34;level&#34;</span><span style="color:#111">:</span><span style="color:#d88200">&#34;info&#34;</span><span style="color:#111">,</span><span style="color:#d88200">&#34;time&#34;</span><span style="color:#111">:</span><span style="color:#d88200">&#34;2019-01-02T15:38:33.778+0800&#34;</span><span style="color:#111">,</span><span style="color:#d88200">&#34;caller&#34;</span><span style="color:#111">:</span><span style="color:#d88200">&#34;/Users/lcl/go/src/spikeProxy/main.go:56&#34;</span><span style="color:#111">,</span><span style="color:#d88200">&#34;msg&#34;</span><span style="color:#111">:</span><span style="color:#d88200">&#34;无法获取网址&#34;</span><span style="color:#111">,</span><span style="color:#d88200">&#34;serviceName&#34;</span><span style="color:#111">:</span><span style="color:#d88200">&#34;spikeProxy&#34;</span><span style="color:#111">,</span><span style="color:#d88200">&#34;url&#34;</span><span style="color:#111">:</span><span style="color:#d88200">&#34;http://www.baidu.com&#34;</span><span style="color:#111">,</span><span style="color:#d88200">&#34;attempt&#34;</span><span style="color:#111">:</span><span style="color:#ae81ff">3</span><span style="color:#111">,</span><span style="color:#d88200">&#34;backoff&#34;</span><span style="color:#111">:</span><span style="color:#ae81ff">1</span><span style="color:#111">}</span>
+</span></span></code></pre></div><h2 id="写入归档文件示例">写入归档文件示例</h2>
+<h2 id="安装-lumberjack">安装 lumberjack</h2>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#00a8c8">go</span> <span style="color:#75af00">get</span> <span style="color:#75af00">gopkg</span><span style="color:#111">.</span><span style="color:#75af00">in</span><span style="color:#f92672">/</span><span style="color:#75af00">natefinch</span><span style="color:#f92672">/</span><span style="color:#75af00">lumberjack</span><span style="color:#111">.</span><span style="color:#75af00">v2</span>
+</span></span></code></pre></div><h2 id="lumberjack介绍">lumberjack介绍</h2>
+<p>Lumberjack是一个Go包，用于将日志写入滚动文件。
+zap 不支持文件归档，如果要支持文件按大小或者时间归档，需要使用lumberjack，lumberjack也是<a href="https://github.com/uber-go/zap/blob/master/FAQ.md">zap官方推荐</a>的。</p>
+<h2 id="示例-1">示例</h2>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#d88200">&#34;go.uber.org/zap&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#d88200">&#34;go.uber.org/zap/zapcore&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#d88200">&#34;time&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#d88200">&#34;gopkg.in/natefinch/lumberjack.v2&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#d88200">&#34;os&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#75af00">main</span><span style="color:#111">()</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75af00">hook</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">lumberjack</span><span style="color:#111">.</span><span style="color:#75af00">Logger</span><span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">Filename</span><span style="color:#111">:</span>   <span style="color:#d88200">&#34;./logs/spikeProxy1.log&#34;</span><span style="color:#111">,</span> <span style="color:#75715e">// 日志文件路径</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">MaxSize</span><span style="color:#111">:</span>    <span style="color:#ae81ff">128</span><span style="color:#111">,</span>                      <span style="color:#75715e">// 每个日志文件保存的最大尺寸 单位：M</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">MaxBackups</span><span style="color:#111">:</span> <span style="color:#ae81ff">30</span><span style="color:#111">,</span>                       <span style="color:#75715e">// 日志文件最多保存多少个备份</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">MaxAge</span><span style="color:#111">:</span>     <span style="color:#ae81ff">7</span><span style="color:#111">,</span>                        <span style="color:#75715e">// 文件最多保存多少天</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">Compress</span><span style="color:#111">:</span>   <span style="color:#00a8c8">true</span><span style="color:#111">,</span>                     <span style="color:#75715e">// 是否压缩</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75af00">encoderConfig</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">zapcore</span><span style="color:#111">.</span><span style="color:#75af00">EncoderConfig</span><span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">TimeKey</span><span style="color:#111">:</span>        <span style="color:#d88200">&#34;time&#34;</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">LevelKey</span><span style="color:#111">:</span>       <span style="color:#d88200">&#34;level&#34;</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">NameKey</span><span style="color:#111">:</span>        <span style="color:#d88200">&#34;logger&#34;</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">CallerKey</span><span style="color:#111">:</span>      <span style="color:#d88200">&#34;linenum&#34;</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">MessageKey</span><span style="color:#111">:</span>     <span style="color:#d88200">&#34;msg&#34;</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">StacktraceKey</span><span style="color:#111">:</span>  <span style="color:#d88200">&#34;stacktrace&#34;</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">LineEnding</span><span style="color:#111">:</span>     <span style="color:#75af00">zapcore</span><span style="color:#111">.</span><span style="color:#75af00">DefaultLineEnding</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">EncodeLevel</span><span style="color:#111">:</span>    <span style="color:#75af00">zapcore</span><span style="color:#111">.</span><span style="color:#75af00">LowercaseLevelEncoder</span><span style="color:#111">,</span>  <span style="color:#75715e">// 小写编码器</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">EncodeTime</span><span style="color:#111">:</span>     <span style="color:#75af00">zapcore</span><span style="color:#111">.</span><span style="color:#75af00">ISO8601TimeEncoder</span><span style="color:#111">,</span>     <span style="color:#75715e">// ISO8601 UTC 时间格式</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">EncodeDuration</span><span style="color:#111">:</span> <span style="color:#75af00">zapcore</span><span style="color:#111">.</span><span style="color:#75af00">SecondsDurationEncoder</span><span style="color:#111">,</span> <span style="color:#75715e">//
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">        EncodeCaller:   zapcore.FullCallerEncoder,      // 全路径编码器</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">EncodeName</span><span style="color:#111">:</span>     <span style="color:#75af00">zapcore</span><span style="color:#111">.</span><span style="color:#75af00">FullNameEncoder</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 设置日志级别</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75af00">atomicLevel</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">zap</span><span style="color:#111">.</span><span style="color:#75af00">NewAtomicLevel</span><span style="color:#111">()</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75af00">atomicLevel</span><span style="color:#111">.</span><span style="color:#75af00">SetLevel</span><span style="color:#111">(</span><span style="color:#75af00">zap</span><span style="color:#111">.</span><span style="color:#75af00">InfoLevel</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75af00">core</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">zapcore</span><span style="color:#111">.</span><span style="color:#75af00">NewCore</span><span style="color:#111">(</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">zapcore</span><span style="color:#111">.</span><span style="color:#75af00">NewJSONEncoder</span><span style="color:#111">(</span><span style="color:#75af00">encoderConfig</span><span style="color:#111">),</span>                                           <span style="color:#75715e">// 编码器配置</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">zapcore</span><span style="color:#111">.</span><span style="color:#75af00">NewMultiWriteSyncer</span><span style="color:#111">(</span><span style="color:#75af00">zapcore</span><span style="color:#111">.</span><span style="color:#75af00">AddSync</span><span style="color:#111">(</span><span style="color:#75af00">os</span><span style="color:#111">.</span><span style="color:#75af00">Stdout</span><span style="color:#111">),</span> <span style="color:#75af00">zapcore</span><span style="color:#111">.</span><span style="color:#75af00">AddSync</span><span style="color:#111">(</span><span style="color:#f92672">&amp;</span><span style="color:#75af00">hook</span><span style="color:#111">)),</span> <span style="color:#75715e">// 打印到控制台和文件</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">atomicLevel</span><span style="color:#111">,</span>                                                                     <span style="color:#75715e">// 日志级别</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 开启开发模式，堆栈跟踪</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75af00">caller</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">zap</span><span style="color:#111">.</span><span style="color:#75af00">AddCaller</span><span style="color:#111">()</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 开启文件及行号</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75af00">development</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">zap</span><span style="color:#111">.</span><span style="color:#75af00">Development</span><span style="color:#111">()</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 设置初始化字段</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75af00">filed</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">zap</span><span style="color:#111">.</span><span style="color:#75af00">Fields</span><span style="color:#111">(</span><span style="color:#75af00">zap</span><span style="color:#111">.</span><span style="color:#75af00">String</span><span style="color:#111">(</span><span style="color:#d88200">&#34;serviceName&#34;</span><span style="color:#111">,</span> <span style="color:#d88200">&#34;serviceName&#34;</span><span style="color:#111">))</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 构造日志</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75af00">logger</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">zap</span><span style="color:#111">.</span><span style="color:#75af00">New</span><span style="color:#111">(</span><span style="color:#75af00">core</span><span style="color:#111">,</span> <span style="color:#75af00">caller</span><span style="color:#111">,</span> <span style="color:#75af00">development</span><span style="color:#111">,</span> <span style="color:#75af00">filed</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75af00">logger</span><span style="color:#111">.</span><span style="color:#75af00">Info</span><span style="color:#111">(</span><span style="color:#d88200">&#34;log 初始化成功&#34;</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75af00">logger</span><span style="color:#111">.</span><span style="color:#75af00">Info</span><span style="color:#111">(</span><span style="color:#d88200">&#34;无法获取网址&#34;</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">zap</span><span style="color:#111">.</span><span style="color:#75af00">String</span><span style="color:#111">(</span><span style="color:#d88200">&#34;url&#34;</span><span style="color:#111">,</span> <span style="color:#d88200">&#34;http://www.baidu.com&#34;</span><span style="color:#111">),</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">zap</span><span style="color:#111">.</span><span style="color:#75af00">Int</span><span style="color:#111">(</span><span style="color:#d88200">&#34;attempt&#34;</span><span style="color:#111">,</span> <span style="color:#ae81ff">3</span><span style="color:#111">),</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">zap</span><span style="color:#111">.</span><span style="color:#75af00">Duration</span><span style="color:#111">(</span><span style="color:#d88200">&#34;backoff&#34;</span><span style="color:#111">,</span> <span style="color:#75af00">time</span><span style="color:#111">.</span><span style="color:#75af00">Second</span><span style="color:#111">))</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span></code></pre></div><p>控制台打印结果：</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#111">{</span><span style="color:#d88200">&#34;level&#34;</span><span style="color:#111">:</span><span style="color:#d88200">&#34;info&#34;</span><span style="color:#111">,</span><span style="color:#d88200">&#34;time&#34;</span><span style="color:#111">:</span><span style="color:#d88200">&#34;2019-01-02T16:14:43.608+0800&#34;</span><span style="color:#111">,</span><span style="color:#d88200">&#34;linenum&#34;</span><span style="color:#111">:</span><span style="color:#d88200">&#34;/Users/lcl/go/src/spikeProxy/main.go:56&#34;</span><span style="color:#111">,</span><span style="color:#d88200">&#34;msg&#34;</span><span style="color:#111">:</span><span style="color:#d88200">&#34;log 初始化成功&#34;</span><span style="color:#111">,</span><span style="color:#d88200">&#34;serviceName&#34;</span><span style="color:#111">:</span><span style="color:#d88200">&#34;serviceName&#34;</span><span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">{</span><span style="color:#d88200">&#34;level&#34;</span><span style="color:#111">:</span><span style="color:#d88200">&#34;info&#34;</span><span style="color:#111">,</span><span style="color:#d88200">&#34;time&#34;</span><span style="color:#111">:</span><span style="color:#d88200">&#34;2019-01-02T16:14:43.608+0800&#34;</span><span style="color:#111">,</span><span style="color:#d88200">&#34;linenum&#34;</span><span style="color:#111">:</span><span style="color:#d88200">&#34;/Users/lcl/go/src/spikeProxy/main.go:57&#34;</span><span style="color:#111">,</span><span style="color:#d88200">&#34;msg&#34;</span><span style="color:#111">:</span><span style="color:#d88200">&#34;无法获取网址&#34;</span><span style="color:#111">,</span><span style="color:#d88200">&#34;serviceName&#34;</span><span style="color:#111">:</span><span style="color:#d88200">&#34;serviceName&#34;</span><span style="color:#111">,</span><span style="color:#d88200">&#34;url&#34;</span><span style="color:#111">:</span><span style="color:#d88200">&#34;http://www.baidu.com&#34;</span><span style="color:#111">,</span><span style="color:#d88200">&#34;attempt&#34;</span><span style="color:#111">:</span><span style="color:#ae81ff">3</span><span style="color:#111">,</span><span style="color:#d88200">&#34;backoff&#34;</span><span style="color:#111">:</span><span style="color:#ae81ff">1</span><span style="color:#111">}</span>
+</span></span></code></pre></div><p>文件打印结果：</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#111">{</span><span style="color:#d88200">&#34;level&#34;</span><span style="color:#111">:</span><span style="color:#d88200">&#34;info&#34;</span><span style="color:#111">,</span><span style="color:#d88200">&#34;time&#34;</span><span style="color:#111">:</span><span style="color:#d88200">&#34;2019-01-02T16:14:43.608+0800&#34;</span><span style="color:#111">,</span><span style="color:#d88200">&#34;linenum&#34;</span><span style="color:#111">:</span><span style="color:#d88200">&#34;/Users/lcl/go/src/spikeProxy/main.go:56&#34;</span><span style="color:#111">,</span><span style="color:#d88200">&#34;msg&#34;</span><span style="color:#111">:</span><span style="color:#d88200">&#34;log 初始化成功&#34;</span><span style="color:#111">,</span><span style="color:#d88200">&#34;serviceName&#34;</span><span style="color:#111">:</span><span style="color:#d88200">&#34;serviceName&#34;</span><span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">{</span><span style="color:#d88200">&#34;level&#34;</span><span style="color:#111">:</span><span style="color:#d88200">&#34;info&#34;</span><span style="color:#111">,</span><span style="color:#d88200">&#34;time&#34;</span><span style="color:#111">:</span><span style="color:#d88200">&#34;2019-01-02T16:14:43.608+0800&#34;</span><span style="color:#111">,</span><span style="color:#d88200">&#34;linenum&#34;</span><span style="color:#111">:</span><span style="color:#d88200">&#34;/Users/lcl/go/src/spikeProxy/main.go:57&#34;</span><span style="color:#111">,</span><span style="color:#d88200">&#34;msg&#34;</span><span style="color:#111">:</span><span style="color:#d88200">&#34;无法获取网址&#34;</span><span style="color:#111">,</span><span style="color:#d88200">&#34;serviceName&#34;</span><span style="color:#111">:</span><span style="color:#d88200">&#34;serviceName&#34;</span><span style="color:#111">,</span><span style="color:#d88200">&#34;url&#34;</span><span style="color:#111">:</span><span style="color:#d88200">&#34;http://www.baidu.com&#34;</span><span style="color:#111">,</span><span style="color:#d88200">&#34;attempt&#34;</span><span style="color:#111">:</span><span style="color:#ae81ff">3</span><span style="color:#111">,</span><span style="color:#d88200">&#34;backoff&#34;</span><span style="color:#111">:</span><span style="color:#ae81ff">1</span><span style="color:#111">}</span>
+</span></span></code></pre></div><h2 id="gin框架使用zaplumberjack">gin框架使用zap+lumberjack</h2>
+<h3 id="初始化zaplumberjack">初始化zap,lumberjack</h3>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// viperconfig</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">type</span> <span style="color:#75af00">Log</span> <span style="color:#00a8c8">struct</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">FileName</span>   <span style="color:#00a8c8">string</span> <span style="color:#d88200">`yaml:&#34;filename&#34;`</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">MaxSize</span>    <span style="color:#00a8c8">int</span>    <span style="color:#d88200">`yaml:&#34;maxsize&#34;`</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">MaxBackups</span> <span style="color:#00a8c8">int</span>    <span style="color:#d88200">`yaml:&#34;maxbackups&#34;`</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">MaxAges</span>    <span style="color:#00a8c8">int</span>    <span style="color:#d88200">`yaml:&#34;maxages&#34;`</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">Compress</span>   <span style="color:#00a8c8">bool</span>   <span style="color:#d88200">`yaml:&#34;compress&#34;`</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">Level</span>      <span style="color:#00a8c8">string</span> <span style="color:#d88200">`yaml:&#34;-&#34;`</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// init</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">var</span> <span style="color:#75af00">ZapLog</span> <span style="color:#f92672">*</span><span style="color:#75af00">zap</span><span style="color:#111">.</span><span style="color:#75af00">Logger</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// InitLogger 初始化Logger</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#75af00">InitLogger</span><span style="color:#111">(</span><span style="color:#75af00">cfg</span> <span style="color:#f92672">*</span><span style="color:#75af00">viperConfig</span><span style="color:#111">.</span><span style="color:#75af00">Log</span><span style="color:#111">)</span> <span style="color:#111">(</span><span style="color:#75af00">err</span> <span style="color:#00a8c8">error</span><span style="color:#111">)</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">writeSyncer</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">getLogWriter</span><span style="color:#111">(</span><span style="color:#75af00">cfg</span><span style="color:#111">.</span><span style="color:#75af00">FileName</span><span style="color:#111">,</span> <span style="color:#75af00">cfg</span><span style="color:#111">.</span><span style="color:#75af00">MaxSize</span><span style="color:#111">,</span> <span style="color:#75af00">cfg</span><span style="color:#111">.</span><span style="color:#75af00">MaxBackups</span><span style="color:#111">,</span> <span style="color:#75af00">cfg</span><span style="color:#111">.</span><span style="color:#75af00">MaxAges</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">encoder</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">getEncoder</span><span style="color:#111">()</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">var</span> <span style="color:#75af00">l</span> <span style="color:#111">=</span> <span style="color:#111">new</span><span style="color:#111">(</span><span style="color:#75af00">zapcore</span><span style="color:#111">.</span><span style="color:#75af00">Level</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">err</span> <span style="color:#111">=</span> <span style="color:#75af00">l</span><span style="color:#111">.</span><span style="color:#75af00">UnmarshalText</span><span style="color:#111">([]</span><span style="color:#111">byte</span><span style="color:#111">(</span><span style="color:#75af00">cfg</span><span style="color:#111">.</span><span style="color:#75af00">Level</span><span style="color:#111">))</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">err</span> <span style="color:#f92672">!=</span> <span style="color:#00a8c8">nil</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#00a8c8">return</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">core</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">zapcore</span><span style="color:#111">.</span><span style="color:#75af00">NewCore</span><span style="color:#111">(</span><span style="color:#75af00">encoder</span><span style="color:#111">,</span> <span style="color:#75af00">writeSyncer</span><span style="color:#111">,</span> <span style="color:#75af00">l</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">ZapLog</span> <span style="color:#111">=</span> <span style="color:#75af00">zap</span><span style="color:#111">.</span><span style="color:#75af00">New</span><span style="color:#111">(</span><span style="color:#75af00">core</span><span style="color:#111">,</span> <span style="color:#75af00">zap</span><span style="color:#111">.</span><span style="color:#75af00">AddCaller</span><span style="color:#111">())</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">zap</span><span style="color:#111">.</span><span style="color:#75af00">ReplaceGlobals</span><span style="color:#111">(</span><span style="color:#75af00">ZapLog</span><span style="color:#111">)</span> <span style="color:#75715e">// 替换zap包中全局的logger实例，后续在其他包中只需使用zap.L()调用即可</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">return</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#75af00">getEncoder</span><span style="color:#111">()</span> <span style="color:#75af00">zapcore</span><span style="color:#111">.</span><span style="color:#75af00">Encoder</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">encoderConfig</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">zap</span><span style="color:#111">.</span><span style="color:#75af00">NewProductionEncoderConfig</span><span style="color:#111">()</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">encoderConfig</span><span style="color:#111">.</span><span style="color:#75af00">EncodeTime</span> <span style="color:#111">=</span> <span style="color:#75af00">zapcore</span><span style="color:#111">.</span><span style="color:#75af00">ISO8601TimeEncoder</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">encoderConfig</span><span style="color:#111">.</span><span style="color:#75af00">TimeKey</span> <span style="color:#111">=</span> <span style="color:#d88200">&#34;time&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">encoderConfig</span><span style="color:#111">.</span><span style="color:#75af00">EncodeLevel</span> <span style="color:#111">=</span> <span style="color:#75af00">zapcore</span><span style="color:#111">.</span><span style="color:#75af00">CapitalLevelEncoder</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">encoderConfig</span><span style="color:#111">.</span><span style="color:#75af00">EncodeDuration</span> <span style="color:#111">=</span> <span style="color:#75af00">zapcore</span><span style="color:#111">.</span><span style="color:#75af00">SecondsDurationEncoder</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">encoderConfig</span><span style="color:#111">.</span><span style="color:#75af00">EncodeCaller</span> <span style="color:#111">=</span> <span style="color:#75af00">zapcore</span><span style="color:#111">.</span><span style="color:#75af00">ShortCallerEncoder</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">return</span> <span style="color:#75af00">zapcore</span><span style="color:#111">.</span><span style="color:#75af00">NewJSONEncoder</span><span style="color:#111">(</span><span style="color:#75af00">encoderConfig</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#75af00">getLogWriter</span><span style="color:#111">(</span><span style="color:#75af00">filename</span> <span style="color:#00a8c8">string</span><span style="color:#111">,</span> <span style="color:#75af00">maxSize</span><span style="color:#111">,</span> <span style="color:#75af00">maxBackup</span><span style="color:#111">,</span> <span style="color:#75af00">maxAge</span> <span style="color:#00a8c8">int</span><span style="color:#111">)</span> <span style="color:#75af00">zapcore</span><span style="color:#111">.</span><span style="color:#75af00">WriteSyncer</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">lumberJackLogger</span> <span style="color:#f92672">:=</span> <span style="color:#f92672">&amp;</span><span style="color:#75af00">lumberjack</span><span style="color:#111">.</span><span style="color:#75af00">Logger</span><span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">Filename</span><span style="color:#111">:</span>   <span style="color:#75af00">filename</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">MaxSize</span><span style="color:#111">:</span>    <span style="color:#75af00">maxSize</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">MaxBackups</span><span style="color:#111">:</span> <span style="color:#75af00">maxBackup</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">MaxAge</span><span style="color:#111">:</span>     <span style="color:#75af00">maxAge</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">return</span> <span style="color:#75af00">zapcore</span><span style="color:#111">.</span><span style="color:#75af00">AddSync</span><span style="color:#111">(</span><span style="color:#75af00">lumberJackLogger</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span></code></pre></div><h3 id="gin日志中间件">gin日志中间件</h3>
+<p>模仿Logger()和Recovery()的实现，使用我们的日志库来接收gin框架默认输出的日志。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// GinLogger 接收gin框架默认的日志</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#75af00">GinLogger</span><span style="color:#111">(</span><span style="color:#75af00">logger</span> <span style="color:#f92672">*</span><span style="color:#75af00">zap</span><span style="color:#111">.</span><span style="color:#75af00">Logger</span><span style="color:#111">)</span> <span style="color:#75af00">gin</span><span style="color:#111">.</span><span style="color:#75af00">HandlerFunc</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">return</span> <span style="color:#00a8c8">func</span><span style="color:#111">(</span><span style="color:#75af00">c</span> <span style="color:#f92672">*</span><span style="color:#75af00">gin</span><span style="color:#111">.</span><span style="color:#75af00">Context</span><span style="color:#111">)</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">start</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">time</span><span style="color:#111">.</span><span style="color:#75af00">Now</span><span style="color:#111">()</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">path</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">c</span><span style="color:#111">.</span><span style="color:#75af00">Request</span><span style="color:#111">.</span><span style="color:#75af00">URL</span><span style="color:#111">.</span><span style="color:#75af00">Path</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">query</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">c</span><span style="color:#111">.</span><span style="color:#75af00">Request</span><span style="color:#111">.</span><span style="color:#75af00">URL</span><span style="color:#111">.</span><span style="color:#75af00">RawQuery</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">c</span><span style="color:#111">.</span><span style="color:#75af00">Next</span><span style="color:#111">()</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">cost</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">time</span><span style="color:#111">.</span><span style="color:#75af00">S</span><span style="color:#f92672">***</span><span style="color:#75af00">art</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">logger</span><span style="color:#111">.</span><span style="color:#75af00">Info</span><span style="color:#111">(</span><span style="color:#75af00">path</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#75af00">zap</span><span style="color:#111">.</span><span style="color:#75af00">Int</span><span style="color:#111">(</span><span style="color:#d88200">&#34;status&#34;</span><span style="color:#111">,</span> <span style="color:#75af00">c</span><span style="color:#111">.</span><span style="color:#75af00">Writer</span><span style="color:#111">.</span><span style="color:#75af00">Status</span><span style="color:#111">()),</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#75af00">zap</span><span style="color:#111">.</span><span style="color:#75af00">String</span><span style="color:#111">(</span><span style="color:#d88200">&#34;method&#34;</span><span style="color:#111">,</span> <span style="color:#75af00">c</span><span style="color:#111">.</span><span style="color:#75af00">Request</span><span style="color:#111">.</span><span style="color:#75af00">Method</span><span style="color:#111">),</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#75af00">zap</span><span style="color:#111">.</span><span style="color:#75af00">String</span><span style="color:#111">(</span><span style="color:#d88200">&#34;path&#34;</span><span style="color:#111">,</span> <span style="color:#75af00">path</span><span style="color:#111">),</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#75af00">zap</span><span style="color:#111">.</span><span style="color:#75af00">String</span><span style="color:#111">(</span><span style="color:#d88200">&#34;query&#34;</span><span style="color:#111">,</span> <span style="color:#75af00">query</span><span style="color:#111">),</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#75af00">zap</span><span style="color:#111">.</span><span style="color:#75af00">String</span><span style="color:#111">(</span><span style="color:#d88200">&#34;ip&#34;</span><span style="color:#111">,</span> <span style="color:#75af00">c</span><span style="color:#111">.</span><span style="color:#75af00">ClientIP</span><span style="color:#111">()),</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#75af00">zap</span><span style="color:#111">.</span><span style="color:#75af00">String</span><span style="color:#111">(</span><span style="color:#d88200">&#34;user-agent&#34;</span><span style="color:#111">,</span> <span style="color:#75af00">c</span><span style="color:#111">.</span><span style="color:#75af00">Request</span><span style="color:#111">.</span><span style="color:#75af00">UserAgent</span><span style="color:#111">()),</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#75af00">zap</span><span style="color:#111">.</span><span style="color:#75af00">String</span><span style="color:#111">(</span><span style="color:#d88200">&#34;errors&#34;</span><span style="color:#111">,</span> <span style="color:#75af00">c</span><span style="color:#111">.</span><span style="color:#75af00">Errors</span><span style="color:#111">.</span><span style="color:#75af00">ByType</span><span style="color:#111">(</span><span style="color:#75af00">gin</span><span style="color:#111">.</span><span style="color:#75af00">ErrorTypePrivate</span><span style="color:#111">).</span><span style="color:#75af00">String</span><span style="color:#111">()),</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#75af00">zap</span><span style="color:#111">.</span><span style="color:#75af00">Duration</span><span style="color:#111">(</span><span style="color:#d88200">&#34;cost&#34;</span><span style="color:#111">,</span> <span style="color:#75af00">cost</span><span style="color:#111">),</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// GinRecovery recover掉项目可能出现的panic</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#75af00">GinRecovery</span><span style="color:#111">(</span><span style="color:#75af00">logger</span> <span style="color:#f92672">*</span><span style="color:#75af00">zap</span><span style="color:#111">.</span><span style="color:#75af00">Logger</span><span style="color:#111">,</span> <span style="color:#75af00">stack</span> <span style="color:#00a8c8">bool</span><span style="color:#111">)</span> <span style="color:#75af00">gin</span><span style="color:#111">.</span><span style="color:#75af00">HandlerFunc</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">return</span> <span style="color:#00a8c8">func</span><span style="color:#111">(</span><span style="color:#75af00">c</span> <span style="color:#f92672">*</span><span style="color:#75af00">gin</span><span style="color:#111">.</span><span style="color:#75af00">Context</span><span style="color:#111">)</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#00a8c8">defer</span> <span style="color:#00a8c8">func</span><span style="color:#111">()</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#00a8c8">if</span> <span style="color:#75af00">err</span> <span style="color:#f92672">:=</span> <span style="color:#111">recover</span><span style="color:#111">();</span> <span style="color:#75af00">err</span> <span style="color:#f92672">!=</span> <span style="color:#00a8c8">nil</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>				<span style="color:#75715e">// Check for a broken connection, as it is not really a</span>
+</span></span><span style="display:flex;"><span>				<span style="color:#75715e">// condition that warrants a panic stack trace.</span>
+</span></span><span style="display:flex;"><span>				<span style="color:#00a8c8">var</span> <span style="color:#75af00">brokenPipe</span> <span style="color:#00a8c8">bool</span>
+</span></span><span style="display:flex;"><span>				<span style="color:#00a8c8">if</span> <span style="color:#75af00">ne</span><span style="color:#111">,</span> <span style="color:#75af00">ok</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">err</span><span style="color:#111">.(</span><span style="color:#f92672">*</span><span style="color:#75af00">net</span><span style="color:#111">.</span><span style="color:#75af00">OpError</span><span style="color:#111">);</span> <span style="color:#75af00">ok</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>					<span style="color:#00a8c8">if</span> <span style="color:#75af00">se</span><span style="color:#111">,</span> <span style="color:#75af00">ok</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">ne</span><span style="color:#111">.</span><span style="color:#75af00">Err</span><span style="color:#111">.(</span><span style="color:#f92672">*</span><span style="color:#75af00">os</span><span style="color:#111">.</span><span style="color:#75af00">SyscallError</span><span style="color:#111">);</span> <span style="color:#75af00">ok</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>						<span style="color:#00a8c8">if</span> <span style="color:#75af00">strings</span><span style="color:#111">.</span><span style="color:#75af00">Contains</span><span style="color:#111">(</span><span style="color:#75af00">strings</span><span style="color:#111">.</span><span style="color:#75af00">ToLower</span><span style="color:#111">(</span><span style="color:#75af00">se</span><span style="color:#111">.</span><span style="color:#75af00">Error</span><span style="color:#111">()),</span> <span style="color:#d88200">&#34;broken pipe&#34;</span><span style="color:#111">)</span> <span style="color:#f92672">||</span> <span style="color:#75af00">strings</span><span style="color:#111">.</span><span style="color:#75af00">Contains</span><span style="color:#111">(</span><span style="color:#75af00">strings</span><span style="color:#111">.</span><span style="color:#75af00">ToLower</span><span style="color:#111">(</span><span style="color:#75af00">se</span><span style="color:#111">.</span><span style="color:#75af00">Error</span><span style="color:#111">()),</span> <span style="color:#d88200">&#34;connection reset by peer&#34;</span><span style="color:#111">)</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>							<span style="color:#75af00">brokenPipe</span> <span style="color:#111">=</span> <span style="color:#00a8c8">true</span>
+</span></span><span style="display:flex;"><span>						<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>					<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>				<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>				<span style="color:#75af00">httpRequest</span><span style="color:#111">,</span> <span style="color:#75af00">_</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">httputil</span><span style="color:#111">.</span><span style="color:#75af00">DumpRequest</span><span style="color:#111">(</span><span style="color:#75af00">c</span><span style="color:#111">.</span><span style="color:#75af00">Request</span><span style="color:#111">,</span> <span style="color:#00a8c8">false</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>				<span style="color:#00a8c8">if</span> <span style="color:#75af00">brokenPipe</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>					<span style="color:#75af00">logger</span><span style="color:#111">.</span><span style="color:#75af00">Error</span><span style="color:#111">(</span><span style="color:#75af00">c</span><span style="color:#111">.</span><span style="color:#75af00">Request</span><span style="color:#111">.</span><span style="color:#75af00">URL</span><span style="color:#111">.</span><span style="color:#75af00">Path</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>						<span style="color:#75af00">zap</span><span style="color:#111">.</span><span style="color:#75af00">Any</span><span style="color:#111">(</span><span style="color:#d88200">&#34;error&#34;</span><span style="color:#111">,</span> <span style="color:#75af00">err</span><span style="color:#111">),</span>
+</span></span><span style="display:flex;"><span>						<span style="color:#75af00">zap</span><span style="color:#111">.</span><span style="color:#75af00">String</span><span style="color:#111">(</span><span style="color:#d88200">&#34;request&#34;</span><span style="color:#111">,</span> <span style="color:#111">string</span><span style="color:#111">(</span><span style="color:#75af00">httpRequest</span><span style="color:#111">)),</span>
+</span></span><span style="display:flex;"><span>					<span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>					<span style="color:#75715e">// If the connection is dead, we can&#39;t write a status to it.</span>
+</span></span><span style="display:flex;"><span>					<span style="color:#75af00">c</span><span style="color:#111">.</span><span style="color:#75af00">Error</span><span style="color:#111">(</span><span style="color:#75af00">err</span><span style="color:#111">.(</span><span style="color:#00a8c8">error</span><span style="color:#111">))</span> <span style="color:#75715e">// nolint: errcheck</span>
+</span></span><span style="display:flex;"><span>					<span style="color:#75af00">c</span><span style="color:#111">.</span><span style="color:#75af00">Abort</span><span style="color:#111">()</span>
+</span></span><span style="display:flex;"><span>					<span style="color:#00a8c8">return</span>
+</span></span><span style="display:flex;"><span>				<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>				<span style="color:#00a8c8">if</span> <span style="color:#75af00">stack</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>					<span style="color:#75af00">logger</span><span style="color:#111">.</span><span style="color:#75af00">Error</span><span style="color:#111">(</span><span style="color:#d88200">&#34;[Recovery from panic]&#34;</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>						<span style="color:#75af00">zap</span><span style="color:#111">.</span><span style="color:#75af00">Any</span><span style="color:#111">(</span><span style="color:#d88200">&#34;error&#34;</span><span style="color:#111">,</span> <span style="color:#75af00">err</span><span style="color:#111">),</span>
+</span></span><span style="display:flex;"><span>						<span style="color:#75af00">zap</span><span style="color:#111">.</span><span style="color:#75af00">String</span><span style="color:#111">(</span><span style="color:#d88200">&#34;request&#34;</span><span style="color:#111">,</span> <span style="color:#111">string</span><span style="color:#111">(</span><span style="color:#75af00">httpRequest</span><span style="color:#111">)),</span>
+</span></span><span style="display:flex;"><span>						<span style="color:#75af00">zap</span><span style="color:#111">.</span><span style="color:#75af00">String</span><span style="color:#111">(</span><span style="color:#d88200">&#34;stack&#34;</span><span style="color:#111">,</span> <span style="color:#111">string</span><span style="color:#111">(</span><span style="color:#75af00">debug</span><span style="color:#111">.</span><span style="color:#75af00">Stack</span><span style="color:#111">())),</span>
+</span></span><span style="display:flex;"><span>					<span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>				<span style="color:#111">}</span> <span style="color:#00a8c8">else</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>					<span style="color:#75af00">logger</span><span style="color:#111">.</span><span style="color:#75af00">Error</span><span style="color:#111">(</span><span style="color:#d88200">&#34;[Recovery from panic]&#34;</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>						<span style="color:#75af00">zap</span><span style="color:#111">.</span><span style="color:#75af00">Any</span><span style="color:#111">(</span><span style="color:#d88200">&#34;error&#34;</span><span style="color:#111">,</span> <span style="color:#75af00">err</span><span style="color:#111">),</span>
+</span></span><span style="display:flex;"><span>						<span style="color:#75af00">zap</span><span style="color:#111">.</span><span style="color:#75af00">String</span><span style="color:#111">(</span><span style="color:#d88200">&#34;request&#34;</span><span style="color:#111">,</span> <span style="color:#111">string</span><span style="color:#111">(</span><span style="color:#75af00">httpRequest</span><span style="color:#111">)),</span>
+</span></span><span style="display:flex;"><span>					<span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>				<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>				<span style="color:#75af00">c</span><span style="color:#111">.</span><span style="color:#75af00">AbortWithStatus</span><span style="color:#111">(</span><span style="color:#75af00">http</span><span style="color:#111">.</span><span style="color:#75af00">StatusInternalServerError</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#111">}()</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">c</span><span style="color:#111">.</span><span style="color:#75af00">Next</span><span style="color:#111">()</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span></code></pre></div><p>使用</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// 全局中间件</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#75af00">InitMiddleWares</span><span style="color:#111">(</span><span style="color:#75af00">eng</span> <span style="color:#f92672">*</span><span style="color:#75af00">gin</span><span style="color:#111">.</span><span style="color:#75af00">Engine</span><span style="color:#111">)</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">eng</span><span style="color:#111">.</span><span style="color:#75af00">Use</span><span style="color:#111">(</span><span style="color:#75af00">GinLogger</span><span style="color:#111">(</span><span style="color:#75af00">log</span><span style="color:#111">.</span><span style="color:#75af00">ZapLog</span><span style="color:#111">),</span> <span style="color:#75af00">GinRecovery</span><span style="color:#111">(</span><span style="color:#75af00">log</span><span style="color:#111">.</span><span style="color:#75af00">ZapLog</span><span style="color:#111">,</span> <span style="color:#00a8c8">true</span><span style="color:#111">))</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span></code></pre></div><p>参考文章:</p>
+<ul>
+<li><a href="https://mp.weixin.qq.com/s/i0bMh_gLLrdnhAEWlF-xDw">https://mp.weixin.qq.com/s/i0bMh_gLLrdnhAEWlF-xDw</a></li>
+<li><a href="https://studygolang.com/articles/17394">https://studygolang.com/articles/17394</a></li>
+</ul>
+]]></content:encoded><category>go</category><category>go</category><category>zap</category></item></channel></rss>

@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>BBR on Daemon365</title><link>https://daemon365.dev/tags/bbr/</link><description>Don't let yourself stop.</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><lastBuildDate>Sat, 04 Sep 2021 00:00:00 +0800</lastBuildDate><atom:link href="https://daemon365.dev/tags/bbr/index.xml" rel="self" type="application/rss+xml"/><item><title>从kratos分析BBR限流源码实现</title><link>https://daemon365.dev/post/kratos/analyzing_the_implementation_of_bbr_current_limiting_source_code_from_kratos/</link><pubDate>Sat, 04 Sep 2021 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/kratos/analyzing_the_implementation_of_bbr_current_limiting_source_code_from_kratos/</guid><description>&lt;h2 id="什么是自适应限流"&gt;什么是自适应限流&lt;/h2&gt;
+&lt;p&gt;自适应限流从整体维度对应用入口流量进行控制，结合应用的 Load、CPU 使用率、总体平均 RT、入口 QPS 和并发线程数等几个维度的监控指标，通过自适应的流控策略，让系统的入口流量和系统的负载达到一个平衡，让系统尽可能跑在最大吞吐量的同时保证系统整体的稳定性。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;核心目标：&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;自动嗅探负载和 qps，减少人工配置&lt;/li&gt;
+&lt;li&gt;削顶，保证超载时系统不被拖垮，并能以高水位 qps 继续运行&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="限流规则"&gt;限流规则&lt;/h2&gt;
+&lt;p&gt;&lt;img src="https://daemon365.dev/images/fdc8a49d-6a85-4ad6-b266-994260aa8350.png" alt=""&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;计算吞吐量：利特尔法则 &lt;code&gt;L = λ * W&lt;/code&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;如上图所示，如果我们开一个小店，平均每分钟进店 2 个客人(λ)，每位客人从等待到完成交易需要 4 分钟(W)，那我们店里能承载的客人数量就是 2 * 4 = 8 个人&lt;/p&gt;
+&lt;p&gt;同理，我们可以将 &lt;code&gt;λ&lt;/code&gt; 当做 QPS， &lt;code&gt;W&lt;/code&gt; 呢是每个请求需要花费的时间，那我们的系统的吞吐就是 &lt;code&gt;L = λ * W&lt;/code&gt; ，所以我们可以使用利特尔法则来计算系统的吞吐量。&lt;/p&gt;
+&lt;h3 id="指标介绍"&gt;指标介绍&lt;/h3&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;指标名称&lt;/th&gt;
+&lt;th&gt;指标含义&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;cpu&lt;/td&gt;
+&lt;td&gt;最近 1s 的 CPU 使用率均值，使用滑动平均计算，采样周期是 250ms&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;inflight&lt;/td&gt;
+&lt;td&gt;当前处理中正在处理的请求数量&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;pass&lt;/td&gt;
+&lt;td&gt;请求处理成功的量&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;rt&lt;/td&gt;
+&lt;td&gt;请求成功的响应耗时&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h3 id="滑动窗口"&gt;滑动窗口&lt;/h3&gt;
+&lt;p&gt;在自适应限流保护中，采集到的指标的时效性非常强，系统只需要采集最近一小段时间内的 qps、rt 即可，对于较老的数据，会自动丢弃。为了实现这个效果，kratos 使用了滑动窗口来保存采样数据。&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://daemon365.dev/images/d3cc3465-12f9-4400-bc50-8a7af654570c.png" alt=""&gt;&lt;/p&gt;
+&lt;p&gt;如上图，展示了一个具有两个桶（bucket）的滑动窗口（rolling window）。整个滑动窗口用来保存最近 1s 的采样数据，每个小的桶用来保存 500ms 的采样数据。 当时间流动之后，过期的桶会自动被新桶的数据覆盖掉，在图中，在 1000-1500ms 时，bucket 1 的数据因为过期而被丢弃，之后 bucket 3 的数据填到了窗口的头部。&lt;/p&gt;</description><content:encoded><![CDATA[<h2 id="什么是自适应限流">什么是自适应限流</h2>
+<p>自适应限流从整体维度对应用入口流量进行控制，结合应用的 Load、CPU 使用率、总体平均 RT、入口 QPS 和并发线程数等几个维度的监控指标，通过自适应的流控策略，让系统的入口流量和系统的负载达到一个平衡，让系统尽可能跑在最大吞吐量的同时保证系统整体的稳定性。</p>
+<p><strong>核心目标：</strong></p>
+<ul>
+<li>自动嗅探负载和 qps，减少人工配置</li>
+<li>削顶，保证超载时系统不被拖垮，并能以高水位 qps 继续运行</li>
+</ul>
+<h2 id="限流规则">限流规则</h2>
+<p><img src="/images/fdc8a49d-6a85-4ad6-b266-994260aa8350.png" alt=""></p>
+<p><strong>计算吞吐量：利特尔法则 <code>L = λ * W</code></strong></p>
+<p>如上图所示，如果我们开一个小店，平均每分钟进店 2 个客人(λ)，每位客人从等待到完成交易需要 4 分钟(W)，那我们店里能承载的客人数量就是 2 * 4 = 8 个人</p>
+<p>同理，我们可以将 <code>λ</code> 当做 QPS， <code>W</code> 呢是每个请求需要花费的时间，那我们的系统的吞吐就是 <code>L = λ * W</code> ，所以我们可以使用利特尔法则来计算系统的吞吐量。</p>
+<h3 id="指标介绍">指标介绍</h3>
+<table>
+  <thead>
+      <tr>
+          <th>指标名称</th>
+          <th>指标含义</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>cpu</td>
+          <td>最近 1s 的 CPU 使用率均值，使用滑动平均计算，采样周期是 250ms</td>
+      </tr>
+      <tr>
+          <td>inflight</td>
+          <td>当前处理中正在处理的请求数量</td>
+      </tr>
+      <tr>
+          <td>pass</td>
+          <td>请求处理成功的量</td>
+      </tr>
+      <tr>
+          <td>rt</td>
+          <td>请求成功的响应耗时</td>
+      </tr>
+  </tbody>
+</table>
+<h3 id="滑动窗口">滑动窗口</h3>
+<p>在自适应限流保护中，采集到的指标的时效性非常强，系统只需要采集最近一小段时间内的 qps、rt 即可，对于较老的数据，会自动丢弃。为了实现这个效果，kratos 使用了滑动窗口来保存采样数据。</p>
+<p><img src="/images/d3cc3465-12f9-4400-bc50-8a7af654570c.png" alt=""></p>
+<p>如上图，展示了一个具有两个桶（bucket）的滑动窗口（rolling window）。整个滑动窗口用来保存最近 1s 的采样数据，每个小的桶用来保存 500ms 的采样数据。 当时间流动之后，过期的桶会自动被新桶的数据覆盖掉，在图中，在 1000-1500ms 时，bucket 1 的数据因为过期而被丢弃，之后 bucket 3 的数据填到了窗口的头部。</p>
+<h3 id="限流公式">限流公式</h3>
+<p>判断是否丢弃当前请求的算法如下：</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75af00">cpu</span> <span style="color:#111">&gt;</span> <span style="color:#ae81ff">800</span> <span style="color:#75af00">AND</span> <span style="color:#111">(</span><span style="color:#75af00">Now</span> <span style="color:#f92672">-</span> <span style="color:#75af00">PrevDrop</span><span style="color:#111">)</span> <span style="color:#111">&lt;</span> <span style="color:#ae81ff">1</span><span style="color:#75af00">s</span> <span style="color:#75af00">AND</span> <span style="color:#111">(</span><span style="color:#75af00">MaxPass</span> <span style="color:#f92672">*</span> <span style="color:#75af00">MinRt</span> <span style="color:#f92672">*</span> <span style="color:#75af00">windows</span> <span style="color:#f92672">/</span> <span style="color:#ae81ff">1000</span><span style="color:#111">)</span> <span style="color:#111">&lt;</span> <span style="color:#75af00">InFlight</span>
+</span></span></code></pre></div><p>MaxPass 表示最近 5s 内，单个采样窗口中最大的请求数。 MinRt 表示最近 5s 内，单个采样窗口中最小的响应时间。 windows 表示一秒内采样窗口的数量，默认配置中是 5s 50 个采样，那么 windows 的值为 10。</p>
+<h2 id="源码分析">源码分析</h2>
+<h2 id="代码地址">代码地址：</h2>
+<ul>
+<li><a href="https://github.com/go-kratos/aegis/tree/main/ratelimit/bbr">https://github.com/go-kratos/aegis/tree/main/ratelimit/bbr</a></li>
+</ul>
+<h3 id="bbr-struct">BBR struct</h3>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#00a8c8">type</span> <span style="color:#75af00">BBR</span> <span style="color:#00a8c8">struct</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">cpu</span>             <span style="color:#75af00">cpuGetter</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">passStat</span>        <span style="color:#75af00">window</span><span style="color:#111">.</span><span style="color:#75af00">RollingCounter</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">rtStat</span>          <span style="color:#75af00">window</span><span style="color:#111">.</span><span style="color:#75af00">RollingCounter</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">inFlight</span>        <span style="color:#00a8c8">int64</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">bucketPerSecond</span> <span style="color:#00a8c8">int64</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">bucketSize</span>      <span style="color:#75af00">time</span><span style="color:#111">.</span><span style="color:#75af00">Duration</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// prevDropTime defines previous start drop since initTime</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">prevDropTime</span> <span style="color:#75af00">atomic</span><span style="color:#111">.</span><span style="color:#75af00">Value</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">maxPASSCache</span> <span style="color:#75af00">atomic</span><span style="color:#111">.</span><span style="color:#75af00">Value</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">minRtCache</span>   <span style="color:#75af00">atomic</span><span style="color:#111">.</span><span style="color:#75af00">Value</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">opts</span> <span style="color:#f92672">*</span><span style="color:#75af00">options</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span></code></pre></div><ol>
+<li><code>cpu</code>
+<ul>
+<li>cpu的指标函数，CPU的使用率， 这里为了减小误差，把数字扩大化，乘以1000，比赛使用率60%，也就是0.6 cpu的值就为600</li>
+</ul>
+</li>
+<li><code>passStat</code>
+<ul>
+<li>请求数的采样数据，使用滑动窗口进行统计</li>
+</ul>
+</li>
+<li><code>rtStat</code>
+<ul>
+<li>响应时间的采样数据，同样使用滑动窗口进行统计</li>
+</ul>
+</li>
+<li><code>inFlight</code>
+<ul>
+<li>当前系统中的请求数，数据得来方法是：中间件原理在处理前+1，处理handle之后不管成功失败都减去1</li>
+</ul>
+</li>
+<li><code>bucketPerSecond</code>
+<ul>
+<li>一个 bucket 的时间</li>
+</ul>
+</li>
+<li><code>bucketSize</code>
+<ul>
+<li>桶的数量</li>
+</ul>
+</li>
+<li><code>prevDropTime</code>
+<ul>
+<li>上次触发限流时间</li>
+</ul>
+</li>
+<li><code>maxPASSCache</code>
+<ul>
+<li>单个采样窗口中最大的请求数的缓存数据</li>
+</ul>
+</li>
+<li><code>minRtCache</code>
+<ul>
+<li>单个采样窗口中最小的响应时间的缓存数据</li>
+</ul>
+</li>
+</ol>
+<h2 id="allow接口">Allow接口</h2>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// Allow checks all inbound traffic.</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// Once overload is detected, it raises limit.ErrLimitExceed error.</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#111">(</span><span style="color:#75af00">l</span> <span style="color:#f92672">*</span><span style="color:#75af00">BBR</span><span style="color:#111">)</span> <span style="color:#75af00">Allow</span><span style="color:#111">(</span><span style="color:#75af00">ctx</span> <span style="color:#75af00">context</span><span style="color:#111">.</span><span style="color:#75af00">Context</span><span style="color:#111">)</span> <span style="color:#111">(</span><span style="color:#00a8c8">func</span><span style="color:#111">(),</span> <span style="color:#00a8c8">error</span><span style="color:#111">)</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">l</span><span style="color:#111">.</span><span style="color:#75af00">shouldDrop</span><span style="color:#111">()</span> <span style="color:#111">{</span> <span style="color:#75715e">// shouldDrop 判断是否需要限流，如果true表示拒绝 之后重点讲</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#00a8c8">return</span> <span style="color:#00a8c8">nil</span><span style="color:#111">,</span> <span style="color:#75af00">ErrLimitExceed</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">atomic</span><span style="color:#111">.</span><span style="color:#75af00">AddInt64</span><span style="color:#111">(</span><span style="color:#f92672">&amp;</span><span style="color:#75af00">l</span><span style="color:#111">.</span><span style="color:#75af00">inFlight</span><span style="color:#111">,</span> <span style="color:#ae81ff">1</span><span style="color:#111">)</span> <span style="color:#75715e">// 之前说的，正在处理数+1</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">stime</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">time</span><span style="color:#111">.</span><span style="color:#75af00">Since</span><span style="color:#111">(</span><span style="color:#75af00">initTime</span><span style="color:#111">)</span> <span style="color:#75715e">// 现在时间减去程序初始化时间 表示程序开始执行时刻</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">return</span> <span style="color:#00a8c8">func</span><span style="color:#111">()</span> <span style="color:#111">{</span> <span style="color:#75715e">// allow返回函数 在中间件（拦截器）中handle执行完成后调用</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">rt</span> <span style="color:#f92672">:=</span> <span style="color:#111">int64</span><span style="color:#111">((</span><span style="color:#75af00">time</span><span style="color:#111">.</span><span style="color:#75af00">Since</span><span style="color:#111">(</span><span style="color:#75af00">initTime</span><span style="color:#111">)</span> <span style="color:#f92672">-</span> <span style="color:#75af00">stime</span><span style="color:#111">)</span> <span style="color:#f92672">/</span> <span style="color:#75af00">time</span><span style="color:#111">.</span><span style="color:#75af00">Millisecond</span><span style="color:#111">)</span>  <span style="color:#75715e">// 执行完handle的时间减去stime 表示 程序执行的总时间 单位ms</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">l</span><span style="color:#111">.</span><span style="color:#75af00">rtStat</span><span style="color:#111">.</span><span style="color:#75af00">Add</span><span style="color:#111">(</span><span style="color:#75af00">rt</span><span style="color:#111">)</span> <span style="color:#75715e">// 把处理时间放进采样数据window</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">atomic</span><span style="color:#111">.</span><span style="color:#75af00">AddInt64</span><span style="color:#111">(</span><span style="color:#f92672">&amp;</span><span style="color:#75af00">l</span><span style="color:#111">.</span><span style="color:#75af00">inFlight</span><span style="color:#111">,</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span><span style="color:#111">)</span> <span style="color:#75715e">// 正在处理数-1 便是处理完成</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">l</span><span style="color:#111">.</span><span style="color:#75af00">passStat</span><span style="color:#111">.</span><span style="color:#75af00">Add</span><span style="color:#111">(</span><span style="color:#ae81ff">1</span><span style="color:#111">)</span> <span style="color:#75715e">// 成功了，把通过数的采样数据window加1</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">},</span> <span style="color:#00a8c8">nil</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span></code></pre></div><h3 id="shoulddrop方法">shouldDrop方法</h3>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#111">(</span><span style="color:#75af00">l</span> <span style="color:#f92672">*</span><span style="color:#75af00">BBR</span><span style="color:#111">)</span> <span style="color:#75af00">shouldDrop</span><span style="color:#111">()</span> <span style="color:#00a8c8">bool</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">curTime</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">time</span><span style="color:#111">.</span><span style="color:#75af00">Since</span><span style="color:#111">(</span><span style="color:#75af00">initTime</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">l</span><span style="color:#111">.</span><span style="color:#75af00">cpu</span><span style="color:#111">()</span> <span style="color:#111">&lt;</span> <span style="color:#75af00">l</span><span style="color:#111">.</span><span style="color:#75af00">opts</span><span style="color:#111">.</span><span style="color:#75af00">CPUThreshold</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75715e">// current cpu payload below the threshold</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">prevDropTime</span><span style="color:#111">,</span> <span style="color:#75af00">_</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">l</span><span style="color:#111">.</span><span style="color:#75af00">prevDropTime</span><span style="color:#111">.</span><span style="color:#75af00">Load</span><span style="color:#111">().(</span><span style="color:#75af00">time</span><span style="color:#111">.</span><span style="color:#75af00">Duration</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#00a8c8">if</span> <span style="color:#75af00">prevDropTime</span> <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#75715e">// haven&#39;t start drop,</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#75715e">// accept current request</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#00a8c8">return</span> <span style="color:#00a8c8">false</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#00a8c8">if</span> <span style="color:#75af00">curTime</span><span style="color:#f92672">-</span><span style="color:#75af00">prevDropTime</span> <span style="color:#f92672">&lt;=</span> <span style="color:#75af00">time</span><span style="color:#111">.</span><span style="color:#75af00">Second</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#75715e">// just start drop one second ago,</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#75715e">// check current inflight count</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#75af00">inFlight</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">atomic</span><span style="color:#111">.</span><span style="color:#75af00">LoadInt64</span><span style="color:#111">(</span><span style="color:#f92672">&amp;</span><span style="color:#75af00">l</span><span style="color:#111">.</span><span style="color:#75af00">inFlight</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#00a8c8">return</span> <span style="color:#75af00">inFlight</span> <span style="color:#111">&gt;</span> <span style="color:#ae81ff">1</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#75af00">inFlight</span> <span style="color:#111">&gt;</span> <span style="color:#75af00">l</span><span style="color:#111">.</span><span style="color:#75af00">maxInFlight</span><span style="color:#111">()</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">l</span><span style="color:#111">.</span><span style="color:#75af00">prevDropTime</span><span style="color:#111">.</span><span style="color:#75af00">Store</span><span style="color:#111">(</span><span style="color:#75af00">time</span><span style="color:#111">.</span><span style="color:#75af00">Duration</span><span style="color:#111">(</span><span style="color:#ae81ff">0</span><span style="color:#111">))</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#00a8c8">return</span> <span style="color:#00a8c8">false</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// current cpu payload exceeds the threshold</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">inFlight</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">atomic</span><span style="color:#111">.</span><span style="color:#75af00">LoadInt64</span><span style="color:#111">(</span><span style="color:#f92672">&amp;</span><span style="color:#75af00">l</span><span style="color:#111">.</span><span style="color:#75af00">inFlight</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">drop</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">inFlight</span> <span style="color:#111">&gt;</span> <span style="color:#ae81ff">1</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#75af00">inFlight</span> <span style="color:#111">&gt;</span> <span style="color:#75af00">l</span><span style="color:#111">.</span><span style="color:#75af00">maxInFlight</span><span style="color:#111">()</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">drop</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">prevDrop</span><span style="color:#111">,</span> <span style="color:#75af00">_</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">l</span><span style="color:#111">.</span><span style="color:#75af00">prevDropTime</span><span style="color:#111">.</span><span style="color:#75af00">Load</span><span style="color:#111">().(</span><span style="color:#75af00">time</span><span style="color:#111">.</span><span style="color:#75af00">Duration</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#00a8c8">if</span> <span style="color:#75af00">prevDrop</span> <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#75715e">// already started drop, return directly</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#00a8c8">return</span> <span style="color:#75af00">drop</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75715e">// store start drop time</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">l</span><span style="color:#111">.</span><span style="color:#75af00">prevDropTime</span><span style="color:#111">.</span><span style="color:#75af00">Store</span><span style="color:#111">(</span><span style="color:#75af00">curTime</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">return</span> <span style="color:#75af00">drop</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span></code></pre></div><p><strong>maxInFlight()方法代表过去的负载</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#111">int64</span><span style="color:#111">(</span><span style="color:#75af00">math</span><span style="color:#111">.</span><span style="color:#75af00">Floor</span><span style="color:#111">(</span><span style="color:#111">float64</span><span style="color:#111">(</span><span style="color:#75af00">l</span><span style="color:#111">.</span><span style="color:#75af00">maxPASS</span><span style="color:#111">()</span><span style="color:#f92672">*</span><span style="color:#75af00">l</span><span style="color:#111">.</span><span style="color:#75af00">minRT</span><span style="color:#111">()</span><span style="color:#f92672">*</span><span style="color:#75af00">l</span><span style="color:#111">.</span><span style="color:#75af00">bucketPerSecond</span><span style="color:#111">)</span><span style="color:#f92672">/</span><span style="color:#ae81ff">1000.0</span><span style="color:#111">)</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">0.5</span><span style="color:#111">)</span>
+</span></span></code></pre></div><p>参考算法：https://github.com/alibaba/Sentinel/wiki/%E7%B3%BB%E7%BB%9F%E8%87%AA%E9%80%82%E5%BA%94%E9%99%90%E6%B5%81</p>
+<ul>
+<li>maxPass * bucketPerSecond / 1000 为每毫秒处理的请求数</li>
+<li>l.minRT() 为 单个采样窗口中最小的响应时间</li>
+<li>T ≈ QPS * Avg(RT)</li>
+<li><code> + 0.5</code>为向上取整</li>
+</ul>
+<h3 id="流程图">流程图</h3>
+<p><img src="/images/c13f3623-a858-4322-9695-f1db1a4f85a5.png" alt=""></p>
+<h2 id="压测报告">压测报告</h2>
+<p>场景1，请求以每秒增加1个的速度不停上升，压测效果如下：</p>
+<p><img src="/images/fcae1ea8-da01-470a-823d-ab394851b01a.png" alt=""></p>
+<p>左测是没有限流的压测效果，右侧是带限流的压测效果。 可以看到，没有限流的场景里，系统在 700qps 时开始抖动，在 1k qps 时被拖垮，几乎没有新的请求能被放行，然而在使用限流之后，系统请求能够稳定在 600 qps 左右，rt 没有暴增，服务也没有被打垮，可见，限流有效的保护了服务。</p>
+<h2 id="原文地址">原文地址：</h2>
+<ul>
+<li><a href="https://zhaohaiyu.com/posts/microservice/overload/">https://zhaohaiyu.com/posts/microservice/overload/</a></li>
+</ul>
+<p>参考文章：</p>
+<ul>
+<li><a href="https://v1.go-kratos.dev/#/ratelimit">https://v1.go-kratos.dev/#/ratelimit</a></li>
+<li><a href="https://github.com/alibaba/Sentinel/wiki/%E7%B3%BB%E7%BB%9F%E8%87%AA%E9%80%82%E5%BA%94%E9%99%90%E6%B5%81">https://github.com/alibaba/Sentinel/wiki/%E7%B3%BB%E7%BB%9F%E8%87%AA%E9%80%82%E5%BA%94%E9%99%90%E6%B5%81</a></li>
+</ul>
+<hr>
+<p><img src="/images/f3c8339b-cae8-4cde-9f92-dd68eba61462.png" alt=""></p>
+<p><img src="/images/cec35d8f-b7d4-4c38-adb3-1fe46b6c7a1b.gif" alt=""></p>
+]]></content:encoded><category>kratos</category><category>go</category><category>kratos</category><category>BBR</category><category>源码分析</category></item></channel></rss>

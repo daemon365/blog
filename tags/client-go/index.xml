@@ -1,0 +1,727 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>Client-Go on Daemon365</title><link>https://daemon365.dev/tags/client-go/</link><description>Don't let yourself stop.</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><lastBuildDate>Fri, 08 Mar 2024 17:11:00 +0800</lastBuildDate><atom:link href="https://daemon365.dev/tags/client-go/index.xml" rel="self" type="application/rss+xml"/><item><title>kubernetes client-go功能介绍</title><link>https://daemon365.dev/post/cloud/kubernetes_client_go_function_introduction/</link><pubDate>Fri, 08 Mar 2024 17:11:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/kubernetes_client_go_function_introduction/</guid><description>&lt;h2 id="原文地址"&gt;原文地址&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://haiyux.cc/2023/02/26/k8s-client-go/"&gt;https://haiyux.cc/2023/02/26/k8s-client-go/&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id="client-go是什么"&gt;client-go是什么？&lt;/h2&gt;
+&lt;p&gt;client-go是Kubernetes官方提供的Go语言客户端库，用于与Kubernetes API服务器交互。使用client-go，您可以编写Go语言程序来创建、修改和删除Kubernetes对象，如Pod、Deployment、Service等。&lt;/p&gt;
+&lt;h2 id="作用"&gt;作用&lt;/h2&gt;
+&lt;p&gt;client-go的主要功能包括：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;连接Kubernetes API服务器：client-go提供了一个API客户端，用于连接Kubernetes API服务器。&lt;/li&gt;
+&lt;li&gt;对象管理：client-go提供了一组API，用于创建、读取、更新和删除Kubernetes对象，如Pod、Deployment、Service等。&lt;/li&gt;
+&lt;li&gt;Watch API：client-go提供了一个Watch API，可以用于监视Kubernetes对象的变化。&lt;/li&gt;
+&lt;li&gt;命名空间支持：client-go支持多个命名空间，并提供了一组API，用于管理命名空间。&lt;/li&gt;
+&lt;li&gt;认证和授权：client-go提供了一组API，用于执行身份验证和授权，以确保只有授权的用户才能对Kubernetes对象进行操作。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;client-go是使用Kubernetes API的标准方式，是Kubernetes生态系统中的重要组成部分。&lt;/p&gt;
+&lt;h2 id="api-client"&gt;api client&lt;/h2&gt;
+&lt;p&gt;client-go 中包含四种client，&lt;code&gt;RestClient&lt;/code&gt;, &lt;code&gt;ClientSet&lt;/code&gt;，&lt;code&gt;DynamicClient&lt;/code&gt;和&lt;code&gt;DiscoveryClient&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://daemon365.dev/images/ee8f5899-aa4e-45a6-b240-dcec971e9cd7.png" alt=""&gt;&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;ClientSet&lt;/code&gt;，&lt;code&gt;DynamicClient&lt;/code&gt;，&lt;code&gt;DiscoveryClient&lt;/code&gt;都是&lt;code&gt;RestClient&lt;/code&gt;上的封装&lt;/p&gt;
+&lt;h3 id="restclient"&gt;RestClient&lt;/h3&gt;
+&lt;p&gt;RestClient是最基础的客户端，它基于HTTP请求进行了封装，实现了RESTful API。使用RESTClient提供的RESTful方法，如Get()、Put()、Post()和Delete()，可以直接与API进行交互。同时，它支持JSON和Protocol Buffers，并支持所有原生资源和自定义资源定义（CRDs）。然而，为了更加优雅地处理API交互，一般需要进一步封装，通过Clientset对RESTClient进行封装，然后再对外提供接口和服务。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-go" data-lang="go"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f92672"&gt;package&lt;/span&gt; &lt;span style="color:#75af00"&gt;main&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f92672"&gt;import&lt;/span&gt; &lt;span style="color:#111"&gt;(&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;context&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;fmt&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;path/filepath&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;corev1&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;k8s.io/api/core/v1&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;metav1&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;k8s.io/apimachinery/pkg/apis/meta/v1&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;k8s.io/client-go/kubernetes/scheme&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;k8s.io/client-go/rest&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;k8s.io/client-go/tools/clientcmd&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;k8s.io/client-go/util/homedir&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;func&lt;/span&gt; &lt;span style="color:#75af00"&gt;main&lt;/span&gt;&lt;span style="color:#111"&gt;()&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// 使用kubeconfig生成配置&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;config&lt;/span&gt;&lt;span style="color:#111"&gt;,&lt;/span&gt; &lt;span style="color:#75af00"&gt;err&lt;/span&gt; &lt;span style="color:#f92672"&gt;:=&lt;/span&gt; &lt;span style="color:#75af00"&gt;clientcmd&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;BuildConfigFromFlags&lt;/span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#d88200"&gt;&amp;#34;&amp;#34;&lt;/span&gt;&lt;span style="color:#111"&gt;,&lt;/span&gt; &lt;span style="color:#75af00"&gt;filepath&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;Join&lt;/span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#75af00"&gt;homedir&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;HomeDir&lt;/span&gt;&lt;span style="color:#111"&gt;(),&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;.kube&amp;#34;&lt;/span&gt;&lt;span style="color:#111"&gt;,&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;config&amp;#34;&lt;/span&gt;&lt;span style="color:#111"&gt;))&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#00a8c8"&gt;if&lt;/span&gt; &lt;span style="color:#75af00"&gt;err&lt;/span&gt; &lt;span style="color:#f92672"&gt;!=&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;nil&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;panic&lt;/span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#75af00"&gt;err&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;config&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;APIPath&lt;/span&gt; &lt;span style="color:#111"&gt;=&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;api&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;config&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;GroupVersion&lt;/span&gt; &lt;span style="color:#111"&gt;=&lt;/span&gt; &lt;span style="color:#f92672"&gt;&amp;amp;&lt;/span&gt;&lt;span style="color:#75af00"&gt;corev1&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;SchemeGroupVersion&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;config&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;NegotiatedSerializer&lt;/span&gt; &lt;span style="color:#111"&gt;=&lt;/span&gt; &lt;span style="color:#75af00"&gt;scheme&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;Codecs&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// 生成restClient&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;restClient&lt;/span&gt;&lt;span style="color:#111"&gt;,&lt;/span&gt; &lt;span style="color:#75af00"&gt;err&lt;/span&gt; &lt;span style="color:#f92672"&gt;:=&lt;/span&gt; &lt;span style="color:#75af00"&gt;rest&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;RESTClientFor&lt;/span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#75af00"&gt;config&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#00a8c8"&gt;if&lt;/span&gt; &lt;span style="color:#75af00"&gt;err&lt;/span&gt; &lt;span style="color:#f92672"&gt;!=&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;nil&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;panic&lt;/span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#75af00"&gt;err&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;rest&lt;/span&gt; &lt;span style="color:#f92672"&gt;:=&lt;/span&gt; &lt;span style="color:#f92672"&gt;&amp;amp;&lt;/span&gt;&lt;span style="color:#75af00"&gt;corev1&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;PodList&lt;/span&gt;&lt;span style="color:#111"&gt;{}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#00a8c8"&gt;if&lt;/span&gt; &lt;span style="color:#75af00"&gt;err&lt;/span&gt; &lt;span style="color:#111"&gt;=&lt;/span&gt; &lt;span style="color:#75af00"&gt;restClient&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;Get&lt;/span&gt;&lt;span style="color:#111"&gt;().&lt;/span&gt;&lt;span style="color:#75af00"&gt;Namespace&lt;/span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#d88200"&gt;&amp;#34;default&amp;#34;&lt;/span&gt;&lt;span style="color:#111"&gt;).&lt;/span&gt;&lt;span style="color:#75af00"&gt;Resource&lt;/span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#d88200"&gt;&amp;#34;pods&amp;#34;&lt;/span&gt;&lt;span style="color:#111"&gt;).&lt;/span&gt;&lt;span style="color:#75af00"&gt;VersionedParams&lt;/span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#f92672"&gt;&amp;amp;&lt;/span&gt;&lt;span style="color:#75af00"&gt;metav1&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;ListOptions&lt;/span&gt;&lt;span style="color:#111"&gt;{},&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;scheme&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;ParameterCodec&lt;/span&gt;&lt;span style="color:#111"&gt;).&lt;/span&gt;&lt;span style="color:#75af00"&gt;Do&lt;/span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#75af00"&gt;context&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;TODO&lt;/span&gt;&lt;span style="color:#111"&gt;()).&lt;/span&gt;&lt;span style="color:#75af00"&gt;Into&lt;/span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#75af00"&gt;rest&lt;/span&gt;&lt;span style="color:#111"&gt;);&lt;/span&gt; &lt;span style="color:#75af00"&gt;err&lt;/span&gt; &lt;span style="color:#f92672"&gt;!=&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;nil&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;panic&lt;/span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#75af00"&gt;err&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#00a8c8"&gt;for&lt;/span&gt; &lt;span style="color:#75af00"&gt;_&lt;/span&gt;&lt;span style="color:#111"&gt;,&lt;/span&gt; &lt;span style="color:#75af00"&gt;v&lt;/span&gt; &lt;span style="color:#f92672"&gt;:=&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;range&lt;/span&gt; &lt;span style="color:#75af00"&gt;rest&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;Items&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;fmt&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;Printf&lt;/span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#d88200"&gt;&amp;#34;NameSpace: %v Name: %v Status: %v \n&amp;#34;&lt;/span&gt;&lt;span style="color:#111"&gt;,&lt;/span&gt; &lt;span style="color:#75af00"&gt;v&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;Namespace&lt;/span&gt;&lt;span style="color:#111"&gt;,&lt;/span&gt; &lt;span style="color:#75af00"&gt;v&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;Name&lt;/span&gt;&lt;span style="color:#111"&gt;,&lt;/span&gt; &lt;span style="color:#75af00"&gt;v&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;Status&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;Phase&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#111"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;/*
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;结果
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;NameSpace: default Name: nginx-76d6c9b8c-8ljkt Status: Running
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;NameSpace: default Name: nginx-76d6c9b8c-jqv9h Status: Running
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;NameSpace: default Name: nginx-76d6c9b8c-kr9d2 Status: Running
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;NameSpace: default Name: nginx-76d6c9b8c-m4g5l Status: Running
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;NameSpace: default Name: nginx-76d6c9b8c-n8st9 Status: Running
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;*/&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id="clientset"&gt;ClientSet&lt;/h3&gt;
+&lt;p&gt;ClientSet是在RestClient的基础上封装了对资源和版本的管理方法。资源可以理解为一个客户端，而ClientSet是多个客户端的集合。在操作资源对象时，需要指定Group和Version，然后根据资源获取。然而，ClientSet不支持自定义资源定义（CRDs），但使用kubebuilder生成代码时，会生成相应的ClientSet。&lt;/p&gt;</description><content:encoded><![CDATA[<h2 id="原文地址">原文地址</h2>
+<p><a href="https://haiyux.cc/2023/02/26/k8s-client-go/">https://haiyux.cc/2023/02/26/k8s-client-go/</a></p>
+<h2 id="client-go是什么">client-go是什么？</h2>
+<p>client-go是Kubernetes官方提供的Go语言客户端库，用于与Kubernetes API服务器交互。使用client-go，您可以编写Go语言程序来创建、修改和删除Kubernetes对象，如Pod、Deployment、Service等。</p>
+<h2 id="作用">作用</h2>
+<p>client-go的主要功能包括：</p>
+<ol>
+<li>连接Kubernetes API服务器：client-go提供了一个API客户端，用于连接Kubernetes API服务器。</li>
+<li>对象管理：client-go提供了一组API，用于创建、读取、更新和删除Kubernetes对象，如Pod、Deployment、Service等。</li>
+<li>Watch API：client-go提供了一个Watch API，可以用于监视Kubernetes对象的变化。</li>
+<li>命名空间支持：client-go支持多个命名空间，并提供了一组API，用于管理命名空间。</li>
+<li>认证和授权：client-go提供了一组API，用于执行身份验证和授权，以确保只有授权的用户才能对Kubernetes对象进行操作。</li>
+</ol>
+<p>client-go是使用Kubernetes API的标准方式，是Kubernetes生态系统中的重要组成部分。</p>
+<h2 id="api-client">api client</h2>
+<p>client-go 中包含四种client，<code>RestClient</code>, <code>ClientSet</code>，<code>DynamicClient</code>和<code>DiscoveryClient</code>。</p>
+<p><img src="/images/ee8f5899-aa4e-45a6-b240-dcec971e9cd7.png" alt=""></p>
+<p><code>ClientSet</code>，<code>DynamicClient</code>，<code>DiscoveryClient</code>都是<code>RestClient</code>上的封装</p>
+<h3 id="restclient">RestClient</h3>
+<p>RestClient是最基础的客户端，它基于HTTP请求进行了封装，实现了RESTful API。使用RESTClient提供的RESTful方法，如Get()、Put()、Post()和Delete()，可以直接与API进行交互。同时，它支持JSON和Protocol Buffers，并支持所有原生资源和自定义资源定义（CRDs）。然而，为了更加优雅地处理API交互，一般需要进一步封装，通过Clientset对RESTClient进行封装，然后再对外提供接口和服务。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;context&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;fmt&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;path/filepath&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">corev1</span> <span style="color:#d88200">&#34;k8s.io/api/core/v1&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">metav1</span> <span style="color:#d88200">&#34;k8s.io/apimachinery/pkg/apis/meta/v1&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;k8s.io/client-go/kubernetes/scheme&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;k8s.io/client-go/rest&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;k8s.io/client-go/tools/clientcmd&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;k8s.io/client-go/util/homedir&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#75af00">main</span><span style="color:#111">()</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 使用kubeconfig生成配置</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">config</span><span style="color:#111">,</span> <span style="color:#75af00">err</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">clientcmd</span><span style="color:#111">.</span><span style="color:#75af00">BuildConfigFromFlags</span><span style="color:#111">(</span><span style="color:#d88200">&#34;&#34;</span><span style="color:#111">,</span> <span style="color:#75af00">filepath</span><span style="color:#111">.</span><span style="color:#75af00">Join</span><span style="color:#111">(</span><span style="color:#75af00">homedir</span><span style="color:#111">.</span><span style="color:#75af00">HomeDir</span><span style="color:#111">(),</span> <span style="color:#d88200">&#34;.kube&#34;</span><span style="color:#111">,</span> <span style="color:#d88200">&#34;config&#34;</span><span style="color:#111">))</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">err</span> <span style="color:#f92672">!=</span> <span style="color:#00a8c8">nil</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#111">panic</span><span style="color:#111">(</span><span style="color:#75af00">err</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">config</span><span style="color:#111">.</span><span style="color:#75af00">APIPath</span> <span style="color:#111">=</span> <span style="color:#d88200">&#34;api&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">config</span><span style="color:#111">.</span><span style="color:#75af00">GroupVersion</span> <span style="color:#111">=</span> <span style="color:#f92672">&amp;</span><span style="color:#75af00">corev1</span><span style="color:#111">.</span><span style="color:#75af00">SchemeGroupVersion</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">config</span><span style="color:#111">.</span><span style="color:#75af00">NegotiatedSerializer</span> <span style="color:#111">=</span> <span style="color:#75af00">scheme</span><span style="color:#111">.</span><span style="color:#75af00">Codecs</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 生成restClient</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">restClient</span><span style="color:#111">,</span> <span style="color:#75af00">err</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">rest</span><span style="color:#111">.</span><span style="color:#75af00">RESTClientFor</span><span style="color:#111">(</span><span style="color:#75af00">config</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">err</span> <span style="color:#f92672">!=</span> <span style="color:#00a8c8">nil</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#111">panic</span><span style="color:#111">(</span><span style="color:#75af00">err</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">rest</span> <span style="color:#f92672">:=</span> <span style="color:#f92672">&amp;</span><span style="color:#75af00">corev1</span><span style="color:#111">.</span><span style="color:#75af00">PodList</span><span style="color:#111">{}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">err</span> <span style="color:#111">=</span> <span style="color:#75af00">restClient</span><span style="color:#111">.</span><span style="color:#75af00">Get</span><span style="color:#111">().</span><span style="color:#75af00">Namespace</span><span style="color:#111">(</span><span style="color:#d88200">&#34;default&#34;</span><span style="color:#111">).</span><span style="color:#75af00">Resource</span><span style="color:#111">(</span><span style="color:#d88200">&#34;pods&#34;</span><span style="color:#111">).</span><span style="color:#75af00">VersionedParams</span><span style="color:#111">(</span><span style="color:#f92672">&amp;</span><span style="color:#75af00">metav1</span><span style="color:#111">.</span><span style="color:#75af00">ListOptions</span><span style="color:#111">{},</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">scheme</span><span style="color:#111">.</span><span style="color:#75af00">ParameterCodec</span><span style="color:#111">).</span><span style="color:#75af00">Do</span><span style="color:#111">(</span><span style="color:#75af00">context</span><span style="color:#111">.</span><span style="color:#75af00">TODO</span><span style="color:#111">()).</span><span style="color:#75af00">Into</span><span style="color:#111">(</span><span style="color:#75af00">rest</span><span style="color:#111">);</span> <span style="color:#75af00">err</span> <span style="color:#f92672">!=</span> <span style="color:#00a8c8">nil</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#111">panic</span><span style="color:#111">(</span><span style="color:#75af00">err</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">for</span> <span style="color:#75af00">_</span><span style="color:#111">,</span> <span style="color:#75af00">v</span> <span style="color:#f92672">:=</span> <span style="color:#00a8c8">range</span> <span style="color:#75af00">rest</span><span style="color:#111">.</span><span style="color:#75af00">Items</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">fmt</span><span style="color:#111">.</span><span style="color:#75af00">Printf</span><span style="color:#111">(</span><span style="color:#d88200">&#34;NameSpace: %v  Name: %v  Status: %v \n&#34;</span><span style="color:#111">,</span> <span style="color:#75af00">v</span><span style="color:#111">.</span><span style="color:#75af00">Namespace</span><span style="color:#111">,</span> <span style="color:#75af00">v</span><span style="color:#111">.</span><span style="color:#75af00">Name</span><span style="color:#111">,</span> <span style="color:#75af00">v</span><span style="color:#111">.</span><span style="color:#75af00">Status</span><span style="color:#111">.</span><span style="color:#75af00">Phase</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">/*
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">结果
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">NameSpace: default  Name: nginx-76d6c9b8c-8ljkt  Status: Running 
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">NameSpace: default  Name: nginx-76d6c9b8c-jqv9h  Status: Running 
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">NameSpace: default  Name: nginx-76d6c9b8c-kr9d2  Status: Running 
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">NameSpace: default  Name: nginx-76d6c9b8c-m4g5l  Status: Running 
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">NameSpace: default  Name: nginx-76d6c9b8c-n8st9  Status: Running 
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">*/</span>
+</span></span></code></pre></div><h3 id="clientset">ClientSet</h3>
+<p>ClientSet是在RestClient的基础上封装了对资源和版本的管理方法。资源可以理解为一个客户端，而ClientSet是多个客户端的集合。在操作资源对象时，需要指定Group和Version，然后根据资源获取。然而，ClientSet不支持自定义资源定义（CRDs），但使用kubebuilder生成代码时，会生成相应的ClientSet。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;context&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;fmt&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;path/filepath&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">metav1</span> <span style="color:#d88200">&#34;k8s.io/apimachinery/pkg/apis/meta/v1&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;k8s.io/client-go/kubernetes&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;k8s.io/client-go/tools/clientcmd&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;k8s.io/client-go/util/homedir&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#75af00">main</span><span style="color:#111">()</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">ctx</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">context</span><span style="color:#111">.</span><span style="color:#75af00">Background</span><span style="color:#111">()</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 使用kubeconfig生成配置 ~/.kube/config</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">config</span><span style="color:#111">,</span> <span style="color:#75af00">err</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">clientcmd</span><span style="color:#111">.</span><span style="color:#75af00">BuildConfigFromFlags</span><span style="color:#111">(</span><span style="color:#d88200">&#34;&#34;</span><span style="color:#111">,</span> <span style="color:#75af00">filepath</span><span style="color:#111">.</span><span style="color:#75af00">Join</span><span style="color:#111">(</span><span style="color:#75af00">homedir</span><span style="color:#111">.</span><span style="color:#75af00">HomeDir</span><span style="color:#111">(),</span> <span style="color:#d88200">&#34;.kube&#34;</span><span style="color:#111">,</span> <span style="color:#d88200">&#34;config&#34;</span><span style="color:#111">))</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">err</span> <span style="color:#f92672">!=</span> <span style="color:#00a8c8">nil</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#111">panic</span><span style="color:#111">(</span><span style="color:#75af00">err</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 生成clientSet</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">clientSet</span><span style="color:#111">,</span> <span style="color:#75af00">err</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">kubernetes</span><span style="color:#111">.</span><span style="color:#75af00">NewForConfig</span><span style="color:#111">(</span><span style="color:#75af00">config</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">err</span> <span style="color:#f92672">!=</span> <span style="color:#00a8c8">nil</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#111">panic</span><span style="color:#111">(</span><span style="color:#75af00">err</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">nodeList</span><span style="color:#111">,</span> <span style="color:#75af00">err</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">clientSet</span><span style="color:#111">.</span><span style="color:#75af00">CoreV1</span><span style="color:#111">().</span><span style="color:#75af00">Nodes</span><span style="color:#111">().</span><span style="color:#75af00">List</span><span style="color:#111">(</span><span style="color:#75af00">ctx</span><span style="color:#111">,</span> <span style="color:#75af00">metav1</span><span style="color:#111">.</span><span style="color:#75af00">ListOptions</span><span style="color:#111">{})</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">err</span> <span style="color:#f92672">!=</span> <span style="color:#00a8c8">nil</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#111">panic</span><span style="color:#111">(</span><span style="color:#75af00">err</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">for</span> <span style="color:#75af00">_</span><span style="color:#111">,</span> <span style="color:#75af00">node</span> <span style="color:#f92672">:=</span> <span style="color:#00a8c8">range</span> <span style="color:#75af00">nodeList</span><span style="color:#111">.</span><span style="color:#75af00">Items</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">fmt</span><span style="color:#111">.</span><span style="color:#75af00">Printf</span><span style="color:#111">(</span><span style="color:#d88200">&#34;nodeName: %v, status: %v \n&#34;</span><span style="color:#111">,</span> <span style="color:#75af00">node</span><span style="color:#111">.</span><span style="color:#75af00">GetName</span><span style="color:#111">(),</span> <span style="color:#75af00">node</span><span style="color:#111">.</span><span style="color:#75af00">GetCreationTimestamp</span><span style="color:#111">())</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// pod 是有namespace资源所以指定namespace 而node没有</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">pods</span><span style="color:#111">,</span> <span style="color:#75af00">err</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">clientSet</span><span style="color:#111">.</span><span style="color:#75af00">CoreV1</span><span style="color:#111">().</span><span style="color:#75af00">Pods</span><span style="color:#111">(</span><span style="color:#d88200">&#34;default&#34;</span><span style="color:#111">).</span><span style="color:#75af00">List</span><span style="color:#111">(</span><span style="color:#75af00">ctx</span><span style="color:#111">,</span> <span style="color:#75af00">metav1</span><span style="color:#111">.</span><span style="color:#75af00">ListOptions</span><span style="color:#111">{})</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">err</span> <span style="color:#f92672">!=</span> <span style="color:#00a8c8">nil</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#111">panic</span><span style="color:#111">(</span><span style="color:#75af00">err</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">for</span> <span style="color:#75af00">_</span><span style="color:#111">,</span> <span style="color:#75af00">v</span> <span style="color:#f92672">:=</span> <span style="color:#00a8c8">range</span> <span style="color:#75af00">pods</span><span style="color:#111">.</span><span style="color:#75af00">Items</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">fmt</span><span style="color:#111">.</span><span style="color:#75af00">Printf</span><span style="color:#111">(</span><span style="color:#d88200">&#34;namespace: %v podName: %v status: %v \n&#34;</span><span style="color:#111">,</span> <span style="color:#75af00">v</span><span style="color:#111">.</span><span style="color:#75af00">Namespace</span><span style="color:#111">,</span> <span style="color:#75af00">v</span><span style="color:#111">.</span><span style="color:#75af00">Name</span><span style="color:#111">,</span> <span style="color:#75af00">v</span><span style="color:#111">.</span><span style="color:#75af00">Status</span><span style="color:#111">.</span><span style="color:#75af00">Phase</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">/*
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">结果:
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">nodeName: minikube, status: 2023-01-27 18:45:35 +0800 CST 
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">nodeName: minikube-m02, status: 2023-02-26 21:19:30 +0800 CST 
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">nodeName: minikube-m03, status: 2023-02-26 21:19:38 +0800 CST 
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">namespace: default podName: nginx-76d6c9b8c-8ljkt status: Running 
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">namespace: default podName: nginx-76d6c9b8c-jqv9h status: Running 
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">namespace: default podName: nginx-76d6c9b8c-kr9d2 status: Running 
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">namespace: default podName: nginx-76d6c9b8c-m4g5l status: Running 
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">namespace: default podName: nginx-76d6c9b8c-n8st9 status: Running 
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">*/</span>
+</span></span></code></pre></div><h3 id="dynamicclient">DynamicClient</h3>
+<p>DynamicClient是一种动态客户端，它可以对任何资源进行RESTful操作，包括自定义资源定义（CRD）。与ClientSet不同，DynamicClient返回的对象是一个map[string]interface{}。如果一个控制器需要控制所有的API，可以使用DynamicClient。目前，DynamicClient在垃圾回收器和命名空间控制器中被广泛使用。</p>
+<p>DynamicClient的处理过程将Resource（例如PodList）转换为unstructured类型。Kubernetes的所有资源都可以转换为这个结构类型。处理完毕后，再将其转换回PodList。整个转换过程类似于接口转换，即通过interface{}的断言实现。</p>
+<p>DynamicClient是一种动态的客户端，它能处理Kubernetes所有的资源，但仅支持JSON</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;context&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;fmt&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;path/filepath&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">apiv1</span> <span style="color:#d88200">&#34;k8s.io/api/core/v1&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">metav1</span> <span style="color:#d88200">&#34;k8s.io/apimachinery/pkg/apis/meta/v1&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;k8s.io/apimachinery/pkg/runtime&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;k8s.io/apimachinery/pkg/runtime/schema&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;k8s.io/client-go/dynamic&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;k8s.io/client-go/tools/clientcmd&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;k8s.io/client-go/util/homedir&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#75af00">main</span><span style="color:#111">()</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">ctx</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">context</span><span style="color:#111">.</span><span style="color:#75af00">Background</span><span style="color:#111">()</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 使用kubeconfig生成配置 ~/.kube/config</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">config</span><span style="color:#111">,</span> <span style="color:#75af00">err</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">clientcmd</span><span style="color:#111">.</span><span style="color:#75af00">BuildConfigFromFlags</span><span style="color:#111">(</span><span style="color:#d88200">&#34;&#34;</span><span style="color:#111">,</span> <span style="color:#75af00">filepath</span><span style="color:#111">.</span><span style="color:#75af00">Join</span><span style="color:#111">(</span><span style="color:#75af00">homedir</span><span style="color:#111">.</span><span style="color:#75af00">HomeDir</span><span style="color:#111">(),</span> <span style="color:#d88200">&#34;.kube&#34;</span><span style="color:#111">,</span> <span style="color:#d88200">&#34;config&#34;</span><span style="color:#111">))</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">err</span> <span style="color:#f92672">!=</span> <span style="color:#00a8c8">nil</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#111">panic</span><span style="color:#111">(</span><span style="color:#75af00">err</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// dynamicClient</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">dynamicClient</span><span style="color:#111">,</span> <span style="color:#75af00">err</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">dynamic</span><span style="color:#111">.</span><span style="color:#75af00">NewForConfig</span><span style="color:#111">(</span><span style="color:#75af00">config</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">err</span> <span style="color:#f92672">!=</span> <span style="color:#00a8c8">nil</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#111">panic</span><span style="color:#111">(</span><span style="color:#75af00">err</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 定义组版本资源</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">gvr</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">schema</span><span style="color:#111">.</span><span style="color:#75af00">GroupVersionResource</span><span style="color:#111">{</span><span style="color:#75af00">Version</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;v1&#34;</span><span style="color:#111">,</span> <span style="color:#75af00">Resource</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;pods&#34;</span><span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">unStructObj</span><span style="color:#111">,</span> <span style="color:#75af00">err</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">dynamicClient</span><span style="color:#111">.</span><span style="color:#75af00">Resource</span><span style="color:#111">(</span><span style="color:#75af00">gvr</span><span style="color:#111">).</span><span style="color:#75af00">Namespace</span><span style="color:#111">(</span><span style="color:#d88200">&#34;default&#34;</span><span style="color:#111">).</span><span style="color:#75af00">List</span><span style="color:#111">(</span><span style="color:#75af00">ctx</span><span style="color:#111">,</span> <span style="color:#75af00">metav1</span><span style="color:#111">.</span><span style="color:#75af00">ListOptions</span><span style="color:#111">{})</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">err</span> <span style="color:#f92672">!=</span> <span style="color:#00a8c8">nil</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#111">panic</span><span style="color:#111">(</span><span style="color:#75af00">err</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">podList</span> <span style="color:#f92672">:=</span> <span style="color:#f92672">&amp;</span><span style="color:#75af00">apiv1</span><span style="color:#111">.</span><span style="color:#75af00">PodList</span><span style="color:#111">{}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">err</span> <span style="color:#111">=</span> <span style="color:#75af00">runtime</span><span style="color:#111">.</span><span style="color:#75af00">DefaultUnstructuredConverter</span><span style="color:#111">.</span><span style="color:#75af00">FromUnstructured</span><span style="color:#111">(</span><span style="color:#75af00">unStructObj</span><span style="color:#111">.</span><span style="color:#75af00">UnstructuredContent</span><span style="color:#111">(),</span> <span style="color:#75af00">podList</span><span style="color:#111">);</span> <span style="color:#75af00">err</span> <span style="color:#f92672">!=</span> <span style="color:#00a8c8">nil</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#111">panic</span><span style="color:#111">(</span><span style="color:#75af00">err</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">for</span> <span style="color:#75af00">_</span><span style="color:#111">,</span> <span style="color:#75af00">v</span> <span style="color:#f92672">:=</span> <span style="color:#00a8c8">range</span> <span style="color:#75af00">podList</span><span style="color:#111">.</span><span style="color:#75af00">Items</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">fmt</span><span style="color:#111">.</span><span style="color:#75af00">Printf</span><span style="color:#111">(</span><span style="color:#d88200">&#34;namespaces:%v  podName:%v status:%v \n&#34;</span><span style="color:#111">,</span> <span style="color:#75af00">v</span><span style="color:#111">.</span><span style="color:#75af00">Namespace</span><span style="color:#111">,</span> <span style="color:#75af00">v</span><span style="color:#111">.</span><span style="color:#75af00">Name</span><span style="color:#111">,</span> <span style="color:#75af00">v</span><span style="color:#111">.</span><span style="color:#75af00">Status</span><span style="color:#111">.</span><span style="color:#75af00">Phase</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">/*
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">namespaces:default  podName:nginx-76d6c9b8c-8ljkt status:Running
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">namespaces:default  podName:nginx-76d6c9b8c-jqv9h status:Running
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">namespaces:default  podName:nginx-76d6c9b8c-kr9d2 status:Running
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">namespaces:default  podName:nginx-76d6c9b8c-m4g5l status:Running
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">namespaces:default  podName:nginx-76d6c9b8c-n8st9 status:Running
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">*/</span>
+</span></span></code></pre></div><p>其中，GVR（group,version,resource） 用于标识 Kubernetes API 中的资源类型，其中 Group 表示 API 群组，Version 表示 API 版本，Resource 表示资源类型。例如，Deployment 的 GVR 为 &ldquo;apps/v1/deployments&rdquo;，其中 &ldquo;apps&rdquo; 是 API 群组，&ldquo;v1&rdquo; 是 API 版本，&ldquo;deployments&rdquo; 是资源类型。</p>
+<h3 id="discoveryclient">DiscoveryClient</h3>
+<p>DiscoveryClient 是一个发现客户端，它的主要作用是用于发现 API Server 支持的资源组、资源版本和资源信息。在 Kubernetes 中，API Server 支持很多资源组、资源版本和资源信息，我们可以通过使用 DiscoveryClient 来查看这些信息。此外，kubectl 的 API 版本和 API 资源也是通过 DiscoveryClient 来实现的。我们还可以将这些信息缓存到本地，以减轻 API 访问的压力。缓存文件默认存储在 <code>./kube/cache</code> 和 <code>./kube/http-cache</code> 目录下。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;fmt&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;path/filepath&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;k8s.io/apimachinery/pkg/runtime/schema&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;k8s.io/client-go/discovery&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;k8s.io/client-go/tools/clientcmd&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;k8s.io/client-go/util/homedir&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#75af00">main</span><span style="color:#111">()</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 使用kubeconfig生成配置 ~/.kube/config</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">config</span><span style="color:#111">,</span> <span style="color:#75af00">err</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">clientcmd</span><span style="color:#111">.</span><span style="color:#75af00">BuildConfigFromFlags</span><span style="color:#111">(</span><span style="color:#d88200">&#34;&#34;</span><span style="color:#111">,</span> <span style="color:#75af00">filepath</span><span style="color:#111">.</span><span style="color:#75af00">Join</span><span style="color:#111">(</span><span style="color:#75af00">homedir</span><span style="color:#111">.</span><span style="color:#75af00">HomeDir</span><span style="color:#111">(),</span> <span style="color:#d88200">&#34;.kube&#34;</span><span style="color:#111">,</span> <span style="color:#d88200">&#34;config&#34;</span><span style="color:#111">))</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">err</span> <span style="color:#f92672">!=</span> <span style="color:#00a8c8">nil</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#111">panic</span><span style="color:#111">(</span><span style="color:#75af00">err</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 生成discoverClient</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">discoverClient</span><span style="color:#111">,</span> <span style="color:#75af00">err</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">discovery</span><span style="color:#111">.</span><span style="color:#75af00">NewDiscoveryClientForConfig</span><span style="color:#111">(</span><span style="color:#75af00">config</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">err</span> <span style="color:#f92672">!=</span> <span style="color:#00a8c8">nil</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#111">panic</span><span style="color:#111">(</span><span style="color:#75af00">err</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">_</span><span style="color:#111">,</span> <span style="color:#75af00">apiResourceList</span><span style="color:#111">,</span> <span style="color:#75af00">err</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">discoverClient</span><span style="color:#111">.</span><span style="color:#75af00">ServerGroupsAndResources</span><span style="color:#111">()</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">for</span> <span style="color:#75af00">_</span><span style="color:#111">,</span> <span style="color:#75af00">v</span> <span style="color:#f92672">:=</span> <span style="color:#00a8c8">range</span> <span style="color:#75af00">apiResourceList</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">gv</span><span style="color:#111">,</span> <span style="color:#75af00">err</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">schema</span><span style="color:#111">.</span><span style="color:#75af00">ParseGroupVersion</span><span style="color:#111">(</span><span style="color:#75af00">v</span><span style="color:#111">.</span><span style="color:#75af00">GroupVersion</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#00a8c8">if</span> <span style="color:#75af00">err</span> <span style="color:#f92672">!=</span> <span style="color:#00a8c8">nil</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#111">panic</span><span style="color:#111">(</span><span style="color:#75af00">err</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#00a8c8">for</span> <span style="color:#75af00">_</span><span style="color:#111">,</span> <span style="color:#75af00">resource</span> <span style="color:#f92672">:=</span> <span style="color:#00a8c8">range</span> <span style="color:#75af00">v</span><span style="color:#111">.</span><span style="color:#75af00">APIResources</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#75af00">fmt</span><span style="color:#111">.</span><span style="color:#75af00">Printf</span><span style="color:#111">(</span><span style="color:#d88200">&#34;name:%v group:%v version:%v\n&#34;</span><span style="color:#111">,</span> <span style="color:#75af00">resource</span><span style="color:#111">.</span><span style="color:#75af00">Name</span><span style="color:#111">,</span> <span style="color:#75af00">gv</span><span style="color:#111">.</span><span style="color:#75af00">Group</span><span style="color:#111">,</span> <span style="color:#75af00">gv</span><span style="color:#111">.</span><span style="color:#75af00">Version</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">/*
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:bindings group: version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:componentstatuses group: version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:configmaps group: version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:endpoints group: version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:events group: version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:limitranges group: version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:namespaces group: version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:namespaces/finalize group: version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:namespaces/status group: version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:nodes group: version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:nodes/proxy group: version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:nodes/status group: version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:persistentvolumeclaims group: version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:persistentvolumeclaims/status group: version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:persistentvolumes group: version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:persistentvolumes/status group: version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:pods group: version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:pods/attach group: version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:pods/binding group: version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:pods/ephemeralcontainers group: version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:pods/eviction group: version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:pods/exec group: version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:pods/log group: version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:pods/portforward group: version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:pods/proxy group: version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:pods/status group: version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:podtemplates group: version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:replicationcontrollers group: version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:replicationcontrollers/scale group: version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:replicationcontrollers/status group: version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:resourcequotas group: version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:resourcequotas/status group: version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:secrets group: version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:serviceaccounts group: version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:serviceaccounts/token group: version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:services group: version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:services/proxy group: version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:services/status group: version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:apiservices group:apiregistration.k8s.io version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:apiservices/status group:apiregistration.k8s.io version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:controllerrevisions group:apps version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:daemonsets group:apps version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:daemonsets/status group:apps version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:deployments group:apps version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:deployments/scale group:apps version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:deployments/status group:apps version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:replicasets group:apps version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:replicasets/scale group:apps version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:replicasets/status group:apps version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:statefulsets group:apps version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:statefulsets/scale group:apps version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:statefulsets/status group:apps version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:events group:events.k8s.io version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:tokenreviews group:authentication.k8s.io version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:localsubjectaccessreviews group:authorization.k8s.io version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:selfsubjectaccessreviews group:authorization.k8s.io version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:selfsubjectrulesreviews group:authorization.k8s.io version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:subjectaccessreviews group:authorization.k8s.io version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:horizontalpodautoscalers group:autoscaling version:v2
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:horizontalpodautoscalers/status group:autoscaling version:v2
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:horizontalpodautoscalers group:autoscaling version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:horizontalpodautoscalers/status group:autoscaling version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:horizontalpodautoscalers group:autoscaling version:v2beta2
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:horizontalpodautoscalers/status group:autoscaling version:v2beta2
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:cronjobs group:batch version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:cronjobs/status group:batch version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:jobs group:batch version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:jobs/status group:batch version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:certificatesigningrequests group:certificates.k8s.io version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:certificatesigningrequests/approval group:certificates.k8s.io version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:certificatesigningrequests/status group:certificates.k8s.io version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:ingressclasses group:networking.k8s.io version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:ingresses group:networking.k8s.io version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:ingresses/status group:networking.k8s.io version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:networkpolicies group:networking.k8s.io version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:networkpolicies/status group:networking.k8s.io version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:poddisruptionbudgets group:policy version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:poddisruptionbudgets/status group:policy version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:clusterrolebindings group:rbac.authorization.k8s.io version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:clusterroles group:rbac.authorization.k8s.io version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:rolebindings group:rbac.authorization.k8s.io version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:roles group:rbac.authorization.k8s.io version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:csidrivers group:storage.k8s.io version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:csinodes group:storage.k8s.io version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:csistoragecapacities group:storage.k8s.io version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:storageclasses group:storage.k8s.io version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:volumeattachments group:storage.k8s.io version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:volumeattachments/status group:storage.k8s.io version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:csistoragecapacities group:storage.k8s.io version:v1beta1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:mutatingwebhookconfigurations group:admissionregistration.k8s.io version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:validatingwebhookconfigurations group:admissionregistration.k8s.io version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:customresourcedefinitions group:apiextensions.k8s.io version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:customresourcedefinitions/status group:apiextensions.k8s.io version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:priorityclasses group:scheduling.k8s.io version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:leases group:coordination.k8s.io version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:runtimeclasses group:node.k8s.io version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:endpointslices group:discovery.k8s.io version:v1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:flowschemas group:flowcontrol.apiserver.k8s.io version:v1beta2
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:flowschemas/status group:flowcontrol.apiserver.k8s.io version:v1beta2
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:prioritylevelconfigurations group:flowcontrol.apiserver.k8s.io version:v1beta2
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:prioritylevelconfigurations/status group:flowcontrol.apiserver.k8s.io version:v1beta2
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:flowschemas group:flowcontrol.apiserver.k8s.io version:v1beta1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:flowschemas/status group:flowcontrol.apiserver.k8s.io version:v1beta1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:prioritylevelconfigurations group:flowcontrol.apiserver.k8s.io version:v1beta1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:prioritylevelconfigurations/status group:flowcontrol.apiserver.k8s.io version:v1beta1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:nodes group:metrics.k8s.io version:v1beta1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">name:pods group:metrics.k8s.io version:v1beta1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">*/</span>
+</span></span></code></pre></div><h2 id="informer-indexer--lister机制">informer indexer  lister机制</h2>
+<p><img src="/images/c42bc0af-cbf6-4ee4-ae5d-bc954b5c594f.png" alt=""></p>
+<p>上图展示了自定义控制器的工作方式。在虚线上方，是client-go包的informer和indexer工作方式。informer负责监听Kubernetes API资源对象的变化，如创建、更新、删除等操作，并将这些变化通知给indexer进行索引和缓存。而indexer则是将API对象进行索引，以便在需要时快速地访问它们。lister则是对indexer的封装，提供了一种简单的方式来获取已经索引的对象列表，以供代码中的其他部分使用。这种分层结构的设计使得client-go可以高效地处理Kubernetes资源对象的变化，并在应用程序中方便地使用这些资源对象。</p>
+<h3 id="informer">informer</h3>
+<p>Informer是Kubernetes API客户端中一种重要的机制，它可以实现对资源对象的监视和事件通知。当Kubernetes集群中的资源对象发生变化时，Informer可以及时地获取到这些变化，并将这些变化以事件的形式通知给相关的监听器。Informer通过调用API Server提供的REST接口，以及Kubernetes中定义的watch机制，实现了对集群资源对象的全面监视。</p>
+<p>下面是一个简单的pod informer示例，用于监控所有pod的变化并将其放入队列中，worker从队列中取出pod并打印相关信息。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;fmt&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;os&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;os/signal&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;syscall&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;time&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">v1</span> <span style="color:#d88200">&#34;k8s.io/api/core/v1&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;k8s.io/apimachinery/pkg/util/wait&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;k8s.io/client-go/informers&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;k8s.io/client-go/kubernetes&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;k8s.io/client-go/tools/cache&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;k8s.io/client-go/tools/clientcmd&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;k8s.io/client-go/util/workqueue&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#75af00">main</span><span style="color:#111">()</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 获取 kubeconfig 文件路径</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">kubeconfigPath</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">os</span><span style="color:#111">.</span><span style="color:#75af00">Getenv</span><span style="color:#111">(</span><span style="color:#d88200">&#34;KUBECONFIG&#34;</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">kubeconfigPath</span> <span style="color:#f92672">==</span> <span style="color:#d88200">&#34;&#34;</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">kubeconfigPath</span> <span style="color:#111">=</span> <span style="color:#75af00">os</span><span style="color:#111">.</span><span style="color:#75af00">Getenv</span><span style="color:#111">(</span><span style="color:#d88200">&#34;HOME&#34;</span><span style="color:#111">)</span> <span style="color:#f92672">+</span> <span style="color:#d88200">&#34;/.kube/config&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 使用 kubeconfig 文件创建 kubernetes 客户端</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">config</span><span style="color:#111">,</span> <span style="color:#75af00">err</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">clientcmd</span><span style="color:#111">.</span><span style="color:#75af00">BuildConfigFromFlags</span><span style="color:#111">(</span><span style="color:#d88200">&#34;&#34;</span><span style="color:#111">,</span> <span style="color:#75af00">kubeconfigPath</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">err</span> <span style="color:#f92672">!=</span> <span style="color:#00a8c8">nil</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#111">panic</span><span style="color:#111">(</span><span style="color:#75af00">err</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">clientset</span><span style="color:#111">,</span> <span style="color:#75af00">err</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">kubernetes</span><span style="color:#111">.</span><span style="color:#75af00">NewForConfig</span><span style="color:#111">(</span><span style="color:#75af00">config</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">err</span> <span style="color:#f92672">!=</span> <span style="color:#00a8c8">nil</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#111">panic</span><span style="color:#111">(</span><span style="color:#75af00">err</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 创建 informer 工厂</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">informerFactory</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">informers</span><span style="color:#111">.</span><span style="color:#75af00">NewSharedInformerFactory</span><span style="color:#111">(</span><span style="color:#75af00">clientset</span><span style="color:#111">,</span> <span style="color:#75af00">time</span><span style="color:#111">.</span><span style="color:#75af00">Minute</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 创建 informer 对象</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">podInformer</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">informerFactory</span><span style="color:#111">.</span><span style="color:#75af00">Core</span><span style="color:#111">().</span><span style="color:#75af00">V1</span><span style="color:#111">().</span><span style="color:#75af00">Pods</span><span style="color:#111">()</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 创建工作队列</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">queue</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">workqueue</span><span style="color:#111">.</span><span style="color:#75af00">NewRateLimitingQueue</span><span style="color:#111">(</span><span style="color:#75af00">workqueue</span><span style="color:#111">.</span><span style="color:#75af00">DefaultControllerRateLimiter</span><span style="color:#111">())</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 定义处理新增、更新和删除事件的回调函数</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">podHandler</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">cache</span><span style="color:#111">.</span><span style="color:#75af00">ResourceEventHandlerFuncs</span><span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">AddFunc</span><span style="color:#111">:</span> <span style="color:#00a8c8">func</span><span style="color:#111">(</span><span style="color:#75af00">obj</span> <span style="color:#00a8c8">interface</span><span style="color:#111">{})</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#75af00">key</span><span style="color:#111">,</span> <span style="color:#75af00">err</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">cache</span><span style="color:#111">.</span><span style="color:#75af00">MetaNamespaceKeyFunc</span><span style="color:#111">(</span><span style="color:#75af00">obj</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#00a8c8">if</span> <span style="color:#75af00">err</span> <span style="color:#f92672">==</span> <span style="color:#00a8c8">nil</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>				<span style="color:#75af00">queue</span><span style="color:#111">.</span><span style="color:#75af00">Add</span><span style="color:#111">(</span><span style="color:#75af00">key</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#111">},</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">UpdateFunc</span><span style="color:#111">:</span> <span style="color:#00a8c8">func</span><span style="color:#111">(</span><span style="color:#75af00">oldObj</span><span style="color:#111">,</span> <span style="color:#75af00">newObj</span> <span style="color:#00a8c8">interface</span><span style="color:#111">{})</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#75af00">key</span><span style="color:#111">,</span> <span style="color:#75af00">err</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">cache</span><span style="color:#111">.</span><span style="color:#75af00">MetaNamespaceKeyFunc</span><span style="color:#111">(</span><span style="color:#75af00">newObj</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#00a8c8">if</span> <span style="color:#75af00">err</span> <span style="color:#f92672">==</span> <span style="color:#00a8c8">nil</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>				<span style="color:#75af00">queue</span><span style="color:#111">.</span><span style="color:#75af00">Add</span><span style="color:#111">(</span><span style="color:#75af00">key</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#111">},</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">DeleteFunc</span><span style="color:#111">:</span> <span style="color:#00a8c8">func</span><span style="color:#111">(</span><span style="color:#75af00">obj</span> <span style="color:#00a8c8">interface</span><span style="color:#111">{})</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#75af00">key</span><span style="color:#111">,</span> <span style="color:#75af00">err</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">cache</span><span style="color:#111">.</span><span style="color:#75af00">MetaNamespaceKeyFunc</span><span style="color:#111">(</span><span style="color:#75af00">obj</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#00a8c8">if</span> <span style="color:#75af00">err</span> <span style="color:#f92672">==</span> <span style="color:#00a8c8">nil</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>				<span style="color:#75af00">queue</span><span style="color:#111">.</span><span style="color:#75af00">Add</span><span style="color:#111">(</span><span style="color:#75af00">key</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#111">},</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 将回调函数注册到 informer 上</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">podInformer</span><span style="color:#111">.</span><span style="color:#75af00">Informer</span><span style="color:#111">().</span><span style="color:#75af00">AddEventHandler</span><span style="color:#111">(</span><span style="color:#75af00">podHandler</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 启动 informer</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">stopCh</span> <span style="color:#f92672">:=</span> <span style="color:#111">make</span><span style="color:#111">(</span><span style="color:#00a8c8">chan</span> <span style="color:#00a8c8">struct</span><span style="color:#111">{})</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">defer</span> <span style="color:#111">close</span><span style="color:#111">(</span><span style="color:#75af00">stopCh</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">informerFactory</span><span style="color:#111">.</span><span style="color:#75af00">Start</span><span style="color:#111">(</span><span style="color:#75af00">stopCh</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 等待 informer 同步完成</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#111">!</span><span style="color:#75af00">cache</span><span style="color:#111">.</span><span style="color:#75af00">WaitForCacheSync</span><span style="color:#111">(</span><span style="color:#75af00">stopCh</span><span style="color:#111">)</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#111">panic</span><span style="color:#111">(</span><span style="color:#d88200">&#34;同步 informer 缓存失败&#34;</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 创建信号处理程序，用于捕捉 SIGTERM 和 SIGINT 信号</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">signalCh</span> <span style="color:#f92672">:=</span> <span style="color:#111">make</span><span style="color:#111">(</span><span style="color:#00a8c8">chan</span> <span style="color:#75af00">os</span><span style="color:#111">.</span><span style="color:#75af00">Signal</span><span style="color:#111">,</span> <span style="color:#ae81ff">1</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">signal</span><span style="color:#111">.</span><span style="color:#75af00">Notify</span><span style="color:#111">(</span><span style="color:#75af00">signalCh</span><span style="color:#111">,</span> <span style="color:#75af00">syscall</span><span style="color:#111">.</span><span style="color:#75af00">SIGTERM</span><span style="color:#111">,</span> <span style="color:#75af00">syscall</span><span style="color:#111">.</span><span style="color:#75af00">SIGINT</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 创建 worker 函数，用于处理队列中的事件</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">processNextItem</span> <span style="color:#f92672">:=</span> <span style="color:#00a8c8">func</span><span style="color:#111">()</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">obj</span><span style="color:#111">,</span> <span style="color:#75af00">shutdown</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">queue</span><span style="color:#111">.</span><span style="color:#75af00">Get</span><span style="color:#111">()</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#00a8c8">if</span> <span style="color:#75af00">shutdown</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#00a8c8">return</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75715e">// 转换对象为 Pod</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">key</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">obj</span><span style="color:#111">.(</span><span style="color:#00a8c8">string</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">podObj</span><span style="color:#111">,</span> <span style="color:#75af00">exists</span><span style="color:#111">,</span> <span style="color:#75af00">err</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">podInformer</span><span style="color:#111">.</span><span style="color:#75af00">Informer</span><span style="color:#111">().</span><span style="color:#75af00">GetIndexer</span><span style="color:#111">().</span><span style="color:#75af00">GetByKey</span><span style="color:#111">(</span><span style="color:#75af00">key</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#00a8c8">if</span> <span style="color:#75af00">err</span> <span style="color:#f92672">!=</span> <span style="color:#00a8c8">nil</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#75af00">queue</span><span style="color:#111">.</span><span style="color:#75af00">Forget</span><span style="color:#111">(</span><span style="color:#75af00">obj</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#111">panic</span><span style="color:#111">(</span><span style="color:#75af00">fmt</span><span style="color:#111">.</span><span style="color:#75af00">Sprintf</span><span style="color:#111">(</span><span style="color:#d88200">&#34;获取 Pod 失败：%v&#34;</span><span style="color:#111">,</span> <span style="color:#75af00">err</span><span style="color:#111">))</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>		<span style="color:#00a8c8">if</span> <span style="color:#111">!</span><span style="color:#75af00">exists</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#75715e">// 如果对象已经被删除，就把它从队列中移除</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#75af00">queue</span><span style="color:#111">.</span><span style="color:#75af00">Forget</span><span style="color:#111">(</span><span style="color:#75af00">obj</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#00a8c8">return</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75715e">// 在这里添加处理 Pod 的逻辑</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">pod</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">podObj</span><span style="color:#111">.(</span><span style="color:#f92672">*</span><span style="color:#75af00">v1</span><span style="color:#111">.</span><span style="color:#75af00">Pod</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">fmt</span><span style="color:#111">.</span><span style="color:#75af00">Printf</span><span style="color:#111">(</span><span style="color:#d88200">&#34;处理 Pod: namespace:%v,podName:%v\n&#34;</span><span style="color:#111">,</span> <span style="color:#75af00">pod</span><span style="color:#111">.</span><span style="color:#75af00">Namespace</span><span style="color:#111">,</span> <span style="color:#75af00">pod</span><span style="color:#111">.</span><span style="color:#75af00">Name</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75715e">// 处理完事件后，把它从队列中移除</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">queue</span><span style="color:#111">.</span><span style="color:#75af00">Forget</span><span style="color:#111">(</span><span style="color:#75af00">obj</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#00a8c8">return</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 启动 worker</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">go</span> <span style="color:#75af00">wait</span><span style="color:#111">.</span><span style="color:#75af00">Until</span><span style="color:#111">(</span><span style="color:#75af00">processNextItem</span><span style="color:#111">,</span> <span style="color:#75af00">time</span><span style="color:#111">.</span><span style="color:#75af00">Second</span><span style="color:#111">,</span> <span style="color:#75af00">stopCh</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 等待信号</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#f92672">&lt;-</span><span style="color:#75af00">signalCh</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">/*
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">处理 Pod: namespace:kube-system,podName:kindnet-h25kv
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">处理 Pod: namespace:kube-system,podName:kube-apiserver-minikube
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">处理 Pod: namespace:kube-system,podName:metrics-server-c9fb666df-zk4tb
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">处理 Pod: namespace:kubernetes-dashboard,podName:dashboard-metrics-scraper-b74747df5-4pb7w
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">处理 Pod: namespace:default,podName:nginx-76d6c9b8c-jqv9h
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">处理 Pod: namespace:default,podName:nginx-76d6c9b8c-m4g5l
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">处理 Pod: namespace:kube-system,podName:coredns-7f8cbcb969-48nz6
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">处理 Pod: namespace:kube-system,podName:kube-proxy-t766g
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">处理 Pod: namespace:kube-system,podName:kube-scheduler-minikube
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">处理 Pod: namespace:kube-system,podName:kindnet-44zl6
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">处理 Pod: namespace:kube-system,podName:kube-controller-manager-minikube
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">处理 Pod: namespace:kube-system,podName:kube-proxy-gq68w
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">处理 Pod: namespace:kube-system,podName:kube-proxy-l92vg
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">处理 Pod: namespace:kube-system,podName:storage-provisioner
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">处理 Pod: namespace:kubernetes-dashboard,podName:kubernetes-dashboard-57bbdc5f89-466rh
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">处理 Pod: namespace:default,podName:nginx-76d6c9b8c-kr9d2
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">处理 Pod: namespace:default,podName:nginx-76d6c9b8c-n8st9
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">处理 Pod: namespace:kube-system,podName:kindnet-w9f7t
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">处理 Pod: namespace:default,podName:nginx-76d6c9b8c-8ljkt
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">处理 Pod: namespace:kube-system,podName:etcd-minikube
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">处理 Pod: namespace:default,podName:nginx
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">处理 Pod: namespace:default,podName:ubuntu
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">*/</span>
+</span></span></code></pre></div><h3 id="indexer">indexer</h3>
+<p>Indexer是client-go中用于本地缓存资源对象的一种方式。它支持多种索引方式，并且可以使用函数<code>func(obj interface{}) ([]string, error)</code>进行索引。在检索时，需要使用相同的<code>indexName</code>参数。借助<code>informer</code>，indexer就可以维护一个特定资源的本地缓存，例如pod、namespace等。这种方法省去了每次get pod都要访问api-server的过程，从而减小了api-server的压力。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// 如何使用索引器来检索Pod对象</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;fmt&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">v1</span> <span style="color:#d88200">&#34;k8s.io/api/core/v1&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;k8s.io/apimachinery/pkg/api/meta&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">metav1</span> <span style="color:#d88200">&#34;k8s.io/apimachinery/pkg/apis/meta/v1&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;k8s.io/client-go/tools/cache&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">const</span> <span style="color:#111">(</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">NamespaceIndexName</span> <span style="color:#111">=</span> <span style="color:#d88200">&#34;namespace&#34;</span> <span style="color:#75715e">// 定义一个索引器名称，用于按照命名空间检索Pod</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">NodeNameIndexName</span>  <span style="color:#111">=</span> <span style="color:#d88200">&#34;nodeName&#34;</span>  <span style="color:#75715e">// 定义一个索引器名称，用于按照节点名称检索Pod</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// NamespaceIndexFunc是一个函数，用于从对象中提取命名空间作为索引键</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#75af00">NamespaceIndexFunc</span><span style="color:#111">(</span><span style="color:#75af00">obj</span> <span style="color:#00a8c8">interface</span><span style="color:#111">{})</span> <span style="color:#111">([]</span><span style="color:#00a8c8">string</span><span style="color:#111">,</span> <span style="color:#00a8c8">error</span><span style="color:#111">)</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">m</span><span style="color:#111">,</span> <span style="color:#75af00">err</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">meta</span><span style="color:#111">.</span><span style="color:#75af00">Accessor</span><span style="color:#111">(</span><span style="color:#75af00">obj</span><span style="color:#111">)</span> <span style="color:#75715e">// 获取对象的元数据</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">err</span> <span style="color:#f92672">!=</span> <span style="color:#00a8c8">nil</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#00a8c8">return</span> <span style="color:#111">[]</span><span style="color:#00a8c8">string</span><span style="color:#111">{</span><span style="color:#d88200">&#34;&#34;</span><span style="color:#111">},</span> <span style="color:#75af00">fmt</span><span style="color:#111">.</span><span style="color:#75af00">Errorf</span><span style="color:#111">(</span><span style="color:#d88200">&#34;object has no meta: %v&#34;</span><span style="color:#111">,</span> <span style="color:#75af00">err</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">return</span> <span style="color:#111">[]</span><span style="color:#00a8c8">string</span><span style="color:#111">{</span><span style="color:#75af00">m</span><span style="color:#111">.</span><span style="color:#75af00">GetNamespace</span><span style="color:#111">()},</span> <span style="color:#00a8c8">nil</span> <span style="color:#75715e">// 返回对象的命名空间</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// NodeNameIndexFunc是一个函数，用于从Pod对象中提取节点名称作为索引键</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#75af00">NodeNameIndexFunc</span><span style="color:#111">(</span><span style="color:#75af00">obj</span> <span style="color:#00a8c8">interface</span><span style="color:#111">{})</span> <span style="color:#111">([]</span><span style="color:#00a8c8">string</span><span style="color:#111">,</span> <span style="color:#00a8c8">error</span><span style="color:#111">)</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">pod</span><span style="color:#111">,</span> <span style="color:#75af00">ok</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">obj</span><span style="color:#111">.(</span><span style="color:#f92672">*</span><span style="color:#75af00">v1</span><span style="color:#111">.</span><span style="color:#75af00">Pod</span><span style="color:#111">)</span> <span style="color:#75715e">// 判断对象是否是Pod类型</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#111">!</span><span style="color:#75af00">ok</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#00a8c8">return</span> <span style="color:#111">[]</span><span style="color:#00a8c8">string</span><span style="color:#111">{},</span> <span style="color:#00a8c8">nil</span> <span style="color:#75715e">// 如果不是，返回空切片</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">return</span> <span style="color:#111">[]</span><span style="color:#00a8c8">string</span><span style="color:#111">{</span><span style="color:#75af00">pod</span><span style="color:#111">.</span><span style="color:#75af00">Spec</span><span style="color:#111">.</span><span style="color:#75af00">NodeName</span><span style="color:#111">},</span> <span style="color:#00a8c8">nil</span> <span style="color:#75715e">// 如果是，返回Pod的节点名称</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#75af00">main</span><span style="color:#111">()</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">index</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">cache</span><span style="color:#111">.</span><span style="color:#75af00">NewIndexer</span><span style="color:#111">(</span><span style="color:#75af00">cache</span><span style="color:#111">.</span><span style="color:#75af00">MetaNamespaceKeyFunc</span><span style="color:#111">,</span> <span style="color:#75af00">cache</span><span style="color:#111">.</span><span style="color:#75af00">Indexers</span><span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">NamespaceIndexName</span><span style="color:#111">:</span> <span style="color:#75af00">NamespaceIndexFunc</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">NodeNameIndexName</span><span style="color:#111">:</span>  <span style="color:#75af00">NodeNameIndexFunc</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">})</span> <span style="color:#75715e">// 创建一个新的索引器，指定主键函数和辅助键函数</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">pod1</span> <span style="color:#f92672">:=</span> <span style="color:#f92672">&amp;</span><span style="color:#75af00">v1</span><span style="color:#111">.</span><span style="color:#75af00">Pod</span><span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">ObjectMeta</span><span style="color:#111">:</span> <span style="color:#75af00">metav1</span><span style="color:#111">.</span><span style="color:#75af00">ObjectMeta</span><span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#75af00">Name</span><span style="color:#111">:</span>      <span style="color:#d88200">&#34;index-pod-1&#34;</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#75af00">Namespace</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;default&#34;</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#111">},</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">Spec</span><span style="color:#111">:</span> <span style="color:#75af00">v1</span><span style="color:#111">.</span><span style="color:#75af00">PodSpec</span><span style="color:#111">{</span><span style="color:#75af00">NodeName</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;node1&#34;</span><span style="color:#111">},</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span> <span style="color:#75715e">// 创建一个Pod对象，属于default命名空间和node1节点</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">pod2</span> <span style="color:#f92672">:=</span> <span style="color:#f92672">&amp;</span><span style="color:#75af00">v1</span><span style="color:#111">.</span><span style="color:#75af00">Pod</span><span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">ObjectMeta</span><span style="color:#111">:</span> <span style="color:#75af00">metav1</span><span style="color:#111">.</span><span style="color:#75af00">ObjectMeta</span><span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#75af00">Name</span><span style="color:#111">:</span>      <span style="color:#d88200">&#34;index-pod-2&#34;</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#75af00">Namespace</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;default&#34;</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#111">},</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">Spec</span><span style="color:#111">:</span> <span style="color:#75af00">v1</span><span style="color:#111">.</span><span style="color:#75af00">PodSpec</span><span style="color:#111">{</span><span style="color:#75af00">NodeName</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;node2&#34;</span><span style="color:#111">},</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span> <span style="color:#75715e">// 创建另一个Pod对象，属于default命名空间和node2节点</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">pod3</span> <span style="color:#f92672">:=</span> <span style="color:#f92672">&amp;</span><span style="color:#75af00">v1</span><span style="color:#111">.</span><span style="color:#75af00">Pod</span><span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">ObjectMeta</span><span style="color:#111">:</span> <span style="color:#75af00">metav1</span><span style="color:#111">.</span><span style="color:#75af00">ObjectMeta</span><span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#75af00">Name</span><span style="color:#111">:</span>      <span style="color:#d88200">&#34;index-pod-3&#34;</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#75af00">Namespace</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;kube-system&#34;</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#111">},</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">Spec</span><span style="color:#111">:</span> <span style="color:#75af00">v1</span><span style="color:#111">.</span><span style="color:#75af00">PodSpec</span><span style="color:#111">{</span><span style="color:#75af00">NodeName</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;node2&#34;</span><span style="color:#111">},</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span> <span style="color:#75715e">// 创建第三个Pod对象，属于kube-system命名空间和node2节点</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">index</span><span style="color:#111">.</span><span style="color:#75af00">Add</span><span style="color:#111">(</span><span style="color:#75af00">pod1</span><span style="color:#111">)</span> <span style="color:#75715e">// 将pod1添加到索引器中</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">index</span><span style="color:#111">.</span><span style="color:#75af00">Add</span><span style="color:#111">(</span><span style="color:#75af00">pod2</span><span style="color:#111">)</span> <span style="color:#75715e">// 将pod2添加到索引器中</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">index</span><span style="color:#111">.</span><span style="color:#75af00">Add</span><span style="color:#111">(</span><span style="color:#75af00">pod3</span><span style="color:#111">)</span> <span style="color:#75715e">// 将pod3添加到索引器中</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">pods</span><span style="color:#111">,</span> <span style="color:#75af00">err</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">index</span><span style="color:#111">.</span><span style="color:#75af00">ByIndex</span><span style="color:#111">(</span><span style="color:#75af00">NamespaceIndexName</span><span style="color:#111">,</span> <span style="color:#d88200">&#34;default&#34;</span><span style="color:#111">)</span> <span style="color:#75715e">// 按照命名空间为default检索Pod列表</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">err</span> <span style="color:#f92672">!=</span> <span style="color:#00a8c8">nil</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#111">panic</span><span style="color:#111">(</span><span style="color:#75af00">err</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">for</span> <span style="color:#75af00">_</span><span style="color:#111">,</span> <span style="color:#75af00">pod</span> <span style="color:#f92672">:=</span> <span style="color:#00a8c8">range</span> <span style="color:#75af00">pods</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">fmt</span><span style="color:#111">.</span><span style="color:#75af00">Println</span><span style="color:#111">(</span><span style="color:#75af00">pod</span><span style="color:#111">.(</span><span style="color:#f92672">*</span><span style="color:#75af00">v1</span><span style="color:#111">.</span><span style="color:#75af00">Pod</span><span style="color:#111">).</span><span style="color:#75af00">Name</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span> <span style="color:#75715e">// 遍历并打印检索到的Pod名称</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">fmt</span><span style="color:#111">.</span><span style="color:#75af00">Println</span><span style="color:#111">(</span><span style="color:#d88200">&#34;*****************&#34;</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">pods</span><span style="color:#111">,</span> <span style="color:#75af00">err</span> <span style="color:#111">=</span> <span style="color:#75af00">index</span><span style="color:#111">.</span><span style="color:#75af00">ByIndex</span><span style="color:#111">(</span><span style="color:#75af00">NodeNameIndexName</span><span style="color:#111">,</span> <span style="color:#d88200">&#34;node2&#34;</span><span style="color:#111">)</span> <span style="color:#75715e">// 按照节点名称为node2检索Pod列表</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">err</span> <span style="color:#f92672">!=</span> <span style="color:#00a8c8">nil</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#111">panic</span><span style="color:#111">(</span><span style="color:#75af00">err</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">for</span> <span style="color:#75af00">_</span><span style="color:#111">,</span> <span style="color:#75af00">pod</span> <span style="color:#f92672">:=</span> <span style="color:#00a8c8">range</span> <span style="color:#75af00">pods</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">fmt</span><span style="color:#111">.</span><span style="color:#75af00">Println</span><span style="color:#111">(</span><span style="color:#75af00">pod</span><span style="color:#111">.(</span><span style="color:#f92672">*</span><span style="color:#75af00">v1</span><span style="color:#111">.</span><span style="color:#75af00">Pod</span><span style="color:#111">).</span><span style="color:#75af00">Name</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span> <span style="color:#75715e">// 遍历并打印</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">/*
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">index-pod-2
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">index-pod-1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">*****************
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">index-pod-2
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">index-pod-3
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">*/</span>
+</span></span></code></pre></div><h3 id="lister">lister</h3>
+<p>Lister是对Indexer的封装，提供了一种方便的方式来获取已经索引的Kubernetes资源对象列表。</p>
+<p>具体而言，Lister是一个接口，包含了获取所有已索引对象的列表以及根据名称获取单个对象的方法。这些方法可以帮助开发者在应用程序中快速访问已经缓存的资源对象，而无需直接与Indexer交互。</p>
+<p>Lister的主要功能包括：</p>
+<ol>
+<li>提供方便的接口：Lister接口的方法定义清晰简洁，使用起来非常方便，可以快速地获取已经索引的资源对象列表。</li>
+<li>提高代码可读性：通过使用Lister接口，代码可读性得到提高。开发者可以更加专注于业务逻辑，而无需关注底层的Indexer实现细节。</li>
+<li>提高代码复用性：由于Lister接口已经提供了通用的方法，因此可以更容易地在不同的代码模块中重用相同的逻辑，减少代码重复。</li>
+</ol>
+<p>总之，Lister作为client-go包中的一个重要组件，可以帮助开发者更加高效地处理Kubernetes资源对象，提高代码的可读性和可重用性。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;fmt&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;os&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;time&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;k8s.io/apimachinery/pkg/labels&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;k8s.io/client-go/informers&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;k8s.io/client-go/kubernetes&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;k8s.io/client-go/tools/cache&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;k8s.io/client-go/tools/clientcmd&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#75af00">main</span><span style="color:#111">()</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 获取 kubeconfig 文件路径</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">kubeconfigPath</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">os</span><span style="color:#111">.</span><span style="color:#75af00">Getenv</span><span style="color:#111">(</span><span style="color:#d88200">&#34;KUBECONFIG&#34;</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">kubeconfigPath</span> <span style="color:#f92672">==</span> <span style="color:#d88200">&#34;&#34;</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">kubeconfigPath</span> <span style="color:#111">=</span> <span style="color:#75af00">os</span><span style="color:#111">.</span><span style="color:#75af00">Getenv</span><span style="color:#111">(</span><span style="color:#d88200">&#34;HOME&#34;</span><span style="color:#111">)</span> <span style="color:#f92672">+</span> <span style="color:#d88200">&#34;/.kube/config&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 使用 kubeconfig 文件创建 kubernetes 客户端</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">config</span><span style="color:#111">,</span> <span style="color:#75af00">err</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">clientcmd</span><span style="color:#111">.</span><span style="color:#75af00">BuildConfigFromFlags</span><span style="color:#111">(</span><span style="color:#d88200">&#34;&#34;</span><span style="color:#111">,</span> <span style="color:#75af00">kubeconfigPath</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">err</span> <span style="color:#f92672">!=</span> <span style="color:#00a8c8">nil</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#111">panic</span><span style="color:#111">(</span><span style="color:#75af00">err</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">clientset</span><span style="color:#111">,</span> <span style="color:#75af00">err</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">kubernetes</span><span style="color:#111">.</span><span style="color:#75af00">NewForConfig</span><span style="color:#111">(</span><span style="color:#75af00">config</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">err</span> <span style="color:#f92672">!=</span> <span style="color:#00a8c8">nil</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#111">panic</span><span style="color:#111">(</span><span style="color:#75af00">err</span><span style="color:#111">.</span><span style="color:#75af00">Error</span><span style="color:#111">())</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 创建Informer</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">factory</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">informers</span><span style="color:#111">.</span><span style="color:#75af00">NewSharedInformerFactory</span><span style="color:#111">(</span><span style="color:#75af00">clientset</span><span style="color:#111">,</span> <span style="color:#75af00">time</span><span style="color:#111">.</span><span style="color:#75af00">Minute</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">podInformer</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">factory</span><span style="color:#111">.</span><span style="color:#75af00">Core</span><span style="color:#111">().</span><span style="color:#75af00">V1</span><span style="color:#111">().</span><span style="color:#75af00">Pods</span><span style="color:#111">()</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 创建Lister</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">lister</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">podInformer</span><span style="color:#111">.</span><span style="color:#75af00">Lister</span><span style="color:#111">()</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 等待Informer同步完成</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">stopCh</span> <span style="color:#f92672">:=</span> <span style="color:#111">make</span><span style="color:#111">(</span><span style="color:#00a8c8">chan</span> <span style="color:#00a8c8">struct</span><span style="color:#111">{})</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">defer</span> <span style="color:#111">close</span><span style="color:#111">(</span><span style="color:#75af00">stopCh</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">factory</span><span style="color:#111">.</span><span style="color:#75af00">Start</span><span style="color:#111">(</span><span style="color:#75af00">stopCh</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">cache</span><span style="color:#111">.</span><span style="color:#75af00">WaitForCacheSync</span><span style="color:#111">(</span><span style="color:#75af00">stopCh</span><span style="color:#111">,</span> <span style="color:#75af00">podInformer</span><span style="color:#111">.</span><span style="color:#75af00">Informer</span><span style="color:#111">().</span><span style="color:#75af00">HasSynced</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 获取namespace为&#34;default&#34;的Pod对象</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">podList</span><span style="color:#111">,</span> <span style="color:#75af00">err</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">lister</span><span style="color:#111">.</span><span style="color:#75af00">Pods</span><span style="color:#111">(</span><span style="color:#d88200">&#34;default&#34;</span><span style="color:#111">).</span><span style="color:#75af00">List</span><span style="color:#111">(</span><span style="color:#75af00">labels</span><span style="color:#111">.</span><span style="color:#75af00">Everything</span><span style="color:#111">())</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">err</span> <span style="color:#f92672">!=</span> <span style="color:#00a8c8">nil</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#111">panic</span><span style="color:#111">(</span><span style="color:#75af00">err</span><span style="color:#111">.</span><span style="color:#75af00">Error</span><span style="color:#111">())</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 打印Pod对象</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">for</span> <span style="color:#75af00">_</span><span style="color:#111">,</span> <span style="color:#75af00">pod</span> <span style="color:#f92672">:=</span> <span style="color:#00a8c8">range</span> <span style="color:#75af00">podList</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">fmt</span><span style="color:#111">.</span><span style="color:#75af00">Printf</span><span style="color:#111">(</span><span style="color:#d88200">&#34;Pod name: %s, Namespace: %s\n&#34;</span><span style="color:#111">,</span> <span style="color:#75af00">pod</span><span style="color:#111">.</span><span style="color:#75af00">Name</span><span style="color:#111">,</span> <span style="color:#75af00">pod</span><span style="color:#111">.</span><span style="color:#75af00">Namespace</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">/*
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">Pod name: nginx-76d6c9b8c-m4g5l, Namespace: default
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">Pod name: nginx, Namespace: default
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">Pod name: ubuntu, Namespace: default
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">Pod name: nginx-76d6c9b8c-kr9d2, Namespace: default
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">Pod name: nginx-76d6c9b8c-n8st9, Namespace: default
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">Pod name: nginx-76d6c9b8c-8ljkt, Namespace: default
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">Pod name: nginx-76d6c9b8c-jqv9h, Namespace: default
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">*/</span>
+</span></span></code></pre></div><h2 id="reference">Reference</h2>
+<ul>
+<li><a href="https://github.com/kubernetes/sample-controller/blob/master/docs/controller-client-go.md">sample-controller/controller-client-go.md at master · kubernetes/sample-controller (github.com)</a></li>
+<li><a href="https://juejin.cn/post/6962869412785487909">K8s二开之 client-go 初探 - 掘金 (juejin.cn)</a></li>
+</ul>
+]]></content:encoded><category>cloud</category><category>client-go</category><category>kubernetes</category><category>golang</category></item></channel></rss>

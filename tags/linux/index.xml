@@ -1,0 +1,1540 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>Linux on Daemon365</title><link>https://daemon365.dev/tags/linux/</link><description>Don't let yourself stop.</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><lastBuildDate>Thu, 19 Aug 2021 00:00:00 +0800</lastBuildDate><atom:link href="https://daemon365.dev/tags/linux/index.xml" rel="self" type="application/rss+xml"/><item><title>Linux基础系统优化</title><link>https://daemon365.dev/post/cloud/linux_basic_system_optimization/</link><pubDate>Thu, 19 Aug 2021 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/linux_basic_system_optimization/</guid><description>&lt;h2 id="linux基础系统优化"&gt;Linux基础系统优化&lt;/h2&gt;
+&lt;p&gt;Linux的网络功能相当强悍，一时之间我们无法了解所有的网络命令，在配置服务器基础环境时，先了解下网络参数设定命令。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;ifconfig　　查询、设置网卡和ip等参数&lt;/li&gt;
+&lt;li&gt;ifup,ifdown 脚本命令，更简单的方式启动关闭网络&lt;/li&gt;
+&lt;li&gt;ip　　符合指令，直接修改上述功能&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;在我们刚装好linux的时候，需要用xshell进行远程连接，那就得获取ip地址，有时候网卡默认是没启动的，Linux也就拿不到ip地址，因此我们得手动启动网卡&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;编辑网卡配置文件vim /etc/sysconfig/network-scripts/ifcfg-eth0&lt;/li&gt;
+&lt;li&gt;修改配置参数ONBOOT=yes&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id="网卡配置文件详解"&gt;网卡配置文件详解&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;网络配置文件：/etc/sysconfig/network&lt;/li&gt;
+&lt;li&gt;网络接口配置文件：etc/sysconfig/network-scripts/ifcfg-INTERFACE_NAME&lt;/li&gt;
+&lt;li&gt;DEVICE=: 关联的设备名称，要与文件名的后半部“INTERFACE_NAME”保持一致;&lt;/li&gt;
+&lt;li&gt;BOOTPROTO={static|none|dhcp|bootp}:引导协议；要使用静态地址，使用static或none；dhcp表示使用DHCP服务器获取地址；&lt;/li&gt;
+&lt;li&gt;IPADDR=IP地址&lt;/li&gt;
+&lt;li&gt;NETMASK=：子网掩码&lt;/li&gt;
+&lt;li&gt;GATEWAY=：设定默认网关；&lt;/li&gt;
+&lt;li&gt;ONBOOT=：开机时是否自动激活此网络接口；&lt;/li&gt;
+&lt;li&gt;HWADDR=： 硬件地址，要与硬件中的地址保持一致；可省；&lt;/li&gt;
+&lt;li&gt;USERCTL={yes|no}: 是否允许普通用户控制此接口；&lt;/li&gt;
+&lt;li&gt;PEERDNS={yes|no}: 是否在BOOTPROTO为dhcp时接受由DHCP服务器指定的DNS地址；&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id="ifupifdown命令"&gt;ifup,ifdown命令&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;启动/关闭一块网卡&lt;/li&gt;
+&lt;li&gt;ifup eth0&lt;/li&gt;
+&lt;li&gt;ifdown eth0&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id="ifconfig命令"&gt;ifconfig命令&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;ifconfig 查看网卡的ip地址&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;img src="https://daemon365.dev/images/f8a9aaf4-c0e7-4b0e-9ac3-30d4a6c03ef5.png" alt=""&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;接输入ifconfig会列出已经启动的网卡，也可以输入ifconfig eth0单独显示eth0的信息&lt;/li&gt;
+&lt;li&gt;选项解释是：&lt;/li&gt;
+&lt;li&gt;th0 网卡的代号&lt;/li&gt;
+&lt;li&gt;o 回环地址loopback&lt;/li&gt;
+&lt;li&gt;net IPv4的Ip地址&lt;/li&gt;
+&lt;li&gt;etmask 子网掩码&lt;/li&gt;
+&lt;li&gt;roadcast 广播地址&lt;/li&gt;
+&lt;li&gt;X/TX 流量发/收情况 tx是发送（transport），rx是接收(receive)&lt;/li&gt;
+&lt;li&gt;ackets 数据包数&lt;/li&gt;
+&lt;li&gt;rrors 数据包错误数&lt;/li&gt;
+&lt;li&gt;ropped 数据包有问题被丢弃的数量&lt;/li&gt;
+&lt;li&gt;ollisions 数据包碰撞情况，数值太多代表网络状况差&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id="ifupifdown命令-1"&gt;ifup,ifdown命令&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;ifup和ifdown是直接连接到/etc/sysconfig/network-scripts目录下搜索对应的网卡文件，例如ifcfg-eth0然后加以设置&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id="ip命令"&gt;ip命令&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;ip是一个命令，不是TCP/IP那个ip，这个ip命令是结合了ifconfig和route两个命令的功能。&lt;/li&gt;
+&lt;li&gt;ip addr show #查看ip信息&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;了解了如何查看网卡信息，接下来查看系统信息。&lt;/p&gt;</description><content:encoded><![CDATA[<h2 id="linux基础系统优化">Linux基础系统优化</h2>
+<p>Linux的网络功能相当强悍，一时之间我们无法了解所有的网络命令，在配置服务器基础环境时，先了解下网络参数设定命令。</p>
+<ul>
+<li>ifconfig　　查询、设置网卡和ip等参数</li>
+<li>ifup,ifdown 脚本命令，更简单的方式启动关闭网络</li>
+<li>ip　　符合指令，直接修改上述功能</li>
+</ul>
+<p>在我们刚装好linux的时候，需要用xshell进行远程连接，那就得获取ip地址，有时候网卡默认是没启动的，Linux也就拿不到ip地址，因此我们得手动启动网卡</p>
+<ol>
+<li>编辑网卡配置文件vim /etc/sysconfig/network-scripts/ifcfg-eth0</li>
+<li>修改配置参数ONBOOT=yes</li>
+</ol>
+<h3 id="网卡配置文件详解">网卡配置文件详解</h3>
+<ol>
+<li>网络配置文件：/etc/sysconfig/network</li>
+<li>网络接口配置文件：etc/sysconfig/network-scripts/ifcfg-INTERFACE_NAME</li>
+<li>DEVICE=: 关联的设备名称，要与文件名的后半部“INTERFACE_NAME”保持一致;</li>
+<li>BOOTPROTO={static|none|dhcp|bootp}:引导协议；要使用静态地址，使用static或none；dhcp表示使用DHCP服务器获取地址；</li>
+<li>IPADDR=IP地址</li>
+<li>NETMASK=：子网掩码</li>
+<li>GATEWAY=：设定默认网关；</li>
+<li>ONBOOT=：开机时是否自动激活此网络接口；</li>
+<li>HWADDR=： 硬件地址，要与硬件中的地址保持一致；可省；</li>
+<li>USERCTL={yes|no}: 是否允许普通用户控制此接口；</li>
+<li>PEERDNS={yes|no}: 是否在BOOTPROTO为dhcp时接受由DHCP服务器指定的DNS地址；</li>
+</ol>
+<h3 id="ifupifdown命令">ifup,ifdown命令</h3>
+<ol>
+<li>启动/关闭一块网卡</li>
+<li>ifup eth0</li>
+<li>ifdown eth0</li>
+</ol>
+<h3 id="ifconfig命令">ifconfig命令</h3>
+<ol>
+<li>ifconfig 查看网卡的ip地址</li>
+</ol>
+<p><img src="/images/f8a9aaf4-c0e7-4b0e-9ac3-30d4a6c03ef5.png" alt=""></p>
+<ol>
+<li>接输入ifconfig会列出已经启动的网卡，也可以输入ifconfig eth0单独显示eth0的信息</li>
+<li>选项解释是：</li>
+<li>th0 网卡的代号</li>
+<li>o 回环地址loopback</li>
+<li>net IPv4的Ip地址</li>
+<li>etmask 子网掩码</li>
+<li>roadcast 广播地址</li>
+<li>X/TX 流量发/收情况 tx是发送（transport），rx是接收(receive)</li>
+<li>ackets 数据包数</li>
+<li>rrors 数据包错误数</li>
+<li>ropped 数据包有问题被丢弃的数量</li>
+<li>ollisions 数据包碰撞情况，数值太多代表网络状况差</li>
+</ol>
+<h3 id="ifupifdown命令-1">ifup,ifdown命令</h3>
+<ol>
+<li>ifup和ifdown是直接连接到/etc/sysconfig/network-scripts目录下搜索对应的网卡文件，例如ifcfg-eth0然后加以设置</li>
+</ol>
+<h3 id="ip命令">ip命令</h3>
+<ol>
+<li>ip是一个命令，不是TCP/IP那个ip，这个ip命令是结合了ifconfig和route两个命令的功能。</li>
+<li>ip addr show #查看ip信息</li>
+</ol>
+<p>了解了如何查看网卡信息，接下来查看系统信息。</p>
+<p>你的系统是什么版本？</p>
+<ol>
+<li>查看系统版本信息cat /etc/redhat-release</li>
+<li>查看内核版本号uname -r</li>
+<li>查看系统多少位uname -m</li>
+<li>查看内核所有信息uname -a</li>
+</ol>
+<h2 id="用户管理与文件权限篇">用户管理与文件权限篇</h2>
+<h3 id="创建普通用户">创建普通用户</h3>
+<ol>
+<li>添加用户useradd zhaohaiyu</li>
+<li>设置密码passwd zhaohaiyuroot用户可以修改其他所有人的密码，且不需要验证</li>
+</ol>
+<h3 id="切换用户">切换用户</h3>
+<ul>
+<li>
+<p>su - username</p>
+</li>
+<li>
+<p>先看下当前用户（我是谁）whoami</p>
+</li>
+<li>
+<p>退出用户登录logoutctrl + d</p>
+</li>
+<li>
+<p>一般情况下，在生产环境避免直接用root用户，除非有特殊系统维护需求，使用完立刻退回普通用户</p>
+</li>
+<li>
+<p>非交互式设置密码(echo &ldquo;redhat&rdquo;|passwd &ndash;stdin oldboy &amp;&amp; history -c)</p>
+</li>
+</ul>
+<pre tabindex="0"><code>Tip:
+1.超级用户root切换普通用户无需密码,例如“群主”想踢谁就踢谁
+2.普通用户切换root，需要输入密码
+3.普通用户权限较小，只能基本查看信息
+4.$符号是普通用户命令提示符，#是超级管理员的提示符
+root是当前用户，oldboyedu是主机名，~代表当前路径，也是家目录
+</code></pre><p>groupadd命令</p>
+<p>group命令用于创建用户组，为了更加高效的指派系统中各个用户的权限，groupadd it_dep</p>
+<h3 id="userdel删除用户">userdel删除用户</h3>
+<ul>
+<li>-f 强制删除用户</li>
+<li>-r 同事删除用户以及家目录</li>
+<li>userdel -r zhaohaiyu</li>
+</ul>
+<h2 id="文件与目录权限">文件与目录权限</h2>
+<p>Linux权限的目的是（保护账户的资料）</p>
+<p>Linux权限主要依据三种身份来决定：</p>
+<ul>
+<li>user/owner 文件使用者,文件属于哪个用户</li>
+<li>group 属组,文件属于哪个组</li>
+<li>others 既不是user，也不再group，就是other，其他人</li>
+</ul>
+<h3 id="什么是权限">什么是权限</h3>
+<p>在Linux中，每个文件都有所属的所有者，和所有组，并且规定了文件的所有者，所有组以及其他人对文件的，可读，可写，可执行等权限。对于目录的权限来说，可读是读取目录文件列表，可写是表示在目录内新增，修改，删除文件。可执行表示可以进入目录</p>
+<h3 id="linux权限的观察">Linux权限的观察</h3>
+<p>使用一条命令查看权限ls -l /var/log/mysqld.log</p>
+<p><img src="/images/44d5a029-5692-45c8-8c46-df07064b564a.png" alt=""></p>
+<ol>
+<li>权限，第一个字母为文件类型，后续9个字母，每3个一组，是三种身份的权限</li>
+<li>文件链接数</li>
+<li>文件拥有者-属主</li>
+<li>文件拥有组-属组</li>
+<li>文件大小</li>
+<li>最后一次被修改的时间日期</li>
+<li>文件名</li>
+</ol>
+<p>先来分析一下文件的类型</p>
+<pre tabindex="0"><code>-    一般文件
+d    文件夹
+l    软连接（快捷方式）
+b    块设备，存储媒体文件为主
+c    代表键盘,鼠标等设备
+</code></pre><h3 id="文件权限">文件权限</h3>
+<pre tabindex="0"><code>r    read可读，可以用cat等命令查看
+w    write写入，可以编辑或者删除这个文件
+x    executable    可以执行
+</code></pre><h2 id="目录权限">目录权限</h2>
+<pre tabindex="0"><code>r    可以对此目录执行ls列出所有文件
+w    可以在这个目录创建文件
+x    可以cd进入这个目录，或者查看详细信息
+</code></pre><p>权限与数字转化</p>
+<p><img src="/images/0bbf82e6-b6bc-4c00-85c4-7122c61495e1.png" alt=""></p>
+<h2 id="软连接">软连接</h2>
+<p>软连接也叫做符号链接，类似于windows的快捷方式。</p>
+<p>常用于安装软件的快捷方式配置，如mysql，nginx等ln -s 目标文件 软连接名</p>
+<ol>
+<li>存在文件/tmp/test.txt-rw-r&ndash;r&ndash; 1 root root 10 10月 15 21:23 test.txt</li>
+<li>在/home目录中建立软连接，指向/tmp/test.txt文件=ln -s /tmp/test.txt my_test</li>
+<li>查看软连接信息
+lrwxrwxrwx 1 root root 13 10月 15 21:35 my_test -&gt; /tmp/test.txt4.通过软连接查看文件cat my_testmy_test只是/tmp/test.txt的一个别名，因此删除my_test不会影响/tmp/test.txt，但是删除了本尊，快捷方式就无意义不存在了</li>
+</ol>
+<h2 id="命令">命令</h2>
+<h2 id="tar解压命令">tar解压命令</h2>
+<p>linux的文件打包工具最出名的是tar。</p>
+<p><img src="/images/c62e4613-cf4c-40c6-b48e-3429a816f541.png" alt=""></p>
+<p>tar 命令：用来压缩和解压文件。tar本身不具有压缩功能。他是调用压缩功能实现的</p>
+<p>语法</p>
+<pre tabindex="0"><code>tar(选项)(参数)
+-A或--catenate：新增文件到以存在的备份文件；
+-B：设置区块大小；
+-c或--create：建立新的备份文件；
+-C ：这个选项用在解压缩，若要在特定目录解压缩，可以使用这个选项。
+-d：记录文件的差别；
+-x或--extract或--get：从备份文件中还原文件；
+-t或--list：列出备份文件的内容；
+-z或--gzip或--ungzip：通过gzip指令处理备份文件；
+-Z或--compress或--uncompress：通过compress指令处理备份文件；
+-f或--file=：指定备份文件；
+-v或--verbose：显示指令执行过程；
+-r：添加文件到已经压缩的文件；
+-u：添加改变了和现有的文件到已经存在的压缩文件；
+-j：支持bzip2解压文件；
+-v：显示操作过程；
+-l：文件系统边界设置；
+-k：保留原有文件不覆盖；
+-m：保留文件不被覆盖；
+-w：确认压缩文件的正确性；
+-p或--same-permissions：用原来的文件权限还原文件；
+-P或--absolute-names：文件名使用绝对名称，不移除文件名称前的“/”号；
+-N  或 --newer=：只将较指定日期更新的文件保存到备份文件里；
+--exclude=：排除符合范本样式的文件。
+</code></pre><h2 id="gzip命令">gzip命令</h2>
+<ul>
+<li>gzip用来压缩文件，是个使用广泛的压缩程序，被压缩的以&quot;.gz&quot;扩展名</li>
+<li>gzip可以压缩较大的文件，以60%~70%压缩率来节省磁盘空间</li>
+</ul>
+<p>语法</p>
+<pre tabindex="0"><code>-d或--decompress或----uncompress：解开压缩文件；
+-f或——force：强行压缩文件。
+-h或——help：在线帮助；
+-l或——list：列出压缩文件的相关信息；
+-L或——license：显示版本与版权信息；
+-r或——recursive：递归处理，将指定目录下的所有文件及子目录一并处理；
+-v或——verbose：显示指令执行过程；
+</code></pre><h2 id="netstat命令">netstat命令</h2>
+<p>netstat命令用来打印Linux中网络系统的状态信息，可让你得知整个Linux系统的网络情况。</p>
+<p>语法【选项】</p>
+<pre tabindex="0"><code>netstat [选项]
+-t或--tcp：显示TCP传输协议的连线状况；
+-u或--udp：显示UDP传输协议的连线状况；
+-n或--numeric：直接使用ip地址，而不通过域名服务器；
+-l或--listening：显示监控中的服务器的Socket；
+-p或--programs：显示正在使用Socket的程序识别码和程序名称；-a或--all：显示所有连线中的Socket；
+</code></pre><h2 id="ps命令">ps命令</h2>
+<p>ps 命令用于查看系统中的进程状态，格式为“ps [参数]”。</p>
+<pre tabindex="0"><code>ps　　命令常用参数
+-a     显示所有进程
+-u     用户以及其他详细信息
+-x    显示没有控制终端的进程
+</code></pre><h2 id="kill命令">Kill命令</h2>
+<p>kill命令用来删除执行中的程序或工作。kill可将指定的信息送至程序。</p>
+<p>选项</p>
+<pre tabindex="0"><code>-a：当处理当前进程时，不限制命令名和进程号的对应关系；
+-l ：若不加选项，则-l参数会列出全部的信息名称；
+-p：指定kill 命令只打印相关进程的进程号，而不发送任何信号；
+-s ：指定要送出的信息；
+-u：指定用户。
+</code></pre><p>只有第9种信号(SIGKILL)才可以无条件终止进程，其他信号进程都有权利忽略，<strong>下面是常用的信号：</strong></p>
+<pre tabindex="0"><code>HUP     1    终端断线
+INT     2    中断（同 Ctrl + C）
+QUIT    3    退出（同 Ctrl + \）
+TERM   15    终止
+KILL    9    强制终止
+CONT   18    继续（与STOP相反， fg/bg命令）
+STOP   19    暂停（同 Ctrl + Z）
+</code></pre><h2 id="killall命令">killall命令</h2>
+<p>通常来讲，复杂软件的服务程序会有多个进程协同为用户提供服务，如果逐个去结束这 些进程会比较麻烦，此时可以使用 killall 命令来批量结束某个服务程序带有的全部进程。
+例如nginx启动后有2个进程
+killall nginx</p>
+<h2 id="selinux功能">SELinux功能</h2>
+<p>SELinux(Security-Enhanced Linux) 是美国国家安全局（NSA）对于强制访问控制的实现，这个功能管理员又爱又恨，大多数生产环境也是关闭的做法，安全手段使用其他方法。</p>
+<p>大多数ssh连接不上虚拟机，都是因为防火墙和selinux阻挡了</p>
+<p>永久关闭方式：</p>
+<pre tabindex="0"><code>1.修改配置文件，永久生效关闭selinux
+cp /etc/selinux/config /etc/selinux/config.bak #修改前备份
+2.修改方式可以vim编辑,找到
+# This file controls the state of SELinux on the system.
+# SELINUX= can take one of these three values:
+#     enforcing - SELinux security policy is enforced.
+#     permissive - SELinux prints warnings instead of enforcing.
+#     disabled - No SELinux policy is loaded.
+SELINUX=disabled
+3.用sed替换
+sed -i &#39;s/SELINUX=enforcing/SELINUX=disabled/&#39; /etc/selinux/config
+4.检查状态
+grep &#34;SELINUX=disabled&#34; /etc/selinux/config
+#出现结果即表示修改成功
+</code></pre><p>临时关闭selinux(命令行修改，重启失效)：</p>
+<pre tabindex="0"><code>getenforce #获取selinux状态
+#修改selinux状态
+setenforce 
+usage:  setenforce [ Enforcing | Permissive | 1 | 0 ]
+数字0 表示permissive，给出警告，不会阻止，等同disabled
+数字1表示enforcing，表示开启
+</code></pre><p>Tip:</p>
+<pre tabindex="0"><code>修改selinux配置后，想要生效还得重启系统，技巧就是（修改配置文件+命令行修改，达到立即生效）
+生产环境的服务器是禁止随意重启的！！！！
+</code></pre><h2 id="iptables防火墙">iptables防火墙</h2>
+<p>在学习阶段，关闭防火墙可以更方便的学习，在企业环境中，一般只有配置外网ip的linux服务器才会开启防火墙，但是对于高并发流量的业务服务器仍然是不能开启的，会有很大性能损失，因此需要更nb的硬件防火墙。</p>
+<p>关闭防火墙具体操作如下：</p>
+<ol>
+<li>systemctl status firewalld查看防火墙状态</li>
+<li>systemctl stop firewalld关闭防火墙</li>
+<li>systemctl disable firewalld关闭防火墙开机启动systemctl is-enabled firewalld.service#检查防火墙是否启动</li>
+</ol>
+<h2 id="df命令">df命令</h2>
+<p><strong>df命令</strong>用于显示磁盘分区上的可使用的磁盘空间。默认显示单位为KB。可以利用该命令来获取硬盘被占用了多少空间，目前还剩下多少空间等信息。</p>
+<p>语法</p>
+<pre tabindex="0"><code>df(选项)(参数)
+-h或--human-readable：以可读性较高的方式来显示信息；
+-k或--kilobytes：指定区块大小为1024字节；
+-T或--print-type：显示文件系统的类型；
+--help：显示帮助；
+--version：显示版本信息。
+</code></pre><h2 id="tree命令">tree命令</h2>
+<ol>
+<li>tree命令以树状图列出目录的内容。</li>
+<li>-a：显示所有文件和目录；</li>
+<li>-A：使用ASNI绘图字符显示树状图而非以ASCII字符组合；</li>
+<li>-C：在文件和目录清单加上色彩，便于区分各种类型；</li>
+<li>-d：先是目录名称而非内容；</li>
+<li>-D：列出文件或目录的更改时间；</li>
+<li>-f：在每个文件或目录之前，显示完整的相对路径名称；</li>
+<li>-F：在执行文件，目录，Socket，符号连接，管道名称名称，各自加上&quot;*&quot;，&quot;/&quot;，&quot;@&quot;，&quot;|&ldquo;号；</li>
+<li>-g：列出文件或目录的所属群组名称，没有对应的名称时，则显示群组识别码；</li>
+<li>-i：不以阶梯状列出文件和目录名称；</li>
+<li>-l： 不显示符号范本样式的文件或目录名称；</li>
+<li>-l：如遇到性质为符号连接的目录，直接列出该连接所指向的原始目录；</li>
+<li>-n：不在文件和目录清单加上色彩；</li>
+<li>-N：直接列出文件和目录名称，包括控制字符；</li>
+<li>-p：列出权限标示；</li>
+<li>-P： 只显示符合范本样式的文件和目录名称；</li>
+<li>-q：用“？”号取代控制字符，列出文件和目录名称；</li>
+<li>-s：列出文件和目录大小；</li>
+<li>-t：用文件和目录的更改时间排序；</li>
+<li>-u：列出文件或目录的拥有者名称，没有对应的名称时，则显示用户识别码；</li>
+<li>-x：将范围局限在现行的文件系统中，若指定目录下的某些子目录，其存放于另一个文件系统上，则将该目录予以排除在寻找范围外。</li>
+</ol>
+<h2 id="设置主机名">设置主机名</h2>
+<p>hostnamectl set-hostname zhaohaiyu</p>
+<p>查看:hostname</p>
+<h2 id="dns">DNS</h2>
+<pre tabindex="0"><code>DNS（Domain Name System，域名系统），万维网上作为域名和IP地址相互映射的一个分布式数据库，能够使用户更方便的访问互联网，而不用去记住能够被机器直接读取的IP数串。
+通过域名，最终得到该域名对应的IP地址的过程叫做域名解析（或主机名解析）。
+</code></pre><h3 id="查看linux的dns唯一配置文件">查看Linux的dns，唯一配置文件</h3>
+<pre tabindex="0"><code>配置文件
+cat /etc/resolv.conf#dns服务器地址
+nameserver 119.29.29.29
+nameserver 223.5.5.5
+</code></pre><h3 id="本地强制dns解析文件etchosts">本地强制dns解析文件/etc/hosts</h3>
+<pre tabindex="0"><code>指定本地解析：
+/etc/hosts
+主机IP    主机名    主机别名
+127.0.0.1        www.zhaohaiyu.com
+</code></pre><h2 id="yum命令">yum命令</h2>
+<p><strong>yum命令</strong>是在Fedora和RedHat以及SUSE中基于rpm的软件包管理器，它可以使系统管理人员交互和自动化地更细与管理RPM软件包，能够从指定的服务器自动下载RPM包并且安装，可以自动处理依赖性关系，并且一次安装所有依赖的软体包，无须繁琐地一次次下载、安装。</p>
+<p>尽管 RPM 能够帮助用户查询软件相关的依赖关系，但问题还是要运维人员自己来解决， 而有些大型软件可能与数十个程序都有依赖关系，在这种情况下安装软件会是非常痛苦的。 Yum 软件仓库便是为了进一步降低软件安装难度和复杂度而设计的技术。Yum 软件仓库可以 根据用户的要求分析出所需软件包及其相关的依赖关系，然后自动从服务器下载软件包并安 装到系统。</p>
+<p>Yum 软件仓库中的 RPM 软件包可以是由红帽官方发布的，也可以是第三方发布的，当 然也可以是自己编写的。</p>
+<p><img src="/images/820ddcac-811c-419c-81c1-c2214419797e.png" alt=""></p>
+<p>选项</p>
+<ol>
+<li>-h：显示帮助信息；</li>
+<li>-y：对所有的提问都回答“yes”；</li>
+<li>-c：指定配置文件；</li>
+<li>-q：安静模式；</li>
+<li>-v：详细模式；</li>
+<li>-d：设置调试等级（0-10）；</li>
+<li>-e：设置错误等级（0-10）；</li>
+<li>-R：设置yum处理一个命令的最大等待时间；</li>
+<li>-C：完全从缓存中运行，而不去下载或者更新任何头文件。</li>
+</ol>
+<p>实例</p>
+<p>yum install pip</p>
+<h3 id="yum源配置">yum源配置</h3>
+<p>yum源的目录/etc/yum.repos.d/</p>
+<p>配置阿里云yum源</p>
+<pre tabindex="0"><code>1.备份yum源
+mkdir repo_bak
+mv *.repo repo_bak/
+2.下载阿里云repo文件wget http://mirrors.aliyun.com/repo/Centos-7.repo
+3.清空yum缓存并且生成新的yum缓存yum clean allyum makecache4.安装软件扩展源yum install -y epel-release
+yum repolist all        列出所有仓库
+yum list all            列出仓库所有软件包
+yum info 软件包名            查看软件包信息
+yum install 软件包名        安装软件包
+yum reinstall 软件包名    重新安装软件包
+yum update    软件包名        升级软件包
+yum remove    软件包名        移除软件包
+yum clean all            清楚所有仓库缓存
+yum check-update        检查可以更新的软件包
+yum grouplist            查看系统中已安装的软件包
+yum groupinstall 软件包组    安装软件包组
+</code></pre><h2 id="linux下安装程序的方法">Linux下安装程序的方法</h2>
+<ul>
+<li>rpm -ivh 包名.rpm　　需要手动解决依赖关系</li>
+<li>yum install 包名 yum自动处理依赖关系</li>
+<li>编译安装（源码安装）</li>
+</ul>
+<h3 id="安装lrzsz">安装Lrzsz</h3>
+<p>yum install lrzsz</p>
+]]></content:encoded><category>cloud</category><category>linux</category></item><item><title>Linux核心知识</title><link>https://daemon365.dev/post/cloud/linux_core_knowledge/</link><pubDate>Sun, 15 Aug 2021 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/linux_core_knowledge/</guid><description>&lt;h2 id="电脑辅助人脑的工具"&gt;电脑：辅助人脑的工具&lt;/h2&gt;
+&lt;p&gt;现在的人们几乎无时无刻都会碰电脑！不管是桌上型电脑(桌机)、笔记型电脑(笔电)、平板电脑、智慧型手机等等，这些东西都算是电脑。虽然接触的这么多，但是，你了解电脑里面的元件有什么吗？以桌机来说，电脑的机壳里面含有什么元件？不同的电脑可以应用在哪些工作？你生活周遭有哪些电器用品内部是含有电脑相关元件的？底下我们就来谈一谈这些东西呢！&lt;/p&gt;
+&lt;p&gt;所谓的电脑就是一种计算机，而计算机其实是：『接受使用者输入指令与资料，经由中央处理器的数学与逻辑单元运算处理后，以产生或储存成有用的资讯』。因此，只要有输入设备(不管是键盘还是触控式萤幕)及输出设备(例如电脑萤幕或直接由印表机列印出来)，让你可以输入资料使该机器产生资讯的，那就是一部计算机了。&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://daemon365.dev/images/045ccf5f-2ca6-4fe8-a406-8f27f9b226e1.png" alt=""&gt;&lt;/p&gt;
+&lt;p&gt;好了，根据这个定义你知道哪些东西是计算机了吗？其实包括一般商店用的简易型加减乘除计算机、打电话用的手机、开车用的卫星定位系统(GPS)、提款用的提款机(ATM)、你上课会使用的桌上型个人电脑、外出可能会带的笔记型电脑(包括notebook与netbook)，还有近几年(2015前后)非常热门的平板电脑与智慧型手机，甚至是未来可能会大流行的单版电脑(Xapple pi, banana pi, Raspberry pi, )与智慧型手表，甚至于更多的智慧型穿戴式电脑等等，这些都是计算机喔！&lt;/p&gt;
+&lt;h2 id="电脑硬件的组成"&gt;电脑硬件的组成&lt;/h2&gt;
+&lt;p&gt;关于电脑的硬件组成部分，其实你可以观察你的桌上型电脑来分析一下，依外观来说这家伙主要可分为三部分，分别是：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;输入单元：包括键盘、滑鼠、读卡机、扫描器、手写板、触控萤幕等等一堆；&lt;/li&gt;
+&lt;li&gt;主机部分：这个就是系统单元，被主机机壳保护住了，里面含有一堆板子、CPU 与主记忆体等；&lt;/li&gt;
+&lt;li&gt;输出单元：例如萤幕、印表机等等&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src="https://daemon365.dev/images/fcddc91e-109d-4283-8eb2-a792743f45d1.png" alt=""&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://daemon365.dev/images/92ce5336-58f1-4b3f-8362-912c07080d4b.png" alt=""&gt;&lt;/p&gt;
+&lt;p&gt;我们主要透过输入设备如滑鼠与键盘来将一些资料输入到主机里面，然后再由主机的功能处理成为图表或文章等资讯后， 将结果传输到输出设备，如萤幕或印表机上面。那主机里面含有什么元件呢？如果你曾经拆开过电脑主机机壳(包括拆开你的智慧型手机也一样喔！)， 会发现其实主机里面最重要的就是一片主机板，上面安插了中央处理器(CPU) 以及主记忆体、硬碟(或记忆卡) 还有一些介面卡装置而已。当然大部分智慧型手机是将这些元件直接焊接在主机板上面而不是插卡啦！&lt;/p&gt;
+&lt;p&gt;整部主机的重点在于中央处理器(Central Processing Unit, CPU)，CPU为一个具有特定功能的晶片，里头含有微指令集，如果你想要让主机进行什么特异的功能，就得要参考这颗CPU是否有相关内建的微指令集才可以。由于CPU的工作主要在于管理与运算，因此在CPU内又可分为两个主要的单元，分别是： 算数逻辑单元与控制单元。其中算数逻辑单元主要负责程式运算与逻辑判断，控制单元则主要在协调各周边元件与各单元间的工作。&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://daemon365.dev/images/0dfd43df-0810-428c-a59f-471877b54302.png" alt=""&gt;&lt;/p&gt;
+&lt;p&gt;如果不是很了解电脑的运作流程的话，超哥拿个简单的想法来思考好了～假设电脑是一个人体，那么每个元件对应到那个地方呢？可以这样思考：&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://daemon365.dev/images/bb91d7e4-1c37-4383-9992-dc12bba88a6a.png" alt=""&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;CPU=脑袋瓜子：每个人会作的事情都不一样(微指令集的差异)，但主要都是透过脑袋瓜子来进行判断与控制身体各部分的活动；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;主记忆体=脑袋中放置正在被思考的资料的区块：在实际活动过程中，我们的脑袋瓜子需要有外界刺激的资料(例如光线、环境、语言等)来分析，那这些互动资料暂时存放的地方就是主记忆体，主要是用来提供给脑袋瓜子判断用的资讯。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;硬碟=脑袋中放置回忆的记忆区块：跟刚刚的主记忆体不同，主记忆体是提供脑袋目前要思考与处理的资讯，但是有些生活琐事或其他没有要立刻处理的事情，就当成回忆先放置到脑袋的记忆深处吧！那就是硬碟！主要目的是将重要的资料记录起来，以便未来将这些重要的经验再次的使用；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;主机板=神经系统：好像人类的神经一样，将所有重要的元件连接起来，包括手脚的活动都是脑袋瓜子发布命令后，透过神经(主机板)传导给手脚来进行活动啊！&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;各项周边设备=人体与外界沟通的手、脚、皮肤、眼睛等：就好像手脚一般，是人体与外界互动的重要关键！&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;显示卡=脑袋中的影像：将来自眼睛的刺激转成影像后在脑袋中呈现，所以显示卡所产生的资料来源也是CPU控制的。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;电源供应器(Power)=心脏：所有的元件要能运作得要有足够的电力供给才行！这电力供给就好像心脏一样，如果心脏不够力， 那么全身也就无法动弹的！心脏不稳定呢？那你的身体当然可能断断续续的～不稳定！&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="电源"&gt;电源&lt;/h2&gt;
+&lt;p&gt;既然是人体的心脏，保障电源供应，就需要质量好的电源，生产环境中单个核心服务器最好是双电源AB线路。&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://daemon365.dev/images/26d15fe0-8820-4878-88b3-d78975163389.png" alt=""&gt;
+一个接220V电路，一个可能接蓄电池UPS(不间断电源)&lt;/p&gt;
+&lt;h2 id="cpu"&gt;CPU&lt;/h2&gt;
+&lt;p&gt;常见品牌：Intel、AMD，想当于人体的大脑&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://daemon365.dev/images/940ab0e8-cf8b-4e5a-be64-50b0b8e1d0f3.png" alt=""&gt;&lt;/p&gt;
+&lt;h2 id="内存"&gt;内存&lt;/h2&gt;
+&lt;p&gt;是CPU和磁盘之间的缓冲设备，也叫临时存储器（存放数据），断电时数据丢失&lt;/p&gt;
+&lt;p&gt;一般程序运行时会被调度到内存中执行，服务器关闭或程序关闭后，数据从内存中释放掉。&lt;/p&gt;
+&lt;h2 id="电脑用途的分类"&gt;电脑用途的分类&lt;/h2&gt;
+&lt;p&gt;知道了电脑的基本组成与周边装置，也知道其实电脑的CPU种类非常的多，再来我们想要了解的是，电脑如何分类？电脑的分类非常多种，如果以电脑的复杂度与运算能力进行分类的话，主要可以分为这几类：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;超级电脑(Supercomputer)
+超级电脑是运作速度最快的电脑，但是他的维护、操作费用也最高！主要是用于需要有高速计算的计画中。例如：国防军事、气象预测、太空科技，用在模拟的领域较多。详情也可以参考：国家高速网路与计算中心http://www.nchc.org.tw的介绍！至于全世界最快速的前500大超级电脑，则请参考：http://www.top500.org。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;大型电脑(Mainframe Computer)
+大型电脑通常也具有数个高速的CPU，功能上虽不及超级电脑，但也可用来处理大量资料与复杂的运算。例如大型企业的主机、全国性的证券交易所等每天需要处理数百万笔资料的企业机构，或者是大型企业的资料库伺服器等等。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;迷你电脑(Minicomputer)
+迷你电脑仍保有大型电脑同时支援多使用者的特性，但是主机可以放在一般作业场所，不必像前两个大型电脑需要特殊的空调场所。通常用来作为科学研究、工程分析与工厂的流程管理等。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;工作站(Workstation)
+工作站的价格又比迷你电脑便宜许多，是针对特殊用途而设计的电脑。在个人电脑的效能还没有提升到目前的状况之前，工作站电脑的性能/价格比是所有电脑当中较佳的，因此在学术研究与工程分析方面相当常见。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;微电脑(Microcomputer)
+个人电脑就属于这部份的电脑分类，也是我们本章主要探讨的目标！体积最小，价格最低，但功能还是五脏俱全的！大致又可分为桌上型、笔记型等等。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;若光以效能来说，目前的个人电脑效能已经够快了，甚至已经比工作站等级以上的电脑运算速度还要快！但是工作站电脑强调的是稳定不当机，并且运算过程要完全正确，因此工作站以上等级的电脑在设计时的考量与个人电脑并不相同啦！这也是为啥工作站等级以上的电脑售价较贵的原因。&lt;/p&gt;
+&lt;h2 id="互联网常见服务器介绍"&gt;互联网常见服务器介绍&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;DELL（大多数公司在用）&lt;/li&gt;
+&lt;li&gt;HP&lt;/li&gt;
+&lt;li&gt;IBM（百度，银行，政府）（贵）&lt;/li&gt;
+&lt;li&gt;浪潮&lt;/li&gt;
+&lt;li&gt;联想&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src="https://daemon365.dev/images/8e75cc06-c929-40ca-8ba2-f598bdfde71d.png" alt=""&gt;&lt;img src="https://daemon365.dev/images/9a648c99-aa6a-476f-afbb-397866aefa0f.png" alt=""&gt;&lt;img src="https://daemon365.dev/images/00fb4856-3129-4385-b53e-e88af25cfdb0.png" alt=""&gt;&lt;img src="https://daemon365.dev/images/06e45973-a499-4290-9e12-c03d68c74839.png" alt=""&gt;&lt;img src="https://daemon365.dev/images/948c1fe4-c01c-496f-988b-9b16d88cdc77.png" alt=""&gt;&lt;/p&gt;</description><content:encoded><![CDATA[<h2 id="电脑辅助人脑的工具">电脑：辅助人脑的工具</h2>
+<p>现在的人们几乎无时无刻都会碰电脑！不管是桌上型电脑(桌机)、笔记型电脑(笔电)、平板电脑、智慧型手机等等，这些东西都算是电脑。虽然接触的这么多，但是，你了解电脑里面的元件有什么吗？以桌机来说，电脑的机壳里面含有什么元件？不同的电脑可以应用在哪些工作？你生活周遭有哪些电器用品内部是含有电脑相关元件的？底下我们就来谈一谈这些东西呢！</p>
+<p>所谓的电脑就是一种计算机，而计算机其实是：『接受使用者输入指令与资料，经由中央处理器的数学与逻辑单元运算处理后，以产生或储存成有用的资讯』。因此，只要有输入设备(不管是键盘还是触控式萤幕)及输出设备(例如电脑萤幕或直接由印表机列印出来)，让你可以输入资料使该机器产生资讯的，那就是一部计算机了。</p>
+<p><img src="/images/045ccf5f-2ca6-4fe8-a406-8f27f9b226e1.png" alt=""></p>
+<p>好了，根据这个定义你知道哪些东西是计算机了吗？其实包括一般商店用的简易型加减乘除计算机、打电话用的手机、开车用的卫星定位系统(GPS)、提款用的提款机(ATM)、你上课会使用的桌上型个人电脑、外出可能会带的笔记型电脑(包括notebook与netbook)，还有近几年(2015前后)非常热门的平板电脑与智慧型手机，甚至是未来可能会大流行的单版电脑(Xapple pi, banana pi, Raspberry pi, )与智慧型手表，甚至于更多的智慧型穿戴式电脑等等，这些都是计算机喔！</p>
+<h2 id="电脑硬件的组成">电脑硬件的组成</h2>
+<p>关于电脑的硬件组成部分，其实你可以观察你的桌上型电脑来分析一下，依外观来说这家伙主要可分为三部分，分别是：</p>
+<ul>
+<li>输入单元：包括键盘、滑鼠、读卡机、扫描器、手写板、触控萤幕等等一堆；</li>
+<li>主机部分：这个就是系统单元，被主机机壳保护住了，里面含有一堆板子、CPU 与主记忆体等；</li>
+<li>输出单元：例如萤幕、印表机等等</li>
+</ul>
+<p><img src="/images/fcddc91e-109d-4283-8eb2-a792743f45d1.png" alt=""></p>
+<p><img src="/images/92ce5336-58f1-4b3f-8362-912c07080d4b.png" alt=""></p>
+<p>我们主要透过输入设备如滑鼠与键盘来将一些资料输入到主机里面，然后再由主机的功能处理成为图表或文章等资讯后， 将结果传输到输出设备，如萤幕或印表机上面。那主机里面含有什么元件呢？如果你曾经拆开过电脑主机机壳(包括拆开你的智慧型手机也一样喔！)， 会发现其实主机里面最重要的就是一片主机板，上面安插了中央处理器(CPU) 以及主记忆体、硬碟(或记忆卡) 还有一些介面卡装置而已。当然大部分智慧型手机是将这些元件直接焊接在主机板上面而不是插卡啦！</p>
+<p>整部主机的重点在于中央处理器(Central Processing Unit, CPU)，CPU为一个具有特定功能的晶片，里头含有微指令集，如果你想要让主机进行什么特异的功能，就得要参考这颗CPU是否有相关内建的微指令集才可以。由于CPU的工作主要在于管理与运算，因此在CPU内又可分为两个主要的单元，分别是： 算数逻辑单元与控制单元。其中算数逻辑单元主要负责程式运算与逻辑判断，控制单元则主要在协调各周边元件与各单元间的工作。</p>
+<p><img src="/images/0dfd43df-0810-428c-a59f-471877b54302.png" alt=""></p>
+<p>如果不是很了解电脑的运作流程的话，超哥拿个简单的想法来思考好了～假设电脑是一个人体，那么每个元件对应到那个地方呢？可以这样思考：</p>
+<p><img src="/images/bb91d7e4-1c37-4383-9992-dc12bba88a6a.png" alt=""></p>
+<ul>
+<li>
+<ul>
+<li>
+<p>CPU=脑袋瓜子：每个人会作的事情都不一样(微指令集的差异)，但主要都是透过脑袋瓜子来进行判断与控制身体各部分的活动；</p>
+</li>
+<li>
+<p>主记忆体=脑袋中放置正在被思考的资料的区块：在实际活动过程中，我们的脑袋瓜子需要有外界刺激的资料(例如光线、环境、语言等)来分析，那这些互动资料暂时存放的地方就是主记忆体，主要是用来提供给脑袋瓜子判断用的资讯。</p>
+</li>
+<li>
+<p>硬碟=脑袋中放置回忆的记忆区块：跟刚刚的主记忆体不同，主记忆体是提供脑袋目前要思考与处理的资讯，但是有些生活琐事或其他没有要立刻处理的事情，就当成回忆先放置到脑袋的记忆深处吧！那就是硬碟！主要目的是将重要的资料记录起来，以便未来将这些重要的经验再次的使用；</p>
+</li>
+<li>
+<p>主机板=神经系统：好像人类的神经一样，将所有重要的元件连接起来，包括手脚的活动都是脑袋瓜子发布命令后，透过神经(主机板)传导给手脚来进行活动啊！</p>
+</li>
+<li>
+<p>各项周边设备=人体与外界沟通的手、脚、皮肤、眼睛等：就好像手脚一般，是人体与外界互动的重要关键！</p>
+</li>
+<li>
+<p>显示卡=脑袋中的影像：将来自眼睛的刺激转成影像后在脑袋中呈现，所以显示卡所产生的资料来源也是CPU控制的。</p>
+</li>
+<li>
+<p>电源供应器(Power)=心脏：所有的元件要能运作得要有足够的电力供给才行！这电力供给就好像心脏一样，如果心脏不够力， 那么全身也就无法动弹的！心脏不稳定呢？那你的身体当然可能断断续续的～不稳定！</p>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="电源">电源</h2>
+<p>既然是人体的心脏，保障电源供应，就需要质量好的电源，生产环境中单个核心服务器最好是双电源AB线路。</p>
+<p><img src="/images/26d15fe0-8820-4878-88b3-d78975163389.png" alt="">
+一个接220V电路，一个可能接蓄电池UPS(不间断电源)</p>
+<h2 id="cpu">CPU</h2>
+<p>常见品牌：Intel、AMD，想当于人体的大脑</p>
+<p><img src="/images/940ab0e8-cf8b-4e5a-be64-50b0b8e1d0f3.png" alt=""></p>
+<h2 id="内存">内存</h2>
+<p>是CPU和磁盘之间的缓冲设备，也叫临时存储器（存放数据），断电时数据丢失</p>
+<p>一般程序运行时会被调度到内存中执行，服务器关闭或程序关闭后，数据从内存中释放掉。</p>
+<h2 id="电脑用途的分类">电脑用途的分类</h2>
+<p>知道了电脑的基本组成与周边装置，也知道其实电脑的CPU种类非常的多，再来我们想要了解的是，电脑如何分类？电脑的分类非常多种，如果以电脑的复杂度与运算能力进行分类的话，主要可以分为这几类：</p>
+<ul>
+<li>
+<p>超级电脑(Supercomputer)
+超级电脑是运作速度最快的电脑，但是他的维护、操作费用也最高！主要是用于需要有高速计算的计画中。例如：国防军事、气象预测、太空科技，用在模拟的领域较多。详情也可以参考：国家高速网路与计算中心http://www.nchc.org.tw的介绍！至于全世界最快速的前500大超级电脑，则请参考：http://www.top500.org。</p>
+</li>
+<li>
+<p>大型电脑(Mainframe Computer)
+大型电脑通常也具有数个高速的CPU，功能上虽不及超级电脑，但也可用来处理大量资料与复杂的运算。例如大型企业的主机、全国性的证券交易所等每天需要处理数百万笔资料的企业机构，或者是大型企业的资料库伺服器等等。</p>
+</li>
+<li>
+<p>迷你电脑(Minicomputer)
+迷你电脑仍保有大型电脑同时支援多使用者的特性，但是主机可以放在一般作业场所，不必像前两个大型电脑需要特殊的空调场所。通常用来作为科学研究、工程分析与工厂的流程管理等。</p>
+</li>
+<li>
+<p>工作站(Workstation)
+工作站的价格又比迷你电脑便宜许多，是针对特殊用途而设计的电脑。在个人电脑的效能还没有提升到目前的状况之前，工作站电脑的性能/价格比是所有电脑当中较佳的，因此在学术研究与工程分析方面相当常见。</p>
+</li>
+<li>
+<p>微电脑(Microcomputer)
+个人电脑就属于这部份的电脑分类，也是我们本章主要探讨的目标！体积最小，价格最低，但功能还是五脏俱全的！大致又可分为桌上型、笔记型等等。</p>
+</li>
+</ul>
+<p>若光以效能来说，目前的个人电脑效能已经够快了，甚至已经比工作站等级以上的电脑运算速度还要快！但是工作站电脑强调的是稳定不当机，并且运算过程要完全正确，因此工作站以上等级的电脑在设计时的考量与个人电脑并不相同啦！这也是为啥工作站等级以上的电脑售价较贵的原因。</p>
+<h2 id="互联网常见服务器介绍">互联网常见服务器介绍</h2>
+<ul>
+<li>DELL（大多数公司在用）</li>
+<li>HP</li>
+<li>IBM（百度，银行，政府）（贵）</li>
+<li>浪潮</li>
+<li>联想</li>
+</ul>
+<p><img src="/images/8e75cc06-c929-40ca-8ba2-f598bdfde71d.png" alt=""><img src="/images/9a648c99-aa6a-476f-afbb-397866aefa0f.png" alt=""><img src="/images/00fb4856-3129-4385-b53e-e88af25cfdb0.png" alt=""><img src="/images/06e45973-a499-4290-9e12-c03d68c74839.png" alt=""><img src="/images/948c1fe4-c01c-496f-988b-9b16d88cdc77.png" alt=""></p>
+<pre tabindex="0"><code>服务器：
+服务器指的是网络中能对其他机器提供某些服务的计算机系统，相对普通PC，服务器指的是高性能计算机，稳定性、安全性要求更高
+服务器的高性能体现在高速的运转能力，长时间的可靠运行，强大的数据吞吐能力
+</code></pre><h2 id="服务器分类">服务器分类</h2>
+<p>包括大型机、小型机和UNIX服务器，价格昂贵，体系封闭，但是稳定性极强，性能强、主要用在金融、电信等大型企业核心系统中。</p>
+<p><img src="/images/3cf4972c-252b-489c-b310-9b00bf93868e.png" alt=""></p>
+<p>也就是通常所说的PC服务器，价格便宜、兼容性好，稳定性差，不够安全，常用在中小型企业。</p>
+<p><img src="/images/bd4f64a3-4cfe-4a91-921b-c80738f9eb1a.png" alt=""></p>
+<p><img src="/images/7471b426-b6ee-46a3-891c-ff4d25d6625d.png" alt=""></p>
+<p><img src="/images/436e9388-1619-4b6a-9061-a13c107f8a00.png" alt=""></p>
+<p><img src="/images/a9c512b0-907b-4daa-bc55-13c6da3a2408.png" alt=""></p>
+<pre tabindex="0"><code>机房托管服务器是按照服务器的厚度来收费的，每一个机柜规格有限，标准机柜可以放16台1u服务器，如果你的服务器太厚太大，机柜能放的服务器就少一些
+</code></pre><p>1U 单位是==unit==厚度是4.45cm</p>
+<h2 id="总结">总结</h2>
+<ul>
+<li>计算机必须有的组成部分（cpu、硬盘、内存、电源）</li>
+<li>服务器 &gt; 个人台式机　　 -稳定性更高</li>
+</ul>
+]]></content:encoded><category>cloud</category><category>linux</category></item><item><title>Linux常用命令</title><link>https://daemon365.dev/post/cloud/common_linux_commands/</link><pubDate>Wed, 11 Aug 2021 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/common_linux_commands/</guid><description>&lt;h2 id="常用指令"&gt;常用指令&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;ls&lt;/code&gt; 显示文件或目录&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;-l&lt;/code&gt; 列出文件详细信息l(list)&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;-a&lt;/code&gt; 列出当前目录下所有文件及目录，包括隐藏的a(all)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;mkdir&lt;/code&gt; 创建目录&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;-p&lt;/code&gt; 创建目录，若无父目录，则创建p(parent)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;cd&lt;/code&gt; 切换目录&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;touch&lt;/code&gt; 创建空文件&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;echo&lt;/code&gt; 创建带有内容的文件。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;cat&lt;/code&gt; 查看文件内容&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;cp&lt;/code&gt; 拷贝&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;mv&lt;/code&gt; 移动或重命名&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;rm&lt;/code&gt; 删除文件&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;-r&lt;/code&gt; 递归删除，可删除子目录及文件&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;-f&lt;/code&gt; 强制删除&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;find&lt;/code&gt; 在文件系统中搜索某文件&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;wc&lt;/code&gt; 统计文本中行数、字数、字符数&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;grep&lt;/code&gt; 在文本文件中查找某个字符串&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;rmdir&lt;/code&gt; 删除空目录&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;tree&lt;/code&gt; 树形结构显示目录，需要安装tree包&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;pwd&lt;/code&gt; 显示当前目录&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;ln&lt;/code&gt; 创建链接文件&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;more&lt;/code&gt;、&lt;code&gt;less&lt;/code&gt; 分页显示文本文件内容&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;head&lt;/code&gt;、&lt;code&gt;tail&lt;/code&gt; 显示文件头、尾内容&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;ctrl+alt+F1&lt;/code&gt; 命令行全屏模式&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id="系统管理命令"&gt;系统管理命令&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;code&gt;stat&lt;/code&gt; 显示指定文件的详细信息，比ls更详细&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;who&lt;/code&gt; 显示在线登陆用户&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;whoami&lt;/code&gt; 显示当前操作用户&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;hostname&lt;/code&gt; 显示主机名&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;uname&lt;/code&gt; 显示系统信息&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;top&lt;/code&gt; 动态显示当前耗费资源最多进程信息&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;ps&lt;/code&gt; 显示瞬间进程状态 &lt;code&gt;ps -aux&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;du&lt;/code&gt; 查看目录大小 &lt;code&gt;du -h /home&lt;/code&gt;带有单位显示目录信息&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;df&lt;/code&gt; 查看磁盘大小 &lt;code&gt;df -h&lt;/code&gt; 带有单位显示磁盘信息&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;ifconfig&lt;/code&gt; 查看网络情况&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;ping&lt;/code&gt; 测试网络连通&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;netstat&lt;/code&gt; 显示网络状态信息&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;man&lt;/code&gt; 命令不会用了，找男人 如：man ls&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;clear&lt;/code&gt; 清屏&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;alias&lt;/code&gt; 对命令重命名 如：&lt;code&gt;alias showmeit=&amp;quot;ps -aux&amp;quot;&lt;/code&gt; ，另外解除使用&lt;code&gt;unaliax showmeit&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;kill&lt;/code&gt; 杀死进程，可以先用&lt;code&gt;ps&lt;/code&gt; 或 &lt;code&gt;top&lt;/code&gt;命令查看进程的id，然后再用kill命令杀死进程。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id="打包压缩相关命令"&gt;打包压缩相关命令&lt;/h2&gt;
+&lt;h3 id="gzip"&gt;gzip&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;例如：&lt;strong&gt;zip -r mysql.zip mysql&lt;/strong&gt; 该句命令的含义是：将mysql文件夹压缩成mysql.zip&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;zip -r abcdef.zip abc def.txt&lt;/strong&gt; 这句命令的意思是将文件夹abc和文件def.txt压缩成一个压缩包abcdef.zip&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="bzip2"&gt;bzip2&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;与zip命令相反，这是解压命令，用起来很简单。 如：&lt;strong&gt;unzip mysql.zip&lt;/strong&gt; 在当前目录下直接解压mysql.zip。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="tar"&gt;tar&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;-c 归档文件&lt;/li&gt;
+&lt;li&gt;-x 压缩文件&lt;/li&gt;
+&lt;li&gt;-z gzip压缩文件&lt;/li&gt;
+&lt;li&gt;-j bzip2压缩文件&lt;/li&gt;
+&lt;li&gt;-v 显示压缩或解压缩过程 v(view)&lt;/li&gt;
+&lt;li&gt;-f 使用档名&lt;/li&gt;
+&lt;/ul&gt;
+&lt;pre tabindex="0"&gt;&lt;code&gt;例：
+tar -cvf /home/abc.tar /home/abc 只打包，不压缩
+tar -zcvf /home/abc.tar.gz /home/abc 打包，并用gzip压缩
+tar -jcvf /home/abc.tar.bz2 /home/abc 打包，并用bzip2压缩
+当然，如果想解压缩，就直接替换上面的命令 tar -cvf / tar -zcvf / tar -jcvf 中的“c” 换成“x” 就可以了。
+&lt;/code&gt;&lt;/pre&gt;&lt;h2 id="关机重启机器"&gt;关机/重启机器&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;shutdown&lt;/code&gt;&lt;/p&gt;</description><content:encoded><![CDATA[<h2 id="常用指令">常用指令</h2>
+<ol>
+<li>
+<p><code>ls</code>	显示文件或目录</p>
+<ul>
+<li><code>-l</code> 	列出文件详细信息l(list)</li>
+<li><code>-a</code>     列出当前目录下所有文件及目录，包括隐藏的a(all)</li>
+</ul>
+</li>
+<li>
+<p><code>mkdir</code>      创建目录</p>
+<ul>
+<li><code>-p</code>     创建目录，若无父目录，则创建p(parent)</li>
+</ul>
+</li>
+<li>
+<p><code>cd</code>            切换目录</p>
+</li>
+<li>
+<p><code>touch</code>       创建空文件</p>
+</li>
+<li>
+<p><code>echo</code>         创建带有内容的文件。</p>
+</li>
+<li>
+<p><code>cat</code>           查看文件内容</p>
+</li>
+<li>
+<p><code>cp</code>             拷贝</p>
+</li>
+<li>
+<p><code>mv</code>             移动或重命名</p>
+</li>
+<li>
+<p><code>rm</code>             删除文件</p>
+<ul>
+<li><code>-r</code>      递归删除，可删除子目录及文件</li>
+<li><code>-f</code>      强制删除</li>
+</ul>
+</li>
+<li>
+<p><code>find</code>         在文件系统中搜索某文件</p>
+</li>
+<li>
+<p><code>wc</code>         统计文本中行数、字数、字符数</p>
+</li>
+<li>
+<p><code>grep</code>       在文本文件中查找某个字符串</p>
+</li>
+<li>
+<p><code>rmdir</code>      删除空目录</p>
+</li>
+<li>
+<p><code>tree</code>       树形结构显示目录，需要安装tree包</p>
+</li>
+<li>
+<p><code>pwd</code>        显示当前目录</p>
+</li>
+<li>
+<p><code>ln</code>          创建链接文件</p>
+</li>
+<li>
+<p><code>more</code>、<code>less</code>  分页显示文本文件内容</p>
+</li>
+<li>
+<p><code>head</code>、<code>tail</code>   显示文件头、尾内容</p>
+</li>
+<li>
+<p><code>ctrl+alt+F1</code>  命令行全屏模式</p>
+</li>
+</ol>
+<h2 id="系统管理命令">系统管理命令</h2>
+<ol>
+<li><code>stat</code>           显示指定文件的详细信息，比ls更详细</li>
+<li><code>who</code>           	显示在线登陆用户</li>
+<li><code>whoami</code>      显示当前操作用户</li>
+<li><code>hostname</code>    显示主机名</li>
+<li><code>uname</code>      显示系统信息</li>
+<li><code>top</code>         动态显示当前耗费资源最多进程信息</li>
+<li><code>ps</code>          显示瞬间进程状态 <code>ps -aux</code></li>
+<li><code>du</code>          查看目录大小 <code>du -h /home</code>带有单位显示目录信息</li>
+<li><code>df</code>          查看磁盘大小 <code>df -h</code> 带有单位显示磁盘信息</li>
+<li><code>ifconfig</code>      查看网络情况</li>
+<li><code>ping</code>         测试网络连通</li>
+<li><code>netstat</code>      显示网络状态信息</li>
+<li><code>man</code>         命令不会用了，找男人 如：man ls</li>
+<li><code>clear</code>        清屏</li>
+<li><code>alias</code>        对命令重命名 如：<code>alias showmeit=&quot;ps -aux&quot;</code> ，另外解除使用<code>unaliax showmeit</code></li>
+<li><code>kill</code>         杀死进程，可以先用<code>ps</code> 或 <code>top</code>命令查看进程的id，然后再用kill命令杀死进程。</li>
+</ol>
+<h2 id="打包压缩相关命令">打包压缩相关命令</h2>
+<h3 id="gzip">gzip</h3>
+<ul>
+<li>例如：<strong>zip -r mysql.zip mysql</strong> 该句命令的含义是：将mysql文件夹压缩成mysql.zip</li>
+<li><strong>zip -r abcdef.zip abc def.txt</strong> 这句命令的意思是将文件夹abc和文件def.txt压缩成一个压缩包abcdef.zip</li>
+</ul>
+<h3 id="bzip2">bzip2</h3>
+<ul>
+<li>与zip命令相反，这是解压命令，用起来很简单。 如：<strong>unzip mysql.zip</strong> 在当前目录下直接解压mysql.zip。</li>
+</ul>
+<h3 id="tar">tar</h3>
+<ul>
+<li>-c        归档文件</li>
+<li>-x        压缩文件</li>
+<li>-z        gzip压缩文件</li>
+<li>-j        bzip2压缩文件</li>
+<li>-v        显示压缩或解压缩过程 v(view)</li>
+<li>-f        使用档名</li>
+</ul>
+<pre tabindex="0"><code>例：
+
+tar -cvf /home/abc.tar /home/abc        只打包，不压缩
+
+tar -zcvf /home/abc.tar.gz /home/abc     打包，并用gzip压缩
+
+tar -jcvf /home/abc.tar.bz2 /home/abc    打包，并用bzip2压缩
+
+当然，如果想解压缩，就直接替换上面的命令 tar -cvf / tar -zcvf / tar -jcvf 中的“c” 换成“x” 就可以了。
+</code></pre><h2 id="关机重启机器">关机/重启机器</h2>
+<ol>
+<li>
+<p><code>shutdown</code></p>
+<ul>
+<li><code>-r</code>       关机重启</li>
+<li><code>-h</code>       关机不重启</li>
+<li><code>now</code>      立刻关机</li>
+</ul>
+</li>
+<li>
+<p>halt        关机</p>
+</li>
+<li>
+<p>reboot      重启</p>
+</li>
+</ol>
+<h2 id="linux管道">Linux管道</h2>
+<p>将一个命令的标准输出作为另一个命令的标准输入。也就是把几个命令组合起来使用，后一个命令除以前一个命令的结果。</p>
+<ul>
+<li>例：<code>grep -r &quot;close&quot; /home/* | more</code>    在home目录下所有文件中查找，包括close的文件，并分页输出。</li>
+</ul>
+<h2 id="linux软件包管理">Linux软件包管理</h2>
+<h3 id="yum常用命令">yum常用命令</h3>
+<ul>
+<li><code>yum  -y install [软件包名]</code>　　安装</li>
+<li>yum erase [<code>软件包名</code>] 　　　　　卸载</li>
+<li><code>yum clean all</code> 　　　　　　　   清除缓存</li>
+<li><code>yum makecache</code>　　　　　　        加载缓存</li>
+</ul>
+<h3 id="本地yum配置">本地yum配置</h3>
+<h4 id="本机创建yum仓库">本机创建yum仓库</h4>
+<ul>
+<li><code>mkdir -p  /root/test</code></li>
+<li><code>cd /root/test</code></li>
+<li><code>wget http://mirror.centos.org/centos-7/7/os/x86_64/Packages/dhclient-4.2.5-77.el7.centos.x86_64.rpm</code></li>
+</ul>
+<h4 id="生成repodata依赖文件">生成repodata依赖文件</h4>
+<ul>
+<li><code>create /root/test</code></li>
+</ul>
+<h4 id="修改yum配置文件">修改yum配置文件</h4>
+<ol>
+<li><code>cd /etc/yum.repos.d</code>          进入yum配置目录</li>
+<li><code>touch local.repo</code>               创建配置文件</li>
+<li><code>vim local.repo</code>                   编辑配置文件</li>
+</ol>
+<p><img src="/images/125f240d-22d7-4a5d-bd5c-90011af5fcb6.png" alt=""></p>
+<h3 id="网络yum配置">网络yum配置</h3>
+<ul>
+<li>`cd /etc/yum.repos.d``</li>
+<li>``touch cenos.repo`</li>
+</ul>
+<p><img src="/images/7c39be9b-b80e-4ccf-a279-f68bbe1f7d7a.png" alt=""></p>
+<ul>
+<li><code>vim cenos.repo</code></li>
+</ul>
+<p><img src="/images/5c6c19dc-b737-4ffe-aeb2-11a6d0d50ba3.png" alt=""></p>
+<p><strong>注意：baseurl路径，到repodate文件所在目录</strong></p>
+<p><img src="/images/9d6cd54d-11f3-4cc1-b5b1-ce9752113070.png" alt=""></p>
+<h3 id="设置本地cache保存路径">设置本地cache保存路径</h3>
+<ul>
+<li><code>vim /etc/yum.conf</code>
+<ul>
+<li><code>cachedir</code>       表示cache保存路径</li>
+<li><code>keepcache</code>      1-表示保存；0-表示不保</li>
+</ul>
+</li>
+</ul>
+<p><img src="/images/ba6b2762-da0d-4e56-9833-9d2c1c70ce61.png" alt=""></p>
+<h2 id="vim使用">vim使用</h2>
+<p>vim三种模式：<strong>命令模式、插入模式、编辑模式</strong>。使用<code>ESC</code>或<code>i</code>或：来切换模式。</p>
+<p>命令模式下：</p>
+<ol>
+<li><code>:q</code>            退出</li>
+<li><code>:q!</code>           强制退出</li>
+<li><code>:wq</code>          保存并退出</li>
+<li><code>:set number</code>   显示行号</li>
+<li><code>:set nonumber</code>  隐藏行号</li>
+<li><code>/apache</code>       在文档中查找apache 按n跳到下一个，shift+n上一个</li>
+<li><code>yyp</code>          复制光标所在行，并粘贴</li>
+<li>h(左移一个字符←)、j(下一行↓)、k(上一行↑)、l(右移一个字符→)</li>
+</ol>
+<h2 id="用户及用户组管理">用户及用户组管理</h2>
+<ol>
+<li><code>/etc/passwd</code>   存储用户账号</li>
+<li><code>/etc/group</code>    存储组账号</li>
+<li><code>/etc/shadow</code>   存储用户账号的密码</li>
+<li><code>/etc/gshadow</code>  存储用户组账号的密码</li>
+<li><code>useradd</code> 用户名</li>
+<li><code>userdel</code> 用户名</li>
+<li><code>groupadd</code> 组名</li>
+<li><code>groupdel</code> 组名</li>
+<li><code>passwd root</code>   给root设置密码</li>
+<li><code>/etc/profile</code>   系统环境变量</li>
+<li><code>bash_profile</code>   用户环境变量</li>
+<li><code>.bashrc</code>        用户环境变量</li>
+<li><code>su user</code>        切换用户，加载配置文件<code>.bashrc</code></li>
+<li><code>su - user</code>       切换用户，加载配置文件<code>/etc/profile</code> ，加载<code>bash_profile</code></li>
+</ol>
+<h2 id="更改文件的用户及用户组">更改文件的用户及用户组</h2>
+<p><code>sudo chown [-R] owner[:group] {File|Directory}</code></p>
+<pre tabindex="0"><code>例如：还以jdk-7u21-linux-i586.tar.gz为例。属于用户hadoop，组hadoop
+
+要想切换此文件所属的用户及组。可以使用命令。
+
+sudo chown root:root jdk-7u21-linux-i586.tar.gz
+</code></pre><h2 id="文件权限管理">文件权限管理</h2>
+<p>三种基本权限</p>
+<ol>
+<li>R       读         数值表示为4</li>
+<li>W      写         数值表示为2</li>
+<li>X       可执行  数值表示为1</li>
+</ol>
+<p><img src="/images/cf92ec89-4103-4131-866e-8e0d9e924c9c.png" alt=""></p>
+<p>如图所示，<code>goblog.exe</code>文件的权限为<code>-rw-rw-rw-</code></p>
+<p><code>-rw-rw-r--</code>一共十个字符，分成四段。</p>
+<ol>
+<li>第一个字符“-”表示普通文件；这个位置还可能会出现“l”链接；“d”表示目录</li>
+<li>第二三四个字符“rw-”表示当前所属用户的权限。  所以用数值表示为4+2=6</li>
+<li>第五六七个字符“rw-”表示当前所属组的权限。    所以用数值表示为4+2=6</li>
+<li>第八九十个字符“r&ndash;”表示其他用户权限。        所以用数值表示为4</li>
+<li>所以操作此文件的权限用数值表示为664</li>
+</ol>
+<h2 id="更改权限">更改权限</h2>
+<p><code>sudo chmod [u所属用户  g所属组  o其他用户  a所有用户]  [+增加权限  -减少权限]  [r  w  x]  目录名</code></p>
+<p>例如：有一个文件filename，权限为<code>-rw-r----x1</code> ,将权限值改为<code>-rwxrw-r-x</code>，用数值表示为765</p>
+<ul>
+<li><code>sudo chmod u+x g+w o+r  filename</code></li>
+</ul>
+<p>上面的例子可以用数值表示</p>
+<ul>
+<li><code>sudo chmod 765 filename</code></li>
+</ul>
+]]></content:encoded><category>cloud</category><category>linux</category></item><item><title>nginx简介,使用</title><link>https://daemon365.dev/post/cloud/introduction_to_nginx__usage/</link><pubDate>Tue, 10 Mar 2020 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/introduction_to_nginx__usage/</guid><description>&lt;h2 id="nginx是什么"&gt;nginx是什么&lt;/h2&gt;
+&lt;p&gt;nginx是一个开源的，支持高性能，高并发的www服务和代理服务软件。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;支持高并发，能支持几万并发连接&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;资源消耗少，在3万并发连接下开启10个nginx线程消耗的内存不到200M&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;可以做http反向代理和负载均衡&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;支持异步网络i/o事件模型epoll&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src="https://daemon365.dev/images/dc084576-25fe-47fa-8e36-1d1fe8db3ec9.png" alt=""&gt;&lt;/p&gt;
+&lt;p&gt;Tengine是由淘宝网发起的Web服务器项目。它在Nginx的基础上，针对大访问量网站的需求，添加了很多高级功能和特性。T目标是打造一个高效、稳定、安全、易用的Web平台。&lt;/p&gt;
+&lt;h2 id="安装环境依赖包"&gt;安装环境依赖包&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;yum install gcc-c++ pcre pcre-devel zlib zlib-devel gcc patch libffi-devel python-devel zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gdbm-devel db4-devel libpcap-devel xz-devel openssl openssl-devel -y
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id="安装并启动nginx"&gt;安装并启动nginx&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;下载源码包 &lt;code&gt;http://tengine.taobao.org/download/tengine-2.3.3.tar.gz&lt;/code&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;解压缩源码 &lt;code&gt;tar -zxvf tengine-2.3.3.tar.gz&lt;/code&gt;配置&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;编译安装 开启nginx状态监测功能&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;code&gt;./configure&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;make &amp;amp;&amp;amp; make install&lt;/code&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;nginx操作，进入nginx下的sbin目录（默认在&lt;code&gt;/usr/local下&lt;/code&gt;）&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;启动&lt;code&gt;./nginx -c&lt;/code&gt;指定配置文件&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;ul&gt;
+&lt;li&gt;关闭&lt;code&gt;./nginx -s stop&lt;/code&gt;
+&lt;ul&gt;
+&lt;li&gt;重新加载&lt;code&gt;./nginx -s reload&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;检查配置文件 &lt;code&gt;./nginx -t&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="部署一个web站点"&gt;部署一个web站点&lt;/h2&gt;
+&lt;p&gt;nginx默认站点是Nginx目录下的html文件夹，这里可以从nginx.conf中查到&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-nginx" data-lang="nginx"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;location&lt;/span&gt; &lt;span style="color:#d88200"&gt;/&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#f92672"&gt;root&lt;/span&gt; &lt;span style="color:#d88200"&gt;html&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt; &lt;span style="color:#75715e"&gt;# 这里是默认的站点html文件夹，也就是 /usr/local/nginx/html 文件夹下的内容
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;&lt;/span&gt; &lt;span style="color:#f92672"&gt;index&lt;/span&gt; &lt;span style="color:#d88200"&gt;index.html&lt;/span&gt; &lt;span style="color:#d88200"&gt;index.htm&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt; &lt;span style="color:#75715e"&gt;# 站点首页文件名是index.html
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;&lt;/span&gt; &lt;span style="color:#111"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;如果要部署网站业务数据，只需要把开发好的程序全放到html目录下即可&lt;/p&gt;</description><content:encoded><![CDATA[<h2 id="nginx是什么">nginx是什么</h2>
+<p>nginx是一个开源的，支持高性能，高并发的www服务和代理服务软件。</p>
+<ul>
+<li>
+<p>支持高并发，能支持几万并发连接</p>
+</li>
+<li>
+<p>资源消耗少，在3万并发连接下开启10个nginx线程消耗的内存不到200M</p>
+</li>
+<li>
+<p>可以做http反向代理和负载均衡</p>
+</li>
+<li>
+<p>支持异步网络i/o事件模型epoll</p>
+</li>
+</ul>
+<p><img src="/images/dc084576-25fe-47fa-8e36-1d1fe8db3ec9.png" alt=""></p>
+<p>Tengine是由淘宝网发起的Web服务器项目。它在Nginx的基础上，针对大访问量网站的需求，添加了很多高级功能和特性。T目标是打造一个高效、稳定、安全、易用的Web平台。</p>
+<h2 id="安装环境依赖包">安装环境依赖包</h2>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>yum install gcc-c++ pcre pcre-devel zlib zlib-devel gcc patch libffi-devel python-devel  zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gdbm-devel db4-devel libpcap-devel xz-devel openssl openssl-devel -y
+</span></span></code></pre></div><h2 id="安装并启动nginx">安装并启动nginx</h2>
+<ol>
+<li>
+<p>下载源码包 <code>http://tengine.taobao.org/download/tengine-2.3.3.tar.gz</code></p>
+</li>
+<li>
+<p>解压缩源码 <code>tar -zxvf tengine-2.3.3.tar.gz</code>配置</p>
+</li>
+<li>
+<p>编译安装 开启nginx状态监测功能</p>
+<ol>
+<li><code>./configure</code></li>
+<li><code>make &amp;&amp; make install</code></li>
+</ol>
+</li>
+<li>
+<p>nginx操作，进入nginx下的sbin目录（默认在<code>/usr/local下</code>）</p>
+<ul>
+<li>启动<code>./nginx -c</code>指定配置文件</li>
+</ul>
+</li>
+</ol>
+<ul>
+<li>关闭<code>./nginx -s stop</code>
+<ul>
+<li>重新加载<code>./nginx -s reload</code></li>
+</ul>
+</li>
+<li>检查配置文件 <code>./nginx -t</code></li>
+</ul>
+<h2 id="部署一个web站点">部署一个web站点</h2>
+<p>nginx默认站点是Nginx目录下的html文件夹，这里可以从nginx.conf中查到</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-nginx" data-lang="nginx"><span style="display:flex;"><span><span style="color:#00a8c8">location</span> <span style="color:#d88200">/</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">root</span>   <span style="color:#d88200">html</span><span style="color:#111">;</span> <span style="color:#75715e"># 这里是默认的站点html文件夹，也就是 /usr/local/nginx/html 文件夹下的内容
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>            <span style="color:#f92672">index</span>  <span style="color:#d88200">index.html</span> <span style="color:#d88200">index.htm</span><span style="color:#111">;</span> <span style="color:#75715e"># 站点首页文件名是index.html
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#111">}</span>
+</span></span></code></pre></div><p>如果要部署网站业务数据，只需要把开发好的程序全放到html目录下即可</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#f92672">[</span>root@VM-0-3-centos html<span style="color:#f92672">]</span><span style="color:#75715e"># ls /usr/local/nginx/html/</span>
+</span></span><span style="display:flex;"><span>50x.html  index.html
+</span></span></code></pre></div><p>因此只需要通过域名/资源，即可访问</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-http" data-lang="http"><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">http://a.zhaohaoyu.com
+</span></span></span></code></pre></div><h2 id="nginx的目录结构">Nginx的目录结构</h2>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>client_body_temp  conf  fastcgi_temp  html  logs  proxy_temp  sbin  scgi_temp  static  uwsgi_temp
+</span></span></code></pre></div><ul>
+<li>
+<p>conf 存放nginx所有配置文件的目录,主要nginx.conf</p>
+</li>
+<li>
+<p>html 存放nginx默认站点的目录，如index.html、error.html等</p>
+</li>
+<li>
+<p>logs 存放nginx默认日志的目录，如error.log access.log</p>
+</li>
+<li>
+<p>sbin 存放nginx主命令的目录,./nginx</p>
+</li>
+</ul>
+<h2 id="nginx主配置文件解析">Nginx主配置文件解析</h2>
+<p>Nginx主配置文件/etc/nginx/nginx.conf是一个纯文本类型的文件，整个配置文件是以区块的形式组织的。一般，每个区块以一对大括号{}来表示开始与结束。</p>
+<ol>
+<li>
+<h3 id="coremodule核心模块">CoreModule核心模块</h3>
+<ul>
+<li>
+<p><code>user www</code>  Nginx进程所使用的用户</p>
+</li>
+<li>
+<p><code>worker_processes 1</code>; Nginx运行的work进程数量(建议与CPU数量一致或auto)</p>
+</li>
+<li>
+<p><code>error_log  logs/error.log</code> Nginx错误日志存放路径</p>
+</li>
+<li>
+<p><code>pid logs/nginx.pid</code> Nginx服务运行后产生的pid进程号</p>
+</li>
+</ul>
+</li>
+<li>
+<h3 id="events事件模块">events事件模块</h3>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-nginx" data-lang="nginx"><span style="display:flex;"><span><span style="color:#00a8c8">events</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">worker_connections</span>  <span style="color:#ae81ff">1024</span><span style="color:#111">;</span> <span style="color:#75715e"># 每个worker进程支持的最大连接数  
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#f92672">use</span> <span style="color:#d88200">epool</span><span style="color:#111">;</span> <span style="color:#75715e"># 事件驱动模型, epoll默认
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#111">}</span>
+</span></span></code></pre></div></li>
+<li>
+<h3 id="http内核模块">http内核模块</h3>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-nginx" data-lang="nginx"><span style="display:flex;"><span><span style="color:#75715e"># 公共的配置定义在http
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#00a8c8">http</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># http层开始 ...
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#f92672">include</span>       <span style="color:#d88200">mime.types</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">default_type</span>  <span style="color:#d88200">application/octet-stream</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">access_log</span>  <span style="color:#d88200">logs/access.log</span>  <span style="color:#d88200">main</span><span style="color:#111">;</span> <span style="color:#75715e"># 访问日志
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># 使用Server配置网站, 每个Server{}代表一个网站(简称虚拟主机)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#f92672">server</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">listen</span>       <span style="color:#ae81ff">80</span><span style="color:#111">;</span> <span style="color:#75715e"># 监听端口, 默认80 
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#f92672">server_name</span>  <span style="color:#d88200">localhost</span><span style="color:#111">;</span> <span style="color:#75715e"># 提供服务的域名或主机名
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">location</span> <span style="color:#d88200">/</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">root</span>   <span style="color:#d88200">html</span><span style="color:#111">;</span> <span style="color:#75715e"># 存放网站代码路径
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>            <span style="color:#f92672">index</span>  <span style="color:#d88200">index.html</span> <span style="color:#d88200">index.htm</span><span style="color:#111">;</span> <span style="color:#75715e"># 服务器返回的默认页面文件
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    		<span style="color:#75715e"># 指定错误代码, 统一定义错误页面, 错误代码重定向到新的Locaiton
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#f92672">error_page</span>   <span style="color:#ae81ff">500</span> <span style="color:#ae81ff">502</span> <span style="color:#ae81ff">503</span> <span style="color:#ae81ff">504</span>  <span style="color:#d88200">/50x.html</span><span style="color:#111">;</span> 
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">location</span> <span style="color:#111">=</span> <span style="color:#d88200">/50x.html</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">root</span>   <span style="color:#d88200">html</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#111">}</span>                                                                                                                                          <span style="color:#111">}</span>
+</span></span></code></pre></div></li>
+<li>
+<h3 id="include">include</h3>
+<ul>
+<li>
+<p>当存在多个域名时，如果所有配置都写在 nginx.conf 主配置文件中，难免会显得杂乱与臃肿。为了方便配置文件的维护，所以需要进行拆分配置。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-nginx" data-lang="nginx"><span style="display:flex;"><span><span style="color:#75715e"># 在nginx.conf中 加入  include a.zhaohaiyu.com/nginx.conf; 
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"># 在a.zhaohaiyu.com/nginx.conf中加入 
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#00a8c8">server</span> <span style="color:#111">{</span>  
+</span></span><span style="display:flex;"><span>		<span style="color:#f92672">listen</span> <span style="color:#ae81ff">8000</span><span style="color:#111">;</span>  
+</span></span><span style="display:flex;"><span>		<span style="color:#f92672">server_name</span> <span style="color:#d88200">test2.com</span><span style="color:#111">;</span> 
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>		<span style="color:#f92672">location</span> <span style="color:#d88200">/</span> <span style="color:#111">{</span>  
+</span></span><span style="display:flex;"><span>				<span style="color:#f92672">proxy_set_header</span> <span style="color:#d88200">Host</span> <span style="color:#111">$host:$server_port</span><span style="color:#111">;</span>  
+</span></span><span style="display:flex;"><span>				<span style="color:#f92672">proxy_set_header</span> <span style="color:#d88200">X-Real-Ip</span> <span style="color:#111">$remote_addr</span><span style="color:#111">;</span> 
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">proxy_set_header</span> <span style="color:#d88200">X-Forwarded-For</span> <span style="color:#111">$proxy_add_x_forwarded_for</span><span style="color:#111">;</span> 
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">## proxy_pass 				   http://xxx.xxx.xxx;  echo &#34;test2.com&#34;; ## 输出测试   
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>     <span style="color:#111">}</span> 
+</span></span><span style="display:flex;"><span> <span style="color:#111">}</span> 
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 等于把zhaohaiyu.com/nginx.conf直接吸入nginx.conf中
+</span></span></span></code></pre></div></li>
+</ul>
+</li>
+</ol>
+<h2 id="nginx虚拟主机">Nginx虚拟主机</h2>
+<p><img src="/images/e80f2fe0-5b85-4950-a786-a5a30f44b988.png" alt=""></p>
+<p>如果每台linux服务器只运行了一个小网站，那么人气低，流量小的草根站长需要承担高额的服务器租赁费，也造成了硬件资源浪费。</p>
+<p>虚拟主机就是将一台服务器分割成多个“虚拟服务器”，每个站点使用各自的硬盘空间，由于省资源，省钱，众多网站都使用虚拟主机来部署网站。</p>
+<p>虚拟主机的概念就是在web服务里的一个独立的网站站点，这个站点对应独立的域名（IP），具有独立的程序和资源目录，可以独立的对外提供服务。 这个独立的站点配置是在nginx.conf中使用server{}代码块标签来表示一个虚拟主机。 Nginx支持多个server{}标签，即支持多个虚拟主机站点。</p>
+<h2 id="nginx-status">nginx status</h2>
+<h3 id="启用nginx-status配置">启用nginx status配置</h3>
+<p>在默认主机里面加上location或者你希望能访问到的主机里面。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-nginx" data-lang="nginx"><span style="display:flex;"><span><span style="color:#00a8c8">server</span> <span style="color:#111">{</span>  
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">stub_status</span> <span style="color:#00a8c8">on</span><span style="color:#111">;</span> 
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span></code></pre></div><h3 id="重启nginx">重启nginx</h3>
+<p>请依照你的环境重启你的nginx</p>
+<p><code>./ngnix -s reload</code></p>
+<h3 id="打开status页面">打开status页面</h3>
+<p><img src="/images/90bda898-2c6c-4612-bb5f-72433e9eb7de.png" alt=""></p>
+<h3 id="nginx-status-1">nginx status</h3>
+<ul>
+<li>
+<p><code>active connections </code>– 活跃的连接数量</p>
+</li>
+<li>
+<p><code>server accepts handled requests </code>— 总共处理了11989个连接 , 成功创建11989次握手, 总共处理了11991个请求</p>
+</li>
+<li>
+<p><code>reading</code> — 读取客户端的连接数.</p>
+</li>
+<li>
+<p><code>writing</code> — 响应数据到客户端的数量</p>
+</li>
+<li>
+<p><code>waiting</code> — 开启 keep-alive 的情况下,这个值等于 active – (reading+writing), 意思就是 Nginx 已经处理完正在等候下一次请求指令的驻留连接.</p>
+</li>
+</ul>
+<h2 id="nginx代理">Nginx代理</h2>
+<p><img src="/images/8aa82310-fd35-4141-8d05-8de26f743359.png" alt=""></p>
+<h3 id="正向代理">正向代理</h3>
+<p><strong>正向代理，也就是传说中的代理,他的工作原理就像一个跳板（VPN），简单的说：</strong></p>
+<p><strong>我是一个用户，我访问不了某网站，但是我能访问一个代理服务器，这个代理服务器呢，他能访问那个我不能访问的网站，于是我先连上代理服务器，告诉他我需要那个无法访问网站的内容，代理服务器去取回来，然后返回给我。</strong></p>
+<p><img src="/images/93079d1b-f954-4186-9b63-87c2b6e41bc0.png" alt=""></p>
+<h3 id="反向代理">反向代理</h3>
+<p><strong>对于客户端而言，代理服务器就像是原始服务器。</strong></p>
+<p><img src="/images/0522f89f-ef63-446a-b56f-6d3f9fef9c2b.png" alt=""></p>
+<p>nginx实现负载均衡的组件</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-nginx" data-lang="nginx"><span style="display:flex;"><span><span style="color:#00a8c8">ngx_http_proxy_module</span>    <span style="color:#75715e"># proxy代理模块，用于把请求抛给服务器节点或者upstream服务器池
+</span></span></span></code></pre></div><h3 id="实现一个简单的反向代理">实现一个简单的反向代理</h3>
+<p>机器准备，两台服务器</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-nginx" data-lang="nginx"><span style="display:flex;"><span><span style="color:#00a8c8">master</span>  <span style="color:#111">192.168.11.63</span>　　<span style="color:#d88200">主负载</span> <span style="color:#d88200">slave</span>   <span style="color:#111">192.168.11.64</span>　　<span style="color:#d88200">web1</span>
+</span></span></code></pre></div><p>主负载均衡节点的配置文件</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-nginx" data-lang="nginx"><span style="display:flex;"><span><span style="color:#00a8c8">worker_processes</span>  <span style="color:#ae81ff">1</span><span style="color:#111">;</span> 
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">error_log</span> <span style="color:#d88200">logs/error.log</span><span style="color:#111">;</span> <span style="color:#00a8c8">pid</span>       
+</span></span><span style="display:flex;"><span><span style="color:#d88200">logs/nginx.pid</span><span style="color:#111">;</span> 
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">events</span> <span style="color:#111">{</span>  
+</span></span><span style="display:flex;"><span>		<span style="color:#f92672">worker_connections</span> <span style="color:#ae81ff">1024</span><span style="color:#111">;</span> 
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span> 
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">http</span> <span style="color:#111">{</span>  
+</span></span><span style="display:flex;"><span>		<span style="color:#f92672">include</span>       <span style="color:#d88200">mime.types</span><span style="color:#111">;</span>  
+</span></span><span style="display:flex;"><span>		<span style="color:#f92672">default_type</span> <span style="color:#d88200">application/octet-stream</span><span style="color:#111">;</span>  
+</span></span><span style="display:flex;"><span>		<span style="color:#f92672">log_format</span> <span style="color:#d88200">main</span> <span style="color:#d88200">&#39;</span><span style="color:#111">$remote_addr</span> <span style="color:#d88200">-</span> <span style="color:#111">$remote_user</span> <span style="color:#d88200">[</span><span style="color:#111">$time_local]</span> <span style="color:#d88200">&#34;</span><span style="color:#111">$request&#34;</span> <span style="color:#d88200">&#39;</span>  <span style="color:#d88200">&#39;</span><span style="color:#111">$status</span> <span style="color:#111">$body_bytes_sent</span> <span style="color:#d88200">&#34;</span><span style="color:#111">$http_referer&#34;</span> <span style="color:#d88200">&#39;</span>  <span style="color:#d88200">&#39;&#34;</span><span style="color:#111">$http_user_agent&#34;</span> <span style="color:#d88200">&#34;</span><span style="color:#111">$http_x_forwarded_for&#34;&#39;</span><span style="color:#111">;</span>  
+</span></span><span style="display:flex;"><span>		<span style="color:#f92672">access_log</span> <span style="color:#d88200">logs/access.log</span> <span style="color:#d88200">main</span><span style="color:#111">;</span>  
+</span></span><span style="display:flex;"><span>		<span style="color:#f92672">sendfile</span>       <span style="color:#00a8c8">on</span><span style="color:#111">;</span>  
+</span></span><span style="display:flex;"><span>		<span style="color:#f92672">keepalive_timeout</span> <span style="color:#ae81ff">65</span><span style="color:#111">;</span>  
+</span></span><span style="display:flex;"><span>		<span style="color:#f92672">upstream</span> <span style="color:#d88200">slave_pools</span> <span style="color:#111">{</span>  
+</span></span><span style="display:flex;"><span>				<span style="color:#f92672">server</span> <span style="color:#111">192.168.11.64</span><span style="color:#111">:</span><span style="color:#ae81ff">80</span> <span style="color:#d88200">weight=1</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">server</span> <span style="color:#111">{</span>  
+</span></span><span style="display:flex;"><span>				<span style="color:#f92672">listen</span>       <span style="color:#ae81ff">80</span><span style="color:#111">;</span>  
+</span></span><span style="display:flex;"><span>				<span style="color:#f92672">server_name</span> <span style="color:#d88200">localhost</span><span style="color:#111">;</span>  
+</span></span><span style="display:flex;"><span>				<span style="color:#f92672">location</span> <span style="color:#d88200">/</span> <span style="color:#111">{</span>  
+</span></span><span style="display:flex;"><span>						<span style="color:#f92672">proxy_pass</span> <span style="color:#d88200">http://slave_pools</span><span style="color:#111">;</span>  
+</span></span><span style="display:flex;"><span>						<span style="color:#f92672">root</span>   <span style="color:#d88200">html</span><span style="color:#111">;</span>  
+</span></span><span style="display:flex;"><span>						<span style="color:#f92672">index</span> <span style="color:#d88200">index.html</span> <span style="color:#d88200">index.htm</span><span style="color:#111">;</span>  
+</span></span><span style="display:flex;"><span>				<span style="color:#111">}</span>  
+</span></span><span style="display:flex;"><span>		<span style="color:#f92672">error_page</span>   <span style="color:#ae81ff">500</span> <span style="color:#ae81ff">502</span> <span style="color:#ae81ff">503</span> <span style="color:#ae81ff">504</span> <span style="color:#d88200">/50x.html</span><span style="color:#111">;</span>  
+</span></span><span style="display:flex;"><span>		<span style="color:#f92672">location</span> <span style="color:#111">=</span> <span style="color:#d88200">/50x.html</span> <span style="color:#111">{</span>  
+</span></span><span style="display:flex;"><span>		<span style="color:#f92672">root</span>   <span style="color:#d88200">html</span><span style="color:#111">;</span>  
+</span></span><span style="display:flex;"><span>		<span style="color:#111">}</span>  
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span></code></pre></div><p>检查语法并启动nginx</p>
+<pre tabindex="0"><code>[root@master 192.168.11.63 /opt/nginx1-12]$./nginx -t 
+nginx: the configuration file /opt/nginx1-12/conf/nginx.conf syntax is ok nginx: configuration file /opt/nginx1-12/conf/nginx.conf test is successful 
+#启动nginx 
+[root@master 192.168.11.63 /opt/nginx1-12]$/./nginx 
+#检查端口 
+[root@master 192.168.11.63 /opt/nginx1-12]$netstat -tunlp|grep nginx tcp       
+0     0 0.0.0.0:80             0.0.0.0:*               LISTEN     8921/nginx: master
+</code></pre><p>此时访问master的服务器192.168.11.63:80地址，已经会将请求转发给slave的80端口</p>
+<p>除了页面效果的展示以外，还可以通过log(access.log)查看代理效果</p>
+<p>master端日志</p>
+<p><img src="/images/57ad1e96-caff-4c4c-9b63-ed96c680a6b8.png" alt=""></p>
+<p>slave端日志</p>
+<p><img src="/images/e20296de-f515-413e-8e3c-38e62010c320.png" alt=""></p>
+<h2 id="localtion">LOCALTION</h2>
+<h3 id="location语法优先级排列">Location语法优先级排列</h3>
+<p><strong>匹配符 匹配规则 优先级</strong></p>
+<ul>
+<li>
+<p>= 精确匹配 1</p>
+</li>
+<li>
+<p>^~ 以某个字符串开头 2</p>
+</li>
+<li>
+<p>~ 区分大小写的正则匹配 3</p>
+</li>
+<li>
+<p>~* 不区分大小写的正则匹配 4</p>
+</li>
+<li>
+<p>!~ 区分大小写不匹配的正则 5</p>
+</li>
+<li>
+<p>!~* 不区分大小写不匹配的正则 6</p>
+</li>
+<li>
+<p>/ 通用匹配，任何请求都会匹配到 7</p>
+</li>
+</ul>
+<h3 id="nginxconf配置文件实例">nginx.conf配置文件实例</h3>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-nginx" data-lang="nginx"><span style="display:flex;"><span><span style="color:#00a8c8">server</span> <span style="color:#111">{</span>  
+</span></span><span style="display:flex;"><span>		<span style="color:#f92672">listen</span> <span style="color:#ae81ff">80</span><span style="color:#111">;</span>  
+</span></span><span style="display:flex;"><span>		<span style="color:#f92672">server_name</span> <span style="color:#d88200">pythonav.cn</span><span style="color:#111">;</span>   <span style="color:#75715e">#优先级1,精确匹配，根路径  
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>		<span style="color:#f92672">location</span> <span style="color:#111">=</span><span style="color:#d88200">/</span> <span style="color:#111">{</span>  
+</span></span><span style="display:flex;"><span>				<span style="color:#f92672">return</span> <span style="color:#ae81ff">400</span><span style="color:#111">;</span>  
+</span></span><span style="display:flex;"><span>		<span style="color:#111">}</span>   <span style="color:#75715e">#优先级2,以某个字符串开头,以av开头的，优先匹配这里，区分大小写  
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>		<span style="color:#f92672">location</span> <span style="color:#d88200">^~</span> <span style="color:#d88200">/av</span> <span style="color:#111">{</span>  
+</span></span><span style="display:flex;"><span>				<span style="color:#f92672">root</span> <span style="color:#d88200">/data/av/</span><span style="color:#111">;</span>  
+</span></span><span style="display:flex;"><span>		<span style="color:#111">}</span>   <span style="color:#75715e">#优先级3，区分大小写的正则匹配，匹配/media*****路径  
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>		<span style="color:#f92672">location</span> <span style="color:#111">~</span> <span style="color:#d88200">/media</span> <span style="color:#111">{</span>  
+</span></span><span style="display:flex;"><span>				<span style="color:#f92672">alias</span> <span style="color:#d88200">/data/static/</span><span style="color:#111">;</span>  
+</span></span><span style="display:flex;"><span>		<span style="color:#111">}</span>   <span style="color:#75715e">#优先级4 ，不区分大小写的正则匹配，所有的****.jpg|gif|png 都走这里  
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>		<span style="color:#f92672">location</span> <span style="color:#111">~</span><span style="color:#d88200">*</span> <span style="color:#d88200">.*\.(jpg|gif|png|js|css)</span>$ <span style="color:#111">{</span>  
+</span></span><span style="display:flex;"><span>				<span style="color:#f92672">root</span> <span style="color:#d88200">/data/av/</span><span style="color:#111">;</span>  
+</span></span><span style="display:flex;"><span>		<span style="color:#111">}</span>   <span style="color:#75715e">#优先7，通用匹配  
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>		<span style="color:#f92672">location</span> <span style="color:#d88200">/</span> <span style="color:#111">{</span>  
+</span></span><span style="display:flex;"><span>				<span style="color:#f92672">return</span> <span style="color:#ae81ff">403</span><span style="color:#111">;</span>  
+</span></span><span style="display:flex;"><span>		<span style="color:#111">}</span> 
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span></code></pre></div><h3 id="nginx语法之root和alias区别实战">nginx语法之root和alias区别实战</h3>
+<p><strong>nginx指定文件路径有root和alias两种方法</strong> 区别在方法和作用域：</p>
+<ol>
+<li>
+<p>方法：</p>
+<ul>
+<li>
+<p>root 语法 root 路径; 默认值 root html; 配置块 http{} server {} location{}</p>
+</li>
+<li>
+<p>alias 语法： alias 路径 配置块 location{}</p>
+</li>
+</ul>
+</li>
+</ol>
+<p>root和alias区别在nginx如何解释location后面的url，这会使得两者分别以不同的方式讲请求映射到服务器文件上</p>
+<p>root参数是root路径+location位置</p>
+<p>root实例：</p>
+<pre tabindex="0"><code>location ^~ /av {  root /data/av;   注意这里可有可无结尾的   / }
+</code></pre><p>请求url是zhaohaiyu.com/av/index.html时 web服务器会返回服务器上的/data/av/av/index.html</p>
+<p>root实例2：</p>
+<pre tabindex="0"><code>location ~* .*\.(jpg|gif|png|js|css)$ {  root /data/av/; }
+</code></pre><p>请求url是zhaohaiyu.com/girl.gif时 web服务器会返回服务器上的/data/static/girl.gif</p>
+<p>alias实例：</p>
+<ul>
+<li>alias参数是使用alias路径替换location路径 alias是一个目录的别名 注意alias必须有 &ldquo;/&rdquo; 结束！ alias只能位于location块中</li>
+</ul>
+<pre tabindex="0"><code>location ^~ /av {  alias /data/static/; }
+</code></pre><p>请求url是zhaohaiyu.com/av/index.html时 web服务器会返回服务器上的/data/static/index.html</p>
+<h2 id="keepalived高可用软件">Keepalived高可用软件</h2>
+<p>什么是keepalived</p>
+<ul>
+<li>Keepalived是一个用C语言编写的路由软件。该项目的主要目标是为Linux系统和基于Linux的基础架构提供简单而强大的负载均衡和高可用性设施。 还可以作为其他服务（nginx，mysql）的高可用软件 keepalived主要通过vrrp协议实现高可用功能。vrrp叫（virtual router redundancy protocol）虚拟路由器冗余协议，目的为了解决单点故障问题，他可以保证个别节点宕机时。整个网络可以不间断的运行。</li>
+</ul>
+<p>高可用故障切换原理</p>
+<ul>
+<li>在keepalived工作时，主master节点会不断的向备节点发送心跳消息，告诉备节点自己还活着， 当master节点故障时，就无法发送心跳消息，备节点就无法检测到来自master的心跳了，于是调用自身的接管程序，接管master节点的ip资源以及服务， 当master主节点恢复时，备backup节点又会释放接管的ip资源和服务，回复到原本的备节点角色。</li>
+</ul>
+<ol>
+<li>硬件环境准备</li>
+</ol>
+<ul>
+<li>
+<p>实验环境应该最好是4台虚拟机，环境有限因此用2台机器</p>
+<ol>
+<li>
+<p>master</p>
+</li>
+<li>
+<p>slave</p>
+</li>
+</ol>
+</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-nginx" data-lang="nginx"><span style="display:flex;"><span><span style="color:#00a8c8">global_defs</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">notification_email</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">eric.k.zhang@ericsson.com</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#960050;background-color:#1e0010">}</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">notification_email_from</span> <span style="color:#d88200">keepalived@node-10-210-149-21</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">smtp_server</span> <span style="color:#111">127.0.0.1</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">smtp_connect_timeout</span> <span style="color:#ae81ff">30</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">router_id</span> <span style="color:#d88200">LVS_DEVEL</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#d88200">vrrp_script</span> <span style="color:#d88200">check_webproxy</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">script</span> <span style="color:#d88200">&#34;killall</span> <span style="color:#d88200">-0</span> <span style="color:#d88200">nginx&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">interval</span> <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">weight</span> <span style="color:#ae81ff">21</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#d88200">vrrp_script</span> <span style="color:#d88200">check_mantaince_down</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">script</span> <span style="color:#d88200">&#34;[[</span> <span style="color:#d88200">-f</span> <span style="color:#d88200">/etc/keepalived/down</span> <span style="color:#d88200">]]</span> <span style="color:#d88200">&amp;&amp;</span> <span style="color:#d88200">exit</span> <span style="color:#ae81ff">1</span> <span style="color:#d88200">||</span> <span style="color:#d88200">exit</span> <span style="color:#ae81ff">0</span><span style="color:#d88200">&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">interval</span> <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">weight</span> <span style="color:#ae81ff">2</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#d88200">vrrp_instance</span> <span style="color:#d88200">vip_10_210_149_23</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">state</span> <span style="color:#d88200">MASTER</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">interface</span> <span style="color:#d88200">ens192</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">virtual_router_id</span> <span style="color:#ae81ff">23</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">garp_master_delay</span> <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">mcast_src_ip</span> <span style="color:#111">10.210.149.21</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">lvs_sync_daemon_interface</span> <span style="color:#d88200">ens192</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">priority</span> <span style="color:#ae81ff">110</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">advert_int</span> <span style="color:#ae81ff">2</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">authentication</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">auth_type</span> <span style="color:#d88200">PASS</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#d88200">auth_pass</span> <span style="color:#ae81ff">1111</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#960050;background-color:#1e0010">}</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">track_interface</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">ens192</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#960050;background-color:#1e0010">}</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">virtual_ipaddress</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">10.210.149.23/24</span> <span style="color:#d88200">dev</span> <span style="color:#d88200">ens192</span> <span style="color:#d88200">label</span> <span style="color:#111">ens192</span><span style="color:#111">:</span><span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#960050;background-color:#1e0010">}</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">track_script</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">check_webproxy</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#d88200">check_mantaince_down</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#960050;background-color:#1e0010">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#d88200">vrrp_instance</span> <span style="color:#d88200">nginx_vip_10_210.149_24</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">state</span> <span style="color:#d88200">BACKUP</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">interface</span> <span style="color:#d88200">ens192</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">virtual_router_id</span> <span style="color:#ae81ff">24</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">garp_master_delay</span> <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">mcast_src_ip</span> <span style="color:#111">10.210.149.21</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">lvs_sync_daemon_interface</span> <span style="color:#d88200">ens192</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">priority</span> <span style="color:#ae81ff">100</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">advert_int</span> <span style="color:#ae81ff">2</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">authentication</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">auth_type</span> <span style="color:#d88200">PASS</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#d88200">auth_pass</span> <span style="color:#ae81ff">1111</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#960050;background-color:#1e0010">}</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">track_interface</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">ens192</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#960050;background-color:#1e0010">}</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">virtual_ipaddress</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">10.210.149.24/24</span> <span style="color:#d88200">dev</span> <span style="color:#d88200">ens192</span> <span style="color:#d88200">label</span> <span style="color:#111">ens192</span><span style="color:#111">:</span><span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#960050;background-color:#1e0010">}</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">track_script</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">check_webproxy</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#d88200">check_mantaince_down</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#960050;background-color:#1e0010">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">}</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-nginx" data-lang="nginx"><span style="display:flex;"><span><span style="color:#00a8c8">global_defs</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">notification_email</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">eric.k.zhang@ericsson.com</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#960050;background-color:#1e0010">}</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">notification_email_from</span> <span style="color:#d88200">keepalived@node-10-210-149-21</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">smtp_server</span> <span style="color:#111">127.0.0.1</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">smtp_connect_timeout</span> <span style="color:#ae81ff">30</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">router_id</span> <span style="color:#d88200">LVS_DEVEL</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#d88200">vrrp_script</span> <span style="color:#d88200">check_webproxy</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">script</span> <span style="color:#d88200">&#34;killall</span> <span style="color:#d88200">-0</span> <span style="color:#d88200">nginx&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">interval</span> <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">weight</span> <span style="color:#ae81ff">21</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#d88200">vrrp_script</span> <span style="color:#d88200">check_mantaince_down</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">script</span> <span style="color:#d88200">&#34;[[</span> <span style="color:#d88200">-f</span> <span style="color:#d88200">/etc/keepalived/down</span> <span style="color:#d88200">]]</span> <span style="color:#d88200">&amp;&amp;</span> <span style="color:#d88200">exit</span> <span style="color:#ae81ff">1</span> <span style="color:#d88200">||</span> <span style="color:#d88200">exit</span> <span style="color:#ae81ff">0</span><span style="color:#d88200">&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">interval</span> <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">weight</span> <span style="color:#ae81ff">2</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#d88200">vrrp_instance</span> <span style="color:#d88200">vip_10_210_149_23</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">state</span> <span style="color:#d88200">BACKUP</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">interface</span> <span style="color:#d88200">ens192</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">virtual_router_id</span> <span style="color:#ae81ff">23</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">garp_master_delay</span> <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">mcast_src_ip</span> <span style="color:#111">10.210.149.22</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">lvs_sync_daemon_interface</span> <span style="color:#d88200">ens192</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">priority</span> <span style="color:#ae81ff">100</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">advert_int</span> <span style="color:#ae81ff">2</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">authentication</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">auth_type</span> <span style="color:#d88200">PASS</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#d88200">auth_pass</span> <span style="color:#ae81ff">1111</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#960050;background-color:#1e0010">}</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">track_interface</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">ens192</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#960050;background-color:#1e0010">}</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">virtual_ipaddress</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">10.210.149.23/24</span> <span style="color:#d88200">dev</span> <span style="color:#d88200">ens192</span> <span style="color:#d88200">label</span> <span style="color:#111">ens192</span><span style="color:#111">:</span><span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#960050;background-color:#1e0010">}</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">track_script</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">check_webproxy</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#d88200">check_mantaince_down</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#960050;background-color:#1e0010">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#d88200">vrrp_instance</span> <span style="color:#d88200">nginx_vip_10_210.149_24</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">state</span> <span style="color:#d88200">MASTER</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">interface</span> <span style="color:#d88200">ens192</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">virtual_router_id</span> <span style="color:#ae81ff">24</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">garp_master_delay</span> <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">mcast_src_ip</span> <span style="color:#111">10.210.149.22</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">lvs_sync_daemon_interface</span> <span style="color:#d88200">ens192</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">priority</span> <span style="color:#ae81ff">110</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">advert_int</span> <span style="color:#ae81ff">2</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">authentication</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">auth_type</span> <span style="color:#d88200">PASS</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#d88200">auth_pass</span> <span style="color:#ae81ff">1111</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#960050;background-color:#1e0010">}</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">track_interface</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">ens192</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#960050;background-color:#1e0010">}</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">virtual_ipaddress</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">10.210.149.24/24</span> <span style="color:#d88200">dev</span> <span style="color:#d88200">ens192</span> <span style="color:#d88200">label</span> <span style="color:#111">ens192</span><span style="color:#111">:</span><span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#960050;background-color:#1e0010">}</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d88200">track_script</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">check_webproxy</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#d88200">check_mantaince_down</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#960050;background-color:#1e0010">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">}</span>
+</span></span></code></pre></div>]]></content:encoded><category>cloud</category><category>nginx</category><category>linux</category></item></channel></rss>

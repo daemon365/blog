@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>Protobuf on Daemon365</title><link>https://daemon365.dev/tags/protobuf/</link><description>Don't let yourself stop.</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><lastBuildDate>Sun, 01 Dec 2019 00:00:00 +0800</lastBuildDate><atom:link href="https://daemon365.dev/tags/protobuf/index.xml" rel="self" type="application/rss+xml"/><item><title>proto buffer</title><link>https://daemon365.dev/post/microservice/protocol_buffer/</link><pubDate>Sun, 01 Dec 2019 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/microservice/protocol_buffer/</guid><description>&lt;p&gt;protobuf是一种高效的数据格式，平台无关、语言无关、可扩展，可用于 RPC 系统和持续数据存储系统。&lt;/p&gt;
+&lt;h2 id="protobuf介绍"&gt;protobuf介绍&lt;/h2&gt;
+&lt;p&gt;Protobuf是Protocol Buffer的简称，它是Google公司于2008年开源的一种高效的平台无关、语言无关、可扩展的数据格式，目前Protobuf作为接口规范的描述语言，可以作为Go语言RPC接口的基础工具。&lt;/p&gt;
+&lt;h2 id="protobuf使用"&gt;protobuf使用&lt;/h2&gt;
+&lt;p&gt;protobuf是一个与语言无关的一个数据协议，所以我们需要先编写IDL文件然后借助专用工具生成指定语言的代码，从而实现数据的序列化与反序列化过程。&lt;/p&gt;
+&lt;p&gt;大致开发流程如下： 1. IDL编写 2. 生成指定语言的代码 3. 序列化和反序列化&lt;/p&gt;
+&lt;h2 id="protobuf语法"&gt;protobuf语法&lt;/h2&gt;
+&lt;p&gt;官网：&lt;a href="https://developers.google.cn/protocol-buffers/docs/proto3"&gt;https://developers.google.cn/protocol-buffers/docs/proto3&lt;/a&gt; (英文)&lt;/p&gt;
+&lt;p&gt;三方：&lt;a href="https://colobu.com/2017/03/16/Protobuf3-language-guide"&gt;https://colobu.com/2017/03/16/Protobuf3-language-guide&lt;/a&gt; (中文)&lt;/p&gt;
+&lt;h2 id="编译器安装"&gt;编译器安装&lt;/h2&gt;
+&lt;h3 id="ptotoc"&gt;ptotoc&lt;/h3&gt;
+&lt;p&gt;mac安装：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;brew info protobuf
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;cdn下载：(下载需要的版本)&lt;/p&gt;
+&lt;p&gt;&lt;a href="https://repo1.maven.org/maven2/com/google/protobuf/protoc/"&gt;cdn下载链接&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;linux/mac 编译安装&lt;/p&gt;
+&lt;p&gt;&lt;a href="https://github.com/protocolbuffers/protobuf/blob/master/src/README.md"&gt;教程&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id="protoc-gen-go"&gt;protoc-gen-go&lt;/h3&gt;
+&lt;p&gt;安装生成Go语言代码的工具&lt;/p&gt;
+&lt;p&gt;两个版本：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;github版本 &lt;code&gt;github.com/golang/protobuf/protoc-gen-go&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;google版本 &lt;code&gt;google.golang.org/protobuf/cmd/protoc-gen-go&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;区别在于前者是旧版本，后者是google接管后的新版本，他们之间的API是不同的，也就是说用于生成的命令，以及生成的文件都是不一样的。&lt;/p&gt;
+&lt;p&gt;因为目前的&lt;code&gt;gRPC-go&lt;/code&gt;源码中的example用的是后者的生成方式，为了与时俱进，本文也采取最新的方式。&lt;/p&gt;
+&lt;p&gt;安装：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id="编写idl代码"&gt;编写IDL代码&lt;/h2&gt;
+&lt;p&gt;新建一个名为person.proto的文件具体内容如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-protobuf" data-lang="protobuf"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;// 指定使用protobuf版本
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;// 此处使用v3版本
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;&lt;/span&gt;&lt;span style="color:#111"&gt;syntax&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;proto3&amp;#34;&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;&lt;/span&gt;&lt;span style="color:#75715e"&gt;// 包名，通过protoc生成go文件
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;&lt;/span&gt;&lt;span style="color:#f92672"&gt;package&lt;/span&gt; &lt;span style="color:#111"&gt;address&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;&lt;/span&gt;&lt;span style="color:#75715e"&gt;// go的包名 新版protoc-gen-go 必须带&amp;#34;/&amp;#34;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;&lt;/span&gt;&lt;span style="color:#00a8c8"&gt;option&lt;/span&gt; &lt;span style="color:#111"&gt;go_package&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;../hello&amp;#34;&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;&lt;/span&gt;&lt;span style="color:#75715e"&gt;// 性别类型
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;// 枚举类型第一个字段必须为0
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;&lt;/span&gt;&lt;span style="color:#00a8c8"&gt;enum&lt;/span&gt; &lt;span style="color:#111"&gt;GenderType&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;&lt;/span&gt; &lt;span style="color:#111"&gt;SECRET&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#ae81ff"&gt;0&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;&lt;/span&gt; &lt;span style="color:#111"&gt;FEMALE&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#ae81ff"&gt;1&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;&lt;/span&gt; &lt;span style="color:#111"&gt;MALE&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#ae81ff"&gt;2&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;&lt;/span&gt;&lt;span style="color:#111"&gt;}&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;&lt;/span&gt;&lt;span style="color:#75715e"&gt;// 人
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;&lt;/span&gt;&lt;span style="color:#00a8c8"&gt;message&lt;/span&gt; &lt;span style="color:#75af00"&gt;Person&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;int64&lt;/span&gt; &lt;span style="color:#111"&gt;id&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#ae81ff"&gt;1&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;string&lt;/span&gt; &lt;span style="color:#111"&gt;name&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#ae81ff"&gt;2&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;&lt;/span&gt; &lt;span style="color:#111"&gt;GenderType&lt;/span&gt; &lt;span style="color:#111"&gt;gender&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#ae81ff"&gt;3&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;string&lt;/span&gt; &lt;span style="color:#111"&gt;number&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#ae81ff"&gt;4&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;&lt;/span&gt;&lt;span style="color:#111"&gt;}&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;&lt;/span&gt;&lt;span style="color:#75715e"&gt;// 联系簿
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;&lt;/span&gt;&lt;span style="color:#00a8c8"&gt;message&lt;/span&gt; &lt;span style="color:#75af00"&gt;ContactBook&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;repeated&lt;/span&gt; &lt;span style="color:#111"&gt;Person&lt;/span&gt; &lt;span style="color:#111"&gt;persons&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#ae81ff"&gt;1&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;&lt;/span&gt;&lt;span style="color:#111"&gt;}&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id="生成go语言代码"&gt;生成go语言代码&lt;/h2&gt;
+&lt;p&gt;在protobuf_demo/address目录下执行以下命令。&lt;/p&gt;</description><content:encoded><![CDATA[<p>protobuf是一种高效的数据格式，平台无关、语言无关、可扩展，可用于 RPC 系统和持续数据存储系统。</p>
+<h2 id="protobuf介绍">protobuf介绍</h2>
+<p>Protobuf是Protocol Buffer的简称，它是Google公司于2008年开源的一种高效的平台无关、语言无关、可扩展的数据格式，目前Protobuf作为接口规范的描述语言，可以作为Go语言RPC接口的基础工具。</p>
+<h2 id="protobuf使用">protobuf使用</h2>
+<p>protobuf是一个与语言无关的一个数据协议，所以我们需要先编写IDL文件然后借助专用工具生成指定语言的代码，从而实现数据的序列化与反序列化过程。</p>
+<p>大致开发流程如下： 1. IDL编写 2. 生成指定语言的代码 3. 序列化和反序列化</p>
+<h2 id="protobuf语法">protobuf语法</h2>
+<p>官网：<a href="https://developers.google.cn/protocol-buffers/docs/proto3">https://developers.google.cn/protocol-buffers/docs/proto3</a> (英文)</p>
+<p>三方：<a href="https://colobu.com/2017/03/16/Protobuf3-language-guide">https://colobu.com/2017/03/16/Protobuf3-language-guide</a>  (中文)</p>
+<h2 id="编译器安装">编译器安装</h2>
+<h3 id="ptotoc">ptotoc</h3>
+<p>mac安装：</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>brew info protobuf
+</span></span></code></pre></div><p>cdn下载：(下载需要的版本)</p>
+<p><a href="https://repo1.maven.org/maven2/com/google/protobuf/protoc/">cdn下载链接</a></p>
+<p>linux/mac 编译安装</p>
+<p><a href="https://github.com/protocolbuffers/protobuf/blob/master/src/README.md">教程</a></p>
+<h3 id="protoc-gen-go">protoc-gen-go</h3>
+<p>安装生成Go语言代码的工具</p>
+<p>两个版本：</p>
+<ul>
+<li>github版本  <code>github.com/golang/protobuf/protoc-gen-go</code></li>
+<li>google版本 <code>google.golang.org/protobuf/cmd/protoc-gen-go</code></li>
+</ul>
+<p>区别在于前者是旧版本，后者是google接管后的新版本，他们之间的API是不同的，也就是说用于生成的命令，以及生成的文件都是不一样的。</p>
+<p>因为目前的<code>gRPC-go</code>源码中的example用的是后者的生成方式，为了与时俱进，本文也采取最新的方式。</p>
+<p>安装：</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+</span></span><span style="display:flex;"><span>go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+</span></span></code></pre></div><h2 id="编写idl代码">编写IDL代码</h2>
+<p>新建一个名为person.proto的文件具体内容如下：</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-protobuf" data-lang="protobuf"><span style="display:flex;"><span><span style="color:#75715e">// 指定使用protobuf版本
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// 此处使用v3版本
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#111">syntax</span> <span style="color:#f92672">=</span> <span style="color:#d88200">&#34;proto3&#34;</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e">// 包名，通过protoc生成go文件
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#f92672">package</span> <span style="color:#111">address</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e">// go的包名 新版protoc-gen-go 必须带&#34;/&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#00a8c8">option</span> <span style="color:#111">go_package</span> <span style="color:#f92672">=</span> <span style="color:#d88200">&#34;../hello&#34;</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e">// 性别类型 
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// 枚举类型第一个字段必须为0
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#00a8c8">enum</span> <span style="color:#111">GenderType</span> <span style="color:#111">{</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    <span style="color:#111">SECRET</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    <span style="color:#111">FEMALE</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    <span style="color:#111">MALE</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">2</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#111">}</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e">// 人
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#00a8c8">message</span> <span style="color:#75af00">Person</span> <span style="color:#111">{</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    <span style="color:#00a8c8">int64</span> <span style="color:#111">id</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    <span style="color:#00a8c8">string</span> <span style="color:#111">name</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">2</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    <span style="color:#111">GenderType</span> <span style="color:#111">gender</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">3</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    <span style="color:#00a8c8">string</span> <span style="color:#111">number</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">4</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#111">}</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e">// 联系簿
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#00a8c8">message</span> <span style="color:#75af00">ContactBook</span> <span style="color:#111">{</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    <span style="color:#00a8c8">repeated</span> <span style="color:#111">Person</span> <span style="color:#111">persons</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#111">}</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span></code></pre></div><h2 id="生成go语言代码">生成go语言代码</h2>
+<p>在protobuf_demo/address目录下执行以下命令。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>protoc --proto_path<span style="color:#f92672">=</span>./  --go_out<span style="color:#f92672">=</span>./ ./person.proto
+</span></span></code></pre></div><ul>
+<li>&ndash;proto_path: 指定了要去哪个目录中搜索import中导入的和要编译为.go的proto文件</li>
+<li>&ndash;go_out:指定了生成的go文件的目录，我在这里把go文件放到本目录中</li>
+<li>person.proto， 定义了我要编译的文件是哪个文件。</li>
+</ul>
+<p>此时在当前目录下会生成一个person.pb.go文件，我们的Go语言代码里就是使用这个文件。 在protobuf_demo/main.go文件中：</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;fmt&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;io/ioutil&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;z/test3/person&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;github.com/golang/protobuf/proto&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#75af00">main</span><span style="color:#111">()</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">var</span> <span style="color:#75af00">cb</span> <span style="color:#75af00">person</span><span style="color:#111">.</span><span style="color:#75af00">ContactBook</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">p1</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">person</span><span style="color:#111">.</span><span style="color:#75af00">Person</span><span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">Name</span><span style="color:#111">:</span>   <span style="color:#d88200">&#34;zhao&#34;</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">Gender</span><span style="color:#111">:</span> <span style="color:#75af00">person</span><span style="color:#111">.</span><span style="color:#75af00">GenderType_MALE</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">Number</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;12345678910&#34;</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">fmt</span><span style="color:#111">.</span><span style="color:#75af00">Println</span><span style="color:#111">(</span><span style="color:#75af00">p1</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">cb</span><span style="color:#111">.</span><span style="color:#75af00">Persons</span> <span style="color:#111">=</span> <span style="color:#111">append</span><span style="color:#111">(</span><span style="color:#75af00">cb</span><span style="color:#111">.</span><span style="color:#75af00">Persons</span><span style="color:#111">,</span> <span style="color:#f92672">&amp;</span><span style="color:#75af00">p1</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">data</span><span style="color:#111">,</span> <span style="color:#75af00">err</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">proto</span><span style="color:#111">.</span><span style="color:#75af00">Marshal</span><span style="color:#111">(</span><span style="color:#f92672">&amp;</span><span style="color:#75af00">p1</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">err</span> <span style="color:#f92672">!=</span> <span style="color:#00a8c8">nil</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">fmt</span><span style="color:#111">.</span><span style="color:#75af00">Printf</span><span style="color:#111">(</span><span style="color:#d88200">&#34;marshal failed,err:%v\n&#34;</span><span style="color:#111">,</span> <span style="color:#75af00">err</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#00a8c8">return</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">ioutil</span><span style="color:#111">.</span><span style="color:#75af00">WriteFile</span><span style="color:#111">(</span><span style="color:#d88200">&#34;./proto.dat&#34;</span><span style="color:#111">,</span> <span style="color:#75af00">data</span><span style="color:#111">,</span> <span style="color:#ae81ff">0644</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">data2</span><span style="color:#111">,</span> <span style="color:#75af00">err</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">ioutil</span><span style="color:#111">.</span><span style="color:#75af00">ReadFile</span><span style="color:#111">(</span><span style="color:#d88200">&#34;./proto.dat&#34;</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">err</span> <span style="color:#f92672">!=</span> <span style="color:#00a8c8">nil</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75af00">fmt</span><span style="color:#111">.</span><span style="color:#75af00">Printf</span><span style="color:#111">(</span><span style="color:#d88200">&#34;read file failed, err:%v\n&#34;</span><span style="color:#111">,</span> <span style="color:#75af00">err</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#00a8c8">return</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">var</span> <span style="color:#75af00">p2</span> <span style="color:#75af00">person</span><span style="color:#111">.</span><span style="color:#75af00">Person</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">proto</span><span style="color:#111">.</span><span style="color:#75af00">Unmarshal</span><span style="color:#111">(</span><span style="color:#75af00">data2</span><span style="color:#111">,</span> <span style="color:#f92672">&amp;</span><span style="color:#75af00">p2</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">fmt</span><span style="color:#111">.</span><span style="color:#75af00">Println</span><span style="color:#111">(</span><span style="color:#75af00">p2</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span></code></pre></div><p>参考文章:<a href="https://www.liwenzhou.com/posts/Go/protobuf/">https://www.liwenzhou.com/posts/Go/protobuf/</a></p>
+]]></content:encoded><category>microservice</category><category>go</category><category>protobuf</category></item></channel></rss>

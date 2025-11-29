@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>事务 on Daemon</title><link>https://daemon365.dev/tags/%E4%BA%8B%E5%8A%A1/</link><description>Recent content in 事务 on Daemon</description><generator>Hugo</generator><language>zh-CN</language><lastBuildDate>Sat, 15 Jun 2024 16:14:00 +0800</lastBuildDate><atom:link href="https://daemon365.dev/tags/%E4%BA%8B%E5%8A%A1/rss.xml" rel="self" type="application/rss+xml"/><item><title>boltdb 原理</title><link>https://daemon365.dev/post/cloud/boltdb_principles/</link><pubDate>Sat, 15 Jun 2024 16:14:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/boltdb_principles/</guid><description>&lt;h2 id="简介">简介
-&lt;a class="header-anchor" href="#%e7%ae%80%e4%bb%8b">&lt;/a>
-&lt;/h2>&lt;p>介绍及简单使用：https://www.cnblogs.com/daemon365/p/17690167.html
-源码地址：https://github.com/etcd-io/bbolt&lt;/p></description></item><item><title>mysql事务</title><link>https://daemon365.dev/post/database/mysql_transaction/</link><pubDate>Fri, 03 Apr 2020 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/database/mysql_transaction/</guid><description>&lt;h2 id="事务是什么">事务是什么
-&lt;a class="header-anchor" href="#%e4%ba%8b%e5%8a%a1%e6%98%af%e4%bb%80%e4%b9%88">&lt;/a>
-&lt;/h2>&lt;p>&lt;strong>事务就是指逻辑上的一组SQL语句操作，组成这组操作的各个SQL语句，执行时要么全成功要么全失败。&lt;/strong>&lt;/p>
-&lt;p>在 MySQL 中，事务支持是在引擎层实现的。MySQL 是一个支持多引擎的系统，但并不是所有的引擎都支持事务。&lt;/p></description></item></channel></rss>
