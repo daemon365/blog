@@ -1,0 +1,97 @@
+<mxfile host="65bd71144e">
+    <diagram id="Ambc-asuyunXYjIt0Qvt" name="Page-1">
+        <mxGraphModel dx="976" dy="851" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="2" value="Pod 发出数据包" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=14;fontStyle=1" vertex="1" parent="1">
+                    <mxGeometry x="435" y="40" width="180" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="3" value="calico_tc_main() 入口" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=13" vertex="1" parent="1">
+                    <mxGeometry x="435" y="140" width="180" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="4" value="路由查找 cali_rt_lookup()&lt;br&gt;获取目标路由标志" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=13" vertex="1" parent="1">
+                    <mxGeometry x="435" y="240" width="180" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="5" value="CALI_RT_&lt;br&gt;LOCAL?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12" vertex="1" parent="1">
+                    <mxGeometry x="135" y="350" width="120" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="6" value="!CALI_RT_&lt;br&gt;LOCAL &amp;&amp;&lt;br&gt;CALI_RT_&lt;br&gt;SAME_&lt;br&gt;SUBNET?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12" vertex="1" parent="1">
+                    <mxGeometry x="465" y="350" width="120" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="7" value="!CALI_RT_&lt;br&gt;LOCAL &amp;&amp;&lt;br&gt;!CALI_RT_&lt;br&gt;SAME_SUBNET&lt;br&gt;&amp;&amp; CALI_RT_&lt;br&gt;TUNNELED?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11" vertex="1" parent="1">
+                    <mxGeometry x="795" y="350" width="140" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="8" value="第一步:&lt;br&gt;本地 Pod" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;fontStyle=1" vertex="1" parent="1">
+                    <mxGeometry x="135" y="490" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="9" value="第二步:&lt;br&gt;同网段&lt;br&gt;二层直连" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;fontStyle=1" vertex="1" parent="1">
+                    <mxGeometry x="465" y="490" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="10" value="第三步:&lt;br&gt;跨网段/隧道&lt;br&gt;VXLAN 封装" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;fontStyle=1" vertex="1" parent="1">
+                    <mxGeometry x="795" y="490" width="140" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="11" value="bpf_&lt;br&gt;redirect_&lt;br&gt;peer()" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12" vertex="1" parent="1">
+                    <mxGeometry x="135" y="590" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="12" value="修改 MAC&lt;br&gt;+ FIB&lt;br&gt;lookup" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12" vertex="1" parent="1">
+                    <mxGeometry x="465" y="590" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="13" value="vxlan_encap()&lt;br&gt;+ bpf_&lt;br&gt;redirect()" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12" vertex="1" parent="1">
+                    <mxGeometry x="795" y="590" width="140" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="14" value="重定向到&lt;br&gt;veth pair" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#b1ddf0;strokeColor=#10739e;fontSize=12;fontStyle=1" vertex="1" parent="1">
+                    <mxGeometry x="135" y="690" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="15" value="发送到&lt;br&gt;物理网卡" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#b1ddf0;strokeColor=#10739e;fontSize=12;fontStyle=1" vertex="1" parent="1">
+                    <mxGeometry x="465" y="690" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="16" value="发送到物理&lt;br&gt;网卡发出" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#b1ddf0;strokeColor=#10739e;fontSize=12;fontStyle=1" vertex="1" parent="1">
+                    <mxGeometry x="795" y="690" width="140" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="17" value="" style="endArrow=classic;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeWidth=2" edge="1" parent="1" source="2" target="3">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="18" value="" style="endArrow=classic;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeWidth=2" edge="1" parent="1" source="3" target="4">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="19" value="" style="endArrow=classic;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeWidth=2" edge="1" parent="1" source="4" target="5">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="20" value="" style="endArrow=classic;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeWidth=2" edge="1" parent="1" source="4" target="6">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="21" value="" style="endArrow=classic;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeWidth=2" edge="1" parent="1" source="4" target="7">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="22" value="" style="endArrow=classic;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeWidth=2" edge="1" parent="1" source="5" target="8">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="23" value="" style="endArrow=classic;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeWidth=2" edge="1" parent="1" source="6" target="9">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="24" value="" style="endArrow=classic;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeWidth=2" edge="1" parent="1" source="7" target="10">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="25" value="" style="endArrow=classic;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeWidth=2" edge="1" parent="1" source="8" target="11">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="26" value="" style="endArrow=classic;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeWidth=2" edge="1" parent="1" source="9" target="12">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="27" value="" style="endArrow=classic;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeWidth=2" edge="1" parent="1" source="10" target="13">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="28" value="" style="endArrow=classic;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeWidth=2" edge="1" parent="1" source="11" target="14">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="29" value="" style="endArrow=classic;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeWidth=2" edge="1" parent="1" source="12" target="15">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="30" value="" style="endArrow=classic;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeWidth=2" edge="1" parent="1" source="13" target="16">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
