@@ -1040,8 +1040,8 @@ sudo chown root:root jdk-7u21-linux-i586.tar.gz
 &lt;p&gt;nginx默认站点是Nginx目录下的html文件夹，这里可以从nginx.conf中查到&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-nginx" data-lang="nginx"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;location&lt;/span&gt; &lt;span style="color:#d88200"&gt;/&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#f92672"&gt;root&lt;/span&gt; &lt;span style="color:#d88200"&gt;html&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt; &lt;span style="color:#75715e"&gt;# 这里是默认的站点html文件夹，也就是 /usr/local/nginx/html 文件夹下的内容
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;&lt;/span&gt; &lt;span style="color:#f92672"&gt;index&lt;/span&gt; &lt;span style="color:#d88200"&gt;index.html&lt;/span&gt; &lt;span style="color:#d88200"&gt;index.htm&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt; &lt;span style="color:#75715e"&gt;# 站点首页文件名是index.html
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;&lt;/span&gt; &lt;span style="color:#111"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#f92672"&gt;index&lt;/span&gt; &lt;span style="color:#d88200"&gt;index.html&lt;/span&gt; &lt;span style="color:#d88200"&gt;index.htm&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt; &lt;span style="color:#75715e"&gt;# 站点首页文件名是index.html
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;}&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;如果要部署网站业务数据，只需要把开发好的程序全放到html目录下即可&lt;/p&gt;</description><content:encoded><![CDATA[<h2 id="nginx是什么">nginx是什么</h2>
 <p>nginx是一个开源的，支持高性能，高并发的www服务和代理服务软件。</p>
 <ul>
@@ -1096,8 +1096,8 @@ sudo chown root:root jdk-7u21-linux-i586.tar.gz
 <p>nginx默认站点是Nginx目录下的html文件夹，这里可以从nginx.conf中查到</p>
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-nginx" data-lang="nginx"><span style="display:flex;"><span><span style="color:#00a8c8">location</span> <span style="color:#d88200">/</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>            <span style="color:#f92672">root</span>   <span style="color:#d88200">html</span><span style="color:#111">;</span> <span style="color:#75715e"># 这里是默认的站点html文件夹，也就是 /usr/local/nginx/html 文件夹下的内容
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>            <span style="color:#f92672">index</span>  <span style="color:#d88200">index.html</span> <span style="color:#d88200">index.htm</span><span style="color:#111">;</span> <span style="color:#75715e"># 站点首页文件名是index.html
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#111">}</span>
+</span></span></span><span style="display:flex;"><span>            <span style="color:#f92672">index</span>  <span style="color:#d88200">index.html</span> <span style="color:#d88200">index.htm</span><span style="color:#111">;</span> <span style="color:#75715e"># 站点首页文件名是index.html
+</span></span></span><span style="display:flex;"><span>        <span style="color:#111">}</span>
 </span></span></code></pre></div><p>如果要部署网站业务数据，只需要把开发好的程序全放到html目录下即可</p>
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#f92672">[</span>root@VM-0-3-centos html<span style="color:#f92672">]</span><span style="color:#75715e"># ls /usr/local/nginx/html/</span>
 </span></span><span style="display:flex;"><span>50x.html  index.html
@@ -1143,31 +1143,31 @@ sudo chown root:root jdk-7u21-linux-i586.tar.gz
 <h3 id="events事件模块">events事件模块</h3>
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-nginx" data-lang="nginx"><span style="display:flex;"><span><span style="color:#00a8c8">events</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#f92672">worker_connections</span>  <span style="color:#ae81ff">1024</span><span style="color:#111">;</span> <span style="color:#75715e"># 每个worker进程支持的最大连接数  
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#f92672">use</span> <span style="color:#d88200">epool</span><span style="color:#111">;</span> <span style="color:#75715e"># 事件驱动模型, epoll默认
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#111">}</span>
+</span></span></span><span style="display:flex;"><span>    <span style="color:#f92672">use</span> <span style="color:#d88200">epool</span><span style="color:#111">;</span> <span style="color:#75715e"># 事件驱动模型, epoll默认
+</span></span></span><span style="display:flex;"><span><span style="color:#111">}</span>
 </span></span></code></pre></div></li>
 <li>
 <h3 id="http内核模块">http内核模块</h3>
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-nginx" data-lang="nginx"><span style="display:flex;"><span><span style="color:#75715e"># 公共的配置定义在http
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#00a8c8">http</span> <span style="color:#111">{</span>
+</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">http</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e"># http层开始 ...
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#f92672">include</span>       <span style="color:#d88200">mime.types</span><span style="color:#111">;</span>
+</span></span></span><span style="display:flex;"><span>    <span style="color:#f92672">include</span>       <span style="color:#d88200">mime.types</span><span style="color:#111">;</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#f92672">default_type</span>  <span style="color:#d88200">application/octet-stream</span><span style="color:#111">;</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>    <span style="color:#f92672">access_log</span>  <span style="color:#d88200">logs/access.log</span>  <span style="color:#d88200">main</span><span style="color:#111">;</span> <span style="color:#75715e"># 访问日志
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e"># 使用Server配置网站, 每个Server{}代表一个网站(简称虚拟主机)
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#f92672">server</span> <span style="color:#111">{</span>
+</span></span></span><span style="display:flex;"><span>    <span style="color:#f92672">server</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>        <span style="color:#f92672">listen</span>       <span style="color:#ae81ff">80</span><span style="color:#111">;</span> <span style="color:#75715e"># 监听端口, 默认80 
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#f92672">server_name</span>  <span style="color:#d88200">localhost</span><span style="color:#111">;</span> <span style="color:#75715e"># 提供服务的域名或主机名
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span></span><span style="display:flex;"><span>        <span style="color:#f92672">server_name</span>  <span style="color:#d88200">localhost</span><span style="color:#111">;</span> <span style="color:#75715e"># 提供服务的域名或主机名
+</span></span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>        <span style="color:#f92672">location</span> <span style="color:#d88200">/</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>            <span style="color:#f92672">root</span>   <span style="color:#d88200">html</span><span style="color:#111">;</span> <span style="color:#75715e"># 存放网站代码路径
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>            <span style="color:#f92672">index</span>  <span style="color:#d88200">index.html</span> <span style="color:#d88200">index.htm</span><span style="color:#111">;</span> <span style="color:#75715e"># 服务器返回的默认页面文件
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#111">}</span>
+</span></span></span><span style="display:flex;"><span>            <span style="color:#f92672">index</span>  <span style="color:#d88200">index.html</span> <span style="color:#d88200">index.htm</span><span style="color:#111">;</span> <span style="color:#75715e"># 服务器返回的默认页面文件
+</span></span></span><span style="display:flex;"><span>        <span style="color:#111">}</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>    		<span style="color:#75715e"># 指定错误代码, 统一定义错误页面, 错误代码重定向到新的Locaiton
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#f92672">error_page</span>   <span style="color:#ae81ff">500</span> <span style="color:#ae81ff">502</span> <span style="color:#ae81ff">503</span> <span style="color:#ae81ff">504</span>  <span style="color:#d88200">/50x.html</span><span style="color:#111">;</span> 
+</span></span></span><span style="display:flex;"><span>        <span style="color:#f92672">error_page</span>   <span style="color:#ae81ff">500</span> <span style="color:#ae81ff">502</span> <span style="color:#ae81ff">503</span> <span style="color:#ae81ff">504</span>  <span style="color:#d88200">/50x.html</span><span style="color:#111">;</span> 
 </span></span><span style="display:flex;"><span>        <span style="color:#f92672">location</span> <span style="color:#111">=</span> <span style="color:#d88200">/50x.html</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>            <span style="color:#f92672">root</span>   <span style="color:#d88200">html</span><span style="color:#111">;</span>
 </span></span><span style="display:flex;"><span>        <span style="color:#111">}</span>                                                                                                                                          <span style="color:#111">}</span>
@@ -1179,7 +1179,7 @@ sudo chown root:root jdk-7u21-linux-i586.tar.gz
 <p>当存在多个域名时，如果所有配置都写在 nginx.conf 主配置文件中，难免会显得杂乱与臃肿。为了方便配置文件的维护，所以需要进行拆分配置。</p>
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-nginx" data-lang="nginx"><span style="display:flex;"><span><span style="color:#75715e"># 在nginx.conf中 加入  include a.zhaohaiyu.com/nginx.conf; 
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"># 在a.zhaohaiyu.com/nginx.conf中加入 
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#00a8c8">server</span> <span style="color:#111">{</span>  
+</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">server</span> <span style="color:#111">{</span>  
 </span></span><span style="display:flex;"><span>		<span style="color:#f92672">listen</span> <span style="color:#ae81ff">8000</span><span style="color:#111">;</span>  
 </span></span><span style="display:flex;"><span>		<span style="color:#f92672">server_name</span> <span style="color:#d88200">test2.com</span><span style="color:#111">;</span> 
 </span></span><span style="display:flex;"><span>
@@ -1188,7 +1188,7 @@ sudo chown root:root jdk-7u21-linux-i586.tar.gz
 </span></span><span style="display:flex;"><span>				<span style="color:#f92672">proxy_set_header</span> <span style="color:#d88200">X-Real-Ip</span> <span style="color:#111">$remote_addr</span><span style="color:#111">;</span> 
 </span></span><span style="display:flex;"><span>        <span style="color:#f92672">proxy_set_header</span> <span style="color:#d88200">X-Forwarded-For</span> <span style="color:#111">$proxy_add_x_forwarded_for</span><span style="color:#111">;</span> 
 </span></span><span style="display:flex;"><span>        <span style="color:#75715e">## proxy_pass 				   http://xxx.xxx.xxx;  echo &#34;test2.com&#34;; ## 输出测试   
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>     <span style="color:#111">}</span> 
+</span></span></span><span style="display:flex;"><span>     <span style="color:#111">}</span> 
 </span></span><span style="display:flex;"><span> <span style="color:#111">}</span> 
 </span></span><span style="display:flex;"><span><span style="color:#75715e"># 等于把zhaohaiyu.com/nginx.conf直接吸入nginx.conf中
 </span></span></span></code></pre></div></li>
@@ -1321,19 +1321,19 @@ nginx: the configuration file /opt/nginx1-12/conf/nginx.conf syntax is ok nginx:
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-nginx" data-lang="nginx"><span style="display:flex;"><span><span style="color:#00a8c8">server</span> <span style="color:#111">{</span>  
 </span></span><span style="display:flex;"><span>		<span style="color:#f92672">listen</span> <span style="color:#ae81ff">80</span><span style="color:#111">;</span>  
 </span></span><span style="display:flex;"><span>		<span style="color:#f92672">server_name</span> <span style="color:#d88200">pythonav.cn</span><span style="color:#111">;</span>   <span style="color:#75715e">#优先级1,精确匹配，根路径  
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>		<span style="color:#f92672">location</span> <span style="color:#111">=</span><span style="color:#d88200">/</span> <span style="color:#111">{</span>  
+</span></span></span><span style="display:flex;"><span>		<span style="color:#f92672">location</span> <span style="color:#111">=</span><span style="color:#d88200">/</span> <span style="color:#111">{</span>  
 </span></span><span style="display:flex;"><span>				<span style="color:#f92672">return</span> <span style="color:#ae81ff">400</span><span style="color:#111">;</span>  
 </span></span><span style="display:flex;"><span>		<span style="color:#111">}</span>   <span style="color:#75715e">#优先级2,以某个字符串开头,以av开头的，优先匹配这里，区分大小写  
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>		<span style="color:#f92672">location</span> <span style="color:#d88200">^~</span> <span style="color:#d88200">/av</span> <span style="color:#111">{</span>  
+</span></span></span><span style="display:flex;"><span>		<span style="color:#f92672">location</span> <span style="color:#d88200">^~</span> <span style="color:#d88200">/av</span> <span style="color:#111">{</span>  
 </span></span><span style="display:flex;"><span>				<span style="color:#f92672">root</span> <span style="color:#d88200">/data/av/</span><span style="color:#111">;</span>  
 </span></span><span style="display:flex;"><span>		<span style="color:#111">}</span>   <span style="color:#75715e">#优先级3，区分大小写的正则匹配，匹配/media*****路径  
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>		<span style="color:#f92672">location</span> <span style="color:#111">~</span> <span style="color:#d88200">/media</span> <span style="color:#111">{</span>  
+</span></span></span><span style="display:flex;"><span>		<span style="color:#f92672">location</span> <span style="color:#111">~</span> <span style="color:#d88200">/media</span> <span style="color:#111">{</span>  
 </span></span><span style="display:flex;"><span>				<span style="color:#f92672">alias</span> <span style="color:#d88200">/data/static/</span><span style="color:#111">;</span>  
 </span></span><span style="display:flex;"><span>		<span style="color:#111">}</span>   <span style="color:#75715e">#优先级4 ，不区分大小写的正则匹配，所有的****.jpg|gif|png 都走这里  
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>		<span style="color:#f92672">location</span> <span style="color:#111">~</span><span style="color:#d88200">*</span> <span style="color:#d88200">.*\.(jpg|gif|png|js|css)</span>$ <span style="color:#111">{</span>  
+</span></span></span><span style="display:flex;"><span>		<span style="color:#f92672">location</span> <span style="color:#111">~</span><span style="color:#d88200">*</span> <span style="color:#d88200">.*\.(jpg|gif|png|js|css)</span>$ <span style="color:#111">{</span>  
 </span></span><span style="display:flex;"><span>				<span style="color:#f92672">root</span> <span style="color:#d88200">/data/av/</span><span style="color:#111">;</span>  
 </span></span><span style="display:flex;"><span>		<span style="color:#111">}</span>   <span style="color:#75715e">#优先7，通用匹配  
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>		<span style="color:#f92672">location</span> <span style="color:#d88200">/</span> <span style="color:#111">{</span>  
+</span></span></span><span style="display:flex;"><span>		<span style="color:#f92672">location</span> <span style="color:#d88200">/</span> <span style="color:#111">{</span>  
 </span></span><span style="display:flex;"><span>				<span style="color:#f92672">return</span> <span style="color:#ae81ff">403</span><span style="color:#111">;</span>  
 </span></span><span style="display:flex;"><span>		<span style="color:#111">}</span> 
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>

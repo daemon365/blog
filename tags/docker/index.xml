@@ -1131,24 +1131,24 @@ docker将应用程序与程序的依赖，打包在一个文件里面。运行�
 <li>
 <p>卸载旧版本</p>
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>sudo yum remove docker <span style="color:#8045ff">\
-</span></span></span><span style="display:flex;"><span><span style="color:#8045ff"></span>                  docker-client <span style="color:#8045ff">\
-</span></span></span><span style="display:flex;"><span><span style="color:#8045ff"></span>                  docker-client-latest <span style="color:#8045ff">\
-</span></span></span><span style="display:flex;"><span><span style="color:#8045ff"></span>                  docker-common <span style="color:#8045ff">\
-</span></span></span><span style="display:flex;"><span><span style="color:#8045ff"></span>                  docker-latest <span style="color:#8045ff">\
-</span></span></span><span style="display:flex;"><span><span style="color:#8045ff"></span>                  docker-latest-logrotate <span style="color:#8045ff">\
-</span></span></span><span style="display:flex;"><span><span style="color:#8045ff"></span>                  docker-logrotate <span style="color:#8045ff">\
-</span></span></span><span style="display:flex;"><span><span style="color:#8045ff"></span>                  docker-selinux <span style="color:#8045ff">\
-</span></span></span><span style="display:flex;"><span><span style="color:#8045ff"></span>                  docker-engine-selinux <span style="color:#8045ff">\
-</span></span></span><span style="display:flex;"><span><span style="color:#8045ff"></span>                  docker-engine
+</span></span></span><span style="display:flex;"><span>                  docker-client <span style="color:#8045ff">\
+</span></span></span><span style="display:flex;"><span>                  docker-client-latest <span style="color:#8045ff">\
+</span></span></span><span style="display:flex;"><span>                  docker-common <span style="color:#8045ff">\
+</span></span></span><span style="display:flex;"><span>                  docker-latest <span style="color:#8045ff">\
+</span></span></span><span style="display:flex;"><span>                  docker-latest-logrotate <span style="color:#8045ff">\
+</span></span></span><span style="display:flex;"><span>                  docker-logrotate <span style="color:#8045ff">\
+</span></span></span><span style="display:flex;"><span>                  docker-selinux <span style="color:#8045ff">\
+</span></span></span><span style="display:flex;"><span>                  docker-engine-selinux <span style="color:#8045ff">\
+</span></span></span><span style="display:flex;"><span>                  docker-engine
 </span></span></code></pre></div></li>
 <li>
 <p>设置存储库</p>
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>sudo yum install -y yum-utils <span style="color:#8045ff">\
-</span></span></span><span style="display:flex;"><span><span style="color:#8045ff"></span>  device-mapper-persistent-data <span style="color:#8045ff">\
-</span></span></span><span style="display:flex;"><span><span style="color:#8045ff"></span>  lvm2
+</span></span></span><span style="display:flex;"><span>  device-mapper-persistent-data <span style="color:#8045ff">\
+</span></span></span><span style="display:flex;"><span>  lvm2
 </span></span><span style="display:flex;"><span>sudo yum-config-manager <span style="color:#8045ff">\
-</span></span></span><span style="display:flex;"><span><span style="color:#8045ff"></span>    --add-repo <span style="color:#8045ff">\
-</span></span></span><span style="display:flex;"><span><span style="color:#8045ff"></span>    https://download.docker.com/linux/centos/docker-ce.repo
+</span></span></span><span style="display:flex;"><span>    --add-repo <span style="color:#8045ff">\
+</span></span></span><span style="display:flex;"><span>    https://download.docker.com/linux/centos/docker-ce.repo
 </span></span></code></pre></div></li>
 <li>
 <p>安装docker社区版</p>
@@ -1530,19 +1530,19 @@ CMD 用于 可变的命令。</p>
 <li>应用的网络，在它下面可以定义应用的名字、使用的网络类型等等。</li>
 </ul>
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-dockerfile" data-lang="dockerfile"><span style="display:flex;"><span>version: <span style="color:#d88200">&#39;2.0&#39;</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>services:<span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  nginx:<span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    restart: always<span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    image: nginx:1.11.6-alpine<span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    ports:<span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>      - 8080:80<span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>      - 80:80<span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>      - 443:443<span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    volumes:<span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>      - ./conf.d:/etc/nginx/conf.d<span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>      - ./log:/var/log/nginx<span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>      - ./www:/var/www<span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>      - /etc/letsencrypt:/etc/letsencrypt<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span>services:<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span>  nginx:<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span>    restart: always<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span>    image: nginx:1.11.6-alpine<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span>    ports:<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span>      - 8080:80<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span>      - 80:80<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span>      - 443:443<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span>    volumes:<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span>      - ./conf.d:/etc/nginx/conf.d<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span>      - ./log:/var/log/nginx<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span>      - ./www:/var/www<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span>      - /etc/letsencrypt:/etc/letsencrypt<span style="color:#960050;background-color:#1e0010">
 </span></span></span></code></pre></div><h3 id="docker-compose命令">docker-compose命令</h3>
 <ol>
 <li>启动:docker-compose up -d-d为守护进程</li>

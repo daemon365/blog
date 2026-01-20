@@ -2391,24 +2391,24 @@
 </span></span><span style="display:flex;"><span>	<span style="color:#111">class_id</span> <span style="color:#111">INT</span> <span style="color:#00a8c8">NOT</span> <span style="color:#00a8c8">NULL</span><span style="color:#111">,</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">-- 主键约束
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#00a8c8">PRIMARY</span> <span style="color:#00a8c8">KEY</span><span style="color:#111">(</span><span style="color:#111">stu_id</span><span style="color:#111">),</span>
+</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">PRIMARY</span> <span style="color:#00a8c8">KEY</span><span style="color:#111">(</span><span style="color:#111">stu_id</span><span style="color:#111">),</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">-- 外键约束
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#00a8c8">FOREIGN</span> <span style="color:#00a8c8">KEY</span> <span style="color:#111">fk_class_id</span> <span style="color:#111">(</span><span style="color:#111">class_id</span><span style="color:#111">)</span>
+</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">FOREIGN</span> <span style="color:#00a8c8">KEY</span> <span style="color:#111">fk_class_id</span> <span style="color:#111">(</span><span style="color:#111">class_id</span><span style="color:#111">)</span>
 </span></span><span style="display:flex;"><span><span style="color:#00a8c8">REFERENCES</span> <span style="color:#111">tb_class</span><span style="color:#111">(</span><span style="color:#111">class_id</span><span style="color:#111">),</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">-- 唯一性约束
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#00a8c8">UNIQUE</span> <span style="color:#111">uniq_name</span> <span style="color:#111">(</span><span style="color:#111">name</span><span style="color:#111">)</span>
+</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">UNIQUE</span> <span style="color:#111">uniq_name</span> <span style="color:#111">(</span><span style="color:#111">name</span><span style="color:#111">)</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#111">);</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">-- 删除主键约束
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#00a8c8">ALTER</span> <span style="color:#00a8c8">TABLE</span> <span style="color:#111">tb_student</span> <span style="color:#00a8c8">DROP</span> <span style="color:#00a8c8">PRIMARY</span> <span style="color:#00a8c8">KEY</span><span style="color:#111">;</span>
+</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">ALTER</span> <span style="color:#00a8c8">TABLE</span> <span style="color:#111">tb_student</span> <span style="color:#00a8c8">DROP</span> <span style="color:#00a8c8">PRIMARY</span> <span style="color:#00a8c8">KEY</span><span style="color:#111">;</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">-- 删除外键约束
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#00a8c8">ALTER</span> <span style="color:#00a8c8">TABLE</span> <span style="color:#111">tb_student</span> <span style="color:#00a8c8">DROP</span> <span style="color:#00a8c8">FOREIGN</span> <span style="color:#00a8c8">KEY</span> <span style="color:#111">fk_class_id</span><span style="color:#111">;</span>
+</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">ALTER</span> <span style="color:#00a8c8">TABLE</span> <span style="color:#111">tb_student</span> <span style="color:#00a8c8">DROP</span> <span style="color:#00a8c8">FOREIGN</span> <span style="color:#00a8c8">KEY</span> <span style="color:#111">fk_class_id</span><span style="color:#111">;</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">-- 删除唯一性约束
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#00a8c8">ALTER</span> <span style="color:#00a8c8">TABLE</span> <span style="color:#111">tb_student</span> <span style="color:#00a8c8">DROP</span> <span style="color:#00a8c8">INDEX</span> <span style="color:#111">uniq_name</span><span style="color:#111">;</span>
+</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">ALTER</span> <span style="color:#00a8c8">TABLE</span> <span style="color:#111">tb_student</span> <span style="color:#00a8c8">DROP</span> <span style="color:#00a8c8">INDEX</span> <span style="color:#111">uniq_name</span><span style="color:#111">;</span>
 </span></span></code></pre></div><h2 id="文章转自">文章转自：</h2>
 <p><a href="https://blog.csdn.net/pan_junbiao/article/details/86158117">https://blog.csdn.net/pan_junbiao/article/details/86158117</a></p>
 ]]></content:encoded><category>database</category><category>mysql</category></item><item><title>redis持久化</title><link>https://daemon365.dev/post/database/redis_persistence/</link><pubDate>Sat, 21 Mar 2020 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/database/redis_persistence/</guid><description>&lt;p&gt;Redis是一种内存型数据库，一旦服务器进程退出，数据库的数据就会丢失，为了解决这个问题，Redis提供了两种持久化的方案，将内存中的数据保存到磁盘中，避免数据的丢失。&lt;/p&gt;

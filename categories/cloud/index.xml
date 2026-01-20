@@ -1,4 +1,409 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>Cloud on Daemon365</title><link>https://daemon365.dev/categories/cloud/</link><description>Don't let yourself stop.</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><lastBuildDate>Sat, 02 Nov 2024 17:42:54 +0800</lastBuildDate><atom:link href="https://daemon365.dev/categories/cloud/index.xml" rel="self" type="application/rss+xml"/><item><title>kube-apiserver 高可用，keepalived + haproxy</title><link>https://daemon365.dev/post/cloud/keepalived_haproxy/</link><pubDate>Sat, 02 Nov 2024 17:42:54 +0800</pubDate><guid>https://daemon365.dev/post/cloud/keepalived_haproxy/</guid><description>&lt;h2 id="为什么要做高可用"&gt;为什么要做高可用&lt;/h2&gt;
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>Cloud on Daemon365</title><link>https://daemon365.dev/categories/cloud/</link><description>Don't let yourself stop.</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><lastBuildDate>Tue, 20 Jan 2026 00:00:00 +0800</lastBuildDate><atom:link href="https://daemon365.dev/categories/cloud/index.xml" rel="self" type="application/rss+xml"/><item><title>kubernetes CNI(Container Network Interface)</title><link>https://daemon365.dev/post/cloud/kubernetes_cni_container_network_interface/</link><pubDate>Tue, 20 Jan 2026 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/kubernetes_cni_container_network_interface/</guid><description>&lt;h2 id="为什么需要-cni"&gt;为什么需要 CNI&lt;/h2&gt;
+&lt;p&gt;在 kubernetes 中，pod 的网络是使用 network namespace 隔离的，但是我们有时又需要互相访问网络，这就需要一个网络插件来实现 pod 之间的网络通信。CNI 就是为了解决这个问题而诞生的。CNI 是 Container Network Interface 的缩写，它是一个规范，定义了容器运行时如何配置网络。CNI 插件是实现了 CNI 规范的二进制文件，它可以被容器运行时调用，来配置容器的网络。&lt;/p&gt;
+&lt;h2 id="cni-规范详解"&gt;CNI 规范详解&lt;/h2&gt;
+&lt;h3 id="cni-的设计理念"&gt;CNI 的设计理念&lt;/h3&gt;
+&lt;p&gt;CNI 的设计非常简洁，它只关注两件事：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;容器创建时&lt;/strong&gt;：为容器的网络命名空间配置网络&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;容器删除时&lt;/strong&gt;：清理容器的网络资源&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;CNI 采用了插件化的架构，这使得它具有以下优势：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;灵活性&lt;/strong&gt;：不同的环境可以选择不同的网络实现&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;可扩展性&lt;/strong&gt;：容易添加新的网络方案&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;语言无关&lt;/strong&gt;：CNI 插件可以用任何语言实现，只要遵循规范即可&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="cni-插件的工作流程"&gt;CNI 插件的工作流程&lt;/h3&gt;
+&lt;p&gt;当 kubelet 需要为 pod 配置网络时，整个流程如下：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;kubelet&lt;/strong&gt; 调用 CRI（Container Runtime Interface）创建 pod 的 sandbox 容器&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;CRI&lt;/strong&gt; 实现（如 containerd、CRI-O）创建 network namespace&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;CRI&lt;/strong&gt; 读取 CNI 配置文件（通常在 &lt;code&gt;/etc/cni/net.d/&lt;/code&gt;）&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;CRI&lt;/strong&gt; 根据配置调用相应的 CNI 插件（通常在 &lt;code&gt;/opt/cni/bin/&lt;/code&gt;）&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;CNI 插件&lt;/strong&gt; 为容器配置网络（创建 veth pair、配置 IP、设置路由等）&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;CNI 插件&lt;/strong&gt; 返回结果（IP 地址、网关、DNS 等信息）&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id="cni-配置文件示例"&gt;CNI 配置文件示例&lt;/h3&gt;
+&lt;p&gt;CNI 的配置文件是 JSON 格式，一个典型的配置如下：&lt;/p&gt;</description><content:encoded><![CDATA[<h2 id="为什么需要-cni">为什么需要 CNI</h2>
+<p>在 kubernetes 中，pod 的网络是使用 network namespace 隔离的，但是我们有时又需要互相访问网络，这就需要一个网络插件来实现 pod 之间的网络通信。CNI 就是为了解决这个问题而诞生的。CNI 是 Container Network Interface 的缩写，它是一个规范，定义了容器运行时如何配置网络。CNI 插件是实现了 CNI 规范的二进制文件，它可以被容器运行时调用，来配置容器的网络。</p>
+<h2 id="cni-规范详解">CNI 规范详解</h2>
+<h3 id="cni-的设计理念">CNI 的设计理念</h3>
+<p>CNI 的设计非常简洁，它只关注两件事：</p>
+<ol>
+<li><strong>容器创建时</strong>：为容器的网络命名空间配置网络</li>
+<li><strong>容器删除时</strong>：清理容器的网络资源</li>
+</ol>
+<p>CNI 采用了插件化的架构，这使得它具有以下优势：</p>
+<ul>
+<li><strong>灵活性</strong>：不同的环境可以选择不同的网络实现</li>
+<li><strong>可扩展性</strong>：容易添加新的网络方案</li>
+<li><strong>语言无关</strong>：CNI 插件可以用任何语言实现，只要遵循规范即可</li>
+</ul>
+<h3 id="cni-插件的工作流程">CNI 插件的工作流程</h3>
+<p>当 kubelet 需要为 pod 配置网络时，整个流程如下：</p>
+<ol>
+<li><strong>kubelet</strong> 调用 CRI（Container Runtime Interface）创建 pod 的 sandbox 容器</li>
+<li><strong>CRI</strong> 实现（如 containerd、CRI-O）创建 network namespace</li>
+<li><strong>CRI</strong> 读取 CNI 配置文件（通常在 <code>/etc/cni/net.d/</code>）</li>
+<li><strong>CRI</strong> 根据配置调用相应的 CNI 插件（通常在 <code>/opt/cni/bin/</code>）</li>
+<li><strong>CNI 插件</strong> 为容器配置网络（创建 veth pair、配置 IP、设置路由等）</li>
+<li><strong>CNI 插件</strong> 返回结果（IP 地址、网关、DNS 等信息）</li>
+</ol>
+<h3 id="cni-配置文件示例">CNI 配置文件示例</h3>
+<p>CNI 的配置文件是 JSON 格式，一个典型的配置如下：</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span><span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;cniVersion&#34;</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;0.4.0&#34;</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;name&#34;</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;mynet&#34;</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;type&#34;</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;bridge&#34;</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;bridge&#34;</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;cni0&#34;</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;isGateway&#34;</span><span style="color:#111">:</span> <span style="color:#00a8c8">true</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;ipMasq&#34;</span><span style="color:#111">:</span> <span style="color:#00a8c8">true</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;ipam&#34;</span><span style="color:#111">:</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;type&#34;</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;host-local&#34;</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;subnet&#34;</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;10.244.0.0/16&#34;</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;routes&#34;</span><span style="color:#111">:</span> <span style="color:#111">[</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#111">{</span> <span style="color:#f92672">&#34;dst&#34;</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;0.0.0.0/0&#34;</span> <span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span></code></pre></div><p>主要字段说明：</p>
+<ul>
+<li><code>cniVersion</code>：CNI 规范版本</li>
+<li><code>name</code>：网络名称</li>
+<li><code>type</code>：插件类型（如 bridge、ipvlan、macvlan 等）</li>
+<li><code>ipam</code>：IP 地址管理配置</li>
+</ul>
+<h3 id="cni-插件类型">CNI 插件类型</h3>
+<p>CNI 插件主要分为三类：</p>
+<ol>
+<li>
+<p><strong>Main 插件</strong>：用于创建网络接口</p>
+<ul>
+<li><code>bridge</code>：创建网桥</li>
+<li><code>ipvlan</code>：添加 ipvlan 接口</li>
+<li><code>macvlan</code>：添加 macvlan 接口</li>
+<li><code>ptp</code>：创建点对点连接</li>
+</ul>
+</li>
+<li>
+<p><strong>IPAM 插件</strong>：用于 IP 地址分配</p>
+<ul>
+<li><code>host-local</code>：在本地维护 IP 地址池</li>
+<li><code>dhcp</code>：通过 DHCP 服务器分配 IP</li>
+<li><code>static</code>：使用静态 IP</li>
+</ul>
+</li>
+<li>
+<p><strong>Meta 插件</strong>：用于调用其他插件或修改配置</p>
+<ul>
+<li><code>flannel</code>：从 flannel daemon 获取配置</li>
+<li><code>tuning</code>：调整网络接口参数</li>
+<li><code>portmap</code>：配置端口映射</li>
+<li><code>bandwidth</code>：限制带宽</li>
+</ul>
+</li>
+</ol>
+<h2 id="docker-网络">Docker 网络</h2>
+<h3 id="基础">基础</h3>
+<p>计算机五层网络如下：</p>
+<p><img src="/images/4bcdd10b-42da-470b-91b0-d87746410aeb.png" alt=""></p>
+<p>如果我们想把 pod 中的网络对外，首先想到的就是七层代理，比如nginx，但是我们并不知道 pod 里的网络一定是 http，甚至他可能不是tcp。所以我们像做一些网络操作，就不能在五层做了，只能在二三四层做。</p>
+<h3 id="docker-实验">Docker 实验</h3>
+<p>当我们在物理机上启动 docker daemon 不需要启动任何容器的时候，使用 ip a 命令查看网卡，发现多了一个 docker0</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>4: docker0: &lt;NO-CARRIER,BROADCAST,MULTICAST,UP&gt; mtu <span style="color:#ae81ff">1500</span> qdisc noqueue state DOWN group default
+</span></span><span style="display:flex;"><span>    link/ether 02:42:9b:65:e1:01 brd ff:ff:ff:ff:ff:ff
+</span></span><span style="display:flex;"><span>    inet 172.17.0.1/16 brd 172.17.255.255 scope global docker0
+</span></span><span style="display:flex;"><span>       valid_lft forever preferred_lft forever
+</span></span></code></pre></div><p>docker0 是一个 linux Bridge 设备，这个可以理解成一个虚拟的交换机，用来做二层网络的转发。当我们启动一个容器的时候，docker 会为这个容器创建一个 veth pair 设备，一个端口挂载在容器的 network namespace 中，另一个端口挂载在 docker0 上。这样容器就可以和 docker0 上的其他容器通信了。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>docker run -d --rm -it ubuntu:22.04 sleep <span style="color:#ae81ff">3000</span>
+</span></span></code></pre></div><p>在物理机上查看 ip a</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>8: veth6bc75d9@if7: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu <span style="color:#ae81ff">1500</span> qdisc noqueue master docker0 state UP group default
+</span></span><span style="display:flex;"><span>    link/ether d6:87:ca:5c:54:51 brd ff:ff:ff:ff:ff:ff link-netnsid <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>    inet6 fe80::d487:caff:fe5c:5451/64 scope link
+</span></span><span style="display:flex;"><span>       valid_lft forever preferred_lft forever
+</span></span></code></pre></div><p>docker 容器里面 ip a</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>7: eth0@if8: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu <span style="color:#ae81ff">1500</span> qdisc noqueue state UP group default
+</span></span><span style="display:flex;"><span>    link/ether 02:42:ac:11:00:02 brd ff:ff:ff:ff:ff:ff link-netnsid <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>    inet 172.17.0.2/16 brd 172.17.255.255 scope global eth0
+</span></span><span style="display:flex;"><span>       valid_lft forever preferred_lft forever
+</span></span></code></pre></div><p>再启动一个 docker</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>docker run --name <span style="color:#111">test</span> -d --rm -it ubuntu:22.04 sleep <span style="color:#ae81ff">3000</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># ip a</span>
+</span></span><span style="display:flex;"><span>9: eth0@if10: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu <span style="color:#ae81ff">1500</span> qdisc noqueue state UP group default
+</span></span><span style="display:flex;"><span>    link/ether 02:42:ac:11:00:03 brd ff:ff:ff:ff:ff:ff link-netnsid <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>    inet 172.17.0.3/16 brd 172.17.255.255 scope global eth0
+</span></span><span style="display:flex;"><span>       valid_lft forever preferred_lft forever
+</span></span></code></pre></div><p>这样两个容器就可以通过 docker0 通信了。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>root@b19a3dc4b32d:/# ping  172.17.0.2
+</span></span><span style="display:flex;"><span>PING 172.17.0.2 <span style="color:#f92672">(</span>172.17.0.2<span style="color:#f92672">)</span> 56<span style="color:#f92672">(</span>84<span style="color:#f92672">)</span> bytes of data.
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">64</span> bytes from 172.17.0.2: <span style="color:#111">icmp_seq</span><span style="color:#f92672">=</span><span style="color:#ae81ff">1</span> <span style="color:#111">ttl</span><span style="color:#f92672">=</span><span style="color:#ae81ff">64</span> <span style="color:#111">time</span><span style="color:#f92672">=</span>0.055 ms
+</span></span></code></pre></div><h3 id="通信方式">通信方式</h3>
+<p><img src="/images/a6754f75-f177-42d3-b9d3-0d362ef038a9.png" alt=""></p>
+<h2 id="常见-cni-插件对比">常见 CNI 插件对比</h2>
+<p>在了解具体的网络实现之前，我们先来看看业界常用的 CNI 插件及其特点：</p>
+<h2 id="cni-网络">CNI 网络</h2>
+<p>当两个 pod 在同一 node 上的时候，我们可以使用像上述 docker 的 bridge 的方式通信是没问题的。但是 kubernetes 是多节点的集群，当 pod 在不同的 node 上的时候，直接通信肯定不行了，这时候我们需要一些办法来解决这个问题。</p>
+<h3 id="udp-封包">UDP 封包</h3>
+<p>当 pod 在不同节点上的时候，两个 pod 不可以直接通信，那最简单的方式就是通过 udp 封包，把整个网络包使用 udp 封包起来，然后第二个节点再解包，然后发给网桥。</p>
+<p><img src="/images/2fca7256-2cac-436f-a379-4e12891fac39.png" alt=""></p>
+<p>整个过程就是 node1 上的 pod 把网络包封装，然后由于 <code>process</code> 再封装发给 node2，node2 再解包，然后发给 pod2。</p>
+<p>process 是 cni 实现的进程，很多 cni 都实现 udp 封包的方式，比如 flannel,cailco 等。</p>
+<p>至于我们怎么知道目标 ip （pod 的 ip） 是在哪台主机上，这个就有很多中方式了，比如把每台机器发配 ip 分配不同的网段，甚至于把这些对应关系写到 etcd 中。</p>
+<h3 id="vxlan">VXLAN</h3>
+<p>上述的 udp 封包方式，是可以满足基本需求但是。cni 创建的 process 进程是一个用户态的进程，每个包要在 node1 上从内核态 copy 到用户态，然后再封包，再 copy 到内核态，再发给 node2，再从内核态 copy 到用户态，再解包，再 copy 到内核态，再发给 pod2。这样的方式效率很低。所以我们使用一种更加高效的方式，就是 vxlan。</p>
+<p><strong>VXLAN 是什么?</strong></p>
+<p>VXLAN（Virtual Extensible LAN）是一种网络虚拟化技术，用于解决大规模云计算环境中的网络隔离、扩展性和灵活性问题。VXLAN 允许网络工程师在现有的网络架构上创建一个逻辑网络层，这可以使得数据中心的网络设计变得更加灵活和可扩展。</p>
+<p><strong>为什么性能会高？</strong></p>
+<p>VXLAN 是在内核态实现的，原理和 udp 封包一样，只不过是在内核态实现的，数据包不会在内核态和用户态之间 copy，所以效率会高很多。</p>
+<h3 id="ip-路由">ip 路由</h3>
+<p>就算是 vxlan，也是需要封包和解包的，这样的方式效率还是不够高，所以我们可以使用 ip 路由的方式。</p>
+<p>ip 路由故名思意，就是使用路由表来实现 pod 之间的通信。这样的方式效率最高，但是配置比较复杂，需要配置路由表。</p>
+<p>而且路由表跳转是二层网络实现的，所以又要要求所有 node 在同一个二层网络中。</p>
+<p><img src="/images/7be8c8c9-a60b-4717-9f5a-a3e6f44ebed9.png" alt=""></p>
+<p>查看 node1 上的 container 的是设备</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-BASH" data-lang="BASH"><span style="display:flex;"><span>ip a
+</span></span><span style="display:flex;"><span>2: eth0@if10: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu <span style="color:#ae81ff">1500</span> qdisc noqueue state UP group default qlen <span style="color:#ae81ff">1000</span>
+</span></span><span style="display:flex;"><span>    link/ether 66:5e:d8:8d:86:ba brd ff:ff:ff:ff:ff:ff link-netnsid <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>    inet 172.10.184.69/32 scope global eth0
+</span></span><span style="display:flex;"><span>       valid_lft forever preferred_lft forever
+</span></span><span style="display:flex;"><span>    inet6 fe80::645e:d8ff:fe8d:86ba/64 scope link
+</span></span><span style="display:flex;"><span>       valid_lft forever preferred_lft forever
+</span></span></code></pre></div><p>这个和主机上是对应的是一个 veth pair 设备，一个端口挂载在容器的 network namespace 中，一边挂载在主机上。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># 主机</span>
+</span></span><span style="display:flex;"><span>ip a
+</span></span><span style="display:flex;"><span>10: calia78b8700057@if2: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu <span style="color:#ae81ff">1500</span> qdisc noqueue state UP group default qlen <span style="color:#ae81ff">1000</span>
+</span></span><span style="display:flex;"><span>    link/ether ee:ee:ee:ee:ee:ee brd ff:ff:ff:ff:ff:ff link-netns cni-0da431c8-dd8b-ca68-55e6-40b04acf78d6
+</span></span><span style="display:flex;"><span>    inet6 fe80::ecee:eeff:feee:eeee/64 scope link
+</span></span><span style="display:flex;"><span>       valid_lft forever preferred_lft forever
+</span></span></code></pre></div><p>当 pod 中的数据包来到主机 查看 node1 上的路由表 会命中一下这条路由 这条的意思是跳到<code>192.168.229.102</code>节点使用 ens33 设备</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>ip r
+</span></span><span style="display:flex;"><span>172.10.190.0/26 via 192.168.229.102 dev ens33 proto bird
+</span></span></code></pre></div><p>当 数据包来到 node2 上的时候 我们看下 node2 的路由表</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-BASH" data-lang="BASH"><span style="display:flex;"><span>ip r
+</span></span><span style="display:flex;"><span>172.10.190.2 dev calie28ee63d6b0 scope link
+</span></span><span style="display:flex;"><span>ip a
+</span></span><span style="display:flex;"><span>7: calie28ee63d6b0@if2: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu <span style="color:#ae81ff">1500</span> qdisc noqueue state UP group default qlen <span style="color:#ae81ff">1000</span>
+</span></span><span style="display:flex;"><span>    link/ether ee:ee:ee:ee:ee:ee brd ff:ff:ff:ff:ff:ff link-netns cni-dd892c92-1826-f648-2b8c-d22618311ca9
+</span></span><span style="display:flex;"><span>    inet6 fe80::ecee:eeff:feee:eeee/64 scope link
+</span></span><span style="display:flex;"><span>       valid_lft forever preferred_lft forever
+</span></span></code></pre></div><p>这个设备是 veth pair 设备，对应的容器内的</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-BASH" data-lang="BASH"><span style="display:flex;"><span>ip a
+</span></span><span style="display:flex;"><span>2: eth0@if7: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu <span style="color:#ae81ff">1500</span> qdisc noqueue state UP group default qlen <span style="color:#ae81ff">1000</span>
+</span></span><span style="display:flex;"><span>    link/ether fa:a6:2f:97:58:28 brd ff:ff:ff:ff:ff:ff link-netnsid <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>    inet 172.10.190.2/32 scope global eth0
+</span></span><span style="display:flex;"><span>       valid_lft forever preferred_lft forever
+</span></span><span style="display:flex;"><span>    inet6 fe80::f8a6:2fff:fe97:5828/64 scope link
+</span></span><span style="display:flex;"><span>       valid_lft forever preferred_lft forever
+</span></span></code></pre></div><p>这样node2上的 172.10.190.2 pod 就可以收到数据包了。</p>
+<h4 id="路由跳转">路由跳转</h4>
+<p>路由跳转是怎么实现的？</p>
+<p>路由跳转是通过路由表来实现的，它作用在二层上，所以当跳转的时候，直接修改数据包的目标 mac 地址（如果不知道的话是使用 ARP 协议获得）。</p>
+<p>所以当我们访问百度的时候，获得百度的ip的时候，数据包会经过很多路由器，每个路由器都会修改数据包的目标 mac 地址，这样数据包就可以到达百度的服务器了。</p>
+<h4 id="felix">Felix</h4>
+<p>那么主机上的路由表是怎么来的呢？</p>
+<p>这个就是 cni 的实现了，cni 会调用 felix 这个进程，felix 会根据 cni 的配置来配置路由表。</p>
+<h3 id="ip-in-ip">ip in ip</h3>
+<p>刚才也说过了，ip 路由是最高效的，是因为它作用在二层网络上，这就需要保证所有的 node 在同一个二层网络上。但是有时候我们的 node 不在同一个二层网络上，这时候我们可以使用 ip in ip。</p>
+<p>简单来说就是如果 node 之间在一个二层网络上，那么就直接使用 ip 路由，如果不在，那么就使用 ip in ip，把数据包封装起来，然后再发给对应的 node。</p>
+<p>ip-in-ip 是一种隧道技术，它将一个 IP 数据包封装在另一个 IP 数据包中，这样就可以在一个 IP 网络上传输另一个 IP 网络的数据包。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>172.10.180.0/24 via 192.168.228.28 tunl0
+</span></span></code></pre></div><p><img src="/images/62ebd840-1785-46f6-bd04-7b4e78c8cc0b.png" alt=""></p>
+<p>这个只是在源数据包的三层上再封装一层 IP 头部。相比 VXLAN（封装完整的二层以太网帧），IP-in-IP 只封装 IP 头，开销更小。这样性能方面稍微比使用了 UDP 的 VXLAN 要好一点。但是最好还是避免使用 IP-in-IP，尽量保证 node 在同一个二层网络上。</p>
+<h3 id="我怎么知道-pod-ip-在哪台机器上">我怎么知道 Pod IP 在哪台机器上？</h3>
+<p>在 Kubernetes 集群中，Pod IP 是一个 虚拟的、动态分配的地址。
+当一个数据包需要从一个 Pod 发送到另一个 Pod 时，网络系统必须知道：</p>
+<p><code>目标 Pod IP 实际运行在哪一台 Node 上？</code></p>
+<p>只有解决了这个问题，数据包才能被正确地转发到对应的节点。
+常见的实现思路主要有以下三种。</p>
+<p><strong>1.维护 Pod IP → Node 的映射关系</strong></p>
+<p>最直接的方式，是显式维护 Pod IP 与 Node 之间的对应关系。</p>
+<p>例如：</p>
+<ul>
+<li>将 Pod IP → Node IP 的映射存储到
+<ul>
+<li>数据库</li>
+<li>etcd</li>
+<li>Kubernetes CRD（自定义资源）</li>
+</ul>
+</li>
+<li>当需要转发流量时，先查询映射关系，再决定下一跳</li>
+</ul>
+<p>这种方式的优点是<strong>逻辑直观、可控性强</strong>，但缺点也很明显：</p>
+<ul>
+<li>Pod 创建、销毁频繁，映射关系变化快</li>
+<li>需要额外的控制面组件来维护一致性</li>
+<li>查询与同步本身会带来额外开销</li>
+</ul>
+<p>因此，这种方案在大规模集群中实现成本较高。</p>
+<p><strong>2.以 Node 为单位划分 Pod CIDR</strong></p>
+<p>另一种更常见、也更高效的方式，是<strong>按 Node 维度分配 Pod 网段</strong>。</p>
+<p>例如：</p>
+<ul>
+<li>Node A：172.16.100.0/26</li>
+<li>Node B：172.16.100.64/26</li>
+<li>Node C：172.16.100.128/26</li>
+</ul>
+<p>在这种模式下：</p>
+<ul>
+<li>每个 Node 只负责一个固定的 Pod CIDR</li>
+<li>只要看到目标 IP 落在哪个 CIDR 中，就能确定对应的 Node</li>
+<li>不需要维护单个 Pod 级别的映射关系</li>
+</ul>
+<p>这种方案的优势在于：</p>
+<ul>
+<li>路由规则简单</li>
+<li>查询效率高</li>
+<li>非常适合 Host-Gateway、直连路由 等网络模型</li>
+</ul>
+<p>这也是 Kubernetes 中 最常见的 Pod IP 定位方式。</p>
+<p><strong>3.通过 BGP 动态交换路由信息</strong></p>
+<p>在更复杂或规模更大的集群中，通常会引入 BGP（Border Gateway Protocol） 来动态分发路由。</p>
+<p>其核心思想是：</p>
+<ul>
+<li>每个 Node 将自己负责的 Pod CIDR 通过 BGP 广播出去</li>
+<li>其他 Node 或上游物理网络设备自动学习这些路由</li>
+<li>当 Pod 迁移或节点变化时，路由信息可以自动收敛</li>
+</ul>
+<p>这种方式的特点是：</p>
+<ul>
+<li>不需要集中维护映射关系</li>
+<li>路由自动学习、自动更新</li>
+<li>可与数据中心网络或云网络无缝打通</li>
+</ul>
+<p>像 Calico（BGP 模式） 就大量使用了这种方案。</p>
+<p>当然，代价是：</p>
+<ul>
+<li>对网络设备和运维能力要求较高</li>
+<li>排错和理解成本相对更大</li>
+</ul>
+<p>Calico encapsulation</p>
+<ul>
+<li>None： 纯路由</li>
+<li>IPIP</li>
+<li>VXLAN</li>
+<li>IPIPCrossSubnet</li>
+<li>VXLANCrossSubnet
+IPIPCrossSubnet 和 VXLANCrossSubnet 为同一网段的 node 用路由转发通信 ，否则使用 ipip （vxlan）</li>
+</ul>
+<h2 id="ebpf">eBPF</h2>
+<p><img src="/images/ebpf_netfilter_hooks.jpg" alt=""></p>
+<h3 id="为什么需要-ebpf-">为什么需要 eBPF ？</h3>
+<p>在传统的 Kubernetes 网络模型中，流量转发高度依赖内核的 Netfilter (iptables/nftables)。但随着集群规模的扩大，这种机制暴露了两个核心痛点：</p>
+<ol>
+<li>性能瓶颈：每一个数据包经过节点（Node）时，都需要在 Netfilter 和 Conntrack 复杂的规则链中逐一匹配。这种“全量遍历”在大规模 Service 环境下会带来显著的延迟。</li>
+<li>调试困难：iptables 规则像一个黑盒，在大流量场景下追踪一个包的去向极其痛苦，可观测性较差。</li>
+</ol>
+<h3 id="calico-在-vxlan-crosssubnet-模式下如何利用-ebpf">Calico 在 VXLAN (CrossSubnet) 模式下如何利用 eBPF？</h3>
+<p>在开启 eBPF 模式后，Calico 会绕过传统的 Netfilter 路径，直接在 tc (Traffic Control) hook （veth-pair host端网卡 egress） 点挂载 eBPF 程序，实现对 Pod 流量的“精准劫持”和快速转发。
+核心转发逻辑分解
+当一个 Pod 发出的数据包到达主机的 eBPF 程序时，它会进行以下“三步走”的逻辑判断：</p>
+<p><strong>第一步</strong>：判断是否为本地流量</p>
+<ul>
+<li>如果目标容器就在当前节点上，eBPF 直接将包重定向到对应的 veth pair</li>
+</ul>
+<p><strong>第二步</strong>：判断是否为同网段（二层直连）</p>
+<ul>
+<li>eBPF 会修改数据包的二层 MAC 地址，直接通过默认物理网卡发送出去。</li>
+</ul>
+<p><strong>第三步</strong>：跨网段转发（VXLAN 封包）</p>
+<ul>
+<li>eBPF 自动进行 UDP 封包（符合 VXLAN 格式）。</li>
+<li>外层封包格式
+<ul>
+<li>UDP 头部：目标端口通常为 4789（标准 VXLAN 端口）</li>
+<li>VXLAN 头部：包含 VNI（Virtual Network Identifier）</li>
+<li>外层 IP 头部：
+<ul>
+<li>源 IP：当前物理节点的网卡 IP</li>
+<li>目标 IP：目标 Pod 所在的远端物理节点网卡 IP。</li>
+</ul>
+</li>
+<li>外层 MAC 头部：
+<ul>
+<li>源 MAC：当前物理网卡的 MAC 地址。</li>
+<li>目标 MAC：下一跳（通常是本地网关）的 MAC 地址。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>封装完成后，直接将隧道包转交给物理网卡发出。</li>
+</ul>
+<h3 id="calico-felix-代码">calico felix 代码</h3>
+<p><img src="/images/calico-felix-ebpf.png" alt=""></p>
+<p>入口</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">/* calico_tc_main is the main function used in all of the tc programs.  It is specialised
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * for particular hook at build time based on the CALI_F build flags.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> */</span>
+</span></span><span style="display:flex;"><span><span style="color:#75af00">SEC</span><span style="color:#111">(</span><span style="color:#d88200">&#34;tc&#34;</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">int</span> <span style="color:#75af00">calico_tc_main</span><span style="color:#111">(</span><span style="color:#00a8c8">struct</span> <span style="color:#75af00">__sk_buff</span> <span style="color:#f92672">*</span><span style="color:#75af00">skb</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 检查是否为环回流量</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">if</span> <span style="color:#111">(</span><span style="color:#75af00">CALI_F_LO</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#75af00">CALI_F_TO_HOST</span><span style="color:#111">)</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">/* Do nothing, it is a packet that just looped around. */</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#00a8c8">return</span> <span style="color:#75af00">TC_ACT_UNSPEC</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span> 
+</span></span><span style="display:flex;"><span>    <span style="color:#75af00">finalize</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">return</span> <span style="color:#75af00">forward_or_drop</span><span style="color:#111">(</span><span style="color:#75af00">ctx</span><span style="color:#111">);</span>
+</span></span><span style="display:flex;"><span>     
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-GO" data-lang="GO"><span style="display:flex;"><span><span style="color:#75715e">/* 尝试将数据包重定向到同节点的 Pod（peer） */</span>
+</span></span><span style="display:flex;"><span><span style="color:#75af00">static</span> <span style="color:#75af00">CALI_BPF_INLINE</span> <span style="color:#00a8c8">int</span> <span style="color:#75af00">try_redirect_to_peer</span><span style="color:#111">(</span><span style="color:#00a8c8">struct</span> <span style="color:#75af00">cali_tc_ctx</span> <span style="color:#f92672">*</span><span style="color:#75af00">ctx</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 检查是否启用 peer 重定向</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">bool</span> <span style="color:#75af00">redirect_peer</span> <span style="color:#111">=</span> <span style="color:#75af00">GLOBAL_FLAGS</span> <span style="color:#f92672">&amp;</span> <span style="color:#75af00">CALI_GLOBALS_REDIRECT_PEER</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// ......</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">rc</span> <span style="color:#111">=</span> <span style="color:#75af00">bpf_redirect_peer</span><span style="color:#111">(</span><span style="color:#75af00">state</span><span style="color:#f92672">-</span><span style="color:#111">&gt;</span><span style="color:#75af00">ct_result</span><span style="color:#111">.</span><span style="color:#75af00">ifindex_fwd</span><span style="color:#111">,</span> <span style="color:#ae81ff">0</span><span style="color:#111">);</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">//......</span>
+</span></span><span style="display:flex;"><span>         
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-GO" data-lang="GO"><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// 1. 执行 FIB  查找</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">*</span><span style="color:#75af00">fib_params</span><span style="color:#111">(</span><span style="color:#75af00">ctx</span><span style="color:#111">)</span> <span style="color:#111">=</span> <span style="color:#111">(</span><span style="color:#00a8c8">struct</span> <span style="color:#75af00">bpf_fib_lookup</span><span style="color:#111">)</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">.</span><span style="color:#75af00">family</span> <span style="color:#111">=</span> <span style="color:#ae81ff">2</span><span style="color:#111">,</span>  <span style="color:#75715e">// AF_INET</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">.</span><span style="color:#75af00">ifindex</span> <span style="color:#111">=</span> <span style="color:#75af00">ctx</span><span style="color:#f92672">-</span><span style="color:#111">&gt;</span><span style="color:#75af00">skb</span><span style="color:#f92672">-</span><span style="color:#111">&gt;</span><span style="color:#75af00">ifindex</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">.</span><span style="color:#75af00">ipv4_src</span> <span style="color:#111">=</span> <span style="color:#75af00">state</span><span style="color:#f92672">-</span><span style="color:#111">&gt;</span><span style="color:#75af00">ip_src</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">.</span><span style="color:#75af00">ipv4_dst</span> <span style="color:#111">=</span> <span style="color:#75af00">state</span><span style="color:#f92672">-</span><span style="color:#111">&gt;</span><span style="color:#75af00">ip_dst</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">};</span>
+</span></span><span style="display:flex;"><span> 
+</span></span><span style="display:flex;"><span><span style="color:#75af00">rc</span> <span style="color:#111">=</span> <span style="color:#75af00">bpf_fib_lookup</span><span style="color:#111">(</span><span style="color:#75af00">ctx</span><span style="color:#f92672">-</span><span style="color:#111">&gt;</span><span style="color:#75af00">skb</span><span style="color:#111">,</span> <span style="color:#75af00">fib_params</span><span style="color:#111">(</span><span style="color:#75af00">ctx</span><span style="color:#111">),</span> <span style="color:#75af00">sizeof</span><span style="color:#111">(</span><span style="color:#00a8c8">struct</span> <span style="color:#75af00">bpf_fib_lookup</span><span style="color:#111">),</span>
+</span></span><span style="display:flex;"><span>                    <span style="color:#75af00">BPF_FIB_LOOKUP_SKIP_NEIGH</span><span style="color:#111">);</span>
+</span></span><span style="display:flex;"><span> 
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// 2. 赋值</span>
+</span></span><span style="display:flex;"><span><span style="color:#75af00">nh_params</span><span style="color:#111">.</span><span style="color:#75af00">ipv4_nh</span> <span style="color:#111">=</span> <span style="color:#75af00">fib_params</span><span style="color:#111">(</span><span style="color:#75af00">ctx</span><span style="color:#111">)</span><span style="color:#f92672">-</span><span style="color:#111">&gt;</span><span style="color:#75af00">ipv4_dst</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// 3. 使用 bpf 函数直接转发</span>
+</span></span><span style="display:flex;"><span><span style="color:#75af00">rc</span> <span style="color:#111">=</span> <span style="color:#75af00">bpf_redirect_neigh</span><span style="color:#111">(</span><span style="color:#75af00">fib_params</span><span style="color:#111">(</span><span style="color:#75af00">ctx</span><span style="color:#111">)</span><span style="color:#f92672">-</span><span style="color:#111">&gt;</span><span style="color:#75af00">ifindex</span><span style="color:#111">,</span> <span style="color:#f92672">&amp;</span><span style="color:#75af00">nh_params</span><span style="color:#111">,</span> <span style="color:#f92672">...</span><span style="color:#111">);</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-GO" data-lang="GO"><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// 1. VXLAN 封装</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">if</span> <span style="color:#111">(</span><span style="color:#75af00">vxlan_encap</span><span style="color:#111">(</span><span style="color:#75af00">ctx</span><span style="color:#111">,</span> <span style="color:#f92672">&amp;</span><span style="color:#75af00">STATE</span><span style="color:#f92672">-</span><span style="color:#111">&gt;</span><span style="color:#75af00">ip_src</span><span style="color:#111">,</span> <span style="color:#f92672">&amp;</span><span style="color:#75af00">STATE</span><span style="color:#f92672">-</span><span style="color:#111">&gt;</span><span style="color:#75af00">ip_dst</span><span style="color:#111">,</span> <span style="color:#75af00">vxlan_src_port</span><span style="color:#111">))</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75af00">deny_reason</span><span style="color:#111">(</span><span style="color:#75af00">ctx</span><span style="color:#111">,</span> <span style="color:#75af00">CALI_REASON_ENCAP_FAIL</span><span style="color:#111">);</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">goto</span> <span style="color:#75af00">deny</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span> 
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// 2. 设置隧道元数据</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">struct</span> <span style="color:#75af00">bpf_tunnel_key</span> <span style="color:#75af00">key</span> <span style="color:#111">=</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">.</span><span style="color:#75af00">tunnel_id</span> <span style="color:#111">=</span> <span style="color:#75af00">OVERLAY_TUNNEL_ID</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">.</span><span style="color:#75af00">remote_ipv4</span> <span style="color:#111">=</span> <span style="color:#75af00">bpf_htonl</span><span style="color:#111">(</span><span style="color:#75af00">dest_rt</span><span style="color:#f92672">-</span><span style="color:#111">&gt;</span><span style="color:#75af00">next_hop</span><span style="color:#111">),</span> <span style="color:#75715e">// 下一跳 VTEP IP</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">};</span>
+</span></span><span style="display:flex;"><span><span style="color:#75af00">bpf_skb_set_tunnel_key</span><span style="color:#111">(</span><span style="color:#75af00">ctx</span><span style="color:#f92672">-</span><span style="color:#111">&gt;</span><span style="color:#75af00">skb</span><span style="color:#111">,</span> <span style="color:#f92672">&amp;</span><span style="color:#75af00">key</span><span style="color:#111">,</span> <span style="color:#75af00">size</span><span style="color:#111">,</span> <span style="color:#75af00">BPF_F_ZERO_CSUM_TX</span><span style="color:#111">);</span>
+</span></span><span style="display:flex;"><span> 
+</span></span><span style="display:flex;"><span> 
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// 3. 重定向到物理网卡</span>
+</span></span><span style="display:flex;"><span><span style="color:#75af00">rc</span> <span style="color:#111">=</span> <span style="color:#75af00">bpf_redirect</span><span style="color:#111">(</span><span style="color:#75af00">state</span><span style="color:#f92672">-</span><span style="color:#111">&gt;</span><span style="color:#75af00">ct_result</span><span style="color:#111">.</span><span style="color:#75af00">ifindex_fwd</span><span style="color:#111">,</span> <span style="color:#ae81ff">0</span><span style="color:#111">);</span>
+</span></span><span style="display:flex;"><span> 
+</span></span><span style="display:flex;"><span><span style="color:#75715e">/* VXLAN 封装函数
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * ctx: 上下文
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * ip_src: 外层源 IP
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * ip_dst: 外层目标 IP
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * src_port: VXLAN 源端口
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> */</span>
+</span></span><span style="display:flex;"><span><span style="color:#75af00">static</span> <span style="color:#75af00">CALI_BPF_INLINE</span> <span style="color:#00a8c8">int</span> <span style="color:#75af00">vxlan_encap</span><span style="color:#111">(</span><span style="color:#00a8c8">struct</span> <span style="color:#75af00">cali_tc_ctx</span> <span style="color:#f92672">*</span><span style="color:#75af00">ctx</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>                                       <span style="color:#75af00">__be32</span> <span style="color:#f92672">*</span><span style="color:#75af00">ip_src</span><span style="color:#111">,</span> <span style="color:#75af00">__be32</span> <span style="color:#f92672">*</span><span style="color:#75af00">ip_dst</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>                                       <span style="color:#75af00">__u16</span> <span style="color:#75af00">src_port</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#75715e">// ....</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span></code></pre></div>]]></content:encoded><category>cloud</category><category>cni</category><category>kubernetes</category><category>network</category></item><item><title>kube-apiserver 高可用，keepalived + haproxy</title><link>https://daemon365.dev/post/cloud/keepalived_haproxy/</link><pubDate>Sat, 02 Nov 2024 17:42:54 +0800</pubDate><guid>https://daemon365.dev/post/cloud/keepalived_haproxy/</guid><description>&lt;h2 id="为什么要做高可用"&gt;为什么要做高可用&lt;/h2&gt;
 &lt;p&gt;在生产环境中，kubernetes 集群中会多多个 master 节点，每个 master 节点上都会部署 kube-apiserver 服务，实现高可用。但是 client 访问 kube-apiserver 时，需要指定 ip 或者域名，这样会出现单点故障。官方推荐的做法是使用一个负载均衡器，将多个 kube-apiserver 服务负载均衡，实现高可用，但很多时候我们是没有这个条件的。这时候就得想想办法了，比如 nignx 转发，但是 nginx 也是单点。域名的方式，但是这种方式生效时间较长，不太适合紧急情况。所以这里介绍一种使用 keepalived + haproxy 的方式实现 kube-apiserver 的高可用。这是一共公用 IP 的方式，当主节点宕机时，VIP 会自动切换到备节点，实现高可用。&lt;/p&gt;</description><content:encoded><![CDATA[<h2 id="为什么要做高可用">为什么要做高可用</h2>
 <p>在生产环境中，kubernetes 集群中会多多个 master 节点，每个 master 节点上都会部署 kube-apiserver 服务，实现高可用。但是 client 访问 kube-apiserver 时，需要指定 ip 或者域名，这样会出现单点故障。官方推荐的做法是使用一个负载均衡器，将多个 kube-apiserver 服务负载均衡，实现高可用，但很多时候我们是没有这个条件的。这时候就得想想办法了，比如 nignx 转发，但是 nginx 也是单点。域名的方式，但是这种方式生效时间较长，不太适合紧急情况。所以这里介绍一种使用 keepalived + haproxy 的方式实现 kube-apiserver 的高可用。这是一共公用 IP 的方式，当主节点宕机时，VIP 会自动切换到备节点，实现高可用。</p>
 <h2 id="环境准备">环境准备</h2>
@@ -194,7 +599,7 @@ backend kube-apiserver
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>kubeadm join 192.168.31.230:16443 --token rxblci.ddh60vl370wjgtn7         --discovery-token-ca-cert-hash sha256:d712016d5b8ba4ae5c4a1bda8b6ab1944c13a04757d2c488dd0aefcfd1af0157   --certificate-key    c398d693c6ce9b664634c9b670f013da3010580c00bd444caf7d0a5a81e803f5         --control-plane --v<span style="color:#f92672">=</span><span style="color:#ae81ff">10</span>
 </span></span></code></pre></div><p>worker 加入集群</p>
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>kubeadm join 192.168.31.230:16443 --token rxblci.ddh60vl370wjgtn7 <span style="color:#8045ff">\
-</span></span></span><span style="display:flex;"><span><span style="color:#8045ff"></span>        --discovery-token-ca-cert-hash sha256:d712016d5b8ba4ae5c4a1bda8b6ab1944c13a04757d2c488dd0aefcfd1af0157
+</span></span></span><span style="display:flex;"><span>        --discovery-token-ca-cert-hash sha256:d712016d5b8ba4ae5c4a1bda8b6ab1944c13a04757d2c488dd0aefcfd1af0157
 </span></span></code></pre></div><p>查看集群状态</p>
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>kubectl get node
 </span></span><span style="display:flex;"><span>NAME      STATUS     ROLES           AGE     VERSION
@@ -1585,11 +1990,11 @@ BoltDB 的写操作都是在内存中进行，若事务未 commit 时出错，�
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id="watch-的-api"&gt;watch 的 api&lt;/h2&gt;
 &lt;p&gt;etcd watch api 是由 grpc stream 实现的，客户端通过 grpc stream 发送 watch 请求，etcd 会将 key 的变化通过 stream 返回给客户端。&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-protobuf" data-lang="protobuf"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;rpc&lt;/span&gt; &lt;span style="color:#111"&gt;Watch&lt;/span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#111"&gt;stream&lt;/span&gt; &lt;span style="color:#111"&gt;WatchRequest&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;returns&lt;/span&gt; &lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#111"&gt;stream&lt;/span&gt; &lt;span style="color:#111"&gt;WatchResponse&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;option&lt;/span&gt; &lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#111"&gt;google.api.http&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;&lt;/span&gt; &lt;span style="color:#111"&gt;post&lt;/span&gt;&lt;span style="color:#f92672"&gt;:&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;/v3/watch&amp;#34;&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;&lt;/span&gt; &lt;span style="color:#111"&gt;body&lt;/span&gt;&lt;span style="color:#f92672"&gt;:&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;*&amp;#34;&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;&lt;/span&gt; &lt;span style="color:#111"&gt;};&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;&lt;/span&gt;&lt;span style="color:#111"&gt;}&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#00a8c8"&gt;option&lt;/span&gt; &lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#111"&gt;google.api.http&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;post&lt;/span&gt;&lt;span style="color:#f92672"&gt;:&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;/v3/watch&amp;#34;&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;body&lt;/span&gt;&lt;span style="color:#f92672"&gt;:&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;*&amp;#34;&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;};&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#111"&gt;}&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id="api-实现"&gt;api 实现&lt;/h2&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-go" data-lang="go"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;func&lt;/span&gt; &lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#75af00"&gt;ws&lt;/span&gt; &lt;span style="color:#f92672"&gt;*&lt;/span&gt;&lt;span style="color:#75af00"&gt;watchServer&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#75af00"&gt;Watch&lt;/span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#75af00"&gt;stream&lt;/span&gt; &lt;span style="color:#75af00"&gt;pb&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;Watch_WatchServer&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#75af00"&gt;err&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;error&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;sws&lt;/span&gt; &lt;span style="color:#f92672"&gt;:=&lt;/span&gt; &lt;span style="color:#75af00"&gt;serverWatchStream&lt;/span&gt;&lt;span style="color:#111"&gt;{&lt;/span&gt;
@@ -1670,11 +2075,11 @@ BoltDB 的写操作都是在内存中进行，若事务未 commit 时出错，�
 </span></span></code></pre></div><h2 id="watch-的-api">watch 的 api</h2>
 <p>etcd watch api 是由 grpc stream 实现的，客户端通过 grpc stream 发送 watch 请求，etcd 会将 key 的变化通过 stream 返回给客户端。</p>
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-protobuf" data-lang="protobuf"><span style="display:flex;"><span><span style="color:#00a8c8">rpc</span> <span style="color:#111">Watch</span><span style="color:#111">(</span><span style="color:#111">stream</span> <span style="color:#111">WatchRequest</span><span style="color:#111">)</span> <span style="color:#00a8c8">returns</span> <span style="color:#111">(</span><span style="color:#111">stream</span> <span style="color:#111">WatchResponse</span><span style="color:#111">)</span> <span style="color:#111">{</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>      <span style="color:#00a8c8">option</span> <span style="color:#111">(</span><span style="color:#111">google.api.http</span><span style="color:#111">)</span> <span style="color:#f92672">=</span> <span style="color:#111">{</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>        <span style="color:#111">post</span><span style="color:#f92672">:</span> <span style="color:#d88200">&#34;/v3/watch&#34;</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>        <span style="color:#111">body</span><span style="color:#f92672">:</span> <span style="color:#d88200">&#34;*&#34;</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    <span style="color:#111">};</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#111">}</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span>      <span style="color:#00a8c8">option</span> <span style="color:#111">(</span><span style="color:#111">google.api.http</span><span style="color:#111">)</span> <span style="color:#f92672">=</span> <span style="color:#111">{</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span>        <span style="color:#111">post</span><span style="color:#f92672">:</span> <span style="color:#d88200">&#34;/v3/watch&#34;</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span>        <span style="color:#111">body</span><span style="color:#f92672">:</span> <span style="color:#d88200">&#34;*&#34;</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span>    <span style="color:#111">};</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#111">}</span><span style="color:#960050;background-color:#1e0010">
 </span></span></span></code></pre></div><h2 id="api-实现">api 实现</h2>
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#111">(</span><span style="color:#75af00">ws</span> <span style="color:#f92672">*</span><span style="color:#75af00">watchServer</span><span style="color:#111">)</span> <span style="color:#75af00">Watch</span><span style="color:#111">(</span><span style="color:#75af00">stream</span> <span style="color:#75af00">pb</span><span style="color:#111">.</span><span style="color:#75af00">Watch_WatchServer</span><span style="color:#111">)</span> <span style="color:#111">(</span><span style="color:#75af00">err</span> <span style="color:#00a8c8">error</span><span style="color:#111">)</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">sws</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">serverWatchStream</span><span style="color:#111">{</span>
@@ -6015,130 +6420,7 @@ PV（PersistentVolume）是集群中的一块存储资源，可以是 NFS、iSCS
 </span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>
 </span></span></code></pre></div><p>从代码中可以看到 EventPLEG 可以从 runtime 获取容器事件。</p>
-]]></content:encoded><category>cloud</category><category>kubelet</category><category>kubernetes</category><category>源码分析</category><category>golang</category></item><item><title>kubernetes CNI(Container Network Inferface)</title><link>https://daemon365.dev/post/cloud/kubernetes_cni_container_network_inferface/</link><pubDate>Sat, 20 Apr 2024 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/kubernetes_cni_container_network_inferface/</guid><description>&lt;h2 id="为什么需要-cni"&gt;为什么需要 CNI&lt;/h2&gt;
-&lt;p&gt;在 kubernetes 中，pod 的网络是使用 network namespace 隔离的，但是我们有时又需要互相访问网络，这就需要一个网络插件来实现 pod 之间的网络通信。CNI 就是为了解决这个问题而诞生的。CNI 是 container network interface 的缩写，它是一个规范，定义了容器运行时如何配置网络。CNI 插件是实现了 CNI 规范的二进制文件，它可以被容器运行时调用，来配置容器的网络。&lt;/p&gt;
-&lt;h2 id="docker-网络"&gt;Docker 网络&lt;/h2&gt;
-&lt;h3 id="基础"&gt;基础&lt;/h3&gt;
-&lt;p&gt;计算机五层网络如下：&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://daemon365.dev/images/4bcdd10b-42da-470b-91b0-d87746410aeb.png" alt=""&gt;&lt;/p&gt;
-&lt;p&gt;如果我们想把 pod 中的网络对外，首先想到的就是七层代理，比如nginx，但是我们并不知道 pod 里的网络一定是 http，甚至他可能不是tcp。所以我们像做一些网络操作，就不能在五层做了，只能在二三四层做。&lt;/p&gt;
-&lt;h3 id="docker-实验"&gt;Docker 实验&lt;/h3&gt;
-&lt;p&gt;当我们在物理机上启动 docker daemon 不需要启动任何容器的时候，使用 ip a 命令查看网卡，发现多了一个 docker0&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;4: docker0: &amp;lt;NO-CARRIER,BROADCAST,MULTICAST,UP&amp;gt; mtu &lt;span style="color:#ae81ff"&gt;1500&lt;/span&gt; qdisc noqueue state DOWN group default
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; link/ether 02:42:9b:65:e1:01 brd ff:ff:ff:ff:ff:ff
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; inet 172.17.0.1/16 brd 172.17.255.255 scope global docker0
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; valid_lft forever preferred_lft forever
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;docker0 是一个 linux Bridge 设备，这个可以理解成一个虚拟的交换机，用来做二层网络的转发。当我们启动一个容器的时候，docker 会为这个容器创建一个 veth pair 设备，一个端口挂载在容器的 network namespace 中，另一个端口挂载在 docker0 上。这样容器就可以和 docker0 上的其他容器通信了。&lt;/p&gt;</description><content:encoded><![CDATA[<h2 id="为什么需要-cni">为什么需要 CNI</h2>
-<p>在 kubernetes 中，pod 的网络是使用 network namespace 隔离的，但是我们有时又需要互相访问网络，这就需要一个网络插件来实现 pod 之间的网络通信。CNI 就是为了解决这个问题而诞生的。CNI 是 container network interface 的缩写，它是一个规范，定义了容器运行时如何配置网络。CNI 插件是实现了 CNI 规范的二进制文件，它可以被容器运行时调用，来配置容器的网络。</p>
-<h2 id="docker-网络">Docker 网络</h2>
-<h3 id="基础">基础</h3>
-<p>计算机五层网络如下：</p>
-<p><img src="/images/4bcdd10b-42da-470b-91b0-d87746410aeb.png" alt=""></p>
-<p>如果我们想把 pod 中的网络对外，首先想到的就是七层代理，比如nginx，但是我们并不知道 pod 里的网络一定是 http，甚至他可能不是tcp。所以我们像做一些网络操作，就不能在五层做了，只能在二三四层做。</p>
-<h3 id="docker-实验">Docker 实验</h3>
-<p>当我们在物理机上启动 docker daemon 不需要启动任何容器的时候，使用 ip a 命令查看网卡，发现多了一个 docker0</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>4: docker0: &lt;NO-CARRIER,BROADCAST,MULTICAST,UP&gt; mtu <span style="color:#ae81ff">1500</span> qdisc noqueue state DOWN group default
-</span></span><span style="display:flex;"><span>    link/ether 02:42:9b:65:e1:01 brd ff:ff:ff:ff:ff:ff
-</span></span><span style="display:flex;"><span>    inet 172.17.0.1/16 brd 172.17.255.255 scope global docker0
-</span></span><span style="display:flex;"><span>       valid_lft forever preferred_lft forever
-</span></span></code></pre></div><p>docker0 是一个 linux Bridge 设备，这个可以理解成一个虚拟的交换机，用来做二层网络的转发。当我们启动一个容器的时候，docker 会为这个容器创建一个 veth pair 设备，一个端口挂载在容器的 network namespace 中，另一个端口挂载在 docker0 上。这样容器就可以和 docker0 上的其他容器通信了。</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>docker run -d --rm -it ubuntu:22.04 sleep <span style="color:#ae81ff">3000</span>
-</span></span></code></pre></div><p>在物理机上查看 ip a</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>8: veth6bc75d9@if7: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu <span style="color:#ae81ff">1500</span> qdisc noqueue master docker0 state UP group default
-</span></span><span style="display:flex;"><span>    link/ether d6:87:ca:5c:54:51 brd ff:ff:ff:ff:ff:ff link-netnsid <span style="color:#ae81ff">0</span>
-</span></span><span style="display:flex;"><span>    inet6 fe80::d487:caff:fe5c:5451/64 scope link
-</span></span><span style="display:flex;"><span>       valid_lft forever preferred_lft forever
-</span></span></code></pre></div><p>docker 容器里面 ip a</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>7: eth0@if8: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu <span style="color:#ae81ff">1500</span> qdisc noqueue state UP group default
-</span></span><span style="display:flex;"><span>    link/ether 02:42:ac:11:00:02 brd ff:ff:ff:ff:ff:ff link-netnsid <span style="color:#ae81ff">0</span>
-</span></span><span style="display:flex;"><span>    inet 172.17.0.2/16 brd 172.17.255.255 scope global eth0
-</span></span><span style="display:flex;"><span>       valid_lft forever preferred_lft forever
-</span></span></code></pre></div><p>再启动一个 docker</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>docker run --name <span style="color:#111">test</span> -d --rm -it ubuntu:22.04 sleep <span style="color:#ae81ff">3000</span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e"># ip a</span>
-</span></span><span style="display:flex;"><span>9: eth0@if10: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu <span style="color:#ae81ff">1500</span> qdisc noqueue state UP group default
-</span></span><span style="display:flex;"><span>    link/ether 02:42:ac:11:00:03 brd ff:ff:ff:ff:ff:ff link-netnsid <span style="color:#ae81ff">0</span>
-</span></span><span style="display:flex;"><span>    inet 172.17.0.3/16 brd 172.17.255.255 scope global eth0
-</span></span><span style="display:flex;"><span>       valid_lft forever preferred_lft forever
-</span></span></code></pre></div><p>这样两个容器就可以通过 docker0 通信了。</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>root@b19a3dc4b32d:/# ping  172.17.0.2
-</span></span><span style="display:flex;"><span>PING 172.17.0.2 <span style="color:#f92672">(</span>172.17.0.2<span style="color:#f92672">)</span> 56<span style="color:#f92672">(</span>84<span style="color:#f92672">)</span> bytes of data.
-</span></span><span style="display:flex;"><span><span style="color:#ae81ff">64</span> bytes from 172.17.0.2: <span style="color:#111">icmp_seq</span><span style="color:#f92672">=</span><span style="color:#ae81ff">1</span> <span style="color:#111">ttl</span><span style="color:#f92672">=</span><span style="color:#ae81ff">64</span> <span style="color:#111">time</span><span style="color:#f92672">=</span>0.055 ms
-</span></span></code></pre></div><h3 id="通信方式">通信方式</h3>
-<p><img src="/images/a6754f75-f177-42d3-b9d3-0d362ef038a9.png" alt=""></p>
-<h2 id="cni-网络">CNI 网络</h2>
-<p>当两个 pod 在同一 node 上的时候，我们可以使用像上述 docker 的 bridge 的方式通信是没问题的。但是 kubernetes 是这个多节点的集群，当 pod 在不同的 node 上的时候，直接通信肯定不行了，这时候我们需要一些办法来解决这个问题。</p>
-<h3 id="udp-封包">UDP 封包</h3>
-<p>当 pod 在不同节点上的时候，两个 pod 不可以直接通信，那最简单的方式就是通过 udp 封包，把整个网络包使用 udp 封包起来，然后第二个节点再解包，然后发给网桥。</p>
-<p><img src="/images/2fca7256-2cac-436f-a379-4e12891fac39.png" alt=""></p>
-<p>整个过程就是 node1 上的 pod 把网络包封装，然后由于 <code>process</code> 再封装发给 node2，node2 再解包，然后发给 pod2。</p>
-<p>process 是 cni 实现的进程，很多 cni 都实现 udp 封包的方式，比如 flannel,cailco 等。</p>
-<p>至于我们怎么知道目标 ip （pod 的 ip） 是在哪台主机上，这个就有很多中方式了，比如把每台机器发配 ip 分配不同的网段，甚至于把这些对应关系写到 etcd 中。</p>
-<h3 id="vxlan">VXLAN</h3>
-<p>上述的 udp 封包方式，是可以满足基本需求但是。cni 创建的 process 进程是一个用户态的进程，每个包要在 node1 上从内核态 copy 到用户态，然后再封包，再 copy 到内核态，再发给 node2，再从内核态 copy 到用户态，再解包，再 copy 到内核态，再发给 pod2。这样的方式效率很低。所以我们使用一种更加高效的方式，就是 vxlan。</p>
-<p><strong>VXLAN 是什么?</strong></p>
-<p>VXLAN（Virtual Extensible LAN）是一种网络虚拟化技术，用于解决大规模云计算环境中的网络隔离、扩展性和灵活性问题。VXLAN 允许网络工程师在现有的网络架构上创建一个逻辑网络层，这可以使得数据中心的网络设计变得更加灵活和可扩展。</p>
-<p><strong>为什么性能会高？</strong></p>
-<p>VXLAN 是在内核态实现的，原理和 udp 封包一样，只不过是在内核态实现的，数据包不会在内核态和用户态之间 copy，所以效率会高很多。</p>
-<h3 id="ip-路由">ip 路由</h3>
-<p>就算是 vxlan，也是需要封包和解包的，这样的方式效率还是不够高，所以我们可以使用 ip 路由的方式。</p>
-<p>ip 路由故名思意，就是使用路由表来实现 pod 之间的通信。这样的方式效率最高，但是配置比较复杂，需要配置路由表。</p>
-<p>而且路由表跳转是二层网络实现的，所以又要要求所有 node 在同一个二层网络中。</p>
-<p><img src="/images/7be8c8c9-a60b-4717-9f5a-a3e6f44ebed9.png" alt=""></p>
-<p>查看 node1 上的 container 的是设备</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-BASH" data-lang="BASH"><span style="display:flex;"><span>ip a
-</span></span><span style="display:flex;"><span>2: eth0@if10: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu <span style="color:#ae81ff">1500</span> qdisc noqueue state UP group default qlen <span style="color:#ae81ff">1000</span>
-</span></span><span style="display:flex;"><span>    link/ether 66:5e:d8:8d:86:ba brd ff:ff:ff:ff:ff:ff link-netnsid <span style="color:#ae81ff">0</span>
-</span></span><span style="display:flex;"><span>    inet 172.10.184.69/32 scope global eth0
-</span></span><span style="display:flex;"><span>       valid_lft forever preferred_lft forever
-</span></span><span style="display:flex;"><span>    inet6 fe80::645e:d8ff:fe8d:86ba/64 scope link
-</span></span><span style="display:flex;"><span>       valid_lft forever preferred_lft forever
-</span></span></code></pre></div><p>这个和主机上是对应的是一个 veth pair 设备，一个端口挂载在容器的 network namespace 中，一边挂载在主机上。</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># 主机</span>
-</span></span><span style="display:flex;"><span>ip a
-</span></span><span style="display:flex;"><span>10: calia78b8700057@if2: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu <span style="color:#ae81ff">1500</span> qdisc noqueue state UP group default qlen <span style="color:#ae81ff">1000</span>
-</span></span><span style="display:flex;"><span>    link/ether ee:ee:ee:ee:ee:ee brd ff:ff:ff:ff:ff:ff link-netns cni-0da431c8-dd8b-ca68-55e6-40b04acf78d6
-</span></span><span style="display:flex;"><span>    inet6 fe80::ecee:eeff:feee:eeee/64 scope link
-</span></span><span style="display:flex;"><span>       valid_lft forever preferred_lft forever
-</span></span></code></pre></div><p>当 pod 中的数据包来到主机 查看 node1 上的路由表 会命中一下这条路由 这条的意思是跳到<code>192.168.229.102</code>节点使用 ens33 设备</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>ip r
-</span></span><span style="display:flex;"><span>172.10.190.0/26 via 192.168.229.102 dev ens33 proto bird
-</span></span></code></pre></div><p>当 数据包来到 node2 上的时候 我们看下 node2 的路由表</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-BASH" data-lang="BASH"><span style="display:flex;"><span>ip r
-</span></span><span style="display:flex;"><span>172.10.190.2 dev calie28ee63d6b0 scope link
-</span></span><span style="display:flex;"><span>ip a
-</span></span><span style="display:flex;"><span>7: calie28ee63d6b0@if2: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu <span style="color:#ae81ff">1500</span> qdisc noqueue state UP group default qlen <span style="color:#ae81ff">1000</span>
-</span></span><span style="display:flex;"><span>    link/ether ee:ee:ee:ee:ee:ee brd ff:ff:ff:ff:ff:ff link-netns cni-dd892c92-1826-f648-2b8c-d22618311ca9
-</span></span><span style="display:flex;"><span>    inet6 fe80::ecee:eeff:feee:eeee/64 scope link
-</span></span><span style="display:flex;"><span>       valid_lft forever preferred_lft forever
-</span></span></code></pre></div><p>这个设备是 veth pair 设备，对应的容器内的</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-BASH" data-lang="BASH"><span style="display:flex;"><span>ip a
-</span></span><span style="display:flex;"><span>2: eth0@if7: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu <span style="color:#ae81ff">1500</span> qdisc noqueue state UP group default qlen <span style="color:#ae81ff">1000</span>
-</span></span><span style="display:flex;"><span>    link/ether fa:a6:2f:97:58:28 brd ff:ff:ff:ff:ff:ff link-netnsid <span style="color:#ae81ff">0</span>
-</span></span><span style="display:flex;"><span>    inet 172.10.190.2/32 scope global eth0
-</span></span><span style="display:flex;"><span>       valid_lft forever preferred_lft forever
-</span></span><span style="display:flex;"><span>    inet6 fe80::f8a6:2fff:fe97:5828/64 scope link
-</span></span><span style="display:flex;"><span>       valid_lft forever preferred_lft forever
-</span></span></code></pre></div><p>这样node2上的 172.10.190.2 pod 就可以收到数据包了。</p>
-<h4 id="路由跳转">路由跳转</h4>
-<p>路由跳转是怎么实现的？</p>
-<p>路由跳转是通过路由表来实现的，它作用在二层上，所以当跳转的时候，直接修改数据包的目标 mac 地址（如果知道的话是使用 ARP 协议获得）。</p>
-<p>所以当我们访问百度的时候，获得百度的ip的时候，数据包会经过很多路由器，每个路由器都会修改数据包的目标 mac 地址，这样数据包就可以到达百度的服务器了。</p>
-<h4 id="felix">Felix</h4>
-<p>那么主机上的路由表是怎么来的呢？</p>
-<p>这个就是 cni 的实现了，cni 会调用 felix 这个进程，felix 会根据 cni 的配置来配置路由表。</p>
-<h4 id="bgp">BGP</h4>
-<p>那么 node1 怎么知道对应的 pod ip 在哪个 node 上呢？</p>
-<p>这个就是 BGP 协议了，BGP 是一个路由协议，用来告诉 node1 对应的 pod ip 在哪个 node 上。</p>
-<p>这个协议很重，之前都是用到互联网上，比如我们刚才距离的百度的时候，经过那么多路由器，每个路由器怎么知道要跳到哪，他们之间就是通过 BGP 协议来告诉对方自己的路由表，再经过一系列的学习优化。</p>
-<h3 id="ip-in-ip">ip in ip</h3>
-<p>刚才也说过了，ip 路由是最高效的，是因为它作用在二层网络上，这就需要保证所有的 node 在同一个二层网络上。但是有时候我们的 node 不在同一个二层网络上，这时候我们可以使用 ip in ip。</p>
-<p>简单来说就是如果 node 之间在一个二层网络上，那么就直接使用 ip 路由，如果不在，那么就使用 ip in ip，把数据包封装起来，然后再发给对应的 node。</p>
-<p>ip-in-ip 是一种隧道技术，它将一个 IP 数据包封装在另一个 IP 数据包中，这样就可以在一个 IP 网络上传输另一个 IP 网络的数据包。</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>172.10.180.0/24 via 192.168.228.28 tunl0
-</span></span></code></pre></div><p><img src="/images/62ebd840-1785-46f6-bd04-7b4e78c8cc0b.png" alt=""></p>
-<p>这个只是在源数据包的三层上再封装一层，三层数据包和二层数据包。这样性能方面稍微比使用了 udp 的 vxlan 要好一点。但是最好还是避免使用ip in ip, 尽量保证 node 在同一个二层网络上。</p>
-]]></content:encoded><category>cloud</category><category>cni</category><category>kubernetes</category><category>network</category></item><item><title>kubernetes client-go功能介绍</title><link>https://daemon365.dev/post/cloud/kubernetes_client_go_function_introduction/</link><pubDate>Fri, 08 Mar 2024 17:11:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/kubernetes_client_go_function_introduction/</guid><description>&lt;h2 id="原文地址"&gt;原文地址&lt;/h2&gt;
+]]></content:encoded><category>cloud</category><category>kubelet</category><category>kubernetes</category><category>源码分析</category><category>golang</category></item><item><title>kubernetes client-go功能介绍</title><link>https://daemon365.dev/post/cloud/kubernetes_client_go_function_introduction/</link><pubDate>Fri, 08 Mar 2024 17:11:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/kubernetes_client_go_function_introduction/</guid><description>&lt;h2 id="原文地址"&gt;原文地址&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://haiyux.cc/2023/02/26/k8s-client-go/"&gt;https://haiyux.cc/2023/02/26/k8s-client-go/&lt;/a&gt;&lt;/p&gt;
 &lt;h2 id="client-go是什么"&gt;client-go是什么？&lt;/h2&gt;
 &lt;p&gt;client-go是Kubernetes官方提供的Go语言客户端库，用于与Kubernetes API服务器交互。使用client-go，您可以编写Go语言程序来创建、修改和删除Kubernetes对象，如Pod、Deployment、Service等。&lt;/p&gt;
@@ -7511,29 +7793,29 @@ kubelet 通过 cri 调用 containerd 和这些不一样，后续我会介绍到�
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">m</span><span style="color:#111">.</span><span style="color:#75af00">Run</span><span style="color:#111">()</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>
 </span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-Dockerfile" data-lang="Dockerfile"><span style="display:flex;"><span><span style="color:#00a8c8">FROM</span> <span style="color:#d88200">golang:1.21.3</span> <span style="color:#00a8c8">as</span> <span style="color:#d88200">builder</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  <span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#00a8c8">COPY</span> . /src<span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#00a8c8">WORKDIR</span> <span style="color:#d88200">/src</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#00a8c8">RUN</span> go env -w <span style="color:#111">GO111MODULE</span><span style="color:#f92672">=</span>on <span style="color:#f92672">&amp;&amp;</span> go env -w <span style="color:#111">GOPROXY</span><span style="color:#f92672">=</span>https://goproxy.io,direct<span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#00a8c8">RUN</span> go build<span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  <span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#00a8c8">FROM</span> <span style="color:#d88200">debian:bookworm-slim</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  <span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#00a8c8">RUN</span> sed -i <span style="color:#d88200">&#39;s/deb.debian.org/mirrors.ustc.edu.cn/g&#39;</span> /etc/apt/sources.list.d/debian.sources<span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  <span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#00a8c8">RUN</span> apt-get update <span style="color:#f92672">&amp;&amp;</span> apt-get install -y --no-install-recommends <span style="color:#8045ff">\
-</span></span></span><span style="display:flex;"><span><span style="color:#8045ff"></span>      ca-certificates   <span style="color:#8045ff">\
-</span></span></span><span style="display:flex;"><span><span style="color:#8045ff"></span>      netbase <span style="color:#8045ff">\
-</span></span></span><span style="display:flex;"><span><span style="color:#8045ff"></span>      pciutils <span style="color:#8045ff">\
-</span></span></span><span style="display:flex;"><span><span style="color:#8045ff"></span>      curl <span style="color:#8045ff">\
-</span></span></span><span style="display:flex;"><span><span style="color:#8045ff"></span>      <span style="color:#f92672">&amp;&amp;</span> rm -rf /var/lib/apt/lists/ <span style="color:#8045ff">\
-</span></span></span><span style="display:flex;"><span><span style="color:#8045ff"></span>      <span style="color:#f92672">&amp;&amp;</span> apt-get autoremove -y <span style="color:#f92672">&amp;&amp;</span> apt-get autoclean -y<span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  <span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#00a8c8">RUN</span> update-pciids<span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  <span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#00a8c8">COPY</span> --from<span style="color:#f92672">=</span>builder /src /app<span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  <span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#00a8c8">WORKDIR</span> <span style="color:#d88200">/app</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span>  <span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">COPY</span> . /src<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">WORKDIR</span> <span style="color:#d88200">/src</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">RUN</span> go env -w <span style="color:#111">GO111MODULE</span><span style="color:#f92672">=</span>on <span style="color:#f92672">&amp;&amp;</span> go env -w <span style="color:#111">GOPROXY</span><span style="color:#f92672">=</span>https://goproxy.io,direct<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">RUN</span> go build<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span>  <span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">FROM</span> <span style="color:#d88200">debian:bookworm-slim</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span>  <span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">RUN</span> sed -i <span style="color:#d88200">&#39;s/deb.debian.org/mirrors.ustc.edu.cn/g&#39;</span> /etc/apt/sources.list.d/debian.sources<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span>  <span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">RUN</span> apt-get update <span style="color:#f92672">&amp;&amp;</span> apt-get install -y --no-install-recommends <span style="color:#8045ff">\
+</span></span></span><span style="display:flex;"><span>      ca-certificates   <span style="color:#8045ff">\
+</span></span></span><span style="display:flex;"><span>      netbase <span style="color:#8045ff">\
+</span></span></span><span style="display:flex;"><span>      pciutils <span style="color:#8045ff">\
+</span></span></span><span style="display:flex;"><span>      curl <span style="color:#8045ff">\
+</span></span></span><span style="display:flex;"><span>      <span style="color:#f92672">&amp;&amp;</span> rm -rf /var/lib/apt/lists/ <span style="color:#8045ff">\
+</span></span></span><span style="display:flex;"><span>      <span style="color:#f92672">&amp;&amp;</span> apt-get autoremove -y <span style="color:#f92672">&amp;&amp;</span> apt-get autoclean -y<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span>  <span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">RUN</span> update-pciids<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span>  <span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">COPY</span> --from<span style="color:#f92672">=</span>builder /src /app<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span>  <span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">WORKDIR</span> <span style="color:#d88200">/app</span><span style="color:#960050;background-color:#1e0010">
 </span></span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span><span style="color:#111">:</span> <span style="color:#ae81ff">v1</span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span><span style="color:#111">:</span> <span style="color:#ae81ff">Namespace</span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span><span style="color:#111">:</span>
@@ -10411,24 +10693,24 @@ docker将应用程序与程序的依赖，打包在一个文件里面。运行�
 <li>
 <p>卸载旧版本</p>
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>sudo yum remove docker <span style="color:#8045ff">\
-</span></span></span><span style="display:flex;"><span><span style="color:#8045ff"></span>                  docker-client <span style="color:#8045ff">\
-</span></span></span><span style="display:flex;"><span><span style="color:#8045ff"></span>                  docker-client-latest <span style="color:#8045ff">\
-</span></span></span><span style="display:flex;"><span><span style="color:#8045ff"></span>                  docker-common <span style="color:#8045ff">\
-</span></span></span><span style="display:flex;"><span><span style="color:#8045ff"></span>                  docker-latest <span style="color:#8045ff">\
-</span></span></span><span style="display:flex;"><span><span style="color:#8045ff"></span>                  docker-latest-logrotate <span style="color:#8045ff">\
-</span></span></span><span style="display:flex;"><span><span style="color:#8045ff"></span>                  docker-logrotate <span style="color:#8045ff">\
-</span></span></span><span style="display:flex;"><span><span style="color:#8045ff"></span>                  docker-selinux <span style="color:#8045ff">\
-</span></span></span><span style="display:flex;"><span><span style="color:#8045ff"></span>                  docker-engine-selinux <span style="color:#8045ff">\
-</span></span></span><span style="display:flex;"><span><span style="color:#8045ff"></span>                  docker-engine
+</span></span></span><span style="display:flex;"><span>                  docker-client <span style="color:#8045ff">\
+</span></span></span><span style="display:flex;"><span>                  docker-client-latest <span style="color:#8045ff">\
+</span></span></span><span style="display:flex;"><span>                  docker-common <span style="color:#8045ff">\
+</span></span></span><span style="display:flex;"><span>                  docker-latest <span style="color:#8045ff">\
+</span></span></span><span style="display:flex;"><span>                  docker-latest-logrotate <span style="color:#8045ff">\
+</span></span></span><span style="display:flex;"><span>                  docker-logrotate <span style="color:#8045ff">\
+</span></span></span><span style="display:flex;"><span>                  docker-selinux <span style="color:#8045ff">\
+</span></span></span><span style="display:flex;"><span>                  docker-engine-selinux <span style="color:#8045ff">\
+</span></span></span><span style="display:flex;"><span>                  docker-engine
 </span></span></code></pre></div></li>
 <li>
 <p>设置存储库</p>
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>sudo yum install -y yum-utils <span style="color:#8045ff">\
-</span></span></span><span style="display:flex;"><span><span style="color:#8045ff"></span>  device-mapper-persistent-data <span style="color:#8045ff">\
-</span></span></span><span style="display:flex;"><span><span style="color:#8045ff"></span>  lvm2
+</span></span></span><span style="display:flex;"><span>  device-mapper-persistent-data <span style="color:#8045ff">\
+</span></span></span><span style="display:flex;"><span>  lvm2
 </span></span><span style="display:flex;"><span>sudo yum-config-manager <span style="color:#8045ff">\
-</span></span></span><span style="display:flex;"><span><span style="color:#8045ff"></span>    --add-repo <span style="color:#8045ff">\
-</span></span></span><span style="display:flex;"><span><span style="color:#8045ff"></span>    https://download.docker.com/linux/centos/docker-ce.repo
+</span></span></span><span style="display:flex;"><span>    --add-repo <span style="color:#8045ff">\
+</span></span></span><span style="display:flex;"><span>    https://download.docker.com/linux/centos/docker-ce.repo
 </span></span></code></pre></div></li>
 <li>
 <p>安装docker社区版</p>
@@ -10810,19 +11092,19 @@ CMD 用于 可变的命令。</p>
 <li>应用的网络，在它下面可以定义应用的名字、使用的网络类型等等。</li>
 </ul>
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-dockerfile" data-lang="dockerfile"><span style="display:flex;"><span>version: <span style="color:#d88200">&#39;2.0&#39;</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>services:<span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  nginx:<span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    restart: always<span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    image: nginx:1.11.6-alpine<span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    ports:<span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>      - 8080:80<span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>      - 80:80<span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>      - 443:443<span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    volumes:<span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>      - ./conf.d:/etc/nginx/conf.d<span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>      - ./log:/var/log/nginx<span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>      - ./www:/var/www<span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>      - /etc/letsencrypt:/etc/letsencrypt<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span>services:<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span>  nginx:<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span>    restart: always<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span>    image: nginx:1.11.6-alpine<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span>    ports:<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span>      - 8080:80<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span>      - 80:80<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span>      - 443:443<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span>    volumes:<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span>      - ./conf.d:/etc/nginx/conf.d<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span>      - ./log:/var/log/nginx<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span>      - ./www:/var/www<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span>      - /etc/letsencrypt:/etc/letsencrypt<span style="color:#960050;background-color:#1e0010">
 </span></span></span></code></pre></div><h3 id="docker-compose命令">docker-compose命令</h3>
 <ol>
 <li>启动:docker-compose up -d-d为守护进程</li>
@@ -10992,8 +11274,8 @@ CMD 用于 可变的命令。</p>
 &lt;p&gt;nginx默认站点是Nginx目录下的html文件夹，这里可以从nginx.conf中查到&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-nginx" data-lang="nginx"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;location&lt;/span&gt; &lt;span style="color:#d88200"&gt;/&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#f92672"&gt;root&lt;/span&gt; &lt;span style="color:#d88200"&gt;html&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt; &lt;span style="color:#75715e"&gt;# 这里是默认的站点html文件夹，也就是 /usr/local/nginx/html 文件夹下的内容
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;&lt;/span&gt; &lt;span style="color:#f92672"&gt;index&lt;/span&gt; &lt;span style="color:#d88200"&gt;index.html&lt;/span&gt; &lt;span style="color:#d88200"&gt;index.htm&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt; &lt;span style="color:#75715e"&gt;# 站点首页文件名是index.html
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;&lt;/span&gt; &lt;span style="color:#111"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#f92672"&gt;index&lt;/span&gt; &lt;span style="color:#d88200"&gt;index.html&lt;/span&gt; &lt;span style="color:#d88200"&gt;index.htm&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt; &lt;span style="color:#75715e"&gt;# 站点首页文件名是index.html
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;}&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;如果要部署网站业务数据，只需要把开发好的程序全放到html目录下即可&lt;/p&gt;</description><content:encoded><![CDATA[<h2 id="nginx是什么">nginx是什么</h2>
 <p>nginx是一个开源的，支持高性能，高并发的www服务和代理服务软件。</p>
 <ul>
@@ -11048,8 +11330,8 @@ CMD 用于 可变的命令。</p>
 <p>nginx默认站点是Nginx目录下的html文件夹，这里可以从nginx.conf中查到</p>
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-nginx" data-lang="nginx"><span style="display:flex;"><span><span style="color:#00a8c8">location</span> <span style="color:#d88200">/</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>            <span style="color:#f92672">root</span>   <span style="color:#d88200">html</span><span style="color:#111">;</span> <span style="color:#75715e"># 这里是默认的站点html文件夹，也就是 /usr/local/nginx/html 文件夹下的内容
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>            <span style="color:#f92672">index</span>  <span style="color:#d88200">index.html</span> <span style="color:#d88200">index.htm</span><span style="color:#111">;</span> <span style="color:#75715e"># 站点首页文件名是index.html
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#111">}</span>
+</span></span></span><span style="display:flex;"><span>            <span style="color:#f92672">index</span>  <span style="color:#d88200">index.html</span> <span style="color:#d88200">index.htm</span><span style="color:#111">;</span> <span style="color:#75715e"># 站点首页文件名是index.html
+</span></span></span><span style="display:flex;"><span>        <span style="color:#111">}</span>
 </span></span></code></pre></div><p>如果要部署网站业务数据，只需要把开发好的程序全放到html目录下即可</p>
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#f92672">[</span>root@VM-0-3-centos html<span style="color:#f92672">]</span><span style="color:#75715e"># ls /usr/local/nginx/html/</span>
 </span></span><span style="display:flex;"><span>50x.html  index.html
@@ -11095,31 +11377,31 @@ CMD 用于 可变的命令。</p>
 <h3 id="events事件模块">events事件模块</h3>
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-nginx" data-lang="nginx"><span style="display:flex;"><span><span style="color:#00a8c8">events</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#f92672">worker_connections</span>  <span style="color:#ae81ff">1024</span><span style="color:#111">;</span> <span style="color:#75715e"># 每个worker进程支持的最大连接数  
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#f92672">use</span> <span style="color:#d88200">epool</span><span style="color:#111">;</span> <span style="color:#75715e"># 事件驱动模型, epoll默认
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#111">}</span>
+</span></span></span><span style="display:flex;"><span>    <span style="color:#f92672">use</span> <span style="color:#d88200">epool</span><span style="color:#111">;</span> <span style="color:#75715e"># 事件驱动模型, epoll默认
+</span></span></span><span style="display:flex;"><span><span style="color:#111">}</span>
 </span></span></code></pre></div></li>
 <li>
 <h3 id="http内核模块">http内核模块</h3>
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-nginx" data-lang="nginx"><span style="display:flex;"><span><span style="color:#75715e"># 公共的配置定义在http
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#00a8c8">http</span> <span style="color:#111">{</span>
+</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">http</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e"># http层开始 ...
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#f92672">include</span>       <span style="color:#d88200">mime.types</span><span style="color:#111">;</span>
+</span></span></span><span style="display:flex;"><span>    <span style="color:#f92672">include</span>       <span style="color:#d88200">mime.types</span><span style="color:#111">;</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#f92672">default_type</span>  <span style="color:#d88200">application/octet-stream</span><span style="color:#111">;</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>    <span style="color:#f92672">access_log</span>  <span style="color:#d88200">logs/access.log</span>  <span style="color:#d88200">main</span><span style="color:#111">;</span> <span style="color:#75715e"># 访问日志
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e"># 使用Server配置网站, 每个Server{}代表一个网站(简称虚拟主机)
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#f92672">server</span> <span style="color:#111">{</span>
+</span></span></span><span style="display:flex;"><span>    <span style="color:#f92672">server</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>        <span style="color:#f92672">listen</span>       <span style="color:#ae81ff">80</span><span style="color:#111">;</span> <span style="color:#75715e"># 监听端口, 默认80 
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#f92672">server_name</span>  <span style="color:#d88200">localhost</span><span style="color:#111">;</span> <span style="color:#75715e"># 提供服务的域名或主机名
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span></span><span style="display:flex;"><span>        <span style="color:#f92672">server_name</span>  <span style="color:#d88200">localhost</span><span style="color:#111">;</span> <span style="color:#75715e"># 提供服务的域名或主机名
+</span></span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>        <span style="color:#f92672">location</span> <span style="color:#d88200">/</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>            <span style="color:#f92672">root</span>   <span style="color:#d88200">html</span><span style="color:#111">;</span> <span style="color:#75715e"># 存放网站代码路径
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>            <span style="color:#f92672">index</span>  <span style="color:#d88200">index.html</span> <span style="color:#d88200">index.htm</span><span style="color:#111">;</span> <span style="color:#75715e"># 服务器返回的默认页面文件
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#111">}</span>
+</span></span></span><span style="display:flex;"><span>            <span style="color:#f92672">index</span>  <span style="color:#d88200">index.html</span> <span style="color:#d88200">index.htm</span><span style="color:#111">;</span> <span style="color:#75715e"># 服务器返回的默认页面文件
+</span></span></span><span style="display:flex;"><span>        <span style="color:#111">}</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>    		<span style="color:#75715e"># 指定错误代码, 统一定义错误页面, 错误代码重定向到新的Locaiton
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#f92672">error_page</span>   <span style="color:#ae81ff">500</span> <span style="color:#ae81ff">502</span> <span style="color:#ae81ff">503</span> <span style="color:#ae81ff">504</span>  <span style="color:#d88200">/50x.html</span><span style="color:#111">;</span> 
+</span></span></span><span style="display:flex;"><span>        <span style="color:#f92672">error_page</span>   <span style="color:#ae81ff">500</span> <span style="color:#ae81ff">502</span> <span style="color:#ae81ff">503</span> <span style="color:#ae81ff">504</span>  <span style="color:#d88200">/50x.html</span><span style="color:#111">;</span> 
 </span></span><span style="display:flex;"><span>        <span style="color:#f92672">location</span> <span style="color:#111">=</span> <span style="color:#d88200">/50x.html</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>            <span style="color:#f92672">root</span>   <span style="color:#d88200">html</span><span style="color:#111">;</span>
 </span></span><span style="display:flex;"><span>        <span style="color:#111">}</span>                                                                                                                                          <span style="color:#111">}</span>
@@ -11131,7 +11413,7 @@ CMD 用于 可变的命令。</p>
 <p>当存在多个域名时，如果所有配置都写在 nginx.conf 主配置文件中，难免会显得杂乱与臃肿。为了方便配置文件的维护，所以需要进行拆分配置。</p>
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-nginx" data-lang="nginx"><span style="display:flex;"><span><span style="color:#75715e"># 在nginx.conf中 加入  include a.zhaohaiyu.com/nginx.conf; 
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"># 在a.zhaohaiyu.com/nginx.conf中加入 
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#00a8c8">server</span> <span style="color:#111">{</span>  
+</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">server</span> <span style="color:#111">{</span>  
 </span></span><span style="display:flex;"><span>		<span style="color:#f92672">listen</span> <span style="color:#ae81ff">8000</span><span style="color:#111">;</span>  
 </span></span><span style="display:flex;"><span>		<span style="color:#f92672">server_name</span> <span style="color:#d88200">test2.com</span><span style="color:#111">;</span> 
 </span></span><span style="display:flex;"><span>
@@ -11140,7 +11422,7 @@ CMD 用于 可变的命令。</p>
 </span></span><span style="display:flex;"><span>				<span style="color:#f92672">proxy_set_header</span> <span style="color:#d88200">X-Real-Ip</span> <span style="color:#111">$remote_addr</span><span style="color:#111">;</span> 
 </span></span><span style="display:flex;"><span>        <span style="color:#f92672">proxy_set_header</span> <span style="color:#d88200">X-Forwarded-For</span> <span style="color:#111">$proxy_add_x_forwarded_for</span><span style="color:#111">;</span> 
 </span></span><span style="display:flex;"><span>        <span style="color:#75715e">## proxy_pass 				   http://xxx.xxx.xxx;  echo &#34;test2.com&#34;; ## 输出测试   
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>     <span style="color:#111">}</span> 
+</span></span></span><span style="display:flex;"><span>     <span style="color:#111">}</span> 
 </span></span><span style="display:flex;"><span> <span style="color:#111">}</span> 
 </span></span><span style="display:flex;"><span><span style="color:#75715e"># 等于把zhaohaiyu.com/nginx.conf直接吸入nginx.conf中
 </span></span></span></code></pre></div></li>
@@ -11273,19 +11555,19 @@ nginx: the configuration file /opt/nginx1-12/conf/nginx.conf syntax is ok nginx:
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-nginx" data-lang="nginx"><span style="display:flex;"><span><span style="color:#00a8c8">server</span> <span style="color:#111">{</span>  
 </span></span><span style="display:flex;"><span>		<span style="color:#f92672">listen</span> <span style="color:#ae81ff">80</span><span style="color:#111">;</span>  
 </span></span><span style="display:flex;"><span>		<span style="color:#f92672">server_name</span> <span style="color:#d88200">pythonav.cn</span><span style="color:#111">;</span>   <span style="color:#75715e">#优先级1,精确匹配，根路径  
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>		<span style="color:#f92672">location</span> <span style="color:#111">=</span><span style="color:#d88200">/</span> <span style="color:#111">{</span>  
+</span></span></span><span style="display:flex;"><span>		<span style="color:#f92672">location</span> <span style="color:#111">=</span><span style="color:#d88200">/</span> <span style="color:#111">{</span>  
 </span></span><span style="display:flex;"><span>				<span style="color:#f92672">return</span> <span style="color:#ae81ff">400</span><span style="color:#111">;</span>  
 </span></span><span style="display:flex;"><span>		<span style="color:#111">}</span>   <span style="color:#75715e">#优先级2,以某个字符串开头,以av开头的，优先匹配这里，区分大小写  
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>		<span style="color:#f92672">location</span> <span style="color:#d88200">^~</span> <span style="color:#d88200">/av</span> <span style="color:#111">{</span>  
+</span></span></span><span style="display:flex;"><span>		<span style="color:#f92672">location</span> <span style="color:#d88200">^~</span> <span style="color:#d88200">/av</span> <span style="color:#111">{</span>  
 </span></span><span style="display:flex;"><span>				<span style="color:#f92672">root</span> <span style="color:#d88200">/data/av/</span><span style="color:#111">;</span>  
 </span></span><span style="display:flex;"><span>		<span style="color:#111">}</span>   <span style="color:#75715e">#优先级3，区分大小写的正则匹配，匹配/media*****路径  
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>		<span style="color:#f92672">location</span> <span style="color:#111">~</span> <span style="color:#d88200">/media</span> <span style="color:#111">{</span>  
+</span></span></span><span style="display:flex;"><span>		<span style="color:#f92672">location</span> <span style="color:#111">~</span> <span style="color:#d88200">/media</span> <span style="color:#111">{</span>  
 </span></span><span style="display:flex;"><span>				<span style="color:#f92672">alias</span> <span style="color:#d88200">/data/static/</span><span style="color:#111">;</span>  
 </span></span><span style="display:flex;"><span>		<span style="color:#111">}</span>   <span style="color:#75715e">#优先级4 ，不区分大小写的正则匹配，所有的****.jpg|gif|png 都走这里  
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>		<span style="color:#f92672">location</span> <span style="color:#111">~</span><span style="color:#d88200">*</span> <span style="color:#d88200">.*\.(jpg|gif|png|js|css)</span>$ <span style="color:#111">{</span>  
+</span></span></span><span style="display:flex;"><span>		<span style="color:#f92672">location</span> <span style="color:#111">~</span><span style="color:#d88200">*</span> <span style="color:#d88200">.*\.(jpg|gif|png|js|css)</span>$ <span style="color:#111">{</span>  
 </span></span><span style="display:flex;"><span>				<span style="color:#f92672">root</span> <span style="color:#d88200">/data/av/</span><span style="color:#111">;</span>  
 </span></span><span style="display:flex;"><span>		<span style="color:#111">}</span>   <span style="color:#75715e">#优先7，通用匹配  
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>		<span style="color:#f92672">location</span> <span style="color:#d88200">/</span> <span style="color:#111">{</span>  
+</span></span></span><span style="display:flex;"><span>		<span style="color:#f92672">location</span> <span style="color:#d88200">/</span> <span style="color:#111">{</span>  
 </span></span><span style="display:flex;"><span>				<span style="color:#f92672">return</span> <span style="color:#ae81ff">403</span><span style="color:#111">;</span>  
 </span></span><span style="display:flex;"><span>		<span style="color:#111">}</span> 
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>

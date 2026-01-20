@@ -169,29 +169,29 @@
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">m</span><span style="color:#111">.</span><span style="color:#75af00">Run</span><span style="color:#111">()</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>
 </span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-Dockerfile" data-lang="Dockerfile"><span style="display:flex;"><span><span style="color:#00a8c8">FROM</span> <span style="color:#d88200">golang:1.21.3</span> <span style="color:#00a8c8">as</span> <span style="color:#d88200">builder</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  <span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#00a8c8">COPY</span> . /src<span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#00a8c8">WORKDIR</span> <span style="color:#d88200">/src</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#00a8c8">RUN</span> go env -w <span style="color:#111">GO111MODULE</span><span style="color:#f92672">=</span>on <span style="color:#f92672">&amp;&amp;</span> go env -w <span style="color:#111">GOPROXY</span><span style="color:#f92672">=</span>https://goproxy.io,direct<span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#00a8c8">RUN</span> go build<span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  <span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#00a8c8">FROM</span> <span style="color:#d88200">debian:bookworm-slim</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  <span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#00a8c8">RUN</span> sed -i <span style="color:#d88200">&#39;s/deb.debian.org/mirrors.ustc.edu.cn/g&#39;</span> /etc/apt/sources.list.d/debian.sources<span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  <span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#00a8c8">RUN</span> apt-get update <span style="color:#f92672">&amp;&amp;</span> apt-get install -y --no-install-recommends <span style="color:#8045ff">\
-</span></span></span><span style="display:flex;"><span><span style="color:#8045ff"></span>      ca-certificates   <span style="color:#8045ff">\
-</span></span></span><span style="display:flex;"><span><span style="color:#8045ff"></span>      netbase <span style="color:#8045ff">\
-</span></span></span><span style="display:flex;"><span><span style="color:#8045ff"></span>      pciutils <span style="color:#8045ff">\
-</span></span></span><span style="display:flex;"><span><span style="color:#8045ff"></span>      curl <span style="color:#8045ff">\
-</span></span></span><span style="display:flex;"><span><span style="color:#8045ff"></span>      <span style="color:#f92672">&amp;&amp;</span> rm -rf /var/lib/apt/lists/ <span style="color:#8045ff">\
-</span></span></span><span style="display:flex;"><span><span style="color:#8045ff"></span>      <span style="color:#f92672">&amp;&amp;</span> apt-get autoremove -y <span style="color:#f92672">&amp;&amp;</span> apt-get autoclean -y<span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  <span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#00a8c8">RUN</span> update-pciids<span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  <span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#00a8c8">COPY</span> --from<span style="color:#f92672">=</span>builder /src /app<span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  <span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#00a8c8">WORKDIR</span> <span style="color:#d88200">/app</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span>  <span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">COPY</span> . /src<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">WORKDIR</span> <span style="color:#d88200">/src</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">RUN</span> go env -w <span style="color:#111">GO111MODULE</span><span style="color:#f92672">=</span>on <span style="color:#f92672">&amp;&amp;</span> go env -w <span style="color:#111">GOPROXY</span><span style="color:#f92672">=</span>https://goproxy.io,direct<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">RUN</span> go build<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span>  <span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">FROM</span> <span style="color:#d88200">debian:bookworm-slim</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span>  <span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">RUN</span> sed -i <span style="color:#d88200">&#39;s/deb.debian.org/mirrors.ustc.edu.cn/g&#39;</span> /etc/apt/sources.list.d/debian.sources<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span>  <span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">RUN</span> apt-get update <span style="color:#f92672">&amp;&amp;</span> apt-get install -y --no-install-recommends <span style="color:#8045ff">\
+</span></span></span><span style="display:flex;"><span>      ca-certificates   <span style="color:#8045ff">\
+</span></span></span><span style="display:flex;"><span>      netbase <span style="color:#8045ff">\
+</span></span></span><span style="display:flex;"><span>      pciutils <span style="color:#8045ff">\
+</span></span></span><span style="display:flex;"><span>      curl <span style="color:#8045ff">\
+</span></span></span><span style="display:flex;"><span>      <span style="color:#f92672">&amp;&amp;</span> rm -rf /var/lib/apt/lists/ <span style="color:#8045ff">\
+</span></span></span><span style="display:flex;"><span>      <span style="color:#f92672">&amp;&amp;</span> apt-get autoremove -y <span style="color:#f92672">&amp;&amp;</span> apt-get autoclean -y<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span>  <span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">RUN</span> update-pciids<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span>  <span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">COPY</span> --from<span style="color:#f92672">=</span>builder /src /app<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span>  <span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">WORKDIR</span> <span style="color:#d88200">/app</span><span style="color:#960050;background-color:#1e0010">
 </span></span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span><span style="color:#111">:</span> <span style="color:#ae81ff">v1</span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span><span style="color:#111">:</span> <span style="color:#ae81ff">Namespace</span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span><span style="color:#111">:</span>
