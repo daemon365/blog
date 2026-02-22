@@ -10,7 +10,7 @@
 <li>VIP （虚拟IP）:  192.168.31.230</li>
 </ul>
 <h2 id="安装">安装</h2>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo apt install keepalived haproxy
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo apt install keepalived haproxy
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>systemctl <span style="color:#111">enable</span> haproxy
 </span></span><span style="display:flex;"><span>systemctl restart haproxy
@@ -118,7 +118,7 @@ vrrp_instance haproxy-vip {
 }
 </code></pre><h3 id="测试">测试</h3>
 <p>重启所有几点的 keepalived ， 虚拟 ip 会在节点 master 上，因为他的优先级高。</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># master 1</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># master 1</span>
 </span></span><span style="display:flex;"><span>ip a show enp0s3
 </span></span><span style="display:flex;"><span>2: enp0s3: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu <span style="color:#ae81ff">1500</span> qdisc fq_codel state UP group default qlen <span style="color:#ae81ff">1000</span>
 </span></span><span style="display:flex;"><span>    link/ether 08:00:27:ca:59:86 brd ff:ff:ff:ff:ff:ff
@@ -129,7 +129,7 @@ vrrp_instance haproxy-vip {
 </span></span><span style="display:flex;"><span>    inet6 fe80::a00:27ff:feca:5986/64 scope link
 </span></span><span style="display:flex;"><span>       valid_lft forever preferred_lft forever
 </span></span></code></pre></div><p>现在我们关掉 master1 的 haproxy 或者 keepalived</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>systemctl stop haproxy
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>systemctl stop haproxy
 </span></span><span style="display:flex;"><span><span style="color:#75715e"># 再查看网络信息 发现虚拟ip 没了</span>
 </span></span><span style="display:flex;"><span>ip a show enp0s3
 </span></span><span style="display:flex;"><span>2: enp0s3: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu <span style="color:#ae81ff">1500</span> qdisc fq_codel state UP group default qlen <span style="color:#ae81ff">1000</span>
@@ -189,21 +189,21 @@ backend kube-apiserver
     server kube-apiserver-3 192.168.31.46:6443 check
 </code></pre><h2 id="安装-kubernetes-集群">安装 kubernetes 集群</h2>
 <p>master1</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>kubeadm init --image-repository registry.aliyuncs.com/google_containers --control-plane-endpoint<span style="color:#f92672">=</span>192.168.31.230:16443 --v<span style="color:#f92672">=</span><span style="color:#ae81ff">10</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>kubeadm init --image-repository registry.aliyuncs.com/google_containers --control-plane-endpoint<span style="color:#f92672">=</span>192.168.31.230:16443 --v<span style="color:#f92672">=</span><span style="color:#ae81ff">10</span>
 </span></span></code></pre></div><p>master2 和 master3 加入集群</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>kubeadm join 192.168.31.230:16443 --token rxblci.ddh60vl370wjgtn7         --discovery-token-ca-cert-hash sha256:d712016d5b8ba4ae5c4a1bda8b6ab1944c13a04757d2c488dd0aefcfd1af0157   --certificate-key    c398d693c6ce9b664634c9b670f013da3010580c00bd444caf7d0a5a81e803f5         --control-plane --v<span style="color:#f92672">=</span><span style="color:#ae81ff">10</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>kubeadm join 192.168.31.230:16443 --token rxblci.ddh60vl370wjgtn7         --discovery-token-ca-cert-hash sha256:d712016d5b8ba4ae5c4a1bda8b6ab1944c13a04757d2c488dd0aefcfd1af0157   --certificate-key    c398d693c6ce9b664634c9b670f013da3010580c00bd444caf7d0a5a81e803f5         --control-plane --v<span style="color:#f92672">=</span><span style="color:#ae81ff">10</span>
 </span></span></code></pre></div><p>worker 加入集群</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>kubeadm join 192.168.31.230:16443 --token rxblci.ddh60vl370wjgtn7 <span style="color:#8045ff">\
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>kubeadm join 192.168.31.230:16443 --token rxblci.ddh60vl370wjgtn7 <span style="color:#8045ff">\
 </span></span></span><span style="display:flex;"><span>        --discovery-token-ca-cert-hash sha256:d712016d5b8ba4ae5c4a1bda8b6ab1944c13a04757d2c488dd0aefcfd1af0157
 </span></span></code></pre></div><p>查看集群状态</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>kubectl get node
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>kubectl get node
 </span></span><span style="display:flex;"><span>NAME      STATUS     ROLES           AGE     VERSION
 </span></span><span style="display:flex;"><span>master1   Ready      control-plane   21m     v1.28.2
 </span></span><span style="display:flex;"><span>master2   Ready      control-plane   3m46s   v1.28.12
 </span></span><span style="display:flex;"><span>master3   Ready      control-plane   2m12s   v1.28.12
 </span></span><span style="display:flex;"><span>worker1   Ready      &lt;none&gt;          5s      v1.28.2
 </span></span></code></pre></div><h2 id="测试-1">测试</h2>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e">#  关闭 master1 的 kubelet 和 apiserver</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e">#  关闭 master1 的 kubelet 和 apiserver</span>
 </span></span><span style="display:flex;"><span>systemctl stop kubelet
 </span></span><span style="display:flex;"><span>sudo <span style="color:#111">kill</span> -9 <span style="color:#00a8c8">$(</span>pgrep kube-apiserver<span style="color:#00a8c8">)</span>
 </span></span><span style="display:flex;"><span>

@@ -55,7 +55,7 @@
 <p>这方面最常见的例子就是秒杀系统，一般秒杀活动瞬间流量很高，如果流量全部涌向秒杀系统，会压垮秒杀系统，通过引入消息队列，可以有效缓冲突发流量，达到削峰填谷的作用。</p>
 <h2 id="安装">安装</h2>
 <p>Docker 安装方式如下：</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management
 </span></span></code></pre></div><p>RabbitMQ 有属于自己的一套核心概念，对这些概念的理解很重要，只有理解了这些核心概念，才有可能建立对 RabbitMQ 的全面理解：</p>
 <h2 id="rabbitmq核心概念">RabbitMQ核心概念</h2>
 <h3 id="broker">Broker</h3>
@@ -104,7 +104,7 @@
 <li>只有一个生产者、一个消费者和一个队列。</li>
 <li>生产者和消费者在发送和接收消息时，只需要指定队列名，而不需要指定发送到哪个 Exchange，RabbitMQ 服务器会自动使用 Virtual host 的默认的 Exchange，默认 Exchange 的 type 为 direct。</li>
 </ul>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// 引入amqo包</span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
@@ -187,7 +187,7 @@
 <li>可以有多个消费者，但一条消息只能被一个消费者获取。</li>
 <li>发送到队列中的消息，由服务器平均分配给不同消费者进行消费</li>
 </ul>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// 引入amqo包</span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
@@ -340,7 +340,7 @@
 </ul>
 <p>在上图中，oneQueue 中的消息要么被 CustomerA 获取，要么被 CustomerB 获取。也就是同一条消息，要么是 CustomerA + CustomerC 消费、要么是 CustomerB + CustomerC 消费。</p>
 <p>生产者：</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;fmt&#34;</span>
@@ -412,7 +412,7 @@
 </span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">return</span> <span style="color:#75af00">s</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>
 </span></span></code></pre></div><p>不同的 Exchange 之间互不影响，相同 Exchange，相同队列的情况下，消息均等消费：</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;fmt&#34;</span>
@@ -510,7 +510,7 @@
 <p><code>RoutingKey</code>用于生产者指定<code>Exchange</code>最终将消息路由到哪个队列，<code>BindingKey</code>用于消费者绑定到某个队列。</p>
 </blockquote>
 <p>生产者：</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;fmt&#34;</span>
@@ -590,7 +590,7 @@
 </span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">return</span> <span style="color:#75af00">s</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>
 </span></span></code></pre></div><p>消费者：</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;fmt&#34;</span>
@@ -690,7 +690,7 @@
 <li>主题模式 Exchange 的 type 取值为 topic。</li>
 <li>一条消息可以被多个消费者获取。</li>
 </ul>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;fmt&#34;</span>
@@ -859,7 +859,7 @@
 <p><img src="/images/47f80fb8-4a5d-4f84-bd2c-21fac99107a0.png" alt=""></p>
 <p>生产者生产一条延时消息，根据需要延时时间的不同，利用不同的routingkey将消息路由到不同的延时队列，每个队列都设置了不同的TTL属性，并绑定在同一个死信交换机中，消息过期后，根据routingkey的不同，又会被路由到不同的死信队列中，消费者只需要监听对应的死信队列进行处理即可。</p>
 <p><strong>go实现</strong></p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;fmt&#34;</span>

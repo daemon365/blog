@@ -16,10 +16,10 @@
 &lt;li&gt;command：make 需要执行的命令（任意的 shell 命令）。可以有多条命令，每一条命令占一行。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;举个例子：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-yaml" data-lang="yaml"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f92672"&gt;build&lt;/span&gt;&lt;span style="color:#111"&gt;:&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-yaml" data-lang="yaml"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f92672"&gt;build&lt;/span&gt;&lt;span style="color:#111"&gt;:&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#ae81ff"&gt;CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o xx&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id="示例"&gt;示例&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-yaml" data-lang="yaml"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f92672"&gt;.PHONY&lt;/span&gt;&lt;span style="color:#111"&gt;:&lt;/span&gt; &lt;span style="color:#ae81ff"&gt;all build run gotool clean help&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-yaml" data-lang="yaml"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f92672"&gt;.PHONY&lt;/span&gt;&lt;span style="color:#111"&gt;:&lt;/span&gt; &lt;span style="color:#ae81ff"&gt;all build run gotool clean help&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#ae81ff"&gt;BINARY=&amp;#34;coursemanager&amp;#34;&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f92672"&gt;all&lt;/span&gt;&lt;span style="color:#111"&gt;:&lt;/span&gt; &lt;span style="color:#ae81ff"&gt;build&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f92672"&gt;build&lt;/span&gt;&lt;span style="color:#111"&gt;:&lt;/span&gt;
@@ -55,10 +55,10 @@
 <li>command：make 需要执行的命令（任意的 shell 命令）。可以有多条命令，每一条命令占一行。</li>
 </ul>
 <p>举个例子：</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">build</span><span style="color:#111">:</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">build</span><span style="color:#111">:</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#ae81ff">CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o xx</span>
 </span></span></code></pre></div><h2 id="示例">示例</h2>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">.PHONY</span><span style="color:#111">:</span> <span style="color:#ae81ff">all build run gotool clean help</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">.PHONY</span><span style="color:#111">:</span> <span style="color:#ae81ff">all build run gotool clean help</span>
 </span></span><span style="display:flex;"><span><span style="color:#ae81ff">BINARY=&#34;coursemanager&#34;</span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">all</span><span style="color:#111">:</span> <span style="color:#ae81ff">build</span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">build</span><span style="color:#111">:</span>

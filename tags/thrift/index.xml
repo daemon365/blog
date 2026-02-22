@@ -88,7 +88,7 @@
 <li>同一文件可以定义多个struct，也可以定义在不同的文件，进行include引入。</li>
 </ul>
 <p>数字标签作用非常大，但是随着项目开发的不断发展，也许字段会有变化，但是建议不要轻易修改这些数字标签，修改之后如果没有同步客户端和服务器端会让一方解析出问题。</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#00a8c8">struct</span> <span style="color:#75af00">Report</span> <span style="color:#111">{</span>  
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#00a8c8">struct</span> <span style="color:#75af00">Report</span> <span style="color:#111">{</span>  
 </span></span><span style="display:flex;"><span>	<span style="color:#ae81ff">1</span><span style="color:#111">:</span> <span style="color:#75af00">required</span> <span style="color:#00a8c8">string</span> <span style="color:#75af00">msg</span><span style="color:#111">,</span> <span style="color:#75715e">//改字段必须填写  </span>
 </span></span><span style="display:flex;"><span>	<span style="color:#ae81ff">2</span><span style="color:#111">:</span> <span style="color:#75af00">optional</span> <span style="color:#75af00">i32</span> <span style="color:#00a8c8">type</span> <span style="color:#111">=</span> <span style="color:#ae81ff">0</span><span style="color:#111">;</span> <span style="color:#75715e">//默认值  </span>
 </span></span><span style="display:flex;"><span>	<span style="color:#ae81ff">3</span><span style="color:#111">:</span> <span style="color:#75af00">i32</span> <span style="color:#75af00">time</span> <span style="color:#75715e">//默认字段类型为optional </span>
@@ -104,7 +104,7 @@
 <p>　　容器中元素类型可以是除了service外的任何合法Thrift类型（包括结构体和异常）。为了最大的兼容性，map的key最好是thrift的基本类型，有些语言不支持复杂类型的key，JSON协议只支持那些基本类型的key。</p>
 <p>容器都是同构容器，不失异构容器。</p>
 <p>例子</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#00a8c8">struct</span> <span style="color:#75af00">Test</span> <span style="color:#111">{</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#00a8c8">struct</span> <span style="color:#75af00">Test</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">1</span><span style="color:#111">:</span> <span style="color:#00a8c8">map</span><span style="color:#111">&lt;</span><span style="color:#75af00">Numberz</span><span style="color:#111">,</span> <span style="color:#75af00">UserId</span><span style="color:#111">&gt;</span> <span style="color:#75af00">user_map</span><span style="color:#111">,</span>
 </span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">2</span><span style="color:#111">:</span> <span style="color:#75af00">set</span><span style="color:#111">&lt;</span><span style="color:#75af00">Numberz</span><span style="color:#111">&gt;</span> <span style="color:#75af00">num_sets</span><span style="color:#111">,</span> 
 </span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">3</span><span style="color:#111">:</span> <span style="color:#75af00">list</span><span style="color:#111">&lt;</span><span style="color:#75af00">Stusers</span><span style="color:#111">&gt;</span> <span style="color:#75af00">users</span>
@@ -119,7 +119,7 @@
 <li>给常量赋缺省值时，使用常量的全称</li>
 </ul>
 <p>　　注意，不同于protocal buffer，thrift不支持枚举类嵌套，枚举常量必须是32位的正整数</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75af00">enum</span> <span style="color:#75af00">EnOpType</span> <span style="color:#111">{</span><span style="color:#75af00">CMD_OK</span> <span style="color:#111">=</span> <span style="color:#ae81ff">0</span><span style="color:#111">,</span> <span style="color:#75715e">// (0)  </span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75af00">enum</span> <span style="color:#75af00">EnOpType</span> <span style="color:#111">{</span><span style="color:#75af00">CMD_OK</span> <span style="color:#111">=</span> <span style="color:#ae81ff">0</span><span style="color:#111">,</span> <span style="color:#75715e">// (0)  </span>
 </span></span><span style="display:flex;"><span>               <span style="color:#75af00">CMD_NOT_EXIT</span> <span style="color:#111">=</span> <span style="color:#ae81ff">2000</span><span style="color:#111">,</span> <span style="color:#75715e">// (2000) </span>
 </span></span><span style="display:flex;"><span>               <span style="color:#75af00">CMD_EXIT</span> <span style="color:#111">=</span> <span style="color:#ae81ff">2001</span><span style="color:#111">,</span> <span style="color:#75715e">// (2001) 　　</span>
 </span></span><span style="display:flex;"><span>               <span style="color:#75af00">CMD_ADD</span> <span style="color:#111">=</span> <span style="color:#ae81ff">2002</span> <span style="color:#75715e">// (2002)</span>
@@ -132,17 +132,17 @@
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>
 </span></span></code></pre></div><h3 id="常量定义和类型定义">常量定义和类型定义</h3>
 <p>　　Thrift允许定义跨语言使用的常量，复杂的类型和结构体可使用JSON形式表示。</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#00a8c8">const</span> <span style="color:#75af00">i32</span> <span style="color:#75af00">INT_CONST</span> <span style="color:#111">=</span> <span style="color:#ae81ff">1234</span><span style="color:#111">;</span> <span style="color:#00a8c8">const</span> <span style="color:#75af00">EnOpType</span> <span style="color:#75af00">myEnOpType</span> <span style="color:#111">=</span> <span style="color:#75af00">EnOpType</span><span style="color:#111">.</span><span style="color:#75af00">CMD_EXIT</span><span style="color:#111">;</span> <span style="color:#75715e">//2001</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#00a8c8">const</span> <span style="color:#75af00">i32</span> <span style="color:#75af00">INT_CONST</span> <span style="color:#111">=</span> <span style="color:#ae81ff">1234</span><span style="color:#111">;</span> <span style="color:#00a8c8">const</span> <span style="color:#75af00">EnOpType</span> <span style="color:#75af00">myEnOpType</span> <span style="color:#111">=</span> <span style="color:#75af00">EnOpType</span><span style="color:#111">.</span><span style="color:#75af00">CMD_EXIT</span><span style="color:#111">;</span> <span style="color:#75715e">//2001</span>
 </span></span></code></pre></div><p>　说明：分号可有可无。支持16进制。　　</p>
 <p>Thrift支持C/C++类型定义。</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75af00">typedef</span> <span style="color:#75af00">i32</span> <span style="color:#75af00">MyInteger</span> <span style="color:#75715e">// a </span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75af00">typedef</span> <span style="color:#75af00">i32</span> <span style="color:#75af00">MyInteger</span> <span style="color:#75715e">// a </span>
 </span></span><span style="display:flex;"><span><span style="color:#75af00">typedef</span> <span style="color:#75af00">StUser</span> <span style="color:#75af00">ReU</span> <span style="color:#75715e">// b </span>
 </span></span><span style="display:flex;"><span><span style="color:#75af00">typedef</span> <span style="color:#75af00">i64</span> <span style="color:#75af00">UserId</span>
 </span></span></code></pre></div><p>　说明：a.末尾没有逗号。b. Struct也可以使用typedef。</p>
 <h3 id="异常exceptions">异常（Exceptions）</h3>
 <p>　　Thrift结构体在概念上类似于（similar to）C语言结构体类型—将相关属性封装在一起的简便方式。Thrift结构体将会被转换成面向对象语言的类。</p>
 <p>　　异常在语法和功能上类似于结构体，差别是异常使用关键字exception，而且异常是继承每种语言的基础异常类。</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75af00">exception</span> <span style="color:#75af00">Extest</span> <span style="color:#111">{</span> 
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75af00">exception</span> <span style="color:#75af00">Extest</span> <span style="color:#111">{</span> 
 </span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">1</span><span style="color:#111">:</span> <span style="color:#75af00">i32</span> <span style="color:#75af00">errorCode</span><span style="color:#111">,</span>
 </span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">2</span><span style="color:#111">:</span> <span style="color:#00a8c8">string</span> <span style="color:#75af00">message</span><span style="color:#111">,</span>
 </span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">3</span><span style="color:#111">:</span> <span style="color:#75af00">StUser</span> <span style="color:#75af00">userinfo</span>
@@ -151,7 +151,7 @@
 <p>　　服务的定义方法在语义(semantically)上等同于面向对象语言中的接口。Thrift编译器会产生执行这些接口的client和server stub。具体参见下一节。</p>
 <p>　　在流行的序列化/反序列化框架（如protocal buffer）中，Thrift是少有的提供多语言间RPC服务的框架。这是Thrift的一大特色。</p>
 <p>　　Thrift编译器会根据选择的目标语言为server产生服务接口代码，为client产生stubs。</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75af00">service</span> <span style="color:#75af00">SeTest</span> <span style="color:#111">{</span>   <span style="color:#75af00">void</span> <span style="color:#75af00">ping</span><span style="color:#111">(),</span>   <span style="color:#00a8c8">bool</span> <span style="color:#75af00">postTweet</span><span style="color:#111">(</span><span style="color:#ae81ff">1</span><span style="color:#111">:</span> <span style="color:#75af00">StUser</span> <span style="color:#75af00">user</span><span style="color:#111">);</span>   
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75af00">service</span> <span style="color:#75af00">SeTest</span> <span style="color:#111">{</span>   <span style="color:#75af00">void</span> <span style="color:#75af00">ping</span><span style="color:#111">(),</span>   <span style="color:#00a8c8">bool</span> <span style="color:#75af00">postTweet</span><span style="color:#111">(</span><span style="color:#ae81ff">1</span><span style="color:#111">:</span> <span style="color:#75af00">StUser</span> <span style="color:#75af00">user</span><span style="color:#111">);</span>   
 </span></span><span style="display:flex;"><span>    <span style="color:#75af00">StUser</span> <span style="color:#75af00">searchTweets</span><span style="color:#111">(</span><span style="color:#ae81ff">1</span><span style="color:#111">:</span><span style="color:#00a8c8">string</span> <span style="color:#75af00">name</span><span style="color:#111">);</span>  
 </span></span><span style="display:flex;"><span>    <span style="color:#75af00">oneway</span> <span style="color:#75af00">void</span> <span style="color:#75af00">zip</span><span style="color:#111">()</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>　
@@ -171,14 +171,14 @@ namespace py com.example.test
 namespace php com.example.test  
 </code></pre><h3 id="注释comment">注释（Comment）</h3>
 <p>　　Thrift支持C多行风格和Java/C++单行风格。</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">/* 
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">/* 
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e">* This is a multi-line comment. 
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e">* Just like in C. 
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e">*/</span> 
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// C++/Java style single-line comments work just as well.</span>
 </span></span></code></pre></div><h3 id="11includes">11Includes</h3>
 <p>　　便于管理、重用和提高模块性/组织性，我们常常分割Thrift定义在不同的文件中。包含文件搜索方式与c++一样。Thrift允许文件包含其它thrift文件，用户需要使用thrift文件名作为前缀访问被包含的对象，如：</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75af00">include</span> <span style="color:#d88200">&#34;test.thrift&#34;</span>    
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75af00">include</span> <span style="color:#d88200">&#34;test.thrift&#34;</span>    
 </span></span><span style="display:flex;"><span><span style="color:#f92672">...</span> 
 </span></span><span style="display:flex;"><span><span style="color:#00a8c8">struct</span> <span style="color:#75af00">StSearchResult</span> <span style="color:#111">{</span>    
 </span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">1</span><span style="color:#111">:</span> <span style="color:#75af00">in32</span> <span style="color:#75af00">uid</span><span style="color:#111">;</span>
@@ -273,7 +273,7 @@ namespace php com.example.test
 </table>
 <h2 id="代码实现">代码实现</h2>
 <h3 id="编写thrift文件">编写*.thrift文件</h3>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75af00">namespace</span> <span style="color:#00a8c8">go</span> <span style="color:#75af00">example</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75af00">namespace</span> <span style="color:#00a8c8">go</span> <span style="color:#75af00">example</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#00a8c8">struct</span> <span style="color:#75af00">Data</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#ae81ff">1</span><span style="color:#111">:</span> <span style="color:#00a8c8">string</span> <span style="color:#75af00">text</span>
@@ -316,7 +316,7 @@ namespace php com.example.test
 </ul>
 </li>
 </ol>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">/* server.go */</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">/* server.go */</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
 </span></span><span style="display:flex;"><span>
@@ -359,7 +359,7 @@ namespace php com.example.test
 </span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>
 </span></span></code></pre></div><h3 id="python服务端">python服务端</h3>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">from</span> <span style="color:#111">thrift.protocol</span> <span style="color:#f92672">import</span> <span style="color:#111">TBinaryProtocol</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">from</span> <span style="color:#111">thrift.protocol</span> <span style="color:#f92672">import</span> <span style="color:#111">TBinaryProtocol</span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> <span style="color:#111">thrift.server</span> <span style="color:#f92672">import</span> <span style="color:#111">TServer</span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> <span style="color:#111">thrift.transport</span> <span style="color:#f92672">import</span> <span style="color:#111">TSocket</span><span style="color:#111">,</span> <span style="color:#111">TTransport</span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> <span style="color:#111">example</span> <span style="color:#f92672">import</span> <span style="color:#111">format_data</span>
@@ -384,7 +384,7 @@ namespace php com.example.test
 </span></span><span style="display:flex;"><span>    <span style="color:#111">server</span><span style="color:#f92672">.</span><span style="color:#111">serve</span><span style="color:#111">()</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#111">print</span><span style="color:#111">(</span><span style="color:#d88200">&#34;done!&#34;</span><span style="color:#111">)</span>
 </span></span></code></pre></div><h3 id="golang客户端">golang客户端</h3>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;context&#34;</span>
@@ -425,7 +425,7 @@ namespace php com.example.test
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">fmt</span><span style="color:#111">.</span><span style="color:#75af00">Println</span><span style="color:#111">(</span><span style="color:#75af00">d</span><span style="color:#111">)</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>
 </span></span></code></pre></div><p>5.python客户端</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">from</span> <span style="color:#111">example</span> <span style="color:#f92672">import</span> <span style="color:#111">format_data</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">from</span> <span style="color:#111">example</span> <span style="color:#f92672">import</span> <span style="color:#111">format_data</span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> <span style="color:#111">thrift</span> <span style="color:#f92672">import</span> <span style="color:#111">Thrift</span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> <span style="color:#111">thrift.transport</span> <span style="color:#f92672">import</span> <span style="color:#111">TSocket</span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> <span style="color:#111">thrift.transport</span> <span style="color:#f92672">import</span> <span style="color:#111">TTransport</span>

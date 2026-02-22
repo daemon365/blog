@@ -200,7 +200,7 @@ topk(10, http_requests_total)
 <li>下载地址: <a href="https://prometheus.io/download">https://prometheus.io/download</a> 下载对应版本安装</li>
 </ul>
 <h2 id="golang使用prometheus">golang使用prometheus</h2>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;log&#34;</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;math/rand&#34;</span>

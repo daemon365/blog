@@ -51,7 +51,7 @@
 </ol>
 <h3 id="cni-配置文件示例">CNI 配置文件示例</h3>
 <p>CNI 的配置文件是 JSON 格式，一个典型的配置如下：</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span><span style="color:#111">{</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-json" data-lang="json"><span style="display:flex;"><span><span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;cniVersion&#34;</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;0.4.0&#34;</span><span style="color:#111">,</span>
 </span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;name&#34;</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;mynet&#34;</span><span style="color:#111">,</span>
 </span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;type&#34;</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;bridge&#34;</span><span style="color:#111">,</span>
@@ -110,31 +110,31 @@
 <p>如果我们想把 pod 中的网络对外，首先想到的就是七层代理，比如nginx，但是我们并不知道 pod 里的网络一定是 http，甚至他可能不是tcp。所以我们像做一些网络操作，就不能在五层做了，只能在二三四层做。</p>
 <h3 id="docker-实验">Docker 实验</h3>
 <p>当我们在物理机上启动 docker daemon 不需要启动任何容器的时候，使用 ip a 命令查看网卡，发现多了一个 docker0</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>4: docker0: &lt;NO-CARRIER,BROADCAST,MULTICAST,UP&gt; mtu <span style="color:#ae81ff">1500</span> qdisc noqueue state DOWN group default
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>4: docker0: &lt;NO-CARRIER,BROADCAST,MULTICAST,UP&gt; mtu <span style="color:#ae81ff">1500</span> qdisc noqueue state DOWN group default
 </span></span><span style="display:flex;"><span>    link/ether 02:42:9b:65:e1:01 brd ff:ff:ff:ff:ff:ff
 </span></span><span style="display:flex;"><span>    inet 172.17.0.1/16 brd 172.17.255.255 scope global docker0
 </span></span><span style="display:flex;"><span>       valid_lft forever preferred_lft forever
 </span></span></code></pre></div><p>docker0 是一个 linux Bridge 设备，这个可以理解成一个虚拟的交换机，用来做二层网络的转发。当我们启动一个容器的时候，docker 会为这个容器创建一个 veth pair 设备，一个端口挂载在容器的 network namespace 中，另一个端口挂载在 docker0 上。这样容器就可以和 docker0 上的其他容器通信了。</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>docker run -d --rm -it ubuntu:22.04 sleep <span style="color:#ae81ff">3000</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>docker run -d --rm -it ubuntu:22.04 sleep <span style="color:#ae81ff">3000</span>
 </span></span></code></pre></div><p>在物理机上查看 ip a</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>8: veth6bc75d9@if7: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu <span style="color:#ae81ff">1500</span> qdisc noqueue master docker0 state UP group default
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>8: veth6bc75d9@if7: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu <span style="color:#ae81ff">1500</span> qdisc noqueue master docker0 state UP group default
 </span></span><span style="display:flex;"><span>    link/ether d6:87:ca:5c:54:51 brd ff:ff:ff:ff:ff:ff link-netnsid <span style="color:#ae81ff">0</span>
 </span></span><span style="display:flex;"><span>    inet6 fe80::d487:caff:fe5c:5451/64 scope link
 </span></span><span style="display:flex;"><span>       valid_lft forever preferred_lft forever
 </span></span></code></pre></div><p>docker 容器里面 ip a</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>7: eth0@if8: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu <span style="color:#ae81ff">1500</span> qdisc noqueue state UP group default
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>7: eth0@if8: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu <span style="color:#ae81ff">1500</span> qdisc noqueue state UP group default
 </span></span><span style="display:flex;"><span>    link/ether 02:42:ac:11:00:02 brd ff:ff:ff:ff:ff:ff link-netnsid <span style="color:#ae81ff">0</span>
 </span></span><span style="display:flex;"><span>    inet 172.17.0.2/16 brd 172.17.255.255 scope global eth0
 </span></span><span style="display:flex;"><span>       valid_lft forever preferred_lft forever
 </span></span></code></pre></div><p>再启动一个 docker</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>docker run --name <span style="color:#111">test</span> -d --rm -it ubuntu:22.04 sleep <span style="color:#ae81ff">3000</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>docker run --name <span style="color:#111">test</span> -d --rm -it ubuntu:22.04 sleep <span style="color:#ae81ff">3000</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e"># ip a</span>
 </span></span><span style="display:flex;"><span>9: eth0@if10: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu <span style="color:#ae81ff">1500</span> qdisc noqueue state UP group default
 </span></span><span style="display:flex;"><span>    link/ether 02:42:ac:11:00:03 brd ff:ff:ff:ff:ff:ff link-netnsid <span style="color:#ae81ff">0</span>
 </span></span><span style="display:flex;"><span>    inet 172.17.0.3/16 brd 172.17.255.255 scope global eth0
 </span></span><span style="display:flex;"><span>       valid_lft forever preferred_lft forever
 </span></span></code></pre></div><p>这样两个容器就可以通过 docker0 通信了。</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>root@b19a3dc4b32d:/# ping  172.17.0.2
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>root@b19a3dc4b32d:/# ping  172.17.0.2
 </span></span><span style="display:flex;"><span>PING 172.17.0.2 <span style="color:#f92672">(</span>172.17.0.2<span style="color:#f92672">)</span> 56<span style="color:#f92672">(</span>84<span style="color:#f92672">)</span> bytes of data.
 </span></span><span style="display:flex;"><span><span style="color:#ae81ff">64</span> bytes from 172.17.0.2: <span style="color:#111">icmp_seq</span><span style="color:#f92672">=</span><span style="color:#ae81ff">1</span> <span style="color:#111">ttl</span><span style="color:#f92672">=</span><span style="color:#ae81ff">64</span> <span style="color:#111">time</span><span style="color:#f92672">=</span>0.055 ms
 </span></span></code></pre></div><h3 id="通信方式">通信方式</h3>
@@ -161,7 +161,7 @@
 <p>而且路由表跳转是二层网络实现的，所以又要要求所有 node 在同一个二层网络中。</p>
 <p><img src="/images/7be8c8c9-a60b-4717-9f5a-a3e6f44ebed9.png" alt=""></p>
 <p>查看 node1 上的 container 的是设备</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-BASH" data-lang="BASH"><span style="display:flex;"><span>ip a
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-BASH" data-lang="BASH"><span style="display:flex;"><span>ip a
 </span></span><span style="display:flex;"><span>2: eth0@if10: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu <span style="color:#ae81ff">1500</span> qdisc noqueue state UP group default qlen <span style="color:#ae81ff">1000</span>
 </span></span><span style="display:flex;"><span>    link/ether 66:5e:d8:8d:86:ba brd ff:ff:ff:ff:ff:ff link-netnsid <span style="color:#ae81ff">0</span>
 </span></span><span style="display:flex;"><span>    inet 172.10.184.69/32 scope global eth0
@@ -169,17 +169,17 @@
 </span></span><span style="display:flex;"><span>    inet6 fe80::645e:d8ff:fe8d:86ba/64 scope link
 </span></span><span style="display:flex;"><span>       valid_lft forever preferred_lft forever
 </span></span></code></pre></div><p>这个和主机上是对应的是一个 veth pair 设备，一个端口挂载在容器的 network namespace 中，一边挂载在主机上。</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># 主机</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># 主机</span>
 </span></span><span style="display:flex;"><span>ip a
 </span></span><span style="display:flex;"><span>10: calia78b8700057@if2: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu <span style="color:#ae81ff">1500</span> qdisc noqueue state UP group default qlen <span style="color:#ae81ff">1000</span>
 </span></span><span style="display:flex;"><span>    link/ether ee:ee:ee:ee:ee:ee brd ff:ff:ff:ff:ff:ff link-netns cni-0da431c8-dd8b-ca68-55e6-40b04acf78d6
 </span></span><span style="display:flex;"><span>    inet6 fe80::ecee:eeff:feee:eeee/64 scope link
 </span></span><span style="display:flex;"><span>       valid_lft forever preferred_lft forever
 </span></span></code></pre></div><p>当 pod 中的数据包来到主机 查看 node1 上的路由表 会命中一下这条路由 这条的意思是跳到<code>192.168.229.102</code>节点使用 ens33 设备</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>ip r
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>ip r
 </span></span><span style="display:flex;"><span>172.10.190.0/26 via 192.168.229.102 dev ens33 proto bird
 </span></span></code></pre></div><p>当 数据包来到 node2 上的时候 我们看下 node2 的路由表</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-BASH" data-lang="BASH"><span style="display:flex;"><span>ip r
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-BASH" data-lang="BASH"><span style="display:flex;"><span>ip r
 </span></span><span style="display:flex;"><span>172.10.190.2 dev calie28ee63d6b0 scope link
 </span></span><span style="display:flex;"><span>ip a
 </span></span><span style="display:flex;"><span>7: calie28ee63d6b0@if2: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu <span style="color:#ae81ff">1500</span> qdisc noqueue state UP group default qlen <span style="color:#ae81ff">1000</span>
@@ -187,7 +187,7 @@
 </span></span><span style="display:flex;"><span>    inet6 fe80::ecee:eeff:feee:eeee/64 scope link
 </span></span><span style="display:flex;"><span>       valid_lft forever preferred_lft forever
 </span></span></code></pre></div><p>这个设备是 veth pair 设备，对应的容器内的</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-BASH" data-lang="BASH"><span style="display:flex;"><span>ip a
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-BASH" data-lang="BASH"><span style="display:flex;"><span>ip a
 </span></span><span style="display:flex;"><span>2: eth0@if7: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu <span style="color:#ae81ff">1500</span> qdisc noqueue state UP group default qlen <span style="color:#ae81ff">1000</span>
 </span></span><span style="display:flex;"><span>    link/ether fa:a6:2f:97:58:28 brd ff:ff:ff:ff:ff:ff link-netnsid <span style="color:#ae81ff">0</span>
 </span></span><span style="display:flex;"><span>    inet 172.10.190.2/32 scope global eth0
@@ -206,7 +206,7 @@
 <p>刚才也说过了，ip 路由是最高效的，是因为它作用在二层网络上，这就需要保证所有的 node 在同一个二层网络上。但是有时候我们的 node 不在同一个二层网络上，这时候我们可以使用 ip in ip。</p>
 <p>简单来说就是如果 node 之间在一个二层网络上，那么就直接使用 ip 路由，如果不在，那么就使用 ip in ip，把数据包封装起来，然后再发给对应的 node。</p>
 <p>ip-in-ip 是一种隧道技术，它将一个 IP 数据包封装在另一个 IP 数据包中，这样就可以在一个 IP 网络上传输另一个 IP 网络的数据包。</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>172.10.180.0/24 via 192.168.228.28 tunl0
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>172.10.180.0/24 via 192.168.228.28 tunl0
 </span></span></code></pre></div><p><img src="/images/62ebd840-1785-46f6-bd04-7b4e78c8cc0b.png" alt=""></p>
 <p>这个只是在源数据包的三层上再封装一层 IP 头部。相比 VXLAN（封装完整的二层以太网帧），IP-in-IP 只封装 IP 头，开销更小。这样性能方面稍微比使用了 UDP 的 VXLAN 要好一点。但是最好还是避免使用 IP-in-IP，尽量保证 node 在同一个二层网络上。</p>
 <h3 id="我怎么知道-pod-ip-在哪台机器上">我怎么知道 Pod IP 在哪台机器上？</h3>
@@ -331,7 +331,7 @@ IPIPCrossSubnet 和 VXLANCrossSubnet 为同一网段的 node 用路由转发通�
 <h3 id="calico-felix-代码">calico felix 代码</h3>
 <p><img src="/images/calico-felix-ebpf.png" alt=""></p>
 <p>入口</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">/* calico_tc_main is the main function used in all of the tc programs.  It is specialised
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">/* calico_tc_main is the main function used in all of the tc programs.  It is specialised
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * for particular hook at build time based on the CALI_F build flags.
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"> */</span>
 </span></span><span style="display:flex;"><span><span style="color:#75af00">SEC</span><span style="color:#111">(</span><span style="color:#d88200">&#34;tc&#34;</span><span style="color:#111">)</span>
@@ -347,7 +347,7 @@ IPIPCrossSubnet 和 VXLANCrossSubnet 为同一网段的 node 用路由转发通�
 </span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">return</span> <span style="color:#75af00">forward_or_drop</span><span style="color:#111">(</span><span style="color:#75af00">ctx</span><span style="color:#111">);</span>
 </span></span><span style="display:flex;"><span>     
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>
-</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-GO" data-lang="GO"><span style="display:flex;"><span><span style="color:#75715e">/* 尝试将数据包重定向到同节点的 Pod（peer） */</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-GO" data-lang="GO"><span style="display:flex;"><span><span style="color:#75715e">/* 尝试将数据包重定向到同节点的 Pod（peer） */</span>
 </span></span><span style="display:flex;"><span><span style="color:#75af00">static</span> <span style="color:#75af00">CALI_BPF_INLINE</span> <span style="color:#00a8c8">int</span> <span style="color:#75af00">try_redirect_to_peer</span><span style="color:#111">(</span><span style="color:#00a8c8">struct</span> <span style="color:#75af00">cali_tc_ctx</span> <span style="color:#f92672">*</span><span style="color:#75af00">ctx</span><span style="color:#111">)</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 检查是否启用 peer 重定向</span>
@@ -357,7 +357,7 @@ IPIPCrossSubnet 和 VXLANCrossSubnet 为同一网段的 node 用路由转发通�
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">//......</span>
 </span></span><span style="display:flex;"><span>         
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>
-</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-GO" data-lang="GO"><span style="display:flex;"><span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-GO" data-lang="GO"><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// 1. 执行 FIB  查找</span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">*</span><span style="color:#75af00">fib_params</span><span style="color:#111">(</span><span style="color:#75af00">ctx</span><span style="color:#111">)</span> <span style="color:#111">=</span> <span style="color:#111">(</span><span style="color:#00a8c8">struct</span> <span style="color:#75af00">bpf_fib_lookup</span><span style="color:#111">)</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#111">.</span><span style="color:#75af00">family</span> <span style="color:#111">=</span> <span style="color:#ae81ff">2</span><span style="color:#111">,</span>  <span style="color:#75715e">// AF_INET</span>
@@ -373,7 +373,7 @@ IPIPCrossSubnet 和 VXLANCrossSubnet 为同一网段的 node 用路由转发通�
 </span></span><span style="display:flex;"><span><span style="color:#75af00">nh_params</span><span style="color:#111">.</span><span style="color:#75af00">ipv4_nh</span> <span style="color:#111">=</span> <span style="color:#75af00">fib_params</span><span style="color:#111">(</span><span style="color:#75af00">ctx</span><span style="color:#111">)</span><span style="color:#f92672">-</span><span style="color:#111">&gt;</span><span style="color:#75af00">ipv4_dst</span><span style="color:#111">;</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// 3. 使用 bpf 函数直接转发</span>
 </span></span><span style="display:flex;"><span><span style="color:#75af00">rc</span> <span style="color:#111">=</span> <span style="color:#75af00">bpf_redirect_neigh</span><span style="color:#111">(</span><span style="color:#75af00">fib_params</span><span style="color:#111">(</span><span style="color:#75af00">ctx</span><span style="color:#111">)</span><span style="color:#f92672">-</span><span style="color:#111">&gt;</span><span style="color:#75af00">ifindex</span><span style="color:#111">,</span> <span style="color:#f92672">&amp;</span><span style="color:#75af00">nh_params</span><span style="color:#111">,</span> <span style="color:#f92672">...</span><span style="color:#111">);</span>
-</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-GO" data-lang="GO"><span style="display:flex;"><span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-GO" data-lang="GO"><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// 1. VXLAN 封装</span>
 </span></span><span style="display:flex;"><span><span style="color:#00a8c8">if</span> <span style="color:#111">(</span><span style="color:#75af00">vxlan_encap</span><span style="color:#111">(</span><span style="color:#75af00">ctx</span><span style="color:#111">,</span> <span style="color:#f92672">&amp;</span><span style="color:#75af00">STATE</span><span style="color:#f92672">-</span><span style="color:#111">&gt;</span><span style="color:#75af00">ip_src</span><span style="color:#111">,</span> <span style="color:#f92672">&amp;</span><span style="color:#75af00">STATE</span><span style="color:#f92672">-</span><span style="color:#111">&gt;</span><span style="color:#75af00">ip_dst</span><span style="color:#111">,</span> <span style="color:#75af00">vxlan_src_port</span><span style="color:#111">))</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75af00">deny_reason</span><span style="color:#111">(</span><span style="color:#75af00">ctx</span><span style="color:#111">,</span> <span style="color:#75af00">CALI_REASON_ENCAP_FAIL</span><span style="color:#111">);</span>
@@ -882,7 +882,7 @@ HTTPS数据传输流程</p>
 <p>个生活中的场景。你要打电话给一个朋友，先拨号，朋友听到电话铃声后提起电话，这时你和你的朋友就建立起了连接，就可以讲话了。等交流结束，挂断电话结束此次交谈。 生活中的场景就解释了这工作原理。</p>
 <p><img src="/images/b92b90bc-d7eb-4302-a3ad-6447442453d2.png" alt=""></p>
 <p>先从服务器端说起。服务器端先初始化Socket，然后与端口绑定(bind)，对端口进行监听(listen)，调用accept阻塞，等待客户端连接。在这时如果有个客户端初始化一个Socket，然后连接服务器(connect)，如果连接成功，这时客户端与服务器端的连接就建立了。客户端发送数据请求，服务器端接收请求并处理请求，然后把回应数据发送给客户端，客户端读取数据，最后关闭连接，一次交互结束 细说socket()模块函数用法</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">socket</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">socket</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">socket</span><span style="color:#f92672">.</span><span style="color:#111">socket</span><span style="color:#111">(</span><span style="color:#111">socket_family</span><span style="color:#111">,</span><span style="color:#111">socket_type</span><span style="color:#111">,</span><span style="color:#111">protocal</span><span style="color:#f92672">=</span><span style="color:#ae81ff">0</span><span style="color:#111">)</span>
 </span></span><span style="display:flex;"><span> <span style="color:#111">socket_family</span> <span style="color:#111">可以是</span> <span style="color:#111">AF_UNIX</span> <span style="color:#111">或</span> <span style="color:#111">AF_INET</span><span style="color:#960050;background-color:#1e0010">。</span><span style="color:#111">socket_type</span> <span style="color:#111">可以是</span> <span style="color:#111">SOCK_STREAM</span> <span style="color:#111">或</span> <span style="color:#111">SOCK_DGRAM</span><span style="color:#960050;background-color:#1e0010">。</span><span style="color:#111">protocol</span> <span style="color:#111">一般不填</span><span style="color:#111">,</span><span style="color:#111">默认值为</span> <span style="color:#ae81ff">0</span><span style="color:#960050;background-color:#1e0010">。</span>
 </span></span><span style="display:flex;"><span>
@@ -924,7 +924,7 @@ HTTPS数据传输流程</p>
 </span></span><span style="display:flex;"><span><span style="color:#111">s</span><span style="color:#f92672">.</span><span style="color:#111">fileno</span><span style="color:#111">()</span>          <span style="color:#111">套接字的文件描述符</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">s</span><span style="color:#f92672">.</span><span style="color:#111">makefile</span><span style="color:#111">()</span>        <span style="color:#111">创建一个与该套接字相关的文件</span>
 </span></span></code></pre></div><p>第一版，单个客户端与服务端通信（low版）</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">socket</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">socket</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#111">phone</span> <span style="color:#f92672">=</span> <span style="color:#111">socket</span><span style="color:#f92672">.</span><span style="color:#111">socket</span><span style="color:#111">(</span><span style="color:#111">socket</span><span style="color:#f92672">.</span><span style="color:#111">AF_INET</span><span style="color:#111">,</span><span style="color:#111">socket</span><span style="color:#f92672">.</span><span style="color:#111">SOCK_STREAM</span><span style="color:#111">)</span>  <span style="color:#75715e"># 买电话</span>
 </span></span><span style="display:flex;"><span>
@@ -962,7 +962,7 @@ HTTPS数据传输流程</p>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#111">服务端</span>
 </span></span></code></pre></div><p>第二版，通信循环</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">socket</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">socket</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#111">phone</span> <span style="color:#f92672">=</span> <span style="color:#111">socket</span><span style="color:#f92672">.</span><span style="color:#111">socket</span><span style="color:#111">(</span><span style="color:#111">socket</span><span style="color:#f92672">.</span><span style="color:#111">AF_INET</span><span style="color:#111">,</span><span style="color:#111">socket</span><span style="color:#f92672">.</span><span style="color:#111">SOCK_STREAM</span><span style="color:#111">)</span>
 </span></span><span style="display:flex;"><span>
@@ -1003,7 +1003,7 @@ HTTPS数据传输流程</p>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#111">phone</span><span style="color:#f92672">.</span><span style="color:#111">close</span><span style="color:#111">()</span>  <span style="color:#75715e"># 挂电话</span>
 </span></span></code></pre></div><p>第三版， 通信，连接循环</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">socket</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">socket</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#111">phone</span> <span style="color:#f92672">=</span> <span style="color:#111">socket</span><span style="color:#f92672">.</span><span style="color:#111">socket</span><span style="color:#111">(</span><span style="color:#111">socket</span><span style="color:#f92672">.</span><span style="color:#111">AF_INET</span><span style="color:#111">,</span><span style="color:#111">socket</span><span style="color:#f92672">.</span><span style="color:#111">SOCK_STREAM</span><span style="color:#111">)</span>
 </span></span><span style="display:flex;"><span>
@@ -1044,7 +1044,7 @@ HTTPS数据传输流程</p>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#111">phone</span><span style="color:#f92672">.</span><span style="color:#111">close</span><span style="color:#111">()</span>  <span style="color:#75715e"># 挂电话</span>
 </span></span></code></pre></div><p><em><strong>详解recv的工作原理</strong></em></p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#d88200">&#39;&#39;&#39;
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#d88200">&#39;&#39;&#39;
 </span></span></span><span style="display:flex;"><span><span style="color:#d88200">源码解释：
 </span></span></span><span style="display:flex;"><span><span style="color:#d88200">Receive up to buffersize bytes from the socket.
 </span></span></span><span style="display:flex;"><span><span style="color:#d88200">接收来自socket缓冲区的字节数据，
@@ -1147,7 +1147,7 @@ HTTPS数据传输流程</p>
 </span></span><span style="display:flex;"><span><span style="color:#111">phone</span><span style="color:#f92672">.</span><span style="color:#111">send</span><span style="color:#111">(</span><span style="color:#d88200">&#39;hello&#39;</span><span style="color:#f92672">.</span><span style="color:#111">encode</span><span style="color:#111">(</span><span style="color:#d88200">&#39;utf-8&#39;</span><span style="color:#111">))</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">phone</span><span style="color:#f92672">.</span><span style="color:#111">close</span><span style="color:#111">()</span>
 </span></span></code></pre></div><p>远程执行命令的示例：</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">socket</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">socket</span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">subprocess</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#111">phone</span> <span style="color:#f92672">=</span> <span style="color:#111">socket</span><span style="color:#f92672">.</span><span style="color:#111">socket</span><span style="color:#111">(</span><span style="color:#111">socket</span><span style="color:#f92672">.</span><span style="color:#111">AF_INET</span><span style="color:#111">,</span><span style="color:#111">socket</span><span style="color:#f92672">.</span><span style="color:#111">SOCK_STREAM</span><span style="color:#111">)</span>
@@ -1189,7 +1189,7 @@ HTTPS数据传输流程</p>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#111">phone</span><span style="color:#f92672">.</span><span style="color:#111">close</span><span style="color:#111">()</span>  <span style="color:#75715e"># 挂电话</span>
 </span></span></code></pre></div><h5 id="远程执行命令">远程执行命令</h5>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">socket</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">socket</span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">subprocess</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">phone</span> <span style="color:#f92672">=</span> <span style="color:#111">socket</span><span style="color:#f92672">.</span><span style="color:#111">socket</span><span style="color:#111">()</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">phone</span><span style="color:#f92672">.</span><span style="color:#111">bind</span><span style="color:#111">((</span><span style="color:#d88200">&#34;127.0.0.1&#34;</span><span style="color:#111">,</span><span style="color:#ae81ff">8848</span><span style="color:#111">))</span>
@@ -1250,7 +1250,7 @@ HTTPS数据传输流程</p>
 <ol>
 <li>
 <p>接收方没有及时接收缓冲区的包，造成多个包接收（客户端发送了一段数据，服务端只收了一小部分，服务端下次再收的时候还是从缓冲区拿上次遗留的数据，产生粘包）</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">socket</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">socket</span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">subprocess</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#111">phone</span> <span style="color:#f92672">=</span> <span style="color:#111">socket</span><span style="color:#f92672">.</span><span style="color:#111">socket</span><span style="color:#111">(</span><span style="color:#111">socket</span><span style="color:#f92672">.</span><span style="color:#111">AF_INET</span><span style="color:#111">,</span> <span style="color:#111">socket</span><span style="color:#f92672">.</span><span style="color:#111">SOCK_STREAM</span><span style="color:#111">)</span>
@@ -1277,7 +1277,7 @@ HTTPS数据传输流程</p>
 </span></span><span style="display:flex;"><span><span style="color:#111">phone</span><span style="color:#f92672">.</span><span style="color:#111">close</span><span style="color:#111">()</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e"># 服务端</span>
-</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">socket</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">socket</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#111">phone</span> <span style="color:#f92672">=</span> <span style="color:#111">socket</span><span style="color:#f92672">.</span><span style="color:#111">socket</span><span style="color:#111">(</span><span style="color:#111">socket</span><span style="color:#f92672">.</span><span style="color:#111">AF_INET</span><span style="color:#111">,</span><span style="color:#111">socket</span><span style="color:#f92672">.</span><span style="color:#111">SOCK_STREAM</span><span style="color:#111">)</span>  <span style="color:#75715e"># 买电话</span>
 </span></span><span style="display:flex;"><span>
@@ -1300,7 +1300,7 @@ HTTPS数据传输流程</p>
 </span></span></code></pre></div></li>
 <li>
 <p>发送端需要等缓冲区满才发送出去，造成粘包（发送数据时间间隔很短，数据也很小，会合到一起，产生粘包）</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">socket</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">socket</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#111">phone</span> <span style="color:#f92672">=</span> <span style="color:#111">socket</span><span style="color:#f92672">.</span><span style="color:#111">socket</span><span style="color:#111">(</span><span style="color:#111">socket</span><span style="color:#f92672">.</span><span style="color:#111">AF_INET</span><span style="color:#111">,</span> <span style="color:#111">socket</span><span style="color:#f92672">.</span><span style="color:#111">SOCK_STREAM</span><span style="color:#111">)</span>
@@ -1321,7 +1321,7 @@ HTTPS数据传输流程</p>
 </span></span><span style="display:flex;"><span><span style="color:#111">phone</span><span style="color:#f92672">.</span><span style="color:#111">close</span><span style="color:#111">()</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e"># 服务端</span>
-</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">socket</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">socket</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#111">phone</span> <span style="color:#f92672">=</span> <span style="color:#111">socket</span><span style="color:#f92672">.</span><span style="color:#111">socket</span><span style="color:#111">(</span><span style="color:#111">socket</span><span style="color:#f92672">.</span><span style="color:#111">AF_INET</span><span style="color:#111">,</span> <span style="color:#111">socket</span><span style="color:#f92672">.</span><span style="color:#111">SOCK_STREAM</span><span style="color:#111">)</span>  
 </span></span><span style="display:flex;"><span>
@@ -1341,7 +1341,7 @@ HTTPS数据传输流程</p>
 <p><strong>先介绍一下struct模块：</strong></p>
 <p>该模块可以把一个类型，如数字，转成固定长度的bytes</p>
 <p><img src="https://uploadfiles.nowcoder.com/images/20200914/877190903_1600072166956_2662C697DDE960B32656C50BFB566938" alt="img"></p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">struct</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">struct</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e"># 将一个数字转化成等长度的bytes类型。</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">ret</span> <span style="color:#f92672">=</span> <span style="color:#111">struct</span><span style="color:#f92672">.</span><span style="color:#111">pack</span><span style="color:#111">(</span><span style="color:#d88200">&#39;i&#39;</span><span style="color:#111">,</span> <span style="color:#ae81ff">183346</span><span style="color:#111">)</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">print</span><span style="color:#111">(</span><span style="color:#111">ret</span><span style="color:#111">,</span> <span style="color:#111">type</span><span style="color:#111">(</span><span style="color:#111">ret</span><span style="color:#111">),</span> <span style="color:#111">len</span><span style="color:#111">(</span><span style="color:#111">ret</span><span style="color:#111">))</span>
@@ -1361,7 +1361,7 @@ HTTPS数据传输流程</p>
 <ul>
 <li>问题的根源在于，接收端不知道发送端将要传送的字节流的长度，所以解决粘包的方法就是围绕，如何让发送端在发送数据前，把自己将要发送的字节流总数按照固定字节发送给接收端后面跟上总数据，然后接收端先接收固定字节的总字节流，再来一个死循环接收完所有数据。</li>
 </ul>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">socket</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">socket</span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">subprocess</span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">struct</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">phone</span> <span style="color:#f92672">=</span> <span style="color:#111">socket</span><span style="color:#f92672">.</span><span style="color:#111">socket</span><span style="color:#111">(</span><span style="color:#111">socket</span><span style="color:#f92672">.</span><span style="color:#111">AF_INET</span><span style="color:#111">,</span> <span style="color:#111">socket</span><span style="color:#f92672">.</span><span style="color:#111">SOCK_STREAM</span><span style="color:#111">)</span>
@@ -1403,7 +1403,7 @@ HTTPS数据传输流程</p>
 </span></span><span style="display:flex;"><span><span style="color:#75715e"># 2，通过struct模块直接数据处理，不能处理太大。</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e"># 服务端</span>
-</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">socket</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">socket</span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">struct</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">phone</span> <span style="color:#f92672">=</span> <span style="color:#111">socket</span><span style="color:#f92672">.</span><span style="color:#111">socket</span><span style="color:#111">(</span><span style="color:#111">socket</span><span style="color:#f92672">.</span><span style="color:#111">AF_INET</span><span style="color:#111">,</span><span style="color:#111">socket</span><span style="color:#f92672">.</span><span style="color:#111">SOCK_STREAM</span><span style="color:#111">)</span>
 </span></span><span style="display:flex;"><span>
@@ -1447,7 +1447,7 @@ HTTPS数据传输流程</p>
 <p>整体的流程解释</p>
 </li>
 </ul>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">socket</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">socket</span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">subprocess</span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">struct</span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">json</span>
@@ -1500,7 +1500,7 @@ HTTPS数据传输流程</p>
 </span></span><span style="display:flex;"><span><span style="color:#111">phone</span><span style="color:#f92672">.</span><span style="color:#111">close</span><span style="color:#111">()</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e"># 服务端</span>
-</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">socket</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">socket</span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">struct</span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">json</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">phone</span> <span style="color:#f92672">=</span> <span style="color:#111">socket</span><span style="color:#f92672">.</span><span style="color:#111">socket</span><span style="color:#111">(</span><span style="color:#111">socket</span><span style="color:#f92672">.</span><span style="color:#111">AF_INET</span><span style="color:#111">,</span><span style="color:#111">socket</span><span style="color:#f92672">.</span><span style="color:#111">SOCK_STREAM</span><span style="color:#111">)</span>
@@ -1569,7 +1569,7 @@ print(back_msg.decode(&#39;utf-8&#39;),addr)
 </code></pre><ul>
 <li>类似于qq聊天的代码示例：</li>
 </ul>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#75715e">#_*_coding:utf-8_*_</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#75715e">#_*_coding:utf-8_*_</span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">socket</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">ip_port</span><span style="color:#f92672">=</span><span style="color:#111">(</span><span style="color:#d88200">&#39;127.0.0.1&#39;</span><span style="color:#111">,</span><span style="color:#ae81ff">8081</span><span style="color:#111">)</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">udp_server_sock</span><span style="color:#f92672">=</span><span style="color:#111">socket</span><span style="color:#f92672">.</span><span style="color:#111">socket</span><span style="color:#111">(</span><span style="color:#111">socket</span><span style="color:#f92672">.</span><span style="color:#111">AF_INET</span><span style="color:#111">,</span><span style="color:#111">socket</span><span style="color:#f92672">.</span><span style="color:#111">SOCK_DGRAM</span><span style="color:#111">)</span> <span style="color:#75715e">#DGRAM:datagram 数据报文的意思，象征着UDP协议的通信方式</span>

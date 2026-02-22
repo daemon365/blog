@@ -18,7 +18,7 @@
 &lt;p&gt;&lt;code&gt;ClientSet&lt;/code&gt;，&lt;code&gt;DynamicClient&lt;/code&gt;，&lt;code&gt;DiscoveryClient&lt;/code&gt;都是&lt;code&gt;RestClient&lt;/code&gt;上的封装&lt;/p&gt;
 &lt;h3 id="restclient"&gt;RestClient&lt;/h3&gt;
 &lt;p&gt;RestClient是最基础的客户端，它基于HTTP请求进行了封装，实现了RESTful API。使用RESTClient提供的RESTful方法，如Get()、Put()、Post()和Delete()，可以直接与API进行交互。同时，它支持JSON和Protocol Buffers，并支持所有原生资源和自定义资源定义（CRDs）。然而，为了更加优雅地处理API交互，一般需要进一步封装，通过Clientset对RESTClient进行封装，然后再对外提供接口和服务。&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-go" data-lang="go"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f92672"&gt;package&lt;/span&gt; &lt;span style="color:#75af00"&gt;main&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-go" data-lang="go"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f92672"&gt;package&lt;/span&gt; &lt;span style="color:#75af00"&gt;main&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f92672"&gt;import&lt;/span&gt; &lt;span style="color:#111"&gt;(&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;context&amp;#34;&lt;/span&gt;
@@ -89,7 +89,7 @@
 <p><code>ClientSet</code>，<code>DynamicClient</code>，<code>DiscoveryClient</code>都是<code>RestClient</code>上的封装</p>
 <h3 id="restclient">RestClient</h3>
 <p>RestClient是最基础的客户端，它基于HTTP请求进行了封装，实现了RESTful API。使用RESTClient提供的RESTful方法，如Get()、Put()、Post()和Delete()，可以直接与API进行交互。同时，它支持JSON和Protocol Buffers，并支持所有原生资源和自定义资源定义（CRDs）。然而，为了更加优雅地处理API交互，一般需要进一步封装，通过Clientset对RESTClient进行封装，然后再对外提供接口和服务。</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;context&#34;</span>
@@ -141,7 +141,7 @@
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e">*/</span>
 </span></span></code></pre></div><h3 id="clientset">ClientSet</h3>
 <p>ClientSet是在RestClient的基础上封装了对资源和版本的管理方法。资源可以理解为一个客户端，而ClientSet是多个客户端的集合。在操作资源对象时，需要指定Group和Version，然后根据资源获取。然而，ClientSet不支持自定义资源定义（CRDs），但使用kubebuilder生成代码时，会生成相应的ClientSet。</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;context&#34;</span>
@@ -198,7 +198,7 @@
 <p>DynamicClient是一种动态客户端，它可以对任何资源进行RESTful操作，包括自定义资源定义（CRD）。与ClientSet不同，DynamicClient返回的对象是一个map[string]interface{}。如果一个控制器需要控制所有的API，可以使用DynamicClient。目前，DynamicClient在垃圾回收器和命名空间控制器中被广泛使用。</p>
 <p>DynamicClient的处理过程将Resource（例如PodList）转换为unstructured类型。Kubernetes的所有资源都可以转换为这个结构类型。处理完毕后，再将其转换回PodList。整个转换过程类似于接口转换，即通过interface{}的断言实现。</p>
 <p>DynamicClient是一种动态的客户端，它能处理Kubernetes所有的资源，但仅支持JSON</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;context&#34;</span>
@@ -253,7 +253,7 @@
 </span></span></code></pre></div><p>其中，GVR（group,version,resource） 用于标识 Kubernetes API 中的资源类型，其中 Group 表示 API 群组，Version 表示 API 版本，Resource 表示资源类型。例如，Deployment 的 GVR 为 &ldquo;apps/v1/deployments&rdquo;，其中 &ldquo;apps&rdquo; 是 API 群组，&ldquo;v1&rdquo; 是 API 版本，&ldquo;deployments&rdquo; 是资源类型。</p>
 <h3 id="discoveryclient">DiscoveryClient</h3>
 <p>DiscoveryClient 是一个发现客户端，它的主要作用是用于发现 API Server 支持的资源组、资源版本和资源信息。在 Kubernetes 中，API Server 支持很多资源组、资源版本和资源信息，我们可以通过使用 DiscoveryClient 来查看这些信息。此外，kubectl 的 API 版本和 API 资源也是通过 DiscoveryClient 来实现的。我们还可以将这些信息缓存到本地，以减轻 API 访问的压力。缓存文件默认存储在 <code>./kube/cache</code> 和 <code>./kube/http-cache</code> 目录下。</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;fmt&#34;</span>
@@ -403,7 +403,7 @@
 <h3 id="informer">informer</h3>
 <p>Informer是Kubernetes API客户端中一种重要的机制，它可以实现对资源对象的监视和事件通知。当Kubernetes集群中的资源对象发生变化时，Informer可以及时地获取到这些变化，并将这些变化以事件的形式通知给相关的监听器。Informer通过调用API Server提供的REST接口，以及Kubernetes中定义的watch机制，实现了对集群资源对象的全面监视。</p>
 <p>下面是一个简单的pod informer示例，用于监控所有pod的变化并将其放入队列中，worker从队列中取出pod并打印相关信息。</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;fmt&#34;</span>
@@ -549,7 +549,7 @@
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e">*/</span>
 </span></span></code></pre></div><h3 id="indexer">indexer</h3>
 <p>Indexer是client-go中用于本地缓存资源对象的一种方式。它支持多种索引方式，并且可以使用函数<code>func(obj interface{}) ([]string, error)</code>进行索引。在检索时，需要使用相同的<code>indexName</code>参数。借助<code>informer</code>，indexer就可以维护一个特定资源的本地缓存，例如pod、namespace等。这种方法省去了每次get pod都要访问api-server的过程，从而减小了api-server的压力。</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// 如何使用索引器来检索Pod对象</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// 如何使用索引器来检索Pod对象</span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
@@ -654,7 +654,7 @@
 <li>提高代码复用性：由于Lister接口已经提供了通用的方法，因此可以更容易地在不同的代码模块中重用相同的逻辑，减少代码重复。</li>
 </ol>
 <p>总之，Lister作为client-go包中的一个重要组件，可以帮助开发者更加高效地处理Kubernetes资源对象，提高代码的可读性和可重用性。</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;fmt&#34;</span>

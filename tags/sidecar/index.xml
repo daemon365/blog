@@ -18,7 +18,7 @@
 <h2 id="流量劫持方式">流量劫持方式</h2>
 <p>在 test 访问 nginx 的例子中，我们可以看到 nginx 的容器是启动在 80 端口上的，流量也是访问的 80, sidecar 是怎么劫持到的呢？而且，在 test pod 中，我们访问的是 nginx 的 service，流量又是怎么劫持到 sidecar 的呢？</p>
 <p>刚刚说过，pod 除了被插入了一个 sidecar 容器，还被插入了一个 initcontainer，我们启动一个 nginx pod 和 service 看一下。</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-YAML" data-lang="YAML"><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span><span style="color:#111">:</span> <span style="color:#ae81ff">apps/v1</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-YAML" data-lang="YAML"><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span><span style="color:#111">:</span> <span style="color:#ae81ff">apps/v1</span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span><span style="color:#111">:</span> <span style="color:#ae81ff">Deployment</span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span><span style="color:#111">:</span>
 </span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span><span style="color:#111">:</span> <span style="color:#ae81ff">nginx</span>
@@ -52,11 +52,11 @@
 </span></span><span style="display:flex;"><span>    <span style="color:#f92672">port</span><span style="color:#111">:</span> <span style="color:#ae81ff">80</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#f92672">targetPort</span><span style="color:#111">:</span> <span style="color:#ae81ff">80</span>
 </span></span><span style="display:flex;"><span>  <span style="color:#f92672">type</span><span style="color:#111">:</span> <span style="color:#ae81ff">ClusterIP</span>
-</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>kubectl create ns <span style="color:#111">test</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>kubectl create ns <span style="color:#111">test</span>
 </span></span><span style="display:flex;"><span>kubectl label namespace <span style="color:#111">test</span> istio-injection<span style="color:#f92672">=</span>enabled <span style="color:#75715e"># 开启 istio 注入</span>
 </span></span><span style="display:flex;"><span>kubectl -n <span style="color:#111">test</span> apply -f nginx.yaml
 </span></span></code></pre></div><p>现在我们看一下 nginx pod 被插入的 sidecar 和 initcontainer</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-YAML" data-lang="YAML"><span style="display:flex;"><span><span style="color:#75715e">## sidecar</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-YAML" data-lang="YAML"><span style="display:flex;"><span><span style="color:#75715e">## sidecar</span>
 </span></span><span style="display:flex;"><span>  - <span style="color:#f92672">args</span><span style="color:#111">:</span>
 </span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">proxy</span>
 </span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">sidecar</span>
@@ -88,7 +88,7 @@
 </span></span><span style="display:flex;"><span>    - --<span style="color:#ae81ff">log_output_level=default:info</span>
 </span></span></code></pre></div><p>可以看到，initcontainer 是自动执行了一系列的脚本，这个脚本我们并不知道是做啥的，但是从名字可以看出来是 iptables 的操作，那么我们看一下 iptables 的规则</p>
 <p>这里我们容器内没有 iptables，所以我们在宿主机上查看 在nginx pod 所在的主机上查看，先确定 nginx 这个container 的 pid。</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># 从 pod 的 status 中的容器的 uid</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># 从 pod 的 status 中的容器的 uid</span>
 </span></span><span style="display:flex;"><span> kubectl get pod -n <span style="color:#111">test</span> nginx-7c79c4bf97-7985c -o <span style="color:#111">jsonpath</span><span style="color:#f92672">=</span><span style="color:#d88200">&#39;{.status.containerStatuses[0].container
 </span></span></span><span style="display:flex;"><span><span style="color:#d88200">ID}&#39;</span>
 </span></span><span style="display:flex;"><span>docker://b0d6c9060661e0912a35d33ff220e67a628c9fc5300ca3c67dc30f9e40c9e0ce%
@@ -101,7 +101,7 @@
 </span></span><span style="display:flex;"><span><span style="color:#75715e"># Warning: iptables-legacy tables present, use iptables-legacy-save to see them</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e"># 说明这个容器使用的是 iptables-legacy 我们按提示执行</span>
 </span></span><span style="display:flex;"><span>nsenter -t <span style="color:#ae81ff">4652</span> -n -- iptables-legacy-save
-</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># Generated by iptables-save v1.8.7 on Sun May 12 05:53:29 2024</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># Generated by iptables-save v1.8.7 on Sun May 12 05:53:29 2024</span>
 </span></span><span style="display:flex;"><span>*nat
 </span></span><span style="display:flex;"><span>:PREROUTING ACCEPT <span style="color:#f92672">[</span>54:3240<span style="color:#f92672">]</span>
 </span></span><span style="display:flex;"><span>:INPUT ACCEPT <span style="color:#f92672">[</span>54:3240<span style="color:#f92672">]</span>
@@ -150,7 +150,7 @@
 </span></span><span style="display:flex;"><span><span style="color:#75715e"># Completed on Sun May 12 05:53:29 2024</span>
 </span></span></code></pre></div><p>为什么 <code>--uid-owner 1337</code> 和 <code>--gid-owner 1337</code> 就代表 owner 是 envoy 呢？</p>
 <p>因为 envot (istio proxy) 是以 uid 和 gid 起来的。</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-BASH" data-lang="BASH"><span style="display:flex;"><span>kubectl get pod -n <span style="color:#111">test</span> nginx-7c79c4bf97-7985c -o <span style="color:#111">jsonpath</span><span style="color:#f92672">=</span><span style="color:#d88200">&#39;{.spec.containers[1].name}&#39;</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-BASH" data-lang="BASH"><span style="display:flex;"><span>kubectl get pod -n <span style="color:#111">test</span> nginx-7c79c4bf97-7985c -o <span style="color:#111">jsonpath</span><span style="color:#f92672">=</span><span style="color:#d88200">&#39;{.spec.containers[1].name}&#39;</span>
 </span></span><span style="display:flex;"><span>istio-proxy
 </span></span><span style="display:flex;"><span>kubectl get pod -n <span style="color:#111">test</span> nginx-7c79c4bf97-7985c -o <span style="color:#111">jsonpath</span><span style="color:#f92672">=</span><span style="color:#d88200">&#39;{.spec.containers[1].securityContext.ru
 </span></span></span><span style="display:flex;"><span><span style="color:#d88200">nAsGroup}&#39;</span>
@@ -185,7 +185,7 @@
 <p>那这些 xDS 的配置来自哪呢？</p>
 <p>这些 envoy 配置都来自于 istiod，istiod 是 istio 的控制平面，它会使用 grpc stream 的方式，动态的更新 envoy 的配置。istiod 会监听 kubernetes 的资源变化，比如 service, endpoint 和 istio 自己 CRD 等，组合成一个配置，然后定时的推送给 envoy。这样就实现了动态配置。</p>
 <p>比如我们这个 service 的配置，查看 service 和 endpoints 就知道 service clusterIp 对应的 pod ip。</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-BASH" data-lang="BASH"><span style="display:flex;"><span>kubectl -n <span style="color:#111">test</span> get svc nginx
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-BASH" data-lang="BASH"><span style="display:flex;"><span>kubectl -n <span style="color:#111">test</span> get svc nginx
 </span></span><span style="display:flex;"><span>NAME    TYPE        CLUSTER-IP       EXTERNAL-IP   PORT<span style="color:#f92672">(</span>S<span style="color:#f92672">)</span>   AGE
 </span></span><span style="display:flex;"><span>nginx   ClusterIP   10.102.168.134   &lt;none&gt;        80/TCP    112m
 </span></span><span style="display:flex;"><span> kubectl -n <span style="color:#111">test</span> get endpoints nginx 
@@ -197,28 +197,28 @@
 <p><img src="/images/2e85632c-fce1-4107-ac22-2c3865093750.png" alt=""></p>
 <h2 id="配置查看">配置查看</h2>
 <p>我们可以通过调用 pod 中的 envoy 的 admin api 来查看配置</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-BASH" data-lang="BASH"><span style="display:flex;"><span>kubectl port-forward pod/nginx-7c79c4bf97-7985c 15000:15000
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-BASH" data-lang="BASH"><span style="display:flex;"><span>kubectl port-forward pod/nginx-7c79c4bf97-7985c 15000:15000
 </span></span><span style="display:flex;"><span>curl http://localhost:15000/config_dump 
 </span></span></code></pre></div><p>打印出的 json 格式的配置文件，它而很大看起来很不方便，幸好 istio 给我们提供了一个工具 istioctl，我们可以使用 istioctl 来查看配置。</p>
 <p>因为我们流量是从 test pod 到 nginx pod，所以所限我们查看 test pod 中的 envoy 的配置。</p>
 <p><strong>1.首先我们看下 listerner 15001 的配置 因为从 iptables 我们知道 出去的流量会被劫持到 15001</strong></p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-BASH" data-lang="BASH"><span style="display:flex;"><span>istioctl -n <span style="color:#111">test</span> proxy-config listener test-f5b5d48b5-qdzft --port <span style="color:#ae81ff">15001</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-BASH" data-lang="BASH"><span style="display:flex;"><span>istioctl -n <span style="color:#111">test</span> proxy-config listener test-f5b5d48b5-qdzft --port <span style="color:#ae81ff">15001</span>
 </span></span><span style="display:flex;"><span>ADDRESSES PORT  MATCH         DESTINATION
 </span></span><span style="display:flex;"><span>0.0.0.0   <span style="color:#ae81ff">15001</span> ALL           PassthroughCluster
 </span></span><span style="display:flex;"><span>0.0.0.0   <span style="color:#ae81ff">15001</span> Addr: *:15001 Non-HTTP/Non-TCP
 </span></span></code></pre></div><p>首先会监听 15001 端口，这个是真是监听的端口。它会转发到虚拟端口（Virtual Port），虚拟端口不会真是监听操作系统端口，它只是envoy的逻辑端口。那我们怎么知道流量转发到哪个虚拟端口了？请求的端口是什么，就转发到哪个了。比如我们请求的是 nginx 80 端口，就会转发到 80 虚拟端口</p>
 <p><strong>2.查看 listener 的虚拟端口，nginx service ip 10.102.168.134 prot 80</strong></p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-BASH" data-lang="BASH"><span style="display:flex;"><span>istioctl -n <span style="color:#111">test</span> proxy-config listener test-f5b5d48b5-qdzft --port <span style="color:#ae81ff">80</span> --address 10.102.168.134
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-BASH" data-lang="BASH"><span style="display:flex;"><span>istioctl -n <span style="color:#111">test</span> proxy-config listener test-f5b5d48b5-qdzft --port <span style="color:#ae81ff">80</span> --address 10.102.168.134
 </span></span><span style="display:flex;"><span>ADDRESSES      PORT MATCH                                DESTINATION
 </span></span><span style="display:flex;"><span>10.102.168.134 <span style="color:#ae81ff">80</span>   Trans: raw_buffer<span style="color:#111">;</span> App: http/1.1,h2c Route: nginx.test.svc.cluster.local:80
 </span></span><span style="display:flex;"><span>10.102.168.134 <span style="color:#ae81ff">80</span>   ALL                                  Cluster: outbound<span style="color:#111">|</span>80<span style="color:#f92672">||</span>nginx.test.svc.cluster.local
 </span></span></code></pre></div><p>第一条是明文而且是 http/1.1 或者 h2c 无加密的 http/2）协议的流量会被转发到 nginx.test.svc.cluster.local:80</p>
 <p><strong>3.查看 route 配置</strong></p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>istioctl -n <span style="color:#111">test</span> proxy-config route test-f5b5d48b5-qdzft <span style="color:#111">|</span>grep nginx.test.svc.cluster.local
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>istioctl -n <span style="color:#111">test</span> proxy-config route test-f5b5d48b5-qdzft <span style="color:#111">|</span>grep nginx.test.svc.cluster.local
 </span></span><span style="display:flex;"><span>nginx.test.svc.cluster.local:80                               nginx.test.svc.cluster.local:80                               *                                                    /*
 </span></span><span style="display:flex;"><span><span style="color:#ae81ff">80</span>                                                            nginx.test.svc.cluster.local:80                               nginx, nginx.test + <span style="color:#ae81ff">1</span> more...                        /*
 </span></span></code></pre></div><p>这里我们没有指定 host 所以走第一条</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-YAML" data-lang="YAML"><span style="display:flex;"><span><span style="color:#75715e">#  istioctl -n test proxy-config route test-f5b5d48b5-qdzft --name nginx.test.svc.cluster.local:80 -oyaml </span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-YAML" data-lang="YAML"><span style="display:flex;"><span><span style="color:#75715e">#  istioctl -n test proxy-config route test-f5b5d48b5-qdzft --name nginx.test.svc.cluster.local:80 -oyaml </span>
 </span></span><span style="display:flex;"><span>- <span style="color:#f92672">ignorePortInHostMatching</span><span style="color:#111">:</span> <span style="color:#00a8c8">true</span>
 </span></span><span style="display:flex;"><span>  <span style="color:#f92672">maxDirectResponseBodySizeBytes</span><span style="color:#111">:</span> <span style="color:#ae81ff">1048576</span>
 </span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span><span style="color:#111">:</span> <span style="color:#ae81ff">nginx.test.svc.cluster.local:80</span>
@@ -250,7 +250,7 @@
 </span></span><span style="display:flex;"><span>        <span style="color:#f92672">timeout</span><span style="color:#111">:</span> <span style="color:#ae81ff">0s</span>
 </span></span></code></pre></div><p>可以看到，match 的路由是 prefix 是 /，也就是所有的请求都会走这个路由，这个路由会把流量转发到 <code>outbound|80||nginx.test.svc.cluster.local</code> 这个 cluster 中。</p>
 <p><strong>4.我们查看 cluster</strong></p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#75715e"># istioctl -n test proxy-config cluster test-f5b5d48b5-qdzft --fqdn &#34;outbound|80||nginx.test.svc.cluster.local&#34; -oyaml</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#75715e"># istioctl -n test proxy-config cluster test-f5b5d48b5-qdzft --fqdn &#34;outbound|80||nginx.test.svc.cluster.local&#34; -oyaml</span>
 </span></span><span style="display:flex;"><span>- <span style="color:#f92672">circuitBreakers</span><span style="color:#111">:</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#f92672">thresholds</span><span style="color:#111">:</span>
 </span></span><span style="display:flex;"><span>    - <span style="color:#f92672">maxConnections</span><span style="color:#111">:</span> <span style="color:#ae81ff">4294967295</span>
@@ -343,7 +343,7 @@
 </span></span><span style="display:flex;"><span>        <span style="color:#f92672">httpProtocolOptions</span><span style="color:#111">:</span> {}
 </span></span></code></pre></div><p>可以看到，这个 cluster 是一个 EDS 类型的 cluster，它会从 edsConfig 中获取配置。</p>
 <p><strong>5.查看 endpoint</strong></p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-YAML" data-lang="YAML"><span style="display:flex;"><span><span style="color:#75715e"># istioctl -n test proxy-config endpoint test-f5b5d48b5-qdzft --cluster  &#34;outbound|80||nginx.test.svc.cluster.local&#34; -oyaml</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-YAML" data-lang="YAML"><span style="display:flex;"><span><span style="color:#75715e"># istioctl -n test proxy-config endpoint test-f5b5d48b5-qdzft --cluster  &#34;outbound|80||nginx.test.svc.cluster.local&#34; -oyaml</span>
 </span></span><span style="display:flex;"><span>- <span style="color:#f92672">addedViaApi</span><span style="color:#111">:</span> <span style="color:#00a8c8">true</span>
 </span></span><span style="display:flex;"><span>  <span style="color:#f92672">circuitBreakers</span><span style="color:#111">:</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#f92672">thresholds</span><span style="color:#111">:</span>
@@ -382,7 +382,7 @@
 </span></span></code></pre></div><p>从 endpoint 中我们可以看到，流量会转发到 <code>10.244.0.73:80</code> 这个地址。因为我们这个 service 只有一个 pod，如果多个 pod 的话，会有多个 address。</p>
 <p>envoy 会向访问 <code>http://10.244.0.73:80</code>，那么接下来就是 nginx pod 中的 envoy 会把流量转发到 nginx container 中。</p>
 <p><strong>6.server 劫持到15006</strong></p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>istioctl -n <span style="color:#111">test</span> proxy-config listener nginx-7c79c4bf97-7985c --port <span style="color:#ae81ff">15006</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>istioctl -n <span style="color:#111">test</span> proxy-config listener nginx-7c79c4bf97-7985c --port <span style="color:#ae81ff">15006</span>
 </span></span><span style="display:flex;"><span>ADDRESSES PORT  MATCH                                                                    DESTINATION
 </span></span><span style="display:flex;"><span>0.0.0.0   <span style="color:#ae81ff">15006</span> Addr: *:15006                                                            Non-HTTP/Non-TCP
 </span></span><span style="display:flex;"><span>0.0.0.0   <span style="color:#ae81ff">15006</span> Trans: tls<span style="color:#111">;</span> App: istio-http/1.0,istio-http/1.1,istio-h2<span style="color:#111">;</span> Addr: 0.0.0.0/0 InboundPassthroughClusterIpv4
@@ -396,13 +396,13 @@
 </span></span><span style="display:flex;"><span>0.0.0.0   <span style="color:#ae81ff">15006</span> Trans: raw_buffer<span style="color:#111">;</span> Addr: *:80                                            Cluster: inbound<span style="color:#111">|</span>80<span style="color:#f92672">||</span>
 </span></span><span style="display:flex;"><span>0.0.0.0   <span style="color:#ae81ff">15006</span> Trans: tls<span style="color:#111">;</span> Addr: *:80                                                   Cluster: inbound<span style="color:#111">|</span>80<span style="color:#f92672">||</span>
 </span></span></code></pre></div><p>listener 的虚拟端口</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-BASH" data-lang="BASH"><span style="display:flex;"><span>istioctl -n <span style="color:#111">test</span> proxy-config listener nginx-7c79c4bf97-7985c --port <span style="color:#ae81ff">80</span> --address 0.0.0.0 
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-BASH" data-lang="BASH"><span style="display:flex;"><span>istioctl -n <span style="color:#111">test</span> proxy-config listener nginx-7c79c4bf97-7985c --port <span style="color:#ae81ff">80</span> --address 0.0.0.0 
 </span></span><span style="display:flex;"><span>ADDRESSES PORT MATCH                                DESTINATION
 </span></span><span style="display:flex;"><span>0.0.0.0   <span style="color:#ae81ff">80</span>   Trans: raw_buffer<span style="color:#111">;</span> App: http/1.1,h2c Route: <span style="color:#ae81ff">80</span>
 </span></span><span style="display:flex;"><span>0.0.0.0   <span style="color:#ae81ff">80</span>   ALL                                  PassthroughCluster
 </span></span></code></pre></div><p>所以 DESTINATION 是 <code>Route: 80</code> ,所以 route 会匹配 <code>inbound|80||</code></p>
 <p><strong>7.查看 server route</strong></p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#75715e"># istioctl -n test proxy-config route nginx-7c79c4bf97-7985c  --name &#34;inbound|80||&#34; -oyaml</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#75715e"># istioctl -n test proxy-config route nginx-7c79c4bf97-7985c  --name &#34;inbound|80||&#34; -oyaml</span>
 </span></span><span style="display:flex;"><span>- <span style="color:#f92672">name</span><span style="color:#111">:</span> <span style="color:#ae81ff">inbound|80||</span>
 </span></span><span style="display:flex;"><span>  <span style="color:#f92672">validateClusters</span><span style="color:#111">:</span> <span style="color:#00a8c8">false</span>
 </span></span><span style="display:flex;"><span>  <span style="color:#f92672">virtualHosts</span><span style="color:#111">:</span>

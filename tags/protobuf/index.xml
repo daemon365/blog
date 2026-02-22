@@ -10,7 +10,7 @@
 &lt;h2 id="编译器安装"&gt;编译器安装&lt;/h2&gt;
 &lt;h3 id="ptotoc"&gt;ptotoc&lt;/h3&gt;
 &lt;p&gt;mac安装：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;brew info protobuf
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;brew info protobuf
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;cdn下载：(下载需要的版本)&lt;/p&gt;
 &lt;p&gt;&lt;a href="https://repo1.maven.org/maven2/com/google/protobuf/protoc/"&gt;cdn下载链接&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;linux/mac 编译安装&lt;/p&gt;
@@ -25,11 +25,11 @@
 &lt;p&gt;区别在于前者是旧版本，后者是google接管后的新版本，他们之间的API是不同的，也就是说用于生成的命令，以及生成的文件都是不一样的。&lt;/p&gt;
 &lt;p&gt;因为目前的&lt;code&gt;gRPC-go&lt;/code&gt;源码中的example用的是后者的生成方式，为了与时俱进，本文也采取最新的方式。&lt;/p&gt;
 &lt;p&gt;安装：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id="编写idl代码"&gt;编写IDL代码&lt;/h2&gt;
 &lt;p&gt;新建一个名为person.proto的文件具体内容如下：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-protobuf" data-lang="protobuf"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;// 指定使用protobuf版本
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-protobuf" data-lang="protobuf"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;// 指定使用protobuf版本
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;// 此处使用v3版本
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#111"&gt;syntax&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;proto3&amp;#34;&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
@@ -70,7 +70,7 @@
 <h2 id="编译器安装">编译器安装</h2>
 <h3 id="ptotoc">ptotoc</h3>
 <p>mac安装：</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>brew info protobuf
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>brew info protobuf
 </span></span></code></pre></div><p>cdn下载：(下载需要的版本)</p>
 <p><a href="https://repo1.maven.org/maven2/com/google/protobuf/protoc/">cdn下载链接</a></p>
 <p>linux/mac 编译安装</p>
@@ -85,11 +85,11 @@
 <p>区别在于前者是旧版本，后者是google接管后的新版本，他们之间的API是不同的，也就是说用于生成的命令，以及生成的文件都是不一样的。</p>
 <p>因为目前的<code>gRPC-go</code>源码中的example用的是后者的生成方式，为了与时俱进，本文也采取最新的方式。</p>
 <p>安装：</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 </span></span><span style="display:flex;"><span>go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 </span></span></code></pre></div><h2 id="编写idl代码">编写IDL代码</h2>
 <p>新建一个名为person.proto的文件具体内容如下：</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-protobuf" data-lang="protobuf"><span style="display:flex;"><span><span style="color:#75715e">// 指定使用protobuf版本
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-protobuf" data-lang="protobuf"><span style="display:flex;"><span><span style="color:#75715e">// 指定使用protobuf版本
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e">// 此处使用v3版本
 </span></span></span><span style="display:flex;"><span><span style="color:#111">syntax</span> <span style="color:#f92672">=</span> <span style="color:#d88200">&#34;proto3&#34;</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
 </span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
@@ -119,14 +119,14 @@
 </span></span></span><span style="display:flex;"><span><span style="color:#111">}</span><span style="color:#960050;background-color:#1e0010">
 </span></span></span></code></pre></div><h2 id="生成go语言代码">生成go语言代码</h2>
 <p>在protobuf_demo/address目录下执行以下命令。</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>protoc --proto_path<span style="color:#f92672">=</span>./  --go_out<span style="color:#f92672">=</span>./ ./person.proto
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>protoc --proto_path<span style="color:#f92672">=</span>./  --go_out<span style="color:#f92672">=</span>./ ./person.proto
 </span></span></code></pre></div><ul>
 <li>&ndash;proto_path: 指定了要去哪个目录中搜索import中导入的和要编译为.go的proto文件</li>
 <li>&ndash;go_out:指定了生成的go文件的目录，我在这里把go文件放到本目录中</li>
 <li>person.proto， 定义了我要编译的文件是哪个文件。</li>
 </ul>
 <p>此时在当前目录下会生成一个person.pb.go文件，我们的Go语言代码里就是使用这个文件。 在protobuf_demo/main.go文件中：</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;fmt&#34;</span>

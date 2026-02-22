@@ -123,7 +123,7 @@
 &lt;h3 id="worker_id分配"&gt;worker_id分配&lt;/h3&gt;
 &lt;p&gt;&lt;code&gt;timestamp&lt;/code&gt;，&lt;code&gt;datacenter_id&lt;/code&gt;，&lt;code&gt;worker_id&lt;/code&gt;和&lt;code&gt;sequence_id&lt;/code&gt;这四个字段中，&lt;code&gt;timestamp&lt;/code&gt;和&lt;code&gt;sequence_id&lt;/code&gt;是由程序在运行期生成的。但&lt;code&gt;datacenter_id&lt;/code&gt;和&lt;code&gt;worker_id&lt;/code&gt;需要我们在部署阶段就能够获取得到，并且一旦程序启动之后，就是不可更改的了（想想，如果可以随意更改，可能被不慎修改，造成最终生成的id有冲突）。&lt;/p&gt;
 &lt;p&gt;一般不同数据中心的机器，会提供对应的获取数据中心id的API，所以&lt;code&gt;datacenter_id&lt;/code&gt;我们可以在部署阶段轻松地获取到。而worker_id是我们逻辑上给机器分配的一个id，这个要怎么办呢？比较简单的想法是由能够提供这种自增id功能的工具来支持，比如MySQL:&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-shell" data-lang="shell"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;mysql&amp;gt; insert into a &lt;span style="color:#f92672"&gt;(&lt;/span&gt;ip&lt;span style="color:#f92672"&gt;)&lt;/span&gt; values&lt;span style="color:#f92672"&gt;(&lt;/span&gt;&lt;span style="color:#d88200"&gt;&amp;#34;10.1.2.101&amp;#34;&lt;/span&gt;&lt;span style="color:#f92672"&gt;)&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-shell" data-lang="shell"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;mysql&amp;gt; insert into a &lt;span style="color:#f92672"&gt;(&lt;/span&gt;ip&lt;span style="color:#f92672"&gt;)&lt;/span&gt; values&lt;span style="color:#f92672"&gt;(&lt;/span&gt;&lt;span style="color:#d88200"&gt;&amp;#34;10.1.2.101&amp;#34;&lt;/span&gt;&lt;span style="color:#f92672"&gt;)&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Query OK, &lt;span style="color:#ae81ff"&gt;1&lt;/span&gt; row affected &lt;span style="color:#f92672"&gt;(&lt;/span&gt;0.00 sec&lt;span style="color:#f92672"&gt;)&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;mysql&amp;gt; &lt;span style="color:#00a8c8"&gt;select&lt;/span&gt; last_insert_id&lt;span style="color:#f92672"&gt;()&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;
@@ -142,7 +142,7 @@
 &lt;p&gt;&lt;img src="https://daemon365.dev/images/ae01d265-414e-4c7a-ab33-bb94ac47b6fb.png" alt=""&gt;&lt;/p&gt;
 &lt;p&gt;&lt;em&gt;图 6-2 snowflake库&lt;/em&gt;&lt;/p&gt;
 &lt;p&gt;和标准的snowflake完全一致。使用上比较简单：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-go" data-lang="go"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f92672"&gt;package&lt;/span&gt; &lt;span style="color:#75af00"&gt;main&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-go" data-lang="go"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f92672"&gt;package&lt;/span&gt; &lt;span style="color:#75af00"&gt;main&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f92672"&gt;import&lt;/span&gt; &lt;span style="color:#111"&gt;(&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;fmt&amp;#34;&lt;/span&gt;
@@ -182,7 +182,7 @@
 <h3 id="worker_id分配">worker_id分配</h3>
 <p><code>timestamp</code>，<code>datacenter_id</code>，<code>worker_id</code>和<code>sequence_id</code>这四个字段中，<code>timestamp</code>和<code>sequence_id</code>是由程序在运行期生成的。但<code>datacenter_id</code>和<code>worker_id</code>需要我们在部署阶段就能够获取得到，并且一旦程序启动之后，就是不可更改的了（想想，如果可以随意更改，可能被不慎修改，造成最终生成的id有冲突）。</p>
 <p>一般不同数据中心的机器，会提供对应的获取数据中心id的API，所以<code>datacenter_id</code>我们可以在部署阶段轻松地获取到。而worker_id是我们逻辑上给机器分配的一个id，这个要怎么办呢？比较简单的想法是由能够提供这种自增id功能的工具来支持，比如MySQL:</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>mysql&gt; insert into a <span style="color:#f92672">(</span>ip<span style="color:#f92672">)</span> values<span style="color:#f92672">(</span><span style="color:#d88200">&#34;10.1.2.101&#34;</span><span style="color:#f92672">)</span><span style="color:#111">;</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>mysql&gt; insert into a <span style="color:#f92672">(</span>ip<span style="color:#f92672">)</span> values<span style="color:#f92672">(</span><span style="color:#d88200">&#34;10.1.2.101&#34;</span><span style="color:#f92672">)</span><span style="color:#111">;</span>
 </span></span><span style="display:flex;"><span>Query OK, <span style="color:#ae81ff">1</span> row affected <span style="color:#f92672">(</span>0.00 sec<span style="color:#f92672">)</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>mysql&gt; <span style="color:#00a8c8">select</span> last_insert_id<span style="color:#f92672">()</span><span style="color:#111">;</span>
@@ -201,7 +201,7 @@
 <p><img src="/images/ae01d265-414e-4c7a-ab33-bb94ac47b6fb.png" alt=""></p>
 <p><em>图 6-2 snowflake库</em></p>
 <p>和标准的snowflake完全一致。使用上比较简单：</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#d88200">&#34;fmt&#34;</span>
@@ -229,7 +229,7 @@
 </span></span><span style="display:flex;"><span>    <span style="color:#111">}</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>
 </span></span></code></pre></div><p>当然，这个库也给我们留好了定制的后路，其中预留了一些可定制字段：</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span>    <span style="color:#75715e">// Epoch is set to the twitter snowflake epoch of Nov 04 2010 01:42:54 UTC</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span>    <span style="color:#75715e">// Epoch is set to the twitter snowflake epoch of Nov 04 2010 01:42:54 UTC</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// You may customize this to set a different epoch for your application.</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75af00">Epoch</span> <span style="color:#00a8c8">int64</span> <span style="color:#111">=</span> <span style="color:#ae81ff">1288834974657</span>
 </span></span><span style="display:flex;"><span>
@@ -247,9 +247,9 @@
 <p><em>图 6-3 sonyflake</em></p>
 <p>这里的时间只用了39个bit，但时间的单位变成了10ms，所以理论上比41位表示的时间还要久(174年)。</p>
 <p><code>Sequence ID</code>和之前的定义一致，<code>Machine ID</code>其实就是节点id。<code>sonyflake</code>与众不同的地方在于其在启动阶段的配置参数：</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#75af00">NewSonyflake</span><span style="color:#111">(</span><span style="color:#75af00">st</span> <span style="color:#75af00">Settings</span><span style="color:#111">)</span> <span style="color:#f92672">*</span><span style="color:#75af00">Sonyflake</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#75af00">NewSonyflake</span><span style="color:#111">(</span><span style="color:#75af00">st</span> <span style="color:#75af00">Settings</span><span style="color:#111">)</span> <span style="color:#f92672">*</span><span style="color:#75af00">Sonyflake</span>
 </span></span></code></pre></div><p><code>Settings</code>数据结构如下：</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#00a8c8">type</span> <span style="color:#75af00">Settings</span> <span style="color:#00a8c8">struct</span> <span style="color:#111">{</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#00a8c8">type</span> <span style="color:#75af00">Settings</span> <span style="color:#00a8c8">struct</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75af00">StartTime</span>      <span style="color:#75af00">time</span><span style="color:#111">.</span><span style="color:#75af00">Time</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75af00">MachineID</span>      <span style="color:#00a8c8">func</span><span style="color:#111">()</span> <span style="color:#111">(</span><span style="color:#00a8c8">uint16</span><span style="color:#111">,</span> <span style="color:#00a8c8">error</span><span style="color:#111">)</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75af00">CheckMachineID</span> <span style="color:#00a8c8">func</span><span style="color:#111">(</span><span style="color:#00a8c8">uint16</span><span style="color:#111">)</span> <span style="color:#00a8c8">bool</span>
@@ -257,12 +257,12 @@
 </span></span></code></pre></div><p><code>StartTime</code>选项和我们之前的<code>Epoch</code>差不多，如果不设置的话，默认是从<code>2014-09-01 00:00:00 +0000 UTC</code>开始。</p>
 <p><code>MachineID</code>可以由用户自定义的函数，如果用户不定义的话，会默认将本机IP的低16位作为<code>machine id</code>。</p>
 <p><code>CheckMachineID</code>是由用户提供的检查<code>MachineID</code>是否冲突的函数。这里的设计还是比较巧妙的，如果有另外的中心化存储并支持检查重复的存储，那我们就可以按照自己的想法随意定制这个检查<code>MachineID</code>是否冲突的逻辑。如果公司有现成的Redis集群，那么我们可以很轻松地用Redis的集合类型来检查冲突。</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>redis 127.0.0.1:6379&gt; SADD base64_encoding_of_last16bits <span style="color:#111">MzI0Mgo</span><span style="color:#f92672">=</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>redis 127.0.0.1:6379&gt; SADD base64_encoding_of_last16bits <span style="color:#111">MzI0Mgo</span><span style="color:#f92672">=</span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">(</span>integer<span style="color:#f92672">)</span> <span style="color:#ae81ff">1</span>
 </span></span><span style="display:flex;"><span>redis 127.0.0.1:6379&gt; SADD base64_encoding_of_last16bits <span style="color:#111">MzI0Mgo</span><span style="color:#f92672">=</span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">(</span>integer<span style="color:#f92672">)</span> <span style="color:#ae81ff">0</span>
 </span></span></code></pre></div><p>使用起来也比较简单，有一些逻辑简单的函数就略去实现了：</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#d88200">&#34;fmt&#34;</span>
@@ -319,7 +319,7 @@
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>
 </span></span></code></pre></div><h2 id="分布式锁">分布式锁</h2>
 <p>在单机程序并发或并行修改全局变量时，需要对修改行为加锁以创造临界区。为什么需要加锁呢？我们看看在不加锁的情况下并发计数会发生什么情况：</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#d88200">&#34;sync&#34;</span>
@@ -342,7 +342,7 @@
 </span></span><span style="display:flex;"><span>    <span style="color:#111">println</span><span style="color:#111">(</span><span style="color:#75af00">counter</span><span style="color:#111">)</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>
 </span></span></code></pre></div><p>多次运行会得到不同的结果：</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>❯❯❯ go run local_lock.go
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>❯❯❯ go run local_lock.go
 </span></span><span style="display:flex;"><span><span style="color:#ae81ff">945</span>
 </span></span><span style="display:flex;"><span>❯❯❯ go run local_lock.go
 </span></span><span style="display:flex;"><span><span style="color:#ae81ff">937</span>
@@ -350,7 +350,7 @@
 </span></span><span style="display:flex;"><span><span style="color:#ae81ff">959</span>
 </span></span></code></pre></div><h3 id="基于redis的setnx">基于Redis的setnx</h3>
 <p>在分布式场景下，我们也需要这种“抢占”的逻辑，这时候怎么办呢？我们可以使用Redis提供的<code>setnx</code>命令：</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;fmt&#34;</span>
@@ -435,7 +435,7 @@
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">fmt</span><span style="color:#111">.</span><span style="color:#75af00">Println</span><span style="color:#111">(</span><span style="color:#d88200">&#34;解锁:&#34;</span><span style="color:#111">,</span> <span style="color:#75af00">res</span><span style="color:#111">)</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>
 </span></span></code></pre></div><p>看看运行结果：</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>是否拿到锁: <span style="color:#111">true</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>是否拿到锁: <span style="color:#111">true</span>
 </span></span><span style="display:flex;"><span>是否拿到锁: <span style="color:#111">false</span>
 </span></span><span style="display:flex;"><span>是否拿到锁: <span style="color:#111">false</span>
 </span></span><span style="display:flex;"><span>是否拿到锁: <span style="color:#111">false</span>
@@ -451,7 +451,7 @@
 <p>所以，我们需要依赖于这些请求到达Redis节点的顺序来做正确的抢锁操作。如果用户的网络环境比较差，那也只能自求多福了。</p>
 <h3 id="基于etcd">基于etcd</h3>
 <p>etcd是分布式系统中，功能上与ZooKeeper类似的组件，这两年越来越火了。上面基于ZooKeeper我们实现了分布式阻塞锁，基于etcd，也可以实现类似的功能：</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#d88200">&#34;log&#34;</span>
@@ -515,7 +515,7 @@
 &lt;/ol&gt;
 &lt;h3 id="redis持久化之rdb实践"&gt;redis持久化之RDB实践&lt;/h3&gt;
 &lt;p&gt;1.启动redis服务端,准备配置文件&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;daemonize yes port &lt;span style="color:#ae81ff"&gt;6379&lt;/span&gt; logfile /data/6379/redis.log dir /data/6379 &lt;span style="color:#75715e"&gt;#定义持久化文件存储位置 &lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;daemonize yes port &lt;span style="color:#ae81ff"&gt;6379&lt;/span&gt; logfile /data/6379/redis.log dir /data/6379 &lt;span style="color:#75715e"&gt;#定义持久化文件存储位置 &lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;dbfilename dbmp.rdb &lt;span style="color:#75715e"&gt;#rdb持久化文件 &lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#111"&gt;bind&lt;/span&gt; 10.0.0.10 127.0.0.1 &lt;span style="color:#75715e"&gt;#redis绑定地址 &lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;requirepass redhat &lt;span style="color:#75715e"&gt;#redis登录密码 &lt;/span&gt;
@@ -524,10 +524,10 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;save &lt;span style="color:#ae81ff"&gt;60&lt;/span&gt; &lt;span style="color:#ae81ff"&gt;10000&lt;/span&gt; &lt;span style="color:#75715e"&gt;#每60秒内 10000修改记录&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;2.启动redis服务端&lt;/p&gt;
 &lt;p&gt;3.登录redis设置一个key&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;redis-cli -a redhat
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;redis-cli -a redhat
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;4.此时检查目录，/data/6379底下没有dbmp.rdb文件&lt;/p&gt;
 &lt;p&gt;5.通过save触发持久化，将数据写入RDB文件&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;127.0.0.1:6379&amp;gt; &lt;span style="color:#111"&gt;set&lt;/span&gt; age &lt;span style="color:#ae81ff"&gt;18&lt;/span&gt; OK 127.0.0.1:6379&amp;gt; save OK
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;127.0.0.1:6379&amp;gt; &lt;span style="color:#111"&gt;set&lt;/span&gt; age &lt;span style="color:#ae81ff"&gt;18&lt;/span&gt; OK 127.0.0.1:6379&amp;gt; save OK
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id="aof持久化"&gt;AOF持久化&lt;/h2&gt;
 &lt;p&gt;AOF（append-only log file）&lt;/p&gt;</description><content:encoded><![CDATA[<p>Redis是一种内存型数据库，一旦服务器进程退出，数据库的数据就会丢失，为了解决这个问题，Redis提供了两种持久化的方案，将内存中的数据保存到磁盘中，避免数据的丢失。</p>
 <h2 id="rdb持久化">RDB持久化</h2>
@@ -554,7 +554,7 @@
 </ol>
 <h3 id="redis持久化之rdb实践">redis持久化之RDB实践</h3>
 <p>1.启动redis服务端,准备配置文件</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>daemonize yes port <span style="color:#ae81ff">6379</span> logfile /data/6379/redis.log dir /data/6379    <span style="color:#75715e">#定义持久化文件存储位置 </span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>daemonize yes port <span style="color:#ae81ff">6379</span> logfile /data/6379/redis.log dir /data/6379    <span style="color:#75715e">#定义持久化文件存储位置 </span>
 </span></span><span style="display:flex;"><span>dbfilename dbmp.rdb        <span style="color:#75715e">#rdb持久化文件 </span>
 </span></span><span style="display:flex;"><span><span style="color:#111">bind</span> 10.0.0.10 127.0.0.1   <span style="color:#75715e">#redis绑定地址 </span>
 </span></span><span style="display:flex;"><span>requirepass redhat         <span style="color:#75715e">#redis登录密码 </span>
@@ -563,10 +563,10 @@
 </span></span><span style="display:flex;"><span>save <span style="color:#ae81ff">60</span> <span style="color:#ae81ff">10000</span>              <span style="color:#75715e">#每60秒内     10000修改记录</span>
 </span></span></code></pre></div><p>2.启动redis服务端</p>
 <p>3.登录redis设置一个key</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>redis-cli -a redhat
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>redis-cli -a redhat
 </span></span></code></pre></div><p>4.此时检查目录，/data/6379底下没有dbmp.rdb文件</p>
 <p>5.通过save触发持久化，将数据写入RDB文件</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>127.0.0.1:6379&gt; <span style="color:#111">set</span> age <span style="color:#ae81ff">18</span> OK 127.0.0.1:6379&gt; save OK
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>127.0.0.1:6379&gt; <span style="color:#111">set</span> age <span style="color:#ae81ff">18</span> OK 127.0.0.1:6379&gt; save OK
 </span></span></code></pre></div><h2 id="aof持久化">AOF持久化</h2>
 <p>AOF（append-only log file）</p>
 <ul>
@@ -583,7 +583,7 @@
 <p>缺点：日志记录非常大</p>
 </li>
 </ul>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>redis-client   写入数据  &gt;  redis-server   同步命令   &gt;  AOF文件
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>redis-client   写入数据  &gt;  redis-server   同步命令   &gt;  AOF文件
 </span></span></code></pre></div><p>配置参数</p>
 <pre tabindex="0"><code>AOF持久化配置，两条参数  
 appendonly yes appendfsync always   总是修改类的操作  
@@ -625,7 +625,7 @@ Redis server v=4.0.10 sha=00000000:0 malloc=jemalloc-4.0.3 bits=64 build=64cb6af
 </code></pre><p>本文在redis4.0中，通过config set命令，达到不重启redis服务，从RDB持久化切换为AOF</p>
 <h3 id="实验环境准备">实验环境准备</h3>
 <p>redis.conf服务端配置文件</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-ini" data-lang="ini"><span style="display:flex;"><span><span style="color:#75af00">daemonize yes</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-ini" data-lang="ini"><span style="display:flex;"><span><span style="color:#75af00">daemonize yes</span>
 </span></span><span style="display:flex;"><span><span style="color:#75af00">port 6379</span>
 </span></span><span style="display:flex;"><span><span style="color:#75af00">logfile /data/6379/redis.log</span>
 </span></span><span style="display:flex;"><span><span style="color:#75af00">dir /data/6379</span>
@@ -634,9 +634,9 @@ Redis server v=4.0.10 sha=00000000:0 malloc=jemalloc-4.0.3 bits=64 build=64cb6af
 </span></span><span style="display:flex;"><span><span style="color:#75af00">save 300 10                    #每300秒        10个修改记录</span>
 </span></span><span style="display:flex;"><span><span style="color:#75af00">save 60  10000                #每60秒内        10000修改记录</span>
 </span></span></code></pre></div><p>启动redis服务端</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-ini" data-lang="ini"><span style="display:flex;"><span><span style="color:#75af00">redis-server redis.conf</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-ini" data-lang="ini"><span style="display:flex;"><span><span style="color:#75af00">redis-server redis.conf</span>
 </span></span></code></pre></div><p>登录redis-cli插入数据，手动持久化</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>127.0.0.1:6379&gt; <span style="color:#111">set</span> name chaoge
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>127.0.0.1:6379&gt; <span style="color:#111">set</span> name chaoge
 </span></span><span style="display:flex;"><span>OK
 </span></span><span style="display:flex;"><span>127.0.0.1:6379&gt; <span style="color:#111">set</span> age <span style="color:#ae81ff">18</span>
 </span></span><span style="display:flex;"><span>OK
@@ -645,22 +645,22 @@ Redis server v=4.0.10 sha=00000000:0 malloc=jemalloc-4.0.3 bits=64 build=64cb6af
 </span></span><span style="display:flex;"><span>127.0.0.1:6379&gt; save
 </span></span><span style="display:flex;"><span>OK
 </span></span></code></pre></div><p>检查RDB文件</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#f92672">[</span>root@pyyuc /data 22:34:16<span style="color:#f92672">]</span><span style="color:#75715e">#ls 6379/</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#f92672">[</span>root@pyyuc /data 22:34:16<span style="color:#f92672">]</span><span style="color:#75715e">#ls 6379/</span>
 </span></span><span style="display:flex;"><span>dbmp.rdb  redis.log
 </span></span></code></pre></div><h3 id="备份这个rdb文件保证数据安全">备份这个rdb文件，保证数据安全</h3>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#f92672">[</span>root@pyyuc /data/6379 22:35:38<span style="color:#f92672">]</span><span style="color:#75715e">#cp dbmp.rdb /opt/</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#f92672">[</span>root@pyyuc /data/6379 22:35:38<span style="color:#f92672">]</span><span style="color:#75715e">#cp dbmp.rdb /opt/</span>
 </span></span></code></pre></div><h3 id="执行命令开启aof持久化">执行命令，开启AOF持久化</h3>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>127.0.0.1:6379&gt; CONFIG <span style="color:#111">set</span> appendonly yes   <span style="color:#75715e">#开启AOF功能</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>127.0.0.1:6379&gt; CONFIG <span style="color:#111">set</span> appendonly yes   <span style="color:#75715e">#开启AOF功能</span>
 </span></span><span style="display:flex;"><span>OK
 </span></span><span style="display:flex;"><span>127.0.0.1:6379&gt; CONFIG SET save <span style="color:#d88200">&#34;&#34;</span>  <span style="color:#75715e">#关闭RDB功能</span>
 </span></span><span style="display:flex;"><span>OK
 </span></span></code></pre></div><h3 id="确保数据库的key数量正确">确保数据库的key数量正确</h3>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>127.0.0.1:6379&gt; keys *
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>127.0.0.1:6379&gt; keys *
 </span></span><span style="display:flex;"><span>1<span style="color:#f92672">)</span> <span style="color:#d88200">&#34;addr&#34;</span>
 </span></span><span style="display:flex;"><span>2<span style="color:#f92672">)</span> <span style="color:#d88200">&#34;age&#34;</span>
 </span></span><span style="display:flex;"><span>3<span style="color:#f92672">)</span> <span style="color:#d88200">&#34;name&#34;</span>
 </span></span></code></pre></div><h3 id="确保插入新的keyaof文件会记录">确保插入新的key，AOF文件会记录</h3>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>127.0.0.1:6379&gt; <span style="color:#111">set</span> title golang
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>127.0.0.1:6379&gt; <span style="color:#111">set</span> title golang
 </span></span><span style="display:flex;"><span>OK
 </span></span></code></pre></div><p><strong>此时RDB已经正确切换AOF，注意还得修改redis.conf添加AOF设置，不然重启后，通过config set的配置将丢失</strong></p>
 ]]></content:encoded><category>database</category><category>redis</category></item><item><title>redis基础</title><link>https://daemon365.dev/post/database/redis_basics/</link><pubDate>Fri, 20 Mar 2020 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/database/redis_basics/</guid><description>&lt;h2 id="redis介绍"&gt;redis介绍&lt;/h2&gt;
@@ -672,7 +672,7 @@ Redis server v=4.0.10 sha=00000000:0 malloc=jemalloc-4.0.3 bits=64 build=64cb6af
 &lt;li&gt;Redis支持数据的备份，即master-slave模式的数据备份。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h3 id="redis的安装"&gt;redis的安装&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;brew install redis&lt;span style="color:#f92672"&gt;(&lt;/span&gt;mac&lt;span style="color:#f92672"&gt;)&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;brew install redis&lt;span style="color:#f92672"&gt;(&lt;/span&gt;mac&lt;span style="color:#f92672"&gt;)&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;yum install redis&lt;span style="color:#f92672"&gt;(&lt;/span&gt;centos&lt;span style="color:#f92672"&gt;)&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;apt-get install redis&lt;span style="color:#f92672"&gt;(&lt;/span&gt;ubuntu&lt;span style="color:#f92672"&gt;)&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id="redis的命令网站"&gt;redis的命令网站&lt;/h2&gt;
@@ -706,7 +706,7 @@ Redis server v=4.0.10 sha=00000000:0 malloc=jemalloc-4.0.3 bits=64 build=64cb6af
 <li>Redis支持数据的备份，即master-slave模式的数据备份。</li>
 </ul>
 <h3 id="redis的安装">redis的安装</h3>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>brew install redis<span style="color:#f92672">(</span>mac<span style="color:#f92672">)</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>brew install redis<span style="color:#f92672">(</span>mac<span style="color:#f92672">)</span>
 </span></span><span style="display:flex;"><span>yum install redis<span style="color:#f92672">(</span>centos<span style="color:#f92672">)</span>
 </span></span><span style="display:flex;"><span>apt-get install redis<span style="color:#f92672">(</span>ubuntu<span style="color:#f92672">)</span>
 </span></span></code></pre></div><h2 id="redis的命令网站">redis的命令网站</h2>
@@ -1090,9 +1090,9 @@ bitop  and(or/not/xor) <destkey> [key…]</p>
 <p><img src="/images/bd56b575-3eab-442e-aa42-fb8768d47bb1.png" alt=""></p>
 ]]></content:encoded><category>database</category><category>redis</category></item><item><title>golang redis</title><link>https://daemon365.dev/post/go/golang_redis/</link><pubDate>Sun, 12 Jan 2020 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/go/golang_redis/</guid><description>&lt;h2 id="安装"&gt;安装&lt;/h2&gt;
 &lt;p&gt;下载第三方包:&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;go get -u github.com/go-redis/redis/v9
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;go get -u github.com/go-redis/redis/v9
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id="连接"&gt;连接&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-go" data-lang="go"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;// 定义一个rdis客户端&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-go" data-lang="go"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;// 定义一个rdis客户端&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;var&lt;/span&gt; &lt;span style="color:#75af00"&gt;redisdb&lt;/span&gt; &lt;span style="color:#f92672"&gt;*&lt;/span&gt;&lt;span style="color:#75af00"&gt;redis&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;Client&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;// 初始化&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;func&lt;/span&gt; &lt;span style="color:#75af00"&gt;initClient&lt;/span&gt;&lt;span style="color:#111"&gt;()&lt;/span&gt; &lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#75af00"&gt;err&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;error&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;
@@ -1110,7 +1110,7 @@ bitop  and(or/not/xor) <destkey> [key…]</p>
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#111"&gt;}&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id="使用"&gt;使用&lt;/h2&gt;
 &lt;h3 id="setget示例"&gt;set/get示例&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-go" data-lang="go"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;func&lt;/span&gt; &lt;span style="color:#75af00"&gt;redisExample&lt;/span&gt;&lt;span style="color:#111"&gt;()&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-go" data-lang="go"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;func&lt;/span&gt; &lt;span style="color:#75af00"&gt;redisExample&lt;/span&gt;&lt;span style="color:#111"&gt;()&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;ctx&lt;/span&gt; &lt;span style="color:#f92672"&gt;:=&lt;/span&gt; &lt;span style="color:#75af00"&gt;context&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;Background&lt;/span&gt;&lt;span style="color:#111"&gt;()&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;err&lt;/span&gt; &lt;span style="color:#f92672"&gt;:=&lt;/span&gt; &lt;span style="color:#75af00"&gt;redisdb&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;Set&lt;/span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#75af00"&gt;ctx&lt;/span&gt;&lt;span style="color:#111"&gt;,&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;score&amp;#34;&lt;/span&gt;&lt;span style="color:#111"&gt;,&lt;/span&gt; &lt;span style="color:#ae81ff"&gt;100&lt;/span&gt;&lt;span style="color:#111"&gt;,&lt;/span&gt; &lt;span style="color:#ae81ff"&gt;0&lt;/span&gt;&lt;span style="color:#111"&gt;).&lt;/span&gt;&lt;span style="color:#75af00"&gt;Err&lt;/span&gt;&lt;span style="color:#111"&gt;()&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#00a8c8"&gt;if&lt;/span&gt; &lt;span style="color:#75af00"&gt;err&lt;/span&gt; &lt;span style="color:#f92672"&gt;!=&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;nil&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;
@@ -1134,7 +1134,7 @@ bitop  and(or/not/xor) <destkey> [key…]</p>
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;}&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#111"&gt;}&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id="zset示例"&gt;zset示例&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-go" data-lang="go"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;func&lt;/span&gt; &lt;span style="color:#75af00"&gt;redisExample2&lt;/span&gt;&lt;span style="color:#111"&gt;()&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-go" data-lang="go"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;func&lt;/span&gt; &lt;span style="color:#75af00"&gt;redisExample2&lt;/span&gt;&lt;span style="color:#111"&gt;()&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;ctx&lt;/span&gt; &lt;span style="color:#f92672"&gt;:=&lt;/span&gt; &lt;span style="color:#75af00"&gt;context&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;Background&lt;/span&gt;&lt;span style="color:#111"&gt;()&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;zsetKey&lt;/span&gt; &lt;span style="color:#f92672"&gt;:=&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;language_rank&amp;#34;&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;languages&lt;/span&gt; &lt;span style="color:#f92672"&gt;:=&lt;/span&gt; &lt;span style="color:#111"&gt;[]&lt;/span&gt;&lt;span style="color:#f92672"&gt;*&lt;/span&gt;&lt;span style="color:#75af00"&gt;redis&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;Z&lt;/span&gt;&lt;span style="color:#111"&gt;{&lt;/span&gt;
@@ -1183,9 +1183,9 @@ bitop  and(or/not/xor) <destkey> [key…]</p>
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#111"&gt;}&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;输出结果如下：&lt;/p&gt;</description><content:encoded><![CDATA[<h2 id="安装">安装</h2>
 <p>下载第三方包:</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>go get -u github.com/go-redis/redis/v9
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>go get -u github.com/go-redis/redis/v9
 </span></span></code></pre></div><h2 id="连接">连接</h2>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// 定义一个rdis客户端</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// 定义一个rdis客户端</span>
 </span></span><span style="display:flex;"><span><span style="color:#00a8c8">var</span> <span style="color:#75af00">redisdb</span> <span style="color:#f92672">*</span><span style="color:#75af00">redis</span><span style="color:#111">.</span><span style="color:#75af00">Client</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// 初始化</span>
 </span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#75af00">initClient</span><span style="color:#111">()</span> <span style="color:#111">(</span><span style="color:#75af00">err</span> <span style="color:#00a8c8">error</span><span style="color:#111">)</span> <span style="color:#111">{</span>
@@ -1203,7 +1203,7 @@ bitop  and(or/not/xor) <destkey> [key…]</p>
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>
 </span></span></code></pre></div><h2 id="使用">使用</h2>
 <h3 id="setget示例">set/get示例</h3>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#75af00">redisExample</span><span style="color:#111">()</span> <span style="color:#111">{</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#75af00">redisExample</span><span style="color:#111">()</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">ctx</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">context</span><span style="color:#111">.</span><span style="color:#75af00">Background</span><span style="color:#111">()</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">err</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">redisdb</span><span style="color:#111">.</span><span style="color:#75af00">Set</span><span style="color:#111">(</span><span style="color:#75af00">ctx</span><span style="color:#111">,</span> <span style="color:#d88200">&#34;score&#34;</span><span style="color:#111">,</span> <span style="color:#ae81ff">100</span><span style="color:#111">,</span> <span style="color:#ae81ff">0</span><span style="color:#111">).</span><span style="color:#75af00">Err</span><span style="color:#111">()</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">err</span> <span style="color:#f92672">!=</span> <span style="color:#00a8c8">nil</span> <span style="color:#111">{</span>
@@ -1227,7 +1227,7 @@ bitop  and(or/not/xor) <destkey> [key…]</p>
 </span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>
 </span></span></code></pre></div><h3 id="zset示例">zset示例</h3>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#75af00">redisExample2</span><span style="color:#111">()</span> <span style="color:#111">{</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#75af00">redisExample2</span><span style="color:#111">()</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">ctx</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">context</span><span style="color:#111">.</span><span style="color:#75af00">Background</span><span style="color:#111">()</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">zsetKey</span> <span style="color:#f92672">:=</span> <span style="color:#d88200">&#34;language_rank&#34;</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">languages</span> <span style="color:#f92672">:=</span> <span style="color:#111">[]</span><span style="color:#f92672">*</span><span style="color:#75af00">redis</span><span style="color:#111">.</span><span style="color:#75af00">Z</span><span style="color:#111">{</span>
@@ -1275,7 +1275,7 @@ bitop  and(or/not/xor) <destkey> [key…]</p>
 </span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>
 </span></span></code></pre></div><p>输出结果如下：</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ ./06redis_demo 
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ ./06redis_demo 
 </span></span><span style="display:flex;"><span>zadd <span style="color:#ae81ff">0</span> succ.
 </span></span><span style="display:flex;"><span>Golang<span style="color:#960050;background-color:#1e0010">&#39;</span>s score is 100.000000 now.
 </span></span><span style="display:flex;"><span>Golang <span style="color:#ae81ff">100</span>

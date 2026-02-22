@@ -259,7 +259,7 @@
 <li><strong>半打开(half-open)</strong>: 处于打开状态一段时间之后，会尝试尝试放行一个流量来探测当前 server 端是否可以接收新流量，如果这个没有问题就会进入关闭状态，如果有问题又会回到打开状态</li>
 </ol>
 <h3 id="google-sre-过载保护算法">Google SRE 过载保护算法</h3>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#111">max</span><span style="color:#111">(</span><span style="color:#ae81ff">0</span><span style="color:#111">,</span> <span style="color:#111">(</span><span style="color:#75af00">requests</span> <span style="color:#f92672">-</span> <span style="color:#75af00">K</span><span style="color:#f92672">*</span><span style="color:#75af00">accepts</span><span style="color:#111">)</span> <span style="color:#f92672">/</span> <span style="color:#111">(</span><span style="color:#75af00">requests</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span><span style="color:#111">))</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#111">max</span><span style="color:#111">(</span><span style="color:#ae81ff">0</span><span style="color:#111">,</span> <span style="color:#111">(</span><span style="color:#75af00">requests</span> <span style="color:#f92672">-</span> <span style="color:#75af00">K</span><span style="color:#f92672">*</span><span style="color:#75af00">accepts</span><span style="color:#111">)</span> <span style="color:#f92672">/</span> <span style="color:#111">(</span><span style="color:#75af00">requests</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span><span style="color:#111">))</span>
 </span></span></code></pre></div><p>算法如上所示，这个公式计算的是请求被丢弃的概率[<a href="https://lailin.xyz/post/go-training-week6-6-breaker.html#fn:3">3]</a></p>
 <ul>
 <li>requests: 一段时间的请求数量</li>
@@ -301,7 +301,7 @@
 <p>客户端应用程序的截止时间设置为 50 毫秒（截止时间 = 当前时间 + 偏移量）。客户端和 ProductMgt 服务之间的网络延迟为 0 毫秒， ProductMgt 服务的处理延迟为 20 毫秒。 商 品管理服务（ ProductMgt 服务）必须将截止时间的偏移量设置为 30 毫秒。 因为库存服 务（ Inventory 服务）需要 30 毫秒来响应， 所以截止时间的事件会在两个客户端上发生 （ ProductMgt 调用 Inventory 服务和客户端应用程序）。</p>
 <p>ProductMgt 服务的业务逻辑将延迟时间增加了 20 毫秒。 随后， ProductMgt 服务的调用逻 辑触发了超出截止时间的场景，并且传播回客户端应用程序。因此，在使用截止时间时， 要明确它们适用于所有服务场景。</p>
 <p><img src="/images/29faba9a-1bc6-41bc-a376-5868f2bb82b9.png" alt=""></p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75af00">conn</span><span style="color:#111">,</span> <span style="color:#75af00">err</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">grpc</span><span style="color:#111">.</span><span style="color:#75af00">Dial</span><span style="color:#111">(</span><span style="color:#75af00">address</span><span style="color:#111">,</span> <span style="color:#75af00">grpc</span><span style="color:#111">.</span><span style="color:#75af00">WithInsecure</span><span style="color:#111">())</span> 
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75af00">conn</span><span style="color:#111">,</span> <span style="color:#75af00">err</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">grpc</span><span style="color:#111">.</span><span style="color:#75af00">Dial</span><span style="color:#111">(</span><span style="color:#75af00">address</span><span style="color:#111">,</span> <span style="color:#75af00">grpc</span><span style="color:#111">.</span><span style="color:#75af00">WithInsecure</span><span style="color:#111">())</span> 
 </span></span><span style="display:flex;"><span><span style="color:#00a8c8">if</span> <span style="color:#75af00">err</span> <span style="color:#f92672">!=</span> <span style="color:#00a8c8">nil</span> <span style="color:#111">{</span> 
 </span></span><span style="display:flex;"><span>  <span style="color:#75af00">log</span><span style="color:#111">.</span><span style="color:#75af00">Fatalf</span><span style="color:#111">(</span><span style="color:#d88200">&#34;did not connect: %v&#34;</span><span style="color:#111">,</span> <span style="color:#75af00">err</span><span style="color:#111">)</span> 
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span> 
@@ -514,7 +514,7 @@
 &lt;h3 id="worker_id分配"&gt;worker_id分配&lt;/h3&gt;
 &lt;p&gt;&lt;code&gt;timestamp&lt;/code&gt;，&lt;code&gt;datacenter_id&lt;/code&gt;，&lt;code&gt;worker_id&lt;/code&gt;和&lt;code&gt;sequence_id&lt;/code&gt;这四个字段中，&lt;code&gt;timestamp&lt;/code&gt;和&lt;code&gt;sequence_id&lt;/code&gt;是由程序在运行期生成的。但&lt;code&gt;datacenter_id&lt;/code&gt;和&lt;code&gt;worker_id&lt;/code&gt;需要我们在部署阶段就能够获取得到，并且一旦程序启动之后，就是不可更改的了（想想，如果可以随意更改，可能被不慎修改，造成最终生成的id有冲突）。&lt;/p&gt;
 &lt;p&gt;一般不同数据中心的机器，会提供对应的获取数据中心id的API，所以&lt;code&gt;datacenter_id&lt;/code&gt;我们可以在部署阶段轻松地获取到。而worker_id是我们逻辑上给机器分配的一个id，这个要怎么办呢？比较简单的想法是由能够提供这种自增id功能的工具来支持，比如MySQL:&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-shell" data-lang="shell"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;mysql&amp;gt; insert into a &lt;span style="color:#f92672"&gt;(&lt;/span&gt;ip&lt;span style="color:#f92672"&gt;)&lt;/span&gt; values&lt;span style="color:#f92672"&gt;(&lt;/span&gt;&lt;span style="color:#d88200"&gt;&amp;#34;10.1.2.101&amp;#34;&lt;/span&gt;&lt;span style="color:#f92672"&gt;)&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-shell" data-lang="shell"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;mysql&amp;gt; insert into a &lt;span style="color:#f92672"&gt;(&lt;/span&gt;ip&lt;span style="color:#f92672"&gt;)&lt;/span&gt; values&lt;span style="color:#f92672"&gt;(&lt;/span&gt;&lt;span style="color:#d88200"&gt;&amp;#34;10.1.2.101&amp;#34;&lt;/span&gt;&lt;span style="color:#f92672"&gt;)&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Query OK, &lt;span style="color:#ae81ff"&gt;1&lt;/span&gt; row affected &lt;span style="color:#f92672"&gt;(&lt;/span&gt;0.00 sec&lt;span style="color:#f92672"&gt;)&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;mysql&amp;gt; &lt;span style="color:#00a8c8"&gt;select&lt;/span&gt; last_insert_id&lt;span style="color:#f92672"&gt;()&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;
@@ -533,7 +533,7 @@
 &lt;p&gt;&lt;img src="https://daemon365.dev/images/ae01d265-414e-4c7a-ab33-bb94ac47b6fb.png" alt=""&gt;&lt;/p&gt;
 &lt;p&gt;&lt;em&gt;图 6-2 snowflake库&lt;/em&gt;&lt;/p&gt;
 &lt;p&gt;和标准的snowflake完全一致。使用上比较简单：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-go" data-lang="go"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f92672"&gt;package&lt;/span&gt; &lt;span style="color:#75af00"&gt;main&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-go" data-lang="go"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f92672"&gt;package&lt;/span&gt; &lt;span style="color:#75af00"&gt;main&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f92672"&gt;import&lt;/span&gt; &lt;span style="color:#111"&gt;(&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;fmt&amp;#34;&lt;/span&gt;
@@ -573,7 +573,7 @@
 <h3 id="worker_id分配">worker_id分配</h3>
 <p><code>timestamp</code>，<code>datacenter_id</code>，<code>worker_id</code>和<code>sequence_id</code>这四个字段中，<code>timestamp</code>和<code>sequence_id</code>是由程序在运行期生成的。但<code>datacenter_id</code>和<code>worker_id</code>需要我们在部署阶段就能够获取得到，并且一旦程序启动之后，就是不可更改的了（想想，如果可以随意更改，可能被不慎修改，造成最终生成的id有冲突）。</p>
 <p>一般不同数据中心的机器，会提供对应的获取数据中心id的API，所以<code>datacenter_id</code>我们可以在部署阶段轻松地获取到。而worker_id是我们逻辑上给机器分配的一个id，这个要怎么办呢？比较简单的想法是由能够提供这种自增id功能的工具来支持，比如MySQL:</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>mysql&gt; insert into a <span style="color:#f92672">(</span>ip<span style="color:#f92672">)</span> values<span style="color:#f92672">(</span><span style="color:#d88200">&#34;10.1.2.101&#34;</span><span style="color:#f92672">)</span><span style="color:#111">;</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>mysql&gt; insert into a <span style="color:#f92672">(</span>ip<span style="color:#f92672">)</span> values<span style="color:#f92672">(</span><span style="color:#d88200">&#34;10.1.2.101&#34;</span><span style="color:#f92672">)</span><span style="color:#111">;</span>
 </span></span><span style="display:flex;"><span>Query OK, <span style="color:#ae81ff">1</span> row affected <span style="color:#f92672">(</span>0.00 sec<span style="color:#f92672">)</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>mysql&gt; <span style="color:#00a8c8">select</span> last_insert_id<span style="color:#f92672">()</span><span style="color:#111">;</span>
@@ -592,7 +592,7 @@
 <p><img src="/images/ae01d265-414e-4c7a-ab33-bb94ac47b6fb.png" alt=""></p>
 <p><em>图 6-2 snowflake库</em></p>
 <p>和标准的snowflake完全一致。使用上比较简单：</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#d88200">&#34;fmt&#34;</span>
@@ -620,7 +620,7 @@
 </span></span><span style="display:flex;"><span>    <span style="color:#111">}</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>
 </span></span></code></pre></div><p>当然，这个库也给我们留好了定制的后路，其中预留了一些可定制字段：</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span>    <span style="color:#75715e">// Epoch is set to the twitter snowflake epoch of Nov 04 2010 01:42:54 UTC</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span>    <span style="color:#75715e">// Epoch is set to the twitter snowflake epoch of Nov 04 2010 01:42:54 UTC</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// You may customize this to set a different epoch for your application.</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75af00">Epoch</span> <span style="color:#00a8c8">int64</span> <span style="color:#111">=</span> <span style="color:#ae81ff">1288834974657</span>
 </span></span><span style="display:flex;"><span>
@@ -638,9 +638,9 @@
 <p><em>图 6-3 sonyflake</em></p>
 <p>这里的时间只用了39个bit，但时间的单位变成了10ms，所以理论上比41位表示的时间还要久(174年)。</p>
 <p><code>Sequence ID</code>和之前的定义一致，<code>Machine ID</code>其实就是节点id。<code>sonyflake</code>与众不同的地方在于其在启动阶段的配置参数：</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#75af00">NewSonyflake</span><span style="color:#111">(</span><span style="color:#75af00">st</span> <span style="color:#75af00">Settings</span><span style="color:#111">)</span> <span style="color:#f92672">*</span><span style="color:#75af00">Sonyflake</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#75af00">NewSonyflake</span><span style="color:#111">(</span><span style="color:#75af00">st</span> <span style="color:#75af00">Settings</span><span style="color:#111">)</span> <span style="color:#f92672">*</span><span style="color:#75af00">Sonyflake</span>
 </span></span></code></pre></div><p><code>Settings</code>数据结构如下：</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#00a8c8">type</span> <span style="color:#75af00">Settings</span> <span style="color:#00a8c8">struct</span> <span style="color:#111">{</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#00a8c8">type</span> <span style="color:#75af00">Settings</span> <span style="color:#00a8c8">struct</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75af00">StartTime</span>      <span style="color:#75af00">time</span><span style="color:#111">.</span><span style="color:#75af00">Time</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75af00">MachineID</span>      <span style="color:#00a8c8">func</span><span style="color:#111">()</span> <span style="color:#111">(</span><span style="color:#00a8c8">uint16</span><span style="color:#111">,</span> <span style="color:#00a8c8">error</span><span style="color:#111">)</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75af00">CheckMachineID</span> <span style="color:#00a8c8">func</span><span style="color:#111">(</span><span style="color:#00a8c8">uint16</span><span style="color:#111">)</span> <span style="color:#00a8c8">bool</span>
@@ -648,12 +648,12 @@
 </span></span></code></pre></div><p><code>StartTime</code>选项和我们之前的<code>Epoch</code>差不多，如果不设置的话，默认是从<code>2014-09-01 00:00:00 +0000 UTC</code>开始。</p>
 <p><code>MachineID</code>可以由用户自定义的函数，如果用户不定义的话，会默认将本机IP的低16位作为<code>machine id</code>。</p>
 <p><code>CheckMachineID</code>是由用户提供的检查<code>MachineID</code>是否冲突的函数。这里的设计还是比较巧妙的，如果有另外的中心化存储并支持检查重复的存储，那我们就可以按照自己的想法随意定制这个检查<code>MachineID</code>是否冲突的逻辑。如果公司有现成的Redis集群，那么我们可以很轻松地用Redis的集合类型来检查冲突。</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>redis 127.0.0.1:6379&gt; SADD base64_encoding_of_last16bits <span style="color:#111">MzI0Mgo</span><span style="color:#f92672">=</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>redis 127.0.0.1:6379&gt; SADD base64_encoding_of_last16bits <span style="color:#111">MzI0Mgo</span><span style="color:#f92672">=</span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">(</span>integer<span style="color:#f92672">)</span> <span style="color:#ae81ff">1</span>
 </span></span><span style="display:flex;"><span>redis 127.0.0.1:6379&gt; SADD base64_encoding_of_last16bits <span style="color:#111">MzI0Mgo</span><span style="color:#f92672">=</span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">(</span>integer<span style="color:#f92672">)</span> <span style="color:#ae81ff">0</span>
 </span></span></code></pre></div><p>使用起来也比较简单，有一些逻辑简单的函数就略去实现了：</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#d88200">&#34;fmt&#34;</span>
@@ -710,7 +710,7 @@
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>
 </span></span></code></pre></div><h2 id="分布式锁">分布式锁</h2>
 <p>在单机程序并发或并行修改全局变量时，需要对修改行为加锁以创造临界区。为什么需要加锁呢？我们看看在不加锁的情况下并发计数会发生什么情况：</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#d88200">&#34;sync&#34;</span>
@@ -733,7 +733,7 @@
 </span></span><span style="display:flex;"><span>    <span style="color:#111">println</span><span style="color:#111">(</span><span style="color:#75af00">counter</span><span style="color:#111">)</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>
 </span></span></code></pre></div><p>多次运行会得到不同的结果：</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>❯❯❯ go run local_lock.go
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>❯❯❯ go run local_lock.go
 </span></span><span style="display:flex;"><span><span style="color:#ae81ff">945</span>
 </span></span><span style="display:flex;"><span>❯❯❯ go run local_lock.go
 </span></span><span style="display:flex;"><span><span style="color:#ae81ff">937</span>
@@ -741,7 +741,7 @@
 </span></span><span style="display:flex;"><span><span style="color:#ae81ff">959</span>
 </span></span></code></pre></div><h3 id="基于redis的setnx">基于Redis的setnx</h3>
 <p>在分布式场景下，我们也需要这种“抢占”的逻辑，这时候怎么办呢？我们可以使用Redis提供的<code>setnx</code>命令：</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;fmt&#34;</span>
@@ -826,7 +826,7 @@
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">fmt</span><span style="color:#111">.</span><span style="color:#75af00">Println</span><span style="color:#111">(</span><span style="color:#d88200">&#34;解锁:&#34;</span><span style="color:#111">,</span> <span style="color:#75af00">res</span><span style="color:#111">)</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>
 </span></span></code></pre></div><p>看看运行结果：</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>是否拿到锁: <span style="color:#111">true</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>是否拿到锁: <span style="color:#111">true</span>
 </span></span><span style="display:flex;"><span>是否拿到锁: <span style="color:#111">false</span>
 </span></span><span style="display:flex;"><span>是否拿到锁: <span style="color:#111">false</span>
 </span></span><span style="display:flex;"><span>是否拿到锁: <span style="color:#111">false</span>
@@ -842,7 +842,7 @@
 <p>所以，我们需要依赖于这些请求到达Redis节点的顺序来做正确的抢锁操作。如果用户的网络环境比较差，那也只能自求多福了。</p>
 <h3 id="基于etcd">基于etcd</h3>
 <p>etcd是分布式系统中，功能上与ZooKeeper类似的组件，这两年越来越火了。上面基于ZooKeeper我们实现了分布式阻塞锁，基于etcd，也可以实现类似的功能：</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#d88200">&#34;log&#34;</span>
@@ -971,7 +971,7 @@
 <li>同一文件可以定义多个struct，也可以定义在不同的文件，进行include引入。</li>
 </ul>
 <p>数字标签作用非常大，但是随着项目开发的不断发展，也许字段会有变化，但是建议不要轻易修改这些数字标签，修改之后如果没有同步客户端和服务器端会让一方解析出问题。</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#00a8c8">struct</span> <span style="color:#75af00">Report</span> <span style="color:#111">{</span>  
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#00a8c8">struct</span> <span style="color:#75af00">Report</span> <span style="color:#111">{</span>  
 </span></span><span style="display:flex;"><span>	<span style="color:#ae81ff">1</span><span style="color:#111">:</span> <span style="color:#75af00">required</span> <span style="color:#00a8c8">string</span> <span style="color:#75af00">msg</span><span style="color:#111">,</span> <span style="color:#75715e">//改字段必须填写  </span>
 </span></span><span style="display:flex;"><span>	<span style="color:#ae81ff">2</span><span style="color:#111">:</span> <span style="color:#75af00">optional</span> <span style="color:#75af00">i32</span> <span style="color:#00a8c8">type</span> <span style="color:#111">=</span> <span style="color:#ae81ff">0</span><span style="color:#111">;</span> <span style="color:#75715e">//默认值  </span>
 </span></span><span style="display:flex;"><span>	<span style="color:#ae81ff">3</span><span style="color:#111">:</span> <span style="color:#75af00">i32</span> <span style="color:#75af00">time</span> <span style="color:#75715e">//默认字段类型为optional </span>
@@ -987,7 +987,7 @@
 <p>　　容器中元素类型可以是除了service外的任何合法Thrift类型（包括结构体和异常）。为了最大的兼容性，map的key最好是thrift的基本类型，有些语言不支持复杂类型的key，JSON协议只支持那些基本类型的key。</p>
 <p>容器都是同构容器，不失异构容器。</p>
 <p>例子</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#00a8c8">struct</span> <span style="color:#75af00">Test</span> <span style="color:#111">{</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#00a8c8">struct</span> <span style="color:#75af00">Test</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">1</span><span style="color:#111">:</span> <span style="color:#00a8c8">map</span><span style="color:#111">&lt;</span><span style="color:#75af00">Numberz</span><span style="color:#111">,</span> <span style="color:#75af00">UserId</span><span style="color:#111">&gt;</span> <span style="color:#75af00">user_map</span><span style="color:#111">,</span>
 </span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">2</span><span style="color:#111">:</span> <span style="color:#75af00">set</span><span style="color:#111">&lt;</span><span style="color:#75af00">Numberz</span><span style="color:#111">&gt;</span> <span style="color:#75af00">num_sets</span><span style="color:#111">,</span> 
 </span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">3</span><span style="color:#111">:</span> <span style="color:#75af00">list</span><span style="color:#111">&lt;</span><span style="color:#75af00">Stusers</span><span style="color:#111">&gt;</span> <span style="color:#75af00">users</span>
@@ -1002,7 +1002,7 @@
 <li>给常量赋缺省值时，使用常量的全称</li>
 </ul>
 <p>　　注意，不同于protocal buffer，thrift不支持枚举类嵌套，枚举常量必须是32位的正整数</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75af00">enum</span> <span style="color:#75af00">EnOpType</span> <span style="color:#111">{</span><span style="color:#75af00">CMD_OK</span> <span style="color:#111">=</span> <span style="color:#ae81ff">0</span><span style="color:#111">,</span> <span style="color:#75715e">// (0)  </span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75af00">enum</span> <span style="color:#75af00">EnOpType</span> <span style="color:#111">{</span><span style="color:#75af00">CMD_OK</span> <span style="color:#111">=</span> <span style="color:#ae81ff">0</span><span style="color:#111">,</span> <span style="color:#75715e">// (0)  </span>
 </span></span><span style="display:flex;"><span>               <span style="color:#75af00">CMD_NOT_EXIT</span> <span style="color:#111">=</span> <span style="color:#ae81ff">2000</span><span style="color:#111">,</span> <span style="color:#75715e">// (2000) </span>
 </span></span><span style="display:flex;"><span>               <span style="color:#75af00">CMD_EXIT</span> <span style="color:#111">=</span> <span style="color:#ae81ff">2001</span><span style="color:#111">,</span> <span style="color:#75715e">// (2001) 　　</span>
 </span></span><span style="display:flex;"><span>               <span style="color:#75af00">CMD_ADD</span> <span style="color:#111">=</span> <span style="color:#ae81ff">2002</span> <span style="color:#75715e">// (2002)</span>
@@ -1015,17 +1015,17 @@
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>
 </span></span></code></pre></div><h3 id="常量定义和类型定义">常量定义和类型定义</h3>
 <p>　　Thrift允许定义跨语言使用的常量，复杂的类型和结构体可使用JSON形式表示。</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#00a8c8">const</span> <span style="color:#75af00">i32</span> <span style="color:#75af00">INT_CONST</span> <span style="color:#111">=</span> <span style="color:#ae81ff">1234</span><span style="color:#111">;</span> <span style="color:#00a8c8">const</span> <span style="color:#75af00">EnOpType</span> <span style="color:#75af00">myEnOpType</span> <span style="color:#111">=</span> <span style="color:#75af00">EnOpType</span><span style="color:#111">.</span><span style="color:#75af00">CMD_EXIT</span><span style="color:#111">;</span> <span style="color:#75715e">//2001</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#00a8c8">const</span> <span style="color:#75af00">i32</span> <span style="color:#75af00">INT_CONST</span> <span style="color:#111">=</span> <span style="color:#ae81ff">1234</span><span style="color:#111">;</span> <span style="color:#00a8c8">const</span> <span style="color:#75af00">EnOpType</span> <span style="color:#75af00">myEnOpType</span> <span style="color:#111">=</span> <span style="color:#75af00">EnOpType</span><span style="color:#111">.</span><span style="color:#75af00">CMD_EXIT</span><span style="color:#111">;</span> <span style="color:#75715e">//2001</span>
 </span></span></code></pre></div><p>　说明：分号可有可无。支持16进制。　　</p>
 <p>Thrift支持C/C++类型定义。</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75af00">typedef</span> <span style="color:#75af00">i32</span> <span style="color:#75af00">MyInteger</span> <span style="color:#75715e">// a </span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75af00">typedef</span> <span style="color:#75af00">i32</span> <span style="color:#75af00">MyInteger</span> <span style="color:#75715e">// a </span>
 </span></span><span style="display:flex;"><span><span style="color:#75af00">typedef</span> <span style="color:#75af00">StUser</span> <span style="color:#75af00">ReU</span> <span style="color:#75715e">// b </span>
 </span></span><span style="display:flex;"><span><span style="color:#75af00">typedef</span> <span style="color:#75af00">i64</span> <span style="color:#75af00">UserId</span>
 </span></span></code></pre></div><p>　说明：a.末尾没有逗号。b. Struct也可以使用typedef。</p>
 <h3 id="异常exceptions">异常（Exceptions）</h3>
 <p>　　Thrift结构体在概念上类似于（similar to）C语言结构体类型—将相关属性封装在一起的简便方式。Thrift结构体将会被转换成面向对象语言的类。</p>
 <p>　　异常在语法和功能上类似于结构体，差别是异常使用关键字exception，而且异常是继承每种语言的基础异常类。</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75af00">exception</span> <span style="color:#75af00">Extest</span> <span style="color:#111">{</span> 
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75af00">exception</span> <span style="color:#75af00">Extest</span> <span style="color:#111">{</span> 
 </span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">1</span><span style="color:#111">:</span> <span style="color:#75af00">i32</span> <span style="color:#75af00">errorCode</span><span style="color:#111">,</span>
 </span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">2</span><span style="color:#111">:</span> <span style="color:#00a8c8">string</span> <span style="color:#75af00">message</span><span style="color:#111">,</span>
 </span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">3</span><span style="color:#111">:</span> <span style="color:#75af00">StUser</span> <span style="color:#75af00">userinfo</span>
@@ -1034,7 +1034,7 @@
 <p>　　服务的定义方法在语义(semantically)上等同于面向对象语言中的接口。Thrift编译器会产生执行这些接口的client和server stub。具体参见下一节。</p>
 <p>　　在流行的序列化/反序列化框架（如protocal buffer）中，Thrift是少有的提供多语言间RPC服务的框架。这是Thrift的一大特色。</p>
 <p>　　Thrift编译器会根据选择的目标语言为server产生服务接口代码，为client产生stubs。</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75af00">service</span> <span style="color:#75af00">SeTest</span> <span style="color:#111">{</span>   <span style="color:#75af00">void</span> <span style="color:#75af00">ping</span><span style="color:#111">(),</span>   <span style="color:#00a8c8">bool</span> <span style="color:#75af00">postTweet</span><span style="color:#111">(</span><span style="color:#ae81ff">1</span><span style="color:#111">:</span> <span style="color:#75af00">StUser</span> <span style="color:#75af00">user</span><span style="color:#111">);</span>   
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75af00">service</span> <span style="color:#75af00">SeTest</span> <span style="color:#111">{</span>   <span style="color:#75af00">void</span> <span style="color:#75af00">ping</span><span style="color:#111">(),</span>   <span style="color:#00a8c8">bool</span> <span style="color:#75af00">postTweet</span><span style="color:#111">(</span><span style="color:#ae81ff">1</span><span style="color:#111">:</span> <span style="color:#75af00">StUser</span> <span style="color:#75af00">user</span><span style="color:#111">);</span>   
 </span></span><span style="display:flex;"><span>    <span style="color:#75af00">StUser</span> <span style="color:#75af00">searchTweets</span><span style="color:#111">(</span><span style="color:#ae81ff">1</span><span style="color:#111">:</span><span style="color:#00a8c8">string</span> <span style="color:#75af00">name</span><span style="color:#111">);</span>  
 </span></span><span style="display:flex;"><span>    <span style="color:#75af00">oneway</span> <span style="color:#75af00">void</span> <span style="color:#75af00">zip</span><span style="color:#111">()</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>　
@@ -1054,14 +1054,14 @@ namespace py com.example.test
 namespace php com.example.test  
 </code></pre><h3 id="注释comment">注释（Comment）</h3>
 <p>　　Thrift支持C多行风格和Java/C++单行风格。</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">/* 
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">/* 
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e">* This is a multi-line comment. 
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e">* Just like in C. 
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e">*/</span> 
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// C++/Java style single-line comments work just as well.</span>
 </span></span></code></pre></div><h3 id="11includes">11Includes</h3>
 <p>　　便于管理、重用和提高模块性/组织性，我们常常分割Thrift定义在不同的文件中。包含文件搜索方式与c++一样。Thrift允许文件包含其它thrift文件，用户需要使用thrift文件名作为前缀访问被包含的对象，如：</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75af00">include</span> <span style="color:#d88200">&#34;test.thrift&#34;</span>    
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75af00">include</span> <span style="color:#d88200">&#34;test.thrift&#34;</span>    
 </span></span><span style="display:flex;"><span><span style="color:#f92672">...</span> 
 </span></span><span style="display:flex;"><span><span style="color:#00a8c8">struct</span> <span style="color:#75af00">StSearchResult</span> <span style="color:#111">{</span>    
 </span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">1</span><span style="color:#111">:</span> <span style="color:#75af00">in32</span> <span style="color:#75af00">uid</span><span style="color:#111">;</span>
@@ -1156,7 +1156,7 @@ namespace php com.example.test
 </table>
 <h2 id="代码实现">代码实现</h2>
 <h3 id="编写thrift文件">编写*.thrift文件</h3>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75af00">namespace</span> <span style="color:#00a8c8">go</span> <span style="color:#75af00">example</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75af00">namespace</span> <span style="color:#00a8c8">go</span> <span style="color:#75af00">example</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#00a8c8">struct</span> <span style="color:#75af00">Data</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#ae81ff">1</span><span style="color:#111">:</span> <span style="color:#00a8c8">string</span> <span style="color:#75af00">text</span>
@@ -1199,7 +1199,7 @@ namespace php com.example.test
 </ul>
 </li>
 </ol>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">/* server.go */</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">/* server.go */</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
 </span></span><span style="display:flex;"><span>
@@ -1242,7 +1242,7 @@ namespace php com.example.test
 </span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>
 </span></span></code></pre></div><h3 id="python服务端">python服务端</h3>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">from</span> <span style="color:#111">thrift.protocol</span> <span style="color:#f92672">import</span> <span style="color:#111">TBinaryProtocol</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">from</span> <span style="color:#111">thrift.protocol</span> <span style="color:#f92672">import</span> <span style="color:#111">TBinaryProtocol</span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> <span style="color:#111">thrift.server</span> <span style="color:#f92672">import</span> <span style="color:#111">TServer</span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> <span style="color:#111">thrift.transport</span> <span style="color:#f92672">import</span> <span style="color:#111">TSocket</span><span style="color:#111">,</span> <span style="color:#111">TTransport</span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> <span style="color:#111">example</span> <span style="color:#f92672">import</span> <span style="color:#111">format_data</span>
@@ -1267,7 +1267,7 @@ namespace php com.example.test
 </span></span><span style="display:flex;"><span>    <span style="color:#111">server</span><span style="color:#f92672">.</span><span style="color:#111">serve</span><span style="color:#111">()</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#111">print</span><span style="color:#111">(</span><span style="color:#d88200">&#34;done!&#34;</span><span style="color:#111">)</span>
 </span></span></code></pre></div><h3 id="golang客户端">golang客户端</h3>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;context&#34;</span>
@@ -1308,7 +1308,7 @@ namespace php com.example.test
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">fmt</span><span style="color:#111">.</span><span style="color:#75af00">Println</span><span style="color:#111">(</span><span style="color:#75af00">d</span><span style="color:#111">)</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>
 </span></span></code></pre></div><p>5.python客户端</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">from</span> <span style="color:#111">example</span> <span style="color:#f92672">import</span> <span style="color:#111">format_data</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">from</span> <span style="color:#111">example</span> <span style="color:#f92672">import</span> <span style="color:#111">format_data</span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> <span style="color:#111">thrift</span> <span style="color:#f92672">import</span> <span style="color:#111">Thrift</span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> <span style="color:#111">thrift.transport</span> <span style="color:#f92672">import</span> <span style="color:#111">TSocket</span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> <span style="color:#111">thrift.transport</span> <span style="color:#f92672">import</span> <span style="color:#111">TTransport</span>
@@ -1482,7 +1482,7 @@ namespace php com.example.test
 <ul>
 <li>resolver.Builder <code>Builder</code> 用于 gRPC 内部创建 <code>Resolver</code> 接口的实现，但注意内部声明的 <code>Build()</code> 方法将接口 <code>ClientConn</code> 作为参数传入了，在前文的分析中，我们了解到 <code>ClientConn</code><a href="https://github.com/grpc/grpc-go/blob/master/clientconn.go#L459">结库</a> 是非常重要的结构，其成员 <code>conns map[*addrConn]struct{}</code> 中维护了所有从注册中心获取到的服务端列表。</li>
 </ul>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// Builder creates a resolver that will be used to watch name resolution updates.</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// Builder creates a resolver that will be used to watch name resolution updates.</span>
 </span></span><span style="display:flex;"><span><span style="color:#00a8c8">type</span> <span style="color:#75af00">Builder</span> <span style="color:#00a8c8">interface</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// Build creates a new resolver for the given target.</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">//
@@ -1496,7 +1496,7 @@ namespace php com.example.test
 </span></span></code></pre></div><ul>
 <li><a href="https://github.com/grpc/grpc-go/blob/master/clientconn.go#L459">resolver.ClientConn</a> <code>ClientConn</code> 接口中，<code>UpdateState</code> 方法需要传入 <code>State</code> 结构，<code>NewAddress</code> 方法需要传入 <code>Address</code> 结构，看代码可以发现其中包含了 <code>Addresses []Address // Resolved addresses for the target</code>，可以看出是需要将服务发现得到的 <code>Address</code> 对象列表告诉 <code>ClientConn</code> 的对象。</li>
 </ul>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// ClientConn contains the callbacks for resolver to notify any updates</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// ClientConn contains the callbacks for resolver to notify any updates</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// to the gRPC ClientConn.</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">//
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e">// This interface is to be implemented by gRPC. Users should not need a</span>
@@ -1521,7 +1521,7 @@ namespace php com.example.test
 </span></span></code></pre></div><ul>
 <li>resolver.Resolver <code>Resolver</code> 提供了 <code>ResolveNow</code> 用于被 gRPC 尝试重新进行服务发现</li>
 </ul>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// Resolver watches for the updates on the specified target.</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// Resolver watches for the updates on the specified target.</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// Updates include address updates and service config updates.</span>
 </span></span><span style="display:flex;"><span><span style="color:#00a8c8">type</span> <span style="color:#75af00">Resolver</span> <span style="color:#00a8c8">interface</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// ResolveNow will be called by gRPC to try to resolve the target name</span>
@@ -1538,7 +1538,7 @@ namespace php com.example.test
 <li>通过 <code>Builder.Build()</code> 进行 <code>Reslover</code> 的创建，在 <code>Build()</code> 的过程中将服务发现的地址信息丢给 <code>ClientConn</code> 用于内部连接创建（通过 <code>ClientConn.UpdateState()</code> 实现）等逻辑；</li>
 <li>当 <code>client</code> 在 <code>Dial</code> 时会根据 <code>target</code> 解析的 <code>scheme</code> 获取对应的 <code>Builder</code>，<a href="https://github.com/grpc/grpc-go/blob/master/clientconn.go#L242">代码位置</a></li>
 </ol>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#75af00">DialContext</span><span style="color:#111">(</span><span style="color:#75af00">ctx</span> <span style="color:#75af00">context</span><span style="color:#111">.</span><span style="color:#75af00">Context</span><span style="color:#111">,</span> <span style="color:#75af00">target</span> <span style="color:#00a8c8">string</span><span style="color:#111">,</span> <span style="color:#75af00">opts</span> <span style="color:#f92672">...</span><span style="color:#75af00">DialOption</span><span style="color:#111">)</span> <span style="color:#111">(</span><span style="color:#75af00">conn</span> <span style="color:#f92672">*</span><span style="color:#75af00">ClientConn</span><span style="color:#111">,</span> <span style="color:#75af00">err</span> <span style="color:#00a8c8">error</span><span style="color:#111">)</span> <span style="color:#111">{</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#75af00">DialContext</span><span style="color:#111">(</span><span style="color:#75af00">ctx</span> <span style="color:#75af00">context</span><span style="color:#111">.</span><span style="color:#75af00">Context</span><span style="color:#111">,</span> <span style="color:#75af00">target</span> <span style="color:#00a8c8">string</span><span style="color:#111">,</span> <span style="color:#75af00">opts</span> <span style="color:#f92672">...</span><span style="color:#75af00">DialOption</span><span style="color:#111">)</span> <span style="color:#111">(</span><span style="color:#75af00">conn</span> <span style="color:#f92672">*</span><span style="color:#75af00">ClientConn</span><span style="color:#111">,</span> <span style="color:#75af00">err</span> <span style="color:#00a8c8">error</span><span style="color:#111">)</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">...</span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">...</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// Determine the resolver to use.</span>
@@ -1575,7 +1575,7 @@ namespace php com.example.test
 </span></span></code></pre></div><ol start="3">
 <li>当 <code>Dial</code> 成功会创建出结构体 <code>ClientConn</code> 的对象 <a href="https://github.com/grpc/grpc-go/blob/master/clientconn.go#L447">官方代码位置</a>(注意不是上面的 <code>ClientConn</code> 接口)，可以看到结构体 <code>ClientConn</code> 内的成员 <code>resolverWrapper</code> 又实现了接口 <code>ClientConn</code> 的方法 <a href="https://github.com/grpc/grpc-go/blob/master/resolver_conn_wrapper.go">官方代码位置</a></li>
 </ol>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#75af00">DialContext</span><span style="color:#111">(</span><span style="color:#75af00">ctx</span> <span style="color:#75af00">context</span><span style="color:#111">.</span><span style="color:#75af00">Context</span><span style="color:#111">,</span> <span style="color:#75af00">target</span> <span style="color:#00a8c8">string</span><span style="color:#111">,</span> <span style="color:#75af00">opts</span> <span style="color:#f92672">...</span><span style="color:#75af00">DialOption</span><span style="color:#111">)</span> <span style="color:#111">(</span><span style="color:#75af00">conn</span> <span style="color:#f92672">*</span><span style="color:#75af00">ClientConn</span><span style="color:#111">,</span> <span style="color:#75af00">err</span> <span style="color:#00a8c8">error</span><span style="color:#111">)</span> <span style="color:#111">{</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#75af00">DialContext</span><span style="color:#111">(</span><span style="color:#75af00">ctx</span> <span style="color:#75af00">context</span><span style="color:#111">.</span><span style="color:#75af00">Context</span><span style="color:#111">,</span> <span style="color:#75af00">target</span> <span style="color:#00a8c8">string</span><span style="color:#111">,</span> <span style="color:#75af00">opts</span> <span style="color:#f92672">...</span><span style="color:#75af00">DialOption</span><span style="color:#111">)</span> <span style="color:#111">(</span><span style="color:#75af00">conn</span> <span style="color:#f92672">*</span><span style="color:#75af00">ClientConn</span><span style="color:#111">,</span> <span style="color:#75af00">err</span> <span style="color:#00a8c8">error</span><span style="color:#111">)</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// 初始化 CC</span>
 </span></span><span style="display:flex;"><span><span style="color:#75af00">cc</span> <span style="color:#f92672">:=</span> <span style="color:#f92672">&amp;</span><span style="color:#75af00">ClientConn</span><span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75af00">target</span><span style="color:#111">:</span>            <span style="color:#75af00">target</span><span style="color:#111">,</span>
@@ -1596,7 +1596,7 @@ namespace php com.example.test
 </span></span></code></pre></div><ol start="4">
 <li>当 <code>resolverWrapper</code> 被初始化时就会调用 <code>Build</code> 方法 <a href="https://github.com/grpc/grpc-go/blob/master/resolver_conn_wrapper.go#L89">官方代码位置</a>，其中参数为接口 <code>ClientConn</code> 传入的是 <code>ccResolverWrapper</code></li>
 </ol>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// newCCResolverWrapper uses the resolver.Builder to build a Resolver and</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// newCCResolverWrapper uses the resolver.Builder to build a Resolver and</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// returns a ccResolverWrapper object which wraps the newly built resolver.</span>
 </span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#75af00">newCCResolverWrapper</span><span style="color:#111">(</span><span style="color:#75af00">cc</span> <span style="color:#f92672">*</span><span style="color:#75af00">ClientConn</span><span style="color:#111">,</span> <span style="color:#75af00">rb</span> <span style="color:#75af00">resolver</span><span style="color:#111">.</span><span style="color:#75af00">Builder</span><span style="color:#111">)</span> <span style="color:#111">(</span><span style="color:#f92672">*</span><span style="color:#75af00">ccResolverWrapper</span><span style="color:#111">,</span> <span style="color:#00a8c8">error</span><span style="color:#111">)</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span><span style="color:#75af00">ccr</span> <span style="color:#f92672">:=</span> <span style="color:#f92672">&amp;</span><span style="color:#75af00">ccResolverWrapper</span><span style="color:#111">{</span>
@@ -1631,7 +1631,7 @@ namespace php com.example.test
 </span></span></code></pre></div><ol start="5">
 <li>当用户基于 <code>Builder</code> 的实现进行 <code>UpdateState</code> 调用时，则会触发结构体 <code>ClientConn</code> 的 <code>updateResolverState</code> 方法 <a href="https://github.com/grpc/grpc-go/blob/master/resolver_conn_wrapper.go#L109">官方代码位置</a>，<code>updateResolverState</code> 则会对传入的 <code>Address</code> 进行初始化等逻辑 <a href="https://github.com/grpc/grpc-go/blob/master/clientconn.go#L553">官方代码位置</a></li>
 </ol>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#111">(</span><span style="color:#75af00">cc</span> <span style="color:#f92672">*</span><span style="color:#75af00">ClientConn</span><span style="color:#111">)</span> <span style="color:#75af00">updateResolverState</span><span style="color:#111">(</span><span style="color:#75af00">s</span> <span style="color:#75af00">resolver</span><span style="color:#111">.</span><span style="color:#75af00">State</span><span style="color:#111">,</span> <span style="color:#75af00">err</span> <span style="color:#00a8c8">error</span><span style="color:#111">)</span> <span style="color:#00a8c8">error</span> <span style="color:#111">{</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#111">(</span><span style="color:#75af00">cc</span> <span style="color:#f92672">*</span><span style="color:#75af00">ClientConn</span><span style="color:#111">)</span> <span style="color:#75af00">updateResolverState</span><span style="color:#111">(</span><span style="color:#75af00">s</span> <span style="color:#75af00">resolver</span><span style="color:#111">.</span><span style="color:#75af00">State</span><span style="color:#111">,</span> <span style="color:#75af00">err</span> <span style="color:#00a8c8">error</span><span style="color:#111">)</span> <span style="color:#00a8c8">error</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span><span style="color:#00a8c8">defer</span> <span style="color:#75af00">cc</span><span style="color:#111">.</span><span style="color:#75af00">firstResolveEvent</span><span style="color:#111">.</span><span style="color:#75af00">Fire</span><span style="color:#111">()</span>
 </span></span><span style="display:flex;"><span><span style="color:#75af00">cc</span><span style="color:#111">.</span><span style="color:#75af00">mu</span><span style="color:#111">.</span><span style="color:#75af00">Lock</span><span style="color:#111">()</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// Check if the ClientConn is already closed. Some fields (e.g.</span>
@@ -1786,7 +1786,7 @@ namespace php com.example.test
 <p><img src="/images/b0e2261e-65fd-4a25-92bd-faf3e2465848.png" alt=""></p>
 <p><img src="/images/2d6258dc-37b5-409b-a46f-b727115925af.png" alt=""></p>
 <h2 id="protubuf文件编写">protubuf文件编写</h2>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75af00">syntax</span> <span style="color:#111">=</span> <span style="color:#d88200">&#34;proto3&#34;</span><span style="color:#111">;</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75af00">syntax</span> <span style="color:#111">=</span> <span style="color:#d88200">&#34;proto3&#34;</span><span style="color:#111">;</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">hello</span><span style="color:#111">;</span>
 </span></span><span style="display:flex;"><span>
@@ -1816,7 +1816,7 @@ namespace php com.example.test
 <li><code>go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest</code></li>
 </ol>
 <p>执行:</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>protoc --go_out<span style="color:#f92672">=</span>./  --go-grpc_out<span style="color:#f92672">=</span>./  hello.proto
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>protoc --go_out<span style="color:#f92672">=</span>./  --go-grpc_out<span style="color:#f92672">=</span>./  hello.proto
 </span></span></code></pre></div><ul>
 <li>&ndash;proto_path: 指定了要去哪个目录中搜索import中导入的和要编译为.go的proto文件 (在这没有使用,需要的话可以加上)</li>
 <li>&ndash;go_out:指定了生成的go文件的目录，我在这里把go文件放到本目录中</li>
@@ -1824,7 +1824,7 @@ namespace php com.example.test
 <li>hello.proto， 定义了我要编译的文件是哪个文件。</li>
 </ul>
 <h3 id="go-server代码">go server代码</h3>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;context&#34;</span>
@@ -1876,9 +1876,9 @@ namespace php com.example.test
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>
 </span></span></code></pre></div><h2 id="golang创建grpc-client">golang创建grpc client</h2>
 <p>执行:</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>protoc --go_out<span style="color:#f92672">=</span>./  --go-grpc_out<span style="color:#f92672">=</span>./  hello.proto
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>protoc --go_out<span style="color:#f92672">=</span>./  --go-grpc_out<span style="color:#f92672">=</span>./  hello.proto
 </span></span></code></pre></div><h3 id="go-client代码">go client代码</h3>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;context&#34;</span>
@@ -1904,17 +1904,17 @@ namespace php com.example.test
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">fmt</span><span style="color:#111">.</span><span style="color:#75af00">Println</span><span style="color:#111">(</span><span style="color:#75af00">r</span><span style="color:#111">)</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>
 </span></span></code></pre></div><p>结果:</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>SayHello: hello ---&gt; zhaohaiyu
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>SayHello: hello ---&gt; zhaohaiyu
 </span></span></code></pre></div><h2 id="python创建grpc-client">python创建grpc client</h2>
 <p>使用python客户端调用golang服务端的方法</p>
 <p>下载依赖:</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#111">pip</span> <span style="color:#111">install</span> <span style="color:#111">grpcio</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#111">pip</span> <span style="color:#111">install</span> <span style="color:#111">grpcio</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">pip</span> <span style="color:#111">install</span> <span style="color:#111">protobuf</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">pip</span> <span style="color:#111">install</span> <span style="color:#111">grpcio_tools</span>
 </span></span></code></pre></div><p>执行:</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>python -m grpc_tools.protoc -I ./ --python_out<span style="color:#f92672">=</span>./ --grpc_python_out<span style="color:#f92672">=</span>./ hello.proto
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>python -m grpc_tools.protoc -I ./ --python_out<span style="color:#f92672">=</span>./ --grpc_python_out<span style="color:#f92672">=</span>./ hello.proto
 </span></span></code></pre></div><h3 id="python-client代码">python client代码</h3>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">grpc</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">grpc</span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">hello_pb2</span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">hello_pb2_grpc</span>
 </span></span><span style="display:flex;"><span><span style="color:#00a8c8">def</span> <span style="color:#75af00">run</span><span style="color:#111">():</span>
@@ -1925,7 +1925,7 @@ namespace php com.example.test
 </span></span><span style="display:flex;"><span><span style="color:#00a8c8">if</span> <span style="color:#111">__name__</span> <span style="color:#f92672">==</span> <span style="color:#d88200">&#39;__main__&#39;</span><span style="color:#111">:</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#111">run</span><span style="color:#111">()</span>
 </span></span></code></pre></div><p>结果:</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>python ./main.go
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>python ./main.go
 </span></span><span style="display:flex;"><span>hello ---&gt; 赵海宇
 </span></span></code></pre></div><h2 id="gprc的haeder">gprc的haeder</h2>
 <ul>
@@ -1934,7 +1934,7 @@ namespace php com.example.test
 <li>type ***p[string][]string其实就是一个map</li>
 </ul>
 <p>客户端发送方式一:</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// 创建md 并加入ctx</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// 创建md 并加入ctx</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">md</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">metadata</span><span style="color:#111">.</span><span style="color:#75af00">Pairs</span><span style="color:#111">(</span><span style="color:#d88200">&#34;key1&#34;</span><span style="color:#111">,</span><span style="color:#d88200">&#34;value1&#34;</span><span style="color:#111">,</span><span style="color:#d88200">&#34;key2&#34;</span><span style="color:#111">,</span><span style="color:#d88200">&#34;value2&#34;</span><span style="color:#111">)</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">ctx</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">metadata</span><span style="color:#111">.</span><span style="color:#75af00">NewOutgoingContext</span><span style="color:#111">(</span><span style="color:#75af00">context</span><span style="color:#111">.</span><span style="color:#75af00">Background</span><span style="color:#111">(),</span><span style="color:#75af00">md</span><span style="color:#111">)</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 从ctx中拿出md</span>
@@ -1942,16 +1942,16 @@ namespace php com.example.test
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">newMd</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">metadata</span><span style="color:#111">.</span><span style="color:#75af00">Pairs</span><span style="color:#111">(</span><span style="color:#d88200">&#34;key3&#34;</span><span style="color:#111">,</span><span style="color:#d88200">&#34;value3&#34;</span><span style="color:#111">)</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">ctx</span> <span style="color:#111">=</span> <span style="color:#75af00">metadata</span><span style="color:#111">.</span><span style="color:#75af00">NewOutgoingContext</span><span style="color:#111">(</span><span style="color:#75af00">ctx</span><span style="color:#111">,</span><span style="color:#75af00">metadata</span><span style="color:#111">.</span><span style="color:#75af00">Join</span><span style="color:#111">(</span><span style="color:#75af00">md</span><span style="color:#111">,</span><span style="color:#75af00">newMd</span><span style="color:#111">))</span>
 </span></span></code></pre></div><p>客户端发送方式二:</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75af00">ctx</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">context</span><span style="color:#111">.</span><span style="color:#75af00">Background</span><span style="color:#111">()</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75af00">ctx</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">context</span><span style="color:#111">.</span><span style="color:#75af00">Background</span><span style="color:#111">()</span>
 </span></span><span style="display:flex;"><span><span style="color:#75af00">ctx</span> <span style="color:#111">=</span> <span style="color:#75af00">metadata</span><span style="color:#111">.</span><span style="color:#75af00">AppendToOutgoingContext</span><span style="color:#111">(</span><span style="color:#75af00">ctx</span><span style="color:#111">,</span><span style="color:#d88200">&#34;key1&#34;</span><span style="color:#111">,</span><span style="color:#d88200">&#34;value1&#34;</span><span style="color:#111">,</span><span style="color:#d88200">&#34;key2&#34;</span><span style="color:#111">,</span><span style="color:#d88200">&#34;value2&#34;</span><span style="color:#111">)</span>
 </span></span><span style="display:flex;"><span><span style="color:#75af00">ctx</span> <span style="color:#111">=</span> <span style="color:#75af00">metadata</span><span style="color:#111">.</span><span style="color:#75af00">AppendToOutgoingContext</span><span style="color:#111">(</span><span style="color:#75af00">ctx</span><span style="color:#111">,</span><span style="color:#d88200">&#34;key3&#34;</span><span style="color:#111">,</span><span style="color:#d88200">&#34;value3&#34;</span><span style="color:#111">)</span>
 </span></span></code></pre></div><p>服务端接收:</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75af00">md</span><span style="color:#111">,</span><span style="color:#75af00">ok</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">metadata</span><span style="color:#111">.</span><span style="color:#75af00">FromIncomingContext</span><span style="color:#111">(</span><span style="color:#75af00">ctx</span><span style="color:#111">)</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75af00">md</span><span style="color:#111">,</span><span style="color:#75af00">ok</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">metadata</span><span style="color:#111">.</span><span style="color:#75af00">FromIncomingContext</span><span style="color:#111">(</span><span style="color:#75af00">ctx</span><span style="color:#111">)</span>
 </span></span></code></pre></div><p>实例:</p>
 <ol>
 <li>server:</li>
 </ol>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;fmt&#34;</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;net&#34;</span>
@@ -1993,7 +1993,7 @@ namespace php com.example.test
 </span></span></code></pre></div><ol>
 <li>client</li>
 </ol>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;context&#34;</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;fmt&#34;</span>
@@ -2030,7 +2030,7 @@ namespace php com.example.test
 &lt;h2 id="编译器安装"&gt;编译器安装&lt;/h2&gt;
 &lt;h3 id="ptotoc"&gt;ptotoc&lt;/h3&gt;
 &lt;p&gt;mac安装：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;brew info protobuf
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;brew info protobuf
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;cdn下载：(下载需要的版本)&lt;/p&gt;
 &lt;p&gt;&lt;a href="https://repo1.maven.org/maven2/com/google/protobuf/protoc/"&gt;cdn下载链接&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;linux/mac 编译安装&lt;/p&gt;
@@ -2045,11 +2045,11 @@ namespace php com.example.test
 &lt;p&gt;区别在于前者是旧版本，后者是google接管后的新版本，他们之间的API是不同的，也就是说用于生成的命令，以及生成的文件都是不一样的。&lt;/p&gt;
 &lt;p&gt;因为目前的&lt;code&gt;gRPC-go&lt;/code&gt;源码中的example用的是后者的生成方式，为了与时俱进，本文也采取最新的方式。&lt;/p&gt;
 &lt;p&gt;安装：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id="编写idl代码"&gt;编写IDL代码&lt;/h2&gt;
 &lt;p&gt;新建一个名为person.proto的文件具体内容如下：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-protobuf" data-lang="protobuf"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;// 指定使用protobuf版本
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-protobuf" data-lang="protobuf"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;// 指定使用protobuf版本
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;// 此处使用v3版本
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#111"&gt;syntax&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;proto3&amp;#34;&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
@@ -2090,7 +2090,7 @@ namespace php com.example.test
 <h2 id="编译器安装">编译器安装</h2>
 <h3 id="ptotoc">ptotoc</h3>
 <p>mac安装：</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>brew info protobuf
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>brew info protobuf
 </span></span></code></pre></div><p>cdn下载：(下载需要的版本)</p>
 <p><a href="https://repo1.maven.org/maven2/com/google/protobuf/protoc/">cdn下载链接</a></p>
 <p>linux/mac 编译安装</p>
@@ -2105,11 +2105,11 @@ namespace php com.example.test
 <p>区别在于前者是旧版本，后者是google接管后的新版本，他们之间的API是不同的，也就是说用于生成的命令，以及生成的文件都是不一样的。</p>
 <p>因为目前的<code>gRPC-go</code>源码中的example用的是后者的生成方式，为了与时俱进，本文也采取最新的方式。</p>
 <p>安装：</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 </span></span><span style="display:flex;"><span>go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 </span></span></code></pre></div><h2 id="编写idl代码">编写IDL代码</h2>
 <p>新建一个名为person.proto的文件具体内容如下：</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-protobuf" data-lang="protobuf"><span style="display:flex;"><span><span style="color:#75715e">// 指定使用protobuf版本
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-protobuf" data-lang="protobuf"><span style="display:flex;"><span><span style="color:#75715e">// 指定使用protobuf版本
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e">// 此处使用v3版本
 </span></span></span><span style="display:flex;"><span><span style="color:#111">syntax</span> <span style="color:#f92672">=</span> <span style="color:#d88200">&#34;proto3&#34;</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
 </span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
@@ -2139,14 +2139,14 @@ namespace php com.example.test
 </span></span></span><span style="display:flex;"><span><span style="color:#111">}</span><span style="color:#960050;background-color:#1e0010">
 </span></span></span></code></pre></div><h2 id="生成go语言代码">生成go语言代码</h2>
 <p>在protobuf_demo/address目录下执行以下命令。</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>protoc --proto_path<span style="color:#f92672">=</span>./  --go_out<span style="color:#f92672">=</span>./ ./person.proto
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>protoc --proto_path<span style="color:#f92672">=</span>./  --go_out<span style="color:#f92672">=</span>./ ./person.proto
 </span></span></code></pre></div><ul>
 <li>&ndash;proto_path: 指定了要去哪个目录中搜索import中导入的和要编译为.go的proto文件</li>
 <li>&ndash;go_out:指定了生成的go文件的目录，我在这里把go文件放到本目录中</li>
 <li>person.proto， 定义了我要编译的文件是哪个文件。</li>
 </ul>
 <p>此时在当前目录下会生成一个person.pb.go文件，我们的Go语言代码里就是使用这个文件。 在protobuf_demo/main.go文件中：</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;fmt&#34;</span>

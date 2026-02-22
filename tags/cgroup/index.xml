@@ -186,17 +186,17 @@
 <ul>
 <li>查看当前系统的 namespace</li>
 </ul>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>lsns –t &lt;type&gt;
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>lsns –t &lt;type&gt;
 </span></span></code></pre></div><ul>
 <li>查看某进程的 namespace</li>
 </ul>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>ls -la /proc/&lt;pid&gt;/ns/
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>ls -la /proc/&lt;pid&gt;/ns/
 </span></span></code></pre></div><ul>
 <li>进入某 namespace 运行命令</li>
 </ul>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>nsenter -t &lt;pid&gt; -n ip addr
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>nsenter -t &lt;pid&gt; -n ip addr
 </span></span></code></pre></div><p><strong>Test:</strong></p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># Linux命令行中，可以使用`unshare`命令结合`clone()`创建一个新的进程，并在其中使用命名空间隔离参数。</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># Linux命令行中，可以使用`unshare`命令结合`clone()`创建一个新的进程，并在其中使用命名空间隔离参数。</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e"># 创建一个新的进程，并在其中使用命名空间隔离参数</span>
 </span></span><span style="display:flex;"><span>unshare --pid --net -- sleep <span style="color:#ae81ff">600</span>
 </span></span><span style="display:flex;"><span>
@@ -219,16 +219,16 @@
 </span></span></code></pre></div><ol>
 <li>docker 启动一个 ubuntu</li>
 </ol>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>docker run --rm -it docker.m.daocloud.io/ubuntu:22.10 bash
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>docker run --rm -it docker.m.daocloud.io/ubuntu:22.10 bash
 </span></span></code></pre></div><ol start="2">
 <li>用另一个窗口 找到这个进程</li>
 </ol>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>ps -ef<span style="color:#111">|</span>grep ubuntu
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>ps -ef<span style="color:#111">|</span>grep ubuntu
 </span></span><span style="display:flex;"><span><span style="color:#75715e"># zhy        37247   34017  0 08:20 pts/0    00:00:00 docker run --rm -it docker.m.daocloud.io/ubuntu:22.10 bash</span>
 </span></span></code></pre></div><ol start="3">
 <li>查看这个进程的 namespace</li>
 </ol>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>ls -la /proc/37247/ns/
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>ls -la /proc/37247/ns/
 </span></span><span style="display:flex;"><span>total <span style="color:#ae81ff">0</span>
 </span></span><span style="display:flex;"><span>dr-x--x--x <span style="color:#ae81ff">2</span> zhy zhy <span style="color:#ae81ff">0</span> May <span style="color:#ae81ff">27</span> 08:24 .
 </span></span><span style="display:flex;"><span>dr-xr-xr-x <span style="color:#ae81ff">9</span> zhy zhy <span style="color:#ae81ff">0</span> May <span style="color:#ae81ff">27</span> 08:23 ..
@@ -245,7 +245,7 @@
 </span></span></code></pre></div><ol start="4">
 <li>查看namespace</li>
 </ol>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75af00">sudo</span> <span style="color:#75af00">lsns</span> <span style="color:#f92672">-</span><span style="color:#75af00">t</span> <span style="color:#75af00">pid</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75af00">sudo</span> <span style="color:#75af00">lsns</span> <span style="color:#f92672">-</span><span style="color:#75af00">t</span> <span style="color:#75af00">pid</span>
 </span></span><span style="display:flex;"><span>        <span style="color:#75af00">NS</span> <span style="color:#75af00">TYPE</span> <span style="color:#75af00">NPROCS</span>   <span style="color:#75af00">PID</span> <span style="color:#75af00">USER</span> <span style="color:#75af00">COMMAND</span>
 </span></span><span style="display:flex;"><span><span style="color:#ae81ff">4026531836</span> <span style="color:#75af00">pid</span>     <span style="color:#ae81ff">275</span>     <span style="color:#ae81ff">1</span> <span style="color:#75af00">root</span> <span style="color:#f92672">/</span><span style="color:#75af00">sbin</span><span style="color:#f92672">/</span><span style="color:#75af00">init</span>
 </span></span><span style="display:flex;"><span><span style="color:#ae81ff">4026532654</span> <span style="color:#75af00">pid</span>       <span style="color:#ae81ff">1</span> <span style="color:#ae81ff">37347</span> <span style="color:#75af00">root</span> <span style="color:#75af00">bash</span>
@@ -260,7 +260,7 @@
 <ol start="5">
 <li>在 ubuntu 中执行 <code>ip addr</code> 在主机执行 <code>nsenter -t &lt;pid&gt; -n ip addr</code></li>
 </ol>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># 容器内</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># 容器内</span>
 </span></span><span style="display:flex;"><span>ip addr
 </span></span><span style="display:flex;"><span>1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu <span style="color:#ae81ff">65536</span> qdisc noqueue state UNKNOWN group default qlen <span style="color:#ae81ff">1000</span>
 </span></span><span style="display:flex;"><span>    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
@@ -320,12 +320,12 @@
 <h3 id="v2">v2</h3>
 <p>Cgroup v2<a href="https://www.kernel.org/doc/html/latest/admin-guide/cgroup-v2.html">手册</a></p>
 <p>是否加载了Cgroup v2内核模块</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75af00">cat</span> <span style="color:#f92672">/</span><span style="color:#75af00">sys</span><span style="color:#f92672">/</span><span style="color:#75af00">fs</span><span style="color:#f92672">/</span><span style="color:#75af00">cgroup</span><span style="color:#f92672">/</span><span style="color:#75af00">cgroup</span><span style="color:#111">.</span><span style="color:#75af00">controllers</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75af00">cat</span> <span style="color:#f92672">/</span><span style="color:#75af00">sys</span><span style="color:#f92672">/</span><span style="color:#75af00">fs</span><span style="color:#f92672">/</span><span style="color:#75af00">cgroup</span><span style="color:#f92672">/</span><span style="color:#75af00">cgroup</span><span style="color:#111">.</span><span style="color:#75af00">controllers</span>
 </span></span><span style="display:flex;"><span><span style="color:#75af00">cpuset</span> <span style="color:#75af00">cpu</span> <span style="color:#75af00">io</span> <span style="color:#75af00">memory</span> <span style="color:#75af00">hugetlb</span> <span style="color:#75af00">pids</span> <span style="color:#75af00">rdma</span> <span style="color:#75af00">misc</span>
 </span></span></code></pre></div><h4 id="test">test</h4>
 <h5 id="cpu">Cpu</h5>
 <p>执行一段go代码</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#75af00">main</span><span style="color:#111">()</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">go</span> <span style="color:#00a8c8">func</span><span style="color:#111">()</span> <span style="color:#111">{</span> <span style="color:#00a8c8">for</span><span style="color:#111">{}</span> <span style="color:#111">}()</span>
@@ -341,7 +341,7 @@
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e">  可以看到使用了2个cpu 因为开个两个goroutine for阻塞
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e">*/</span>
 </span></span></code></pre></div><p>限制cpu</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo mkdir /sys/fs/cgroup/test
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo mkdir /sys/fs/cgroup/test
 </span></span><span style="display:flex;"><span>sudo <span style="color:#111">echo</span> <span style="color:#d88200">&#34;100000 100000&#34;</span> <span style="color:#111">|</span> sudo tee /sys/fs/cgroup/test/cpu.max &gt;/dev/null
 </span></span><span style="display:flex;"><span>sudo <span style="color:#111">echo</span> <span style="color:#d88200">&#34;39268&#34;</span> <span style="color:#111">|</span> sudo tee /sys/fs/cgroup/test/cgroup.procs &gt;/dev/null
 </span></span><span style="display:flex;"><span>
@@ -350,7 +350,7 @@
 </span></span><span style="display:flex;"><span><span style="color:#75715e">#  39268 zhy       20   0  709572    868    584 R 100.3   0.0   7:45.04 test</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e"># 马上就只占用一个cpu了</span>
 </span></span></code></pre></div><h5 id="memory">Memory</h5>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">#</span><span style="color:#75af00">include</span> <span style="color:#111">&lt;</span><span style="color:#75af00">stdlib</span><span style="color:#111">.</span><span style="color:#75af00">h</span><span style="color:#111">&gt;</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">#</span><span style="color:#75af00">include</span> <span style="color:#111">&lt;</span><span style="color:#75af00">stdlib</span><span style="color:#111">.</span><span style="color:#75af00">h</span><span style="color:#111">&gt;</span>
 </span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">#</span><span style="color:#75af00">include</span> <span style="color:#111">&lt;</span><span style="color:#75af00">stdio</span><span style="color:#111">.</span><span style="color:#75af00">h</span><span style="color:#111">&gt;</span>
 </span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">#</span><span style="color:#75af00">include</span> <span style="color:#111">&lt;</span><span style="color:#00a8c8">string</span><span style="color:#111">.</span><span style="color:#75af00">h</span><span style="color:#111">&gt;</span>
 </span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">#</span><span style="color:#75af00">include</span> <span style="color:#111">&lt;</span><span style="color:#75af00">unistd</span><span style="color:#111">.</span><span style="color:#75af00">h</span><span style="color:#111">&gt;</span>
@@ -383,7 +383,7 @@
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e">308512 session-4.scope                ./test2
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e">*/</span>
 </span></span></code></pre></div><p>限制内存</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo <span style="color:#111">echo</span> <span style="color:#d88200">&#34;300000000&#34;</span> <span style="color:#111">|</span>sudo tee /sys/fs/cgroup/test/memory.max &gt;/dev/null
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo <span style="color:#111">echo</span> <span style="color:#d88200">&#34;300000000&#34;</span> <span style="color:#111">|</span>sudo tee /sys/fs/cgroup/test/memory.max &gt;/dev/null
 </span></span><span style="display:flex;"><span>sudo <span style="color:#111">echo</span> <span style="color:#d88200">&#34;64417&#34;</span> <span style="color:#111">|</span> sudo tee /sys/fs/cgroup/test/cgroup.procs &gt;/dev/null
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">#cat memory.current</span>
@@ -399,7 +399,7 @@
 <p>Overlay 只有两层：upper 层和 lower 层，Lower 层代表镜像层，upper 层代表容器可写层。</p>
 <p><img src="/images/33f6f11b-03ff-428c-b68d-07a80f83f3cf.png" alt="image.png"></p>
 <h4 id="test-1">test</h4>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>mkdir <span style="color:#111">test</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#111">cd</span> <span style="color:#111">test</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>mkdir <span style="color:#111">test</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#111">cd</span> <span style="color:#111">test</span>
 </span></span><span style="display:flex;"><span>mkdir upper lower merged work
 </span></span><span style="display:flex;"><span><span style="color:#111">echo</span> <span style="color:#d88200">&#34;file1 from lower&#34;</span> &gt; lower/file1.txt
 </span></span><span style="display:flex;"><span><span style="color:#111">echo</span> <span style="color:#d88200">&#34;file2 from lowerr&#34;</span> &gt; lower/file2.txt

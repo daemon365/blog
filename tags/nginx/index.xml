@@ -17,7 +17,7 @@
 &lt;p&gt;&lt;img src="https://daemon365.dev/images/dc084576-25fe-47fa-8e36-1d1fe8db3ec9.png" alt=""&gt;&lt;/p&gt;
 &lt;p&gt;Tengine是由淘宝网发起的Web服务器项目。它在Nginx的基础上，针对大访问量网站的需求，添加了很多高级功能和特性。T目标是打造一个高效、稳定、安全、易用的Web平台。&lt;/p&gt;
 &lt;h2 id="安装环境依赖包"&gt;安装环境依赖包&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;yum install gcc-c++ pcre pcre-devel zlib zlib-devel gcc patch libffi-devel python-devel zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gdbm-devel db4-devel libpcap-devel xz-devel openssl openssl-devel -y
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;yum install gcc-c++ pcre pcre-devel zlib zlib-devel gcc patch libffi-devel python-devel zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gdbm-devel db4-devel libpcap-devel xz-devel openssl openssl-devel -y
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id="安装并启动nginx"&gt;安装并启动nginx&lt;/h2&gt;
 &lt;ol&gt;
 &lt;li&gt;
@@ -50,7 +50,7 @@
 &lt;/ul&gt;
 &lt;h2 id="部署一个web站点"&gt;部署一个web站点&lt;/h2&gt;
 &lt;p&gt;nginx默认站点是Nginx目录下的html文件夹，这里可以从nginx.conf中查到&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-nginx" data-lang="nginx"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;location&lt;/span&gt; &lt;span style="color:#d88200"&gt;/&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-nginx" data-lang="nginx"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;location&lt;/span&gt; &lt;span style="color:#d88200"&gt;/&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#f92672"&gt;root&lt;/span&gt; &lt;span style="color:#d88200"&gt;html&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt; &lt;span style="color:#75715e"&gt;# 这里是默认的站点html文件夹，也就是 /usr/local/nginx/html 文件夹下的内容
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#f92672"&gt;index&lt;/span&gt; &lt;span style="color:#d88200"&gt;index.html&lt;/span&gt; &lt;span style="color:#d88200"&gt;index.htm&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt; &lt;span style="color:#75715e"&gt;# 站点首页文件名是index.html
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;}&lt;/span&gt;
@@ -73,7 +73,7 @@
 <p><img src="/images/dc084576-25fe-47fa-8e36-1d1fe8db3ec9.png" alt=""></p>
 <p>Tengine是由淘宝网发起的Web服务器项目。它在Nginx的基础上，针对大访问量网站的需求，添加了很多高级功能和特性。T目标是打造一个高效、稳定、安全、易用的Web平台。</p>
 <h2 id="安装环境依赖包">安装环境依赖包</h2>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>yum install gcc-c++ pcre pcre-devel zlib zlib-devel gcc patch libffi-devel python-devel  zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gdbm-devel db4-devel libpcap-devel xz-devel openssl openssl-devel -y
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>yum install gcc-c++ pcre pcre-devel zlib zlib-devel gcc patch libffi-devel python-devel  zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gdbm-devel db4-devel libpcap-devel xz-devel openssl openssl-devel -y
 </span></span></code></pre></div><h2 id="安装并启动nginx">安装并启动nginx</h2>
 <ol>
 <li>
@@ -106,17 +106,17 @@
 </ul>
 <h2 id="部署一个web站点">部署一个web站点</h2>
 <p>nginx默认站点是Nginx目录下的html文件夹，这里可以从nginx.conf中查到</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-nginx" data-lang="nginx"><span style="display:flex;"><span><span style="color:#00a8c8">location</span> <span style="color:#d88200">/</span> <span style="color:#111">{</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-nginx" data-lang="nginx"><span style="display:flex;"><span><span style="color:#00a8c8">location</span> <span style="color:#d88200">/</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>            <span style="color:#f92672">root</span>   <span style="color:#d88200">html</span><span style="color:#111">;</span> <span style="color:#75715e"># 这里是默认的站点html文件夹，也就是 /usr/local/nginx/html 文件夹下的内容
 </span></span></span><span style="display:flex;"><span>            <span style="color:#f92672">index</span>  <span style="color:#d88200">index.html</span> <span style="color:#d88200">index.htm</span><span style="color:#111">;</span> <span style="color:#75715e"># 站点首页文件名是index.html
 </span></span></span><span style="display:flex;"><span>        <span style="color:#111">}</span>
 </span></span></code></pre></div><p>如果要部署网站业务数据，只需要把开发好的程序全放到html目录下即可</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#f92672">[</span>root@VM-0-3-centos html<span style="color:#f92672">]</span><span style="color:#75715e"># ls /usr/local/nginx/html/</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#f92672">[</span>root@VM-0-3-centos html<span style="color:#f92672">]</span><span style="color:#75715e"># ls /usr/local/nginx/html/</span>
 </span></span><span style="display:flex;"><span>50x.html  index.html
 </span></span></code></pre></div><p>因此只需要通过域名/资源，即可访问</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-http" data-lang="http"><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">http://a.zhaohaoyu.com
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-http" data-lang="http"><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">http://a.zhaohaoyu.com
 </span></span></span></code></pre></div><h2 id="nginx的目录结构">Nginx的目录结构</h2>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>client_body_temp  conf  fastcgi_temp  html  logs  proxy_temp  sbin  scgi_temp  static  uwsgi_temp
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>client_body_temp  conf  fastcgi_temp  html  logs  proxy_temp  sbin  scgi_temp  static  uwsgi_temp
 </span></span></code></pre></div><ul>
 <li>
 <p>conf 存放nginx所有配置文件的目录,主要nginx.conf</p>
@@ -153,14 +153,14 @@
 </li>
 <li>
 <h3 id="events事件模块">events事件模块</h3>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-nginx" data-lang="nginx"><span style="display:flex;"><span><span style="color:#00a8c8">events</span> <span style="color:#111">{</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-nginx" data-lang="nginx"><span style="display:flex;"><span><span style="color:#00a8c8">events</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#f92672">worker_connections</span>  <span style="color:#ae81ff">1024</span><span style="color:#111">;</span> <span style="color:#75715e"># 每个worker进程支持的最大连接数  
 </span></span></span><span style="display:flex;"><span>    <span style="color:#f92672">use</span> <span style="color:#d88200">epool</span><span style="color:#111">;</span> <span style="color:#75715e"># 事件驱动模型, epoll默认
 </span></span></span><span style="display:flex;"><span><span style="color:#111">}</span>
 </span></span></code></pre></div></li>
 <li>
 <h3 id="http内核模块">http内核模块</h3>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-nginx" data-lang="nginx"><span style="display:flex;"><span><span style="color:#75715e"># 公共的配置定义在http
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-nginx" data-lang="nginx"><span style="display:flex;"><span><span style="color:#75715e"># 公共的配置定义在http
 </span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">http</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e"># http层开始 ...
 </span></span></span><span style="display:flex;"><span>    <span style="color:#f92672">include</span>       <span style="color:#d88200">mime.types</span><span style="color:#111">;</span>
@@ -189,7 +189,7 @@
 <ul>
 <li>
 <p>当存在多个域名时，如果所有配置都写在 nginx.conf 主配置文件中，难免会显得杂乱与臃肿。为了方便配置文件的维护，所以需要进行拆分配置。</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-nginx" data-lang="nginx"><span style="display:flex;"><span><span style="color:#75715e"># 在nginx.conf中 加入  include a.zhaohaiyu.com/nginx.conf; 
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-nginx" data-lang="nginx"><span style="display:flex;"><span><span style="color:#75715e"># 在nginx.conf中 加入  include a.zhaohaiyu.com/nginx.conf; 
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"># 在a.zhaohaiyu.com/nginx.conf中加入 
 </span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">server</span> <span style="color:#111">{</span>  
 </span></span><span style="display:flex;"><span>		<span style="color:#f92672">listen</span> <span style="color:#ae81ff">8000</span><span style="color:#111">;</span>  
@@ -215,7 +215,7 @@
 <h2 id="nginx-status">nginx status</h2>
 <h3 id="启用nginx-status配置">启用nginx status配置</h3>
 <p>在默认主机里面加上location或者你希望能访问到的主机里面。</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-nginx" data-lang="nginx"><span style="display:flex;"><span><span style="color:#00a8c8">server</span> <span style="color:#111">{</span>  
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-nginx" data-lang="nginx"><span style="display:flex;"><span><span style="color:#00a8c8">server</span> <span style="color:#111">{</span>  
 </span></span><span style="display:flex;"><span>  <span style="color:#f92672">stub_status</span> <span style="color:#00a8c8">on</span><span style="color:#111">;</span> 
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>
 </span></span></code></pre></div><h3 id="重启nginx">重启nginx</h3>
@@ -251,12 +251,12 @@
 <p><strong>对于客户端而言，代理服务器就像是原始服务器。</strong></p>
 <p><img src="/images/0522f89f-ef63-446a-b56f-6d3f9fef9c2b.png" alt=""></p>
 <p>nginx实现负载均衡的组件</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-nginx" data-lang="nginx"><span style="display:flex;"><span><span style="color:#00a8c8">ngx_http_proxy_module</span>    <span style="color:#75715e"># proxy代理模块，用于把请求抛给服务器节点或者upstream服务器池
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-nginx" data-lang="nginx"><span style="display:flex;"><span><span style="color:#00a8c8">ngx_http_proxy_module</span>    <span style="color:#75715e"># proxy代理模块，用于把请求抛给服务器节点或者upstream服务器池
 </span></span></span></code></pre></div><h3 id="实现一个简单的反向代理">实现一个简单的反向代理</h3>
 <p>机器准备，两台服务器</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-nginx" data-lang="nginx"><span style="display:flex;"><span><span style="color:#00a8c8">master</span>  <span style="color:#111">192.168.11.63</span>　　<span style="color:#d88200">主负载</span> <span style="color:#d88200">slave</span>   <span style="color:#111">192.168.11.64</span>　　<span style="color:#d88200">web1</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-nginx" data-lang="nginx"><span style="display:flex;"><span><span style="color:#00a8c8">master</span>  <span style="color:#111">192.168.11.63</span>　　<span style="color:#d88200">主负载</span> <span style="color:#d88200">slave</span>   <span style="color:#111">192.168.11.64</span>　　<span style="color:#d88200">web1</span>
 </span></span></code></pre></div><p>主负载均衡节点的配置文件</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-nginx" data-lang="nginx"><span style="display:flex;"><span><span style="color:#00a8c8">worker_processes</span>  <span style="color:#ae81ff">1</span><span style="color:#111">;</span> 
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-nginx" data-lang="nginx"><span style="display:flex;"><span><span style="color:#00a8c8">worker_processes</span>  <span style="color:#ae81ff">1</span><span style="color:#111">;</span> 
 </span></span><span style="display:flex;"><span><span style="color:#00a8c8">error_log</span> <span style="color:#d88200">logs/error.log</span><span style="color:#111">;</span> <span style="color:#00a8c8">pid</span>       
 </span></span><span style="display:flex;"><span><span style="color:#d88200">logs/nginx.pid</span><span style="color:#111">;</span> 
 </span></span><span style="display:flex;"><span>
@@ -330,7 +330,7 @@ nginx: the configuration file /opt/nginx1-12/conf/nginx.conf syntax is ok nginx:
 </li>
 </ul>
 <h3 id="nginxconf配置文件实例">nginx.conf配置文件实例</h3>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-nginx" data-lang="nginx"><span style="display:flex;"><span><span style="color:#00a8c8">server</span> <span style="color:#111">{</span>  
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-nginx" data-lang="nginx"><span style="display:flex;"><span><span style="color:#00a8c8">server</span> <span style="color:#111">{</span>  
 </span></span><span style="display:flex;"><span>		<span style="color:#f92672">listen</span> <span style="color:#ae81ff">80</span><span style="color:#111">;</span>  
 </span></span><span style="display:flex;"><span>		<span style="color:#f92672">server_name</span> <span style="color:#d88200">pythonav.cn</span><span style="color:#111">;</span>   <span style="color:#75715e">#优先级1,精确匹配，根路径  
 </span></span></span><span style="display:flex;"><span>		<span style="color:#f92672">location</span> <span style="color:#111">=</span><span style="color:#d88200">/</span> <span style="color:#111">{</span>  
@@ -403,7 +403,7 @@ nginx: the configuration file /opt/nginx1-12/conf/nginx.conf syntax is ok nginx:
 </ol>
 </li>
 </ul>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-nginx" data-lang="nginx"><span style="display:flex;"><span><span style="color:#00a8c8">global_defs</span> <span style="color:#111">{</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-nginx" data-lang="nginx"><span style="display:flex;"><span><span style="color:#00a8c8">global_defs</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>  <span style="color:#f92672">notification_email</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#f92672">eric.k.zhang@ericsson.com</span>
 </span></span><span style="display:flex;"><span>  <span style="color:#960050;background-color:#1e0010">}</span>
@@ -476,7 +476,7 @@ nginx: the configuration file /opt/nginx1-12/conf/nginx.conf syntax is ok nginx:
 </span></span><span style="display:flex;"><span>    <span style="color:#d88200">check_mantaince_down</span>
 </span></span><span style="display:flex;"><span>  <span style="color:#960050;background-color:#1e0010">}</span>
 </span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">}</span>
-</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-nginx" data-lang="nginx"><span style="display:flex;"><span><span style="color:#00a8c8">global_defs</span> <span style="color:#111">{</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-nginx" data-lang="nginx"><span style="display:flex;"><span><span style="color:#00a8c8">global_defs</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>  <span style="color:#f92672">notification_email</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#f92672">eric.k.zhang@ericsson.com</span>
 </span></span><span style="display:flex;"><span>  <span style="color:#960050;background-color:#1e0010">}</span>
