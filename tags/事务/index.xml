@@ -61,7 +61,7 @@
 <li>空闲列表页：由于 boltdb 使用 copy on write，所以当一个 page 被删除的时候，boltdb 并不会立即释放这个 page，而是把这个 page 加入到空闲列表页中，等到需要新的 page 的时候，再从空闲列表页中取出一个 page。</li>
 </ul>
 <p>在 page 之后会存储对用的结构，比如 meta 或者 freelist。先读取 page 判断自己的结构（定长的：8 + 2 + 2 +4），然后再根据不同的数据类型读取其他的结构（比如BranchPage）。</p>
-<p><img src="/images/eebaffa3-116e-40f0-95be-2dfc0ee58bd6.png" alt=""></p>
+<p><img src="/images/boltdb-page.png" alt=""></p>
 <h3 id="branchpage--leafpage">BranchPage &amp;&amp; LeafPage</h3>
 <p>这两个分别存储 B+ tree 的分支页和叶子页。对应结构为：</p>
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// branchPageElement represents a node on a branch page.</span>
@@ -80,7 +80,7 @@
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">vsize</span> <span style="color:#00a8c8">uint32</span> <span style="color:#75715e">// value 的大小</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>
 </span></span></code></pre></div><p>对应的存储方式为:</p>
-<p><img src="/images/c5206aef-62de-447a-880a-3024a75f4b3d.png" alt=""></p>
+<p><img src="/images/boltdb-element.png" alt=""></p>
 <p>从 page 中拿取数据：</p>
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#111">(</span><span style="color:#75af00">p</span> <span style="color:#f92672">*</span><span style="color:#75af00">Page</span><span style="color:#111">)</span> <span style="color:#75af00">LeafPageElements</span><span style="color:#111">()</span> <span style="color:#111">[]</span><span style="color:#75af00">leafPageElement</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">p</span><span style="color:#111">.</span><span style="color:#75af00">count</span> <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span> <span style="color:#111">{</span>

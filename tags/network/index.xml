@@ -106,7 +106,7 @@
 <h2 id="docker-网络">Docker 网络</h2>
 <h3 id="基础">基础</h3>
 <p>计算机五层网络如下：</p>
-<p><img src="/images/4bcdd10b-42da-470b-91b0-d87746410aeb.png" alt=""></p>
+<p><img src="/images/five-network.png" alt=""></p>
 <p>如果我们想把 pod 中的网络对外，首先想到的就是七层代理，比如nginx，但是我们并不知道 pod 里的网络一定是 http，甚至他可能不是tcp。所以我们像做一些网络操作，就不能在五层做了，只能在二三四层做。</p>
 <h3 id="docker-实验">Docker 实验</h3>
 <p>当我们在物理机上启动 docker daemon 不需要启动任何容器的时候，使用 ip a 命令查看网卡，发现多了一个 docker0</p>
@@ -138,14 +138,14 @@
 </span></span><span style="display:flex;"><span>PING 172.17.0.2 <span style="color:#f92672">(</span>172.17.0.2<span style="color:#f92672">)</span> 56<span style="color:#f92672">(</span>84<span style="color:#f92672">)</span> bytes of data.
 </span></span><span style="display:flex;"><span><span style="color:#ae81ff">64</span> bytes from 172.17.0.2: <span style="color:#111">icmp_seq</span><span style="color:#f92672">=</span><span style="color:#ae81ff">1</span> <span style="color:#111">ttl</span><span style="color:#f92672">=</span><span style="color:#ae81ff">64</span> <span style="color:#111">time</span><span style="color:#f92672">=</span>0.055 ms
 </span></span></code></pre></div><h3 id="通信方式">通信方式</h3>
-<p><img src="/images/a6754f75-f177-42d3-b9d3-0d362ef038a9.png" alt=""></p>
+<p><img src="/images/docker-container-communication.png" alt=""></p>
 <h2 id="常见-cni-插件对比">常见 CNI 插件对比</h2>
 <p>在了解具体的网络实现之前，我们先来看看业界常用的 CNI 插件及其特点：</p>
 <h2 id="cni-网络">CNI 网络</h2>
 <p>当两个 pod 在同一 node 上的时候，我们可以使用像上述 docker 的 bridge 的方式通信是没问题的。但是 kubernetes 是多节点的集群，当 pod 在不同的 node 上的时候，直接通信肯定不行了，这时候我们需要一些办法来解决这个问题。</p>
 <h3 id="udp-封包">UDP 封包</h3>
 <p>当 pod 在不同节点上的时候，两个 pod 不可以直接通信，那最简单的方式就是通过 udp 封包，把整个网络包使用 udp 封包起来，然后第二个节点再解包，然后发给网桥。</p>
-<p><img src="/images/2fca7256-2cac-436f-a379-4e12891fac39.png" alt=""></p>
+<p><img src="/images/cni-udp.png" alt=""></p>
 <p>整个过程就是 node1 上的 pod 把网络包封装，然后由于 <code>process</code> 再封装发给 node2，node2 再解包，然后发给 pod2。</p>
 <p>process 是 cni 实现的进程，很多 cni 都实现 udp 封包的方式，比如 flannel,cailco 等。</p>
 <p>至于我们怎么知道目标 ip （pod 的 ip） 是在哪台主机上，这个就有很多中方式了，比如把每台机器发配 ip 分配不同的网段，甚至于把这些对应关系写到 etcd 中。</p>
@@ -159,7 +159,7 @@
 <p>就算是 vxlan，也是需要封包和解包的，这样的方式效率还是不够高，所以我们可以使用 ip 路由的方式。</p>
 <p>ip 路由故名思意，就是使用路由表来实现 pod 之间的通信。这样的方式效率最高，但是配置比较复杂，需要配置路由表。</p>
 <p>而且路由表跳转是二层网络实现的，所以又要要求所有 node 在同一个二层网络中。</p>
-<p><img src="/images/7be8c8c9-a60b-4717-9f5a-a3e6f44ebed9.png" alt=""></p>
+<p><img src="/images/cni-ip-route.png" alt=""></p>
 <p>查看 node1 上的 container 的是设备</p>
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-BASH" data-lang="BASH"><span style="display:flex;"><span>ip a
 </span></span><span style="display:flex;"><span>2: eth0@if10: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu <span style="color:#ae81ff">1500</span> qdisc noqueue state UP group default qlen <span style="color:#ae81ff">1000</span>
@@ -207,7 +207,7 @@
 <p>简单来说就是如果 node 之间在一个二层网络上，那么就直接使用 ip 路由，如果不在，那么就使用 ip in ip，把数据包封装起来，然后再发给对应的 node。</p>
 <p>ip-in-ip 是一种隧道技术，它将一个 IP 数据包封装在另一个 IP 数据包中，这样就可以在一个 IP 网络上传输另一个 IP 网络的数据包。</p>
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>172.10.180.0/24 via 192.168.228.28 tunl0
-</span></span></code></pre></div><p><img src="/images/62ebd840-1785-46f6-bd04-7b4e78c8cc0b.png" alt=""></p>
+</span></span></code></pre></div><p><img src="/images/ip-in-ip.png" alt=""></p>
 <p>这个只是在源数据包的三层上再封装一层 IP 头部。相比 VXLAN（封装完整的二层以太网帧），IP-in-IP 只封装 IP 头，开销更小。这样性能方面稍微比使用了 UDP 的 VXLAN 要好一点。但是最好还是避免使用 IP-in-IP，尽量保证 node 在同一个二层网络上。</p>
 <h3 id="我怎么知道-pod-ip-在哪台机器上">我怎么知道 Pod IP 在哪台机器上？</h3>
 <p>在 Kubernetes 集群中，Pod IP 是一个 虚拟的、动态分配的地址。
