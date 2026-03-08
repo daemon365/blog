@@ -691,7 +691,7 @@ yum groupinstall 软件包组    安装软件包组
 &lt;h2 id="系统管理命令"&gt;系统管理命令&lt;/h2&gt;
 &lt;ol&gt;
 &lt;li&gt;&lt;code&gt;stat&lt;/code&gt; 显示指定文件的详细信息，比ls更详细&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;who&lt;/code&gt; 显示在线登陆用户&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;who&lt;/code&gt; 显示在线登录用户&lt;/li&gt;
 &lt;li&gt;&lt;code&gt;whoami&lt;/code&gt; 显示当前操作用户&lt;/li&gt;
 &lt;li&gt;&lt;code&gt;hostname&lt;/code&gt; 显示主机名&lt;/li&gt;
 &lt;li&gt;&lt;code&gt;uname&lt;/code&gt; 显示系统信息&lt;/li&gt;
@@ -808,7 +808,7 @@ tar -jcvf /home/abc.tar.bz2 /home/abc 打包，并用bzip2压缩
 <h2 id="系统管理命令">系统管理命令</h2>
 <ol>
 <li><code>stat</code>           显示指定文件的详细信息，比ls更详细</li>
-<li><code>who</code>           	显示在线登陆用户</li>
+<li><code>who</code>           	显示在线登录用户</li>
 <li><code>whoami</code>      显示当前操作用户</li>
 <li><code>hostname</code>    显示主机名</li>
 <li><code>uname</code>      显示系统信息</li>

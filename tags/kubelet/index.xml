@@ -34,7 +34,7 @@
 &lt;li&gt;OOMWatcher: 从系统日志中获取容器的 OOM 日志，将其封装成事件并记录。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h2 id="流程"&gt;流程&lt;/h2&gt;
-&lt;p&gt;首先在 &lt;code&gt;cmd/kubelet&lt;/code&gt; 中使用传入命令行参数的方式初始化配置，然后创建 &lt;code&gt;pkg/kubelet&lt;/code&gt; 中的 Bootstrap inferface, kubelet struct 实现了这个接口， 然后调用 &lt;code&gt;Run&lt;/code&gt; 方法启动 kubelet。&lt;/p&gt;</description><content:encoded><![CDATA[<h2 id="reference">Reference</h2>
+&lt;p&gt;首先在 &lt;code&gt;cmd/kubelet&lt;/code&gt; 中使用传入命令行参数的方式初始化配置，然后创建 &lt;code&gt;pkg/kubelet&lt;/code&gt; 中的 Bootstrap interface, kubelet struct 实现了这个接口， 然后调用 &lt;code&gt;Run&lt;/code&gt; 方法启动 kubelet。&lt;/p&gt;</description><content:encoded><![CDATA[<h2 id="reference">Reference</h2>
 <ul>
 <li><a href="https://atbug.com/kubelet-source-code-analysis/">https://atbug.com/kubelet-source-code-analysis/</a></li>
 </ul>
@@ -70,7 +70,7 @@
 <li>OOMWatcher: 从系统日志中获取容器的 OOM 日志，将其封装成事件并记录。</li>
 </ul>
 <h2 id="流程">流程</h2>
-<p>首先在 <code>cmd/kubelet</code> 中使用传入命令行参数的方式初始化配置，然后创建 <code>pkg/kubelet</code> 中的 Bootstrap inferface, kubelet struct 实现了这个接口， 然后调用 <code>Run</code> 方法启动 kubelet。</p>
+<p>首先在 <code>cmd/kubelet</code> 中使用传入命令行参数的方式初始化配置，然后创建 <code>pkg/kubelet</code> 中的 Bootstrap interface, kubelet struct 实现了这个接口， 然后调用 <code>Run</code> 方法启动 kubelet。</p>
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-GO" data-lang="GO"><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#75af00">startKubelet</span><span style="color:#111">(</span><span style="color:#75af00">k</span> <span style="color:#75af00">kubelet</span><span style="color:#111">.</span><span style="color:#75af00">Bootstrap</span><span style="color:#111">,</span> <span style="color:#75af00">podCfg</span> <span style="color:#f92672">*</span><span style="color:#75af00">config</span><span style="color:#111">.</span><span style="color:#75af00">PodConfig</span><span style="color:#111">,</span> <span style="color:#75af00">kubeCfg</span> <span style="color:#f92672">*</span><span style="color:#75af00">kubeletconfiginternal</span><span style="color:#111">.</span><span style="color:#75af00">KubeletConfiguration</span><span style="color:#111">,</span> <span style="color:#75af00">kubeDeps</span> <span style="color:#f92672">*</span><span style="color:#75af00">kubelet</span><span style="color:#111">.</span><span style="color:#75af00">Dependencies</span><span style="color:#111">,</span> <span style="color:#75af00">enableServer</span> <span style="color:#00a8c8">bool</span><span style="color:#111">)</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// start the kubelet</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">go</span> <span style="color:#75af00">k</span><span style="color:#111">.</span><span style="color:#75af00">Run</span><span style="color:#111">(</span><span style="color:#75af00">podCfg</span><span style="color:#111">.</span><span style="color:#75af00">Updates</span><span style="color:#111">())</span>

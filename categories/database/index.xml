@@ -921,7 +921,7 @@
 <li>订单在十分钟之内未支付则自动取消。</li>
 <li>新创建的店铺，如果在十天内都没有上传过商品，则自动发送消息提醒。</li>
 <li>账单在一周内未支付，则自动结算。</li>
-<li>用户注册成功后，如果三天内没有登陆则进行短信提醒。</li>
+<li>用户注册成功后，如果三天内没有登录则进行短信提醒。</li>
 <li>用户发起退款，如果三天内没有得到处理则通知相关运营人员。</li>
 <li>预定会议后，需要在预定的时间点前十分钟通知各个与会人员参加会议。</li>
 </ol>
@@ -1871,7 +1871,7 @@
 <ul>
 <li><a href="https://time.geekbang.org/column/article/69862">https://time.geekbang.org/column/article/69862</a></li>
 </ul>
-]]></content:encoded><category>database</category><category>mysql</category></item><item><title>msyql redo log和binlog</title><link>https://daemon365.dev/post/database/msyql_redo_log_and_binlog/</link><pubDate>Wed, 01 Apr 2020 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/database/msyql_redo_log_and_binlog/</guid><description>&lt;h2 id="更新语句执行流程"&gt;更新语句执行流程&lt;/h2&gt;
+]]></content:encoded><category>database</category><category>mysql</category></item><item><title>mysql redo log和binlog</title><link>https://daemon365.dev/post/database/mysql_redo_log_and_binlog/</link><pubDate>Wed, 01 Apr 2020 00:00:00 +0800</pubDate><guid>https://daemon365.dev/post/database/mysql_redo_log_and_binlog/</guid><description>&lt;h2 id="更新语句执行流程"&gt;更新语句执行流程&lt;/h2&gt;
 &lt;p&gt;下面是这个表的创建语句，这个表有一个主键 ID 和一个整型字段 c：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-sql" data-lang="sql"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;create&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;table&lt;/span&gt; &lt;span style="color:#111"&gt;T&lt;/span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#111"&gt;ID&lt;/span&gt; &lt;span style="color:#111"&gt;int&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;primary&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;key&lt;/span&gt;&lt;span style="color:#111"&gt;,&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;c&lt;/span&gt; &lt;span style="color:#111"&gt;int&lt;/span&gt;&lt;span style="color:#111"&gt;);&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;如果要将 ID=2 这一行的值加 1，SQL 语句就会这么写：&lt;/p&gt;
