@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>AI on Daemon365</title><link>https://daemon365.dev/categories/ai/</link><description>Don't let yourself stop.</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><lastBuildDate>Sun, 08 Mar 2026 00:00:00 +0000</lastBuildDate><atom:link href="https://daemon365.dev/categories/ai/index.xml" rel="self" type="application/rss+xml"/><item><title>AI 以及 Agent 介绍</title><link>https://daemon365.dev/post/ai/agent_introduce/</link><pubDate>Sun, 08 Mar 2026 00:00:00 +0000</pubDate><guid>https://daemon365.dev/post/ai/agent_introduce/</guid><description>&lt;h2 id="大语言模型llm"&gt;大语言模型（LLM）&lt;/h2&gt;
+&lt;p&gt;大语言模型（Large Language Model，LLM）是指通过海量文本数据训练、具有数十亿乃至数千亿参数的神经网络模型，能够理解和生成自然语言文本。&lt;/p&gt;
+&lt;p&gt;有一点很关键：&lt;strong&gt;LLM 本身是无状态的&lt;/strong&gt;。每次调用都是一次全新的推理，模型并不会自动记住你上一次说了什么。这就是为什么我们每次对话都需要把历史记录一并带上——把&amp;quot;记忆&amp;quot;作为输入传给模型，它才能结合上下文给出连贯的回复。&lt;/p&gt;
+&lt;p&gt;另外，LLM 也不只是一个聊天工具，它还可以用于文本分类、代码生成、信息抽取、摘要、翻译等各类 NLP 任务。&lt;/p&gt;
+&lt;hr&gt;
+&lt;h3 id="prompt提示词"&gt;Prompt（提示词）&lt;/h3&gt;
+&lt;p&gt;每次和大模型交互时，你输入的内容就叫做 &lt;strong&gt;Prompt&lt;/strong&gt;（提示词）。Prompt 的质量对模型输出影响非常大，好的 Prompt 往往能让模型给出更准确、更有用的回答。&lt;/p&gt;
+&lt;p&gt;Prompt 通常分为几个部分：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;System Prompt&lt;/strong&gt;：系统级别的指令，用来设定模型的角色和行为规范（比如&amp;quot;你是一个专业的法律助手&amp;quot;）。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;User Message&lt;/strong&gt;：用户发送的消息。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Assistant Message&lt;/strong&gt;：模型之前的回复，用于多轮对话中提供上下文。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;h3 id="context上下文"&gt;Context（上下文）&lt;/h3&gt;
+&lt;p&gt;&lt;strong&gt;Context&lt;/strong&gt;（上下文）是指模型在生成回复时能&amp;quot;看到&amp;quot;的所有输入内容，包括历史对话、系统提示词、以及任何你额外传入的参考信息。&lt;/p&gt;
+&lt;p&gt;每个模型都有一个 &lt;strong&gt;Context Window&lt;/strong&gt;（上下文窗口）的限制，也就是单次请求能处理的最大 Token 数量。超出这个范围的内容模型就看不见了。不同模型的上下文窗口差异较大，从早期的 4K tokens 到现在主流的 128K 甚至更长。&lt;/p&gt;
+&lt;hr&gt;
+&lt;h3 id="memory记忆"&gt;Memory（记忆）&lt;/h3&gt;
+&lt;p&gt;我们说 LLM 是无状态的，但实际应用中通常需要它&amp;quot;记住&amp;quot;一些东西，这就引出了 &lt;strong&gt;Memory&lt;/strong&gt;（记忆）的概念。&lt;/p&gt;
+&lt;p&gt;Memory 不只是把聊天记录原封不动地塞进去，它可以有多种形式：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;短期记忆（Short-term Memory）&lt;/strong&gt;：就是当前对话的上下文窗口，随着会话结束而消失。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;长期记忆（Long-term Memory）&lt;/strong&gt;：将重要信息持久化存储（比如数据库或向量数据库），下次对话时再按需检索。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;记忆压缩&lt;/strong&gt;：当对话历史太长、接近上下文窗口上限时，可以再调用一次大模型来对之前的内容做摘要，用更短的文本代替原始的聊天记录，从而节省 Token 消耗。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;h2 id="agent智能体"&gt;Agent（智能体）&lt;/h2&gt;
+&lt;p&gt;大模型归根结底是一个文本输入、文本输出的系统。很多现实场景里，光靠&amp;quot;聊天&amp;quot;远远不够——有时候需要搜索互联网、读取本地文件、执行代码、操作数据库……这些都是纯文本模型做不到的事。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Agent&lt;/strong&gt;（智能体）就是为了解决这个问题而出现的。它把大模型作为&amp;quot;大脑&amp;quot;，通过调用各种外部工具来扩展模型的能力，从而完成更复杂的任务。&lt;/p&gt;
+&lt;p&gt;一个典型的 Agent 工作流大致是：接收用户请求 → 模型判断是否需要调用工具 → 调用工具获取结果 → 将结果返回给模型 → 模型生成最终回复。这个过程可以循环多次，直到任务完成。&lt;/p&gt;
+&lt;hr&gt;
+&lt;h3 id="function-calling函数调用"&gt;Function Calling（函数调用）&lt;/h3&gt;
+&lt;p&gt;有了工具，还得让模型知道&amp;quot;什么时候用哪个工具&amp;quot;，这就是 &lt;strong&gt;Function Calling&lt;/strong&gt;（函数调用）的作用。&lt;/p&gt;
+&lt;p&gt;简单来说，就是在发送请求时，把工具的定义（名称、功能描述、参数说明）一起传给模型。如果模型判断当前任务需要使用某个工具，它就会在输出中生成一段结构化的 JSON，告诉 Agent：&amp;ldquo;我现在需要调用这个函数，参数是这些&amp;rdquo;。Agent 解析这个 JSON 后执行对应的操作，再把结果喂回模型。&lt;/p&gt;</description><content:encoded><![CDATA[<h2 id="大语言模型llm">大语言模型（LLM）</h2>
+<p>大语言模型（Large Language Model，LLM）是指通过海量文本数据训练、具有数十亿乃至数千亿参数的神经网络模型，能够理解和生成自然语言文本。</p>
+<p>有一点很关键：<strong>LLM 本身是无状态的</strong>。每次调用都是一次全新的推理，模型并不会自动记住你上一次说了什么。这就是为什么我们每次对话都需要把历史记录一并带上——把&quot;记忆&quot;作为输入传给模型，它才能结合上下文给出连贯的回复。</p>
+<p>另外，LLM 也不只是一个聊天工具，它还可以用于文本分类、代码生成、信息抽取、摘要、翻译等各类 NLP 任务。</p>
+<hr>
+<h3 id="prompt提示词">Prompt（提示词）</h3>
+<p>每次和大模型交互时，你输入的内容就叫做 <strong>Prompt</strong>（提示词）。Prompt 的质量对模型输出影响非常大，好的 Prompt 往往能让模型给出更准确、更有用的回答。</p>
+<p>Prompt 通常分为几个部分：</p>
+<ul>
+<li><strong>System Prompt</strong>：系统级别的指令，用来设定模型的角色和行为规范（比如&quot;你是一个专业的法律助手&quot;）。</li>
+<li><strong>User Message</strong>：用户发送的消息。</li>
+<li><strong>Assistant Message</strong>：模型之前的回复，用于多轮对话中提供上下文。</li>
+</ul>
+<hr>
+<h3 id="context上下文">Context（上下文）</h3>
+<p><strong>Context</strong>（上下文）是指模型在生成回复时能&quot;看到&quot;的所有输入内容，包括历史对话、系统提示词、以及任何你额外传入的参考信息。</p>
+<p>每个模型都有一个 <strong>Context Window</strong>（上下文窗口）的限制，也就是单次请求能处理的最大 Token 数量。超出这个范围的内容模型就看不见了。不同模型的上下文窗口差异较大，从早期的 4K tokens 到现在主流的 128K 甚至更长。</p>
+<hr>
+<h3 id="memory记忆">Memory（记忆）</h3>
+<p>我们说 LLM 是无状态的，但实际应用中通常需要它&quot;记住&quot;一些东西，这就引出了 <strong>Memory</strong>（记忆）的概念。</p>
+<p>Memory 不只是把聊天记录原封不动地塞进去，它可以有多种形式：</p>
+<ul>
+<li><strong>短期记忆（Short-term Memory）</strong>：就是当前对话的上下文窗口，随着会话结束而消失。</li>
+<li><strong>长期记忆（Long-term Memory）</strong>：将重要信息持久化存储（比如数据库或向量数据库），下次对话时再按需检索。</li>
+<li><strong>记忆压缩</strong>：当对话历史太长、接近上下文窗口上限时，可以再调用一次大模型来对之前的内容做摘要，用更短的文本代替原始的聊天记录，从而节省 Token 消耗。</li>
+</ul>
+<hr>
+<h2 id="agent智能体">Agent（智能体）</h2>
+<p>大模型归根结底是一个文本输入、文本输出的系统。很多现实场景里，光靠&quot;聊天&quot;远远不够——有时候需要搜索互联网、读取本地文件、执行代码、操作数据库……这些都是纯文本模型做不到的事。</p>
+<p><strong>Agent</strong>（智能体）就是为了解决这个问题而出现的。它把大模型作为&quot;大脑&quot;，通过调用各种外部工具来扩展模型的能力，从而完成更复杂的任务。</p>
+<p>一个典型的 Agent 工作流大致是：接收用户请求 → 模型判断是否需要调用工具 → 调用工具获取结果 → 将结果返回给模型 → 模型生成最终回复。这个过程可以循环多次，直到任务完成。</p>
+<hr>
+<h3 id="function-calling函数调用">Function Calling（函数调用）</h3>
+<p>有了工具，还得让模型知道&quot;什么时候用哪个工具&quot;，这就是 <strong>Function Calling</strong>（函数调用）的作用。</p>
+<p>简单来说，就是在发送请求时，把工具的定义（名称、功能描述、参数说明）一起传给模型。如果模型判断当前任务需要使用某个工具，它就会在输出中生成一段结构化的 JSON，告诉 Agent：&ldquo;我现在需要调用这个函数，参数是这些&rdquo;。Agent 解析这个 JSON 后执行对应的操作，再把结果喂回模型。</p>
+<p>一个典型的工具定义长这样：</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-json" data-lang="json"><span style="display:flex;"><span><span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;name&#34;</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;search_web&#34;</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;description&#34;</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;Search the web for latest information&#34;</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;parameters&#34;</span><span style="color:#111">:</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;type&#34;</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;object&#34;</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;properties&#34;</span><span style="color:#111">:</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;query&#34;</span><span style="color:#111">:</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;type&#34;</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;string&#34;</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;description&#34;</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;Search query&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">},</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;required&#34;</span><span style="color:#111">:</span> <span style="color:#111">[</span><span style="color:#d88200">&#34;query&#34;</span><span style="color:#111">]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span></code></pre></div><p>模型在判断需要联网搜索时，就会生成一个调用 <code>search_web</code> 的请求，Agent 收到之后真正去执行搜索，再把结果作为新的上下文传回模型。</p>
+<p>Function Calling 的局限性也很明显：<strong>所有工具必须提前定义好并硬编码在 Agent 中</strong>，不同 Agent 之间的工具很难复用，扩展起来也比较繁琐。</p>
+<hr>
+<h3 id="mcpmodel-context-protocol">MCP（Model Context Protocol）</h3>
+<p>为了解决 Function Calling 的上述痛点，<strong>MCP（Model Context Protocol，模型上下文协议）</strong> 应运而生。</p>
+<p>MCP 是一套用于连接大模型与外部工具、数据源和服务的<strong>标准通信协议</strong>，由 Anthropic 于 2024 年底提出并开源。它的核心思路是：<strong>把工具能力标准化，让模型通过统一的协议按需访问，而不是在每个 Agent 里各自重复实现</strong>。</p>
+<p>如果用一句话来区分：</p>
+<ul>
+<li><strong>Function Calling</strong>：模型调用提前硬编码好的函数。</li>
+<li><strong>MCP</strong>：模型通过标准协议动态访问外部能力（工具、数据、服务）。</li>
+</ul>
+<p>MCP 的整体架构由三个部分组成：</p>
+<table>
+  <thead>
+      <tr>
+          <th>组件</th>
+          <th>职责</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><strong>MCP Client</strong></td>
+          <td>集成在 Agent 中，负责与 MCP Server 建立连接、发送请求</td>
+      </tr>
+      <tr>
+          <td><strong>MCP Server</strong></td>
+          <td>独立运行的服务，对外暴露具体的工具能力</td>
+      </tr>
+      <tr>
+          <td><strong>Model</strong></td>
+          <td>大语言模型，判断是否需要调用工具并生成调用请求</td>
+      </tr>
+  </tbody>
+</table>
+<p>一次完整的工作流大致如下：</p>
+<ol>
+<li>用户向 Agent 提问</li>
+<li>Agent 将问题发送给大模型</li>
+<li>大模型判断是否需要使用工具</li>
+<li>如果需要，通过 MCP Client 向 MCP Server 发起请求</li>
+<li>MCP Server 执行对应工具并返回结果</li>
+<li>Agent 将结果再次传给模型，生成最终答案</li>
+</ol>
+<p>一个 MCP Server 暴露的工具列表示例：</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-json" data-lang="json"><span style="display:flex;"><span><span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;tools&#34;</span><span style="color:#111">:</span> <span style="color:#111">[</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;name&#34;</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;search_web&#34;</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;description&#34;</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;Search the internet for latest information&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">},</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;name&#34;</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;read_file&#34;</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;description&#34;</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;Read file from local filesystem&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">},</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;name&#34;</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;run_command&#34;</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;description&#34;</span><span style="color:#111">:</span> <span style="color:#d88200">&#34;Execute shell command&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#111">]</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span></code></pre></div><p>相比传统的 Function Calling，MCP 的优势在于：</p>
+<ul>
+<li><strong>标准化</strong>：所有工具都遵循同一套协议，降低接入成本。</li>
+<li><strong>动态扩展</strong>：随时可以新增 MCP Server，无需修改 Agent 核心代码。</li>
+<li><strong>跨 Agent 复用</strong>：一个 MCP Server 可以同时服务多个不同的 Agent。</li>
+<li><strong>生态丰富</strong>：开源社区已经出现了大量现成的 MCP Server，覆盖文件系统、浏览器、数据库、各类 SaaS 服务等场景。</li>
+</ul>
+<p><img src="./images/mcp.png" alt="MCP"></p>
+<hr>
+<h3 id="skills技能">Skills（技能）</h3>
+<p>除了 Function Calling 和 MCP，Agent 还有一个常见的设计模式叫做 <strong>Skills</strong>（技能）。</p>
+<p>Skills 的出现主要是为了<strong>节省 Token 消耗</strong>。</p>
+<p>核心思路是这样的：把 Agent 的各类能力以文档的形式存放在固定目录下，每个技能对应一个文件夹，里面有说明文档（如 <code>SKILL.md</code>）。Agent 启动时，只把每个技能的<strong>名称和简短描述</strong>发给大模型，而不是一次性把所有技能文档的完整内容都塞进上下文——这样就省下了大量 Token。</p>
+<p>当大模型判断某项任务需要某个具体技能时，它会通过 Function Calling 发出读取该技能文档的请求，Agent 才把对应的完整文档加载进上下文。这是一种典型的<strong>按需加载</strong>策略。</p>
+<p>Skills 通常还包含两个子概念：</p>
+<p><strong>Reference（引用）</strong>：技能文档中可以声明对其他文档的引用。当该技能被激活时，Agent 会自动把被引用文档的内容也一并加载进上下文，为模型提供更完整的参考信息。</p>
+<p><strong>Script（脚本）</strong>：技能文档（或其 Reference）中可以声明需要执行的脚本。Agent 会调用命令执行工具来运行这些脚本，并将执行结果作为上下文信息回传给模型。</p>
+<p><img src="./images/skills.png" alt="Skills"></p>
+<hr>
+<h2 id="小结">小结</h2>
+<p>说到底，Agent 的本质就是：<strong>反复调用大语言模型 + 在调用之间穿插执行本地或远程的工具操作</strong>。LLM 负责理解和推理，工具负责与真实世界交互，两者结合才能完成那些复杂的、需要多步骤的任务。没有什么神秘的魔法，理解了这个循环，Agent 的各种架构设计就都说得通了。</p>
+]]></content:encoded><category>AI</category><category>AI</category><category>agent</category></item></channel></rss>

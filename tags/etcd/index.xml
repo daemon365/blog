@@ -1328,7 +1328,7 @@ BoltDB 的写操作都是在内存中进行，若事务未 commit 时出错，�
 </ul>
 ]]></content:encoded><category>cloud</category><category>boltdb</category><category>etcd</category><category>golang</category><category>数据库</category><category>kubernetes</category><category>源码分析</category><category>事务</category></item><item><title>etcd watch 实现原理</title><link>https://daemon365.dev/post/cloud/etcd_watch_implementation_principle/</link><pubDate>Mon, 10 Jun 2024 14:16:00 +0800</pubDate><guid>https://daemon365.dev/post/cloud/etcd_watch_implementation_principle/</guid><description>&lt;h2 id="介绍"&gt;介绍&lt;/h2&gt;
 &lt;p&gt;在 etcd 中，watch 是一个非常重要的特性，它可以让客户端监控 etcd 中的 key 或者一组 key，当 key 发生变化时，etcd 会通知客户端。本文将介绍 etcd watch 的实现原理。&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-BASH" data-lang="BASH"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;etcdctl watch /test
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;etcdctl watch /test
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;# 当 /test 的值发生变化时，会输出如下信息&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;PUT
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;/test
@@ -1411,9 +1411,9 @@ BoltDB 的写操作都是在内存中进行，若事务未 commit 时出错，�
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;sws&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#111"&gt;close&lt;/span&gt;&lt;span style="color:#111"&gt;()&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#00a8c8"&gt;return&lt;/span&gt; &lt;span style="color:#75af00"&gt;err&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#111"&gt;}&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这里 主要的逻辑是开启两个 goroutine，一个用于处理客户端发送的 watch 请求，另一个用于处理新的 event 然后发送给客户端。&lt;/p&gt;</description><content:encoded><![CDATA[<h2 id="介绍">介绍</h2>
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这里主要的逻辑是开启两个 goroutine，一个用于处理客户端发送的 watch 请求（&lt;code&gt;recvLoop&lt;/code&gt;），另一个用于将新的 event 发送给客户端（&lt;code&gt;sendLoop&lt;/code&gt;）。&lt;/p&gt;</description><content:encoded><![CDATA[<h2 id="介绍">介绍</h2>
 <p>在 etcd 中，watch 是一个非常重要的特性，它可以让客户端监控 etcd 中的 key 或者一组 key，当 key 发生变化时，etcd 会通知客户端。本文将介绍 etcd watch 的实现原理。</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-BASH" data-lang="BASH"><span style="display:flex;"><span>etcdctl watch /test
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>etcdctl watch /test
 </span></span><span style="display:flex;"><span><span style="color:#75715e"># 当 /test 的值发生变化时，会输出如下信息</span>
 </span></span><span style="display:flex;"><span>PUT
 </span></span><span style="display:flex;"><span>/test
@@ -1465,7 +1465,7 @@ BoltDB 的写操作都是在内存中进行，若事务未 commit 时出错，�
 </span></span><span style="display:flex;"><span>	<span style="color:#111">}()</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">errc</span> <span style="color:#f92672">:=</span> <span style="color:#111">make</span><span style="color:#111">(</span><span style="color:#00a8c8">chan</span> <span style="color:#00a8c8">error</span><span style="color:#111">,</span> <span style="color:#ae81ff">1</span><span style="color:#111">)</span>
-</span></span><span style="display:flex;"><span>	
+</span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">go</span> <span style="color:#00a8c8">func</span><span style="color:#111">()</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>        <span style="color:#75715e">// 开启一个 goroutine 处理客户端发送的 watch 请求</span>
 </span></span><span style="display:flex;"><span>		<span style="color:#00a8c8">if</span> <span style="color:#75af00">rerr</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">sws</span><span style="color:#111">.</span><span style="color:#75af00">recvLoop</span><span style="color:#111">();</span> <span style="color:#75af00">rerr</span> <span style="color:#f92672">!=</span> <span style="color:#00a8c8">nil</span> <span style="color:#111">{</span>
@@ -1496,7 +1496,7 @@ BoltDB 的写操作都是在内存中进行，若事务未 commit 时出错，�
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">sws</span><span style="color:#111">.</span><span style="color:#111">close</span><span style="color:#111">()</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">return</span> <span style="color:#75af00">err</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>
-</span></span></code></pre></div><p>这里 主要的逻辑是开启两个 goroutine，一个用于处理客户端发送的 watch 请求，另一个用于处理新的 event 然后发送给客户端。</p>
+</span></span></code></pre></div><p>这里主要的逻辑是开启两个 goroutine，一个用于处理客户端发送的 watch 请求（<code>recvLoop</code>），另一个用于将新的 event 发送给客户端（<code>sendLoop</code>）。</p>
 <h3 id="sendloop">sendLoop</h3>
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#111">(</span><span style="color:#75af00">sws</span> <span style="color:#f92672">*</span><span style="color:#75af00">serverWatchStream</span><span style="color:#111">)</span> <span style="color:#75af00">sendLoop</span><span style="color:#111">()</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// watch ids that are currently active</span>
@@ -1509,7 +1509,7 @@ BoltDB 的写操作都是在内存中进行，若事务未 commit 时出错，�
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">defer</span> <span style="color:#00a8c8">func</span><span style="color:#111">()</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>		<span style="color:#75af00">progressTicker</span><span style="color:#111">.</span><span style="color:#75af00">Stop</span><span style="color:#111">()</span>
-</span></span><span style="display:flex;"><span>		<span style="color:#75715e">// 清空chan ，清理待处理 event</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75715e">// 清空 chan，清理待处理 event</span>
 </span></span><span style="display:flex;"><span>		<span style="color:#00a8c8">for</span> <span style="color:#75af00">ws</span> <span style="color:#f92672">:=</span> <span style="color:#00a8c8">range</span> <span style="color:#75af00">sws</span><span style="color:#111">.</span><span style="color:#75af00">watchStream</span><span style="color:#111">.</span><span style="color:#75af00">Chan</span><span style="color:#111">()</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>			<span style="color:#75af00">mvcc</span><span style="color:#111">.</span><span style="color:#75af00">ReportEventReceived</span><span style="color:#111">(</span><span style="color:#111">len</span><span style="color:#111">(</span><span style="color:#75af00">ws</span><span style="color:#111">.</span><span style="color:#75af00">Events</span><span style="color:#111">))</span>
 </span></span><span style="display:flex;"><span>		<span style="color:#111">}</span>
@@ -1524,7 +1524,7 @@ BoltDB 的写操作都是在内存中进行，若事务未 commit 时出错，�
 </span></span><span style="display:flex;"><span>		<span style="color:#00a8c8">select</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>		<span style="color:#00a8c8">case</span> <span style="color:#75af00">wresp</span><span style="color:#111">,</span> <span style="color:#75af00">ok</span> <span style="color:#f92672">:=</span> <span style="color:#f92672">&lt;-</span><span style="color:#75af00">sws</span><span style="color:#111">.</span><span style="color:#75af00">watchStream</span><span style="color:#111">.</span><span style="color:#75af00">Chan</span><span style="color:#111">():</span>
 </span></span><span style="display:flex;"><span>            <span style="color:#75715e">// 从 watchStream.Chan() 中获取 event</span>
-</span></span><span style="display:flex;"><span>            <span style="color:#75715e">// 然后发送给客户端 </span>
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e">// 然后发送给客户端</span>
 </span></span><span style="display:flex;"><span>			<span style="color:#00a8c8">if</span> <span style="color:#111">!</span><span style="color:#75af00">ok</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>				<span style="color:#00a8c8">return</span>
 </span></span><span style="display:flex;"><span>			<span style="color:#111">}</span>
@@ -1597,7 +1597,7 @@ BoltDB 的写操作都是在内存中进行，若事务未 commit 时出错，�
 </span></span><span style="display:flex;"><span>			<span style="color:#75af00">sws</span><span style="color:#111">.</span><span style="color:#75af00">mu</span><span style="color:#111">.</span><span style="color:#75af00">Unlock</span><span style="color:#111">()</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>		<span style="color:#00a8c8">case</span> <span style="color:#75af00">c</span><span style="color:#111">,</span> <span style="color:#75af00">ok</span> <span style="color:#f92672">:=</span> <span style="color:#f92672">&lt;-</span><span style="color:#75af00">sws</span><span style="color:#111">.</span><span style="color:#75af00">ctrlStream</span><span style="color:#111">:</span>
-</span></span><span style="display:flex;"><span>            <span style="color:#75715e">// 处理客户端发送的 watch 请求</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e">// 处理控制响应（watcher 创建确认 / 取消确认），发送给客户端</span>
 </span></span><span style="display:flex;"><span>			<span style="color:#00a8c8">if</span> <span style="color:#111">!</span><span style="color:#75af00">ok</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>				<span style="color:#00a8c8">return</span>
 </span></span><span style="display:flex;"><span>			<span style="color:#111">}</span>
@@ -1654,12 +1654,12 @@ BoltDB 的写操作都是在内存中进行，若事务未 commit 时出错，�
 </span></span><span style="display:flex;"><span>		<span style="color:#111">}</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>
-</span></span></code></pre></div><p>这里使用了 for select 循环：</p>
+</span></span></code></pre></div><p>这里使用了 for-select 循环，依次处理四类事件：</p>
 <ol>
-<li>从 watchStream.Chan() 中获取 event 然后发送给客户端。</li>
-<li>处理客户端发送的 watch 请求。</li>
-<li>dispatch progress 事件。</li>
-<li>处理结束。</li>
+<li>从 <code>watchStream.Chan()</code> 中获取存储层推来的 event，然后发送给客户端。</li>
+<li>从 <code>ctrlStream</code> 中获取控制响应（watcher 创建确认 / 取消确认），发送给客户端。注意这里处理的是 <code>recvLoop</code> 写入 <code>ctrlStream</code> 的控制消息，而不是客户端的原始请求。</li>
+<li>定时 dispatch progress 事件。</li>
+<li>监听 <code>closec</code>，stream 关闭时退出。</li>
 </ol>
 <h3 id="recvloop">recvLoop</h3>
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#111">(</span><span style="color:#75af00">sws</span> <span style="color:#f92672">*</span><span style="color:#75af00">serverWatchStream</span><span style="color:#111">)</span> <span style="color:#75af00">recvLoop</span><span style="color:#111">()</span> <span style="color:#00a8c8">error</span> <span style="color:#111">{</span>
@@ -1797,53 +1797,53 @@ BoltDB 的写操作都是在内存中进行，若事务未 commit 时出错，�
 </span></span><span style="display:flex;"><span>		<span style="color:#111">}</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>
-</span></span></code></pre></div><p>这里主要处理客户端发送的 watch 请求，然后发送给 ctrlStream。sendLoop 会从 ctrlStream 中获取 event 然后发送给客户端。</p>
+</span></span></code></pre></div><p><code>recvLoop</code> 负责接收客户端发来的所有 watch 请求，处理完成后将控制响应（Created / Canceled）写入 <code>ctrlStream</code> channel。<code>sendLoop</code> 会从 <code>ctrlStream</code> 中取出这些控制响应，发送给客户端。注意 <code>ctrlStream</code> 传递的是控制确认消息，而不是数据事件（数据事件走 <code>watchStream.Chan()</code>）。</p>
 <h2 id="watchstream">WatchStream</h2>
-<p>这个 inferface 才是处理 watch 的主要逻辑</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// WatchStream 是一个接口，定义了一个流式处理watch请求的机制</span>
+<p>这个 interface 是连接 gRPC 层与底层存储的桥梁，负责管理一个 stream 连接下所有 watcher 的生命周期。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// WatchStream 是一个接口，定义了一个流式处理 watch 请求的机制</span>
 </span></span><span style="display:flex;"><span><span style="color:#00a8c8">type</span> <span style="color:#75af00">WatchStream</span> <span style="color:#00a8c8">interface</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// Watch 创建一个观察者。观察者会监听在给定的键或范围 [key, end) 上发生的事件或已发生的事件。</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">//
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e">	// 整个事件历史都可以被观察到，除非被压缩。</span>
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 如果 &#34;startRev&#34; &lt;= 0，watch 将观察在当前修订版本之后的事件。</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 如果 &#34;startRev&#34; &lt;= 0，watch 将观察当前修订版本之后的事件。</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	// 返回的 &#34;id&#34; 是这个观察者的ID。它作为 WatchID 出现在通过 stream 通道发送到创建的观察者的事件中。</span>
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	// 返回的 &#34;id&#34; 是这个观察者的 ID。它作为 WatchID 出现在通过 stream 通道发送到创建的观察者的事件中。</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 当 WatchID 不等于 AutoWatchID 时，使用指定的 WatchID，否则返回自动生成的 WatchID。</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">Watch</span><span style="color:#111">(</span><span style="color:#75af00">id</span> <span style="color:#75af00">WatchID</span><span style="color:#111">,</span> <span style="color:#75af00">key</span><span style="color:#111">,</span> <span style="color:#75af00">end</span> <span style="color:#111">[]</span><span style="color:#00a8c8">byte</span><span style="color:#111">,</span> <span style="color:#75af00">startRev</span> <span style="color:#00a8c8">int64</span><span style="color:#111">,</span> <span style="color:#75af00">fcs</span> <span style="color:#f92672">...</span><span style="color:#75af00">FilterFunc</span><span style="color:#111">)</span> <span style="color:#111">(</span><span style="color:#75af00">WatchID</span><span style="color:#111">,</span> <span style="color:#00a8c8">error</span><span style="color:#111">)</span>
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// Chan 返回一个通道。所有的watch响应将被发送到这个返回的通道。</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// Chan 返回一个通道。所有的 watch 响应将被发送到这个返回的通道。</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">Chan</span><span style="color:#111">()</span> <span style="color:#f92672">&lt;-</span><span style="color:#00a8c8">chan</span> <span style="color:#75af00">WatchResponse</span>
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// RequestProgress 请求给定ID的观察者的进度。响应只有在观察者当前同步时才会被发送。</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// RequestProgress 请求给定 ID 的观察者的进度。响应只有在观察者当前同步时才会被发送。</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 响应将通过与此流关联的 WatchResponse 通道发送，以确保正确的顺序。</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 响应不包含事件。响应中的修订版本是观察者自同步以来的进度。</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">RequestProgress</span><span style="color:#111">(</span><span style="color:#75af00">id</span> <span style="color:#75af00">WatchID</span><span style="color:#111">)</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// RequestProgressAll 请求所有共享此流的观察者的进度通知。</span>
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 如果所有观察者都已同步，将向此流的任意观察者发送带有watch ID -1的进度通知，并返回 true。</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 如果所有观察者都已同步，将向此流的任意观察者发送带有 watch ID -1 的进度通知，并返回 true。</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">RequestProgressAll</span><span style="color:#111">()</span> <span style="color:#00a8c8">bool</span>
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// Cancel 通过给定ID取消观察者。如果观察者不存在，将返回错误。</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// Cancel 通过给定 ID 取消观察者。如果观察者不存在，将返回错误。</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">Cancel</span><span style="color:#111">(</span><span style="color:#75af00">id</span> <span style="color:#75af00">WatchID</span><span style="color:#111">)</span> <span style="color:#00a8c8">error</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// Close 关闭通道并释放所有相关资源。</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">Close</span><span style="color:#111">()</span>
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// Rev 返回流上观察到的KV的当前修订版本。</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// Rev 返回流上观察到的 KV 的当前修订版本。</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">Rev</span><span style="color:#111">()</span> <span style="color:#00a8c8">int64</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">// WatchResponse 表示一个watch操作的响应。</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// WatchResponse 表示一个 watch 操作的响应。</span>
 </span></span><span style="display:flex;"><span><span style="color:#00a8c8">type</span> <span style="color:#75af00">WatchResponse</span> <span style="color:#00a8c8">struct</span> <span style="color:#111">{</span>
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// WatchID 是发送此响应的观察者的ID。</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// WatchID 是发送此响应的观察者的 ID。</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">WatchID</span> <span style="color:#75af00">WatchID</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// Events 包含所有需要发送的事件。</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">Events</span> <span style="color:#111">[]</span><span style="color:#75af00">mvccpb</span><span style="color:#111">.</span><span style="color:#75af00">Event</span>
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// Revision 是创建watch响应时KV的修订版本。</span>
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 对于正常响应，修订版本应该与Events中最后一个修改的修订版本相同。</span>
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 对于延迟响应的未同步观察者，修订版本大于Events中最后一个修改的修订版本。</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// Revision 是创建 watch 响应时 KV 的修订版本。</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 对于正常响应，修订版本应该与 Events 中最后一个修改的修订版本相同。</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 对于延迟响应的未同步观察者，修订版本大于 Events 中最后一个修改的修订版本。</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">Revision</span> <span style="color:#00a8c8">int64</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// CompactRevision 在观察者由于压缩而被取消时设置。</span>
@@ -1853,27 +1853,27 @@ BoltDB 的写操作都是在内存中进行，若事务未 commit 时出错，�
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// 实现了 WatchStream</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// watchStream 包含共享一个流通道发送被观察事件和其他控制事件的观察者集合。</span>
 </span></span><span style="display:flex;"><span><span style="color:#00a8c8">type</span> <span style="color:#75af00">watchStream</span> <span style="color:#00a8c8">struct</span> <span style="color:#111">{</span>
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 可观察对象（例如KV存储）</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 可观察对象（例如 KV 存储）</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">watchable</span> <span style="color:#75af00">watchable</span>
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 用于发送watch响应的通道</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 用于发送 watch 响应的通道</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">ch</span>        <span style="color:#00a8c8">chan</span> <span style="color:#75af00">WatchResponse</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 互斥锁，保护以下字段</span>
-</span></span><span style="display:flex;"><span>	<span style="color:#75af00">mu</span> <span style="color:#75af00">sync</span><span style="color:#111">.</span><span style="color:#75af00">Mutex</span> 
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// nextID 是为此流中下一个新观察者预分配的ID</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75af00">mu</span> <span style="color:#75af00">sync</span><span style="color:#111">.</span><span style="color:#75af00">Mutex</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// nextID 是为此流中下一个新观察者预分配的 ID</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">nextID</span>   <span style="color:#75af00">WatchID</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 标志流是否已关闭</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">closed</span>   <span style="color:#00a8c8">bool</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 取消函数的映射，用于取消特定的观察者</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">cancels</span>  <span style="color:#00a8c8">map</span><span style="color:#111">[</span><span style="color:#75af00">WatchID</span><span style="color:#111">]</span><span style="color:#75af00">cancelFunc</span>
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 观察者的映射，根据观察者ID索引</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 观察者的映射，根据观察者 ID 索引</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">watchers</span> <span style="color:#00a8c8">map</span><span style="color:#111">[</span><span style="color:#75af00">WatchID</span><span style="color:#111">]</span><span style="color:#f92672">*</span><span style="color:#75af00">watcher</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// Watch 在流中创建一个新的观察者并返回其 WatchID。</span>
 </span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#111">(</span><span style="color:#75af00">ws</span> <span style="color:#f92672">*</span><span style="color:#75af00">watchStream</span><span style="color:#111">)</span> <span style="color:#75af00">Watch</span><span style="color:#111">(</span><span style="color:#75af00">id</span> <span style="color:#75af00">WatchID</span><span style="color:#111">,</span> <span style="color:#75af00">key</span><span style="color:#111">,</span> <span style="color:#75af00">end</span> <span style="color:#111">[]</span><span style="color:#00a8c8">byte</span><span style="color:#111">,</span> <span style="color:#75af00">startRev</span> <span style="color:#00a8c8">int64</span><span style="color:#111">,</span> <span style="color:#75af00">fcs</span> <span style="color:#f92672">...</span><span style="color:#75af00">FilterFunc</span><span style="color:#111">)</span> <span style="color:#111">(</span><span style="color:#75af00">WatchID</span><span style="color:#111">,</span> <span style="color:#00a8c8">error</span><span style="color:#111">)</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 防止键 &gt;= 结束键（按字典顺序）的错误范围</span>
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 带有 &#39;WithFromKey&#39; 的watch请求具有空字节范围结束</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 带有 &#39;WithFromKey&#39; 的 watch 请求具有空字节范围结束</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#111">len</span><span style="color:#111">(</span><span style="color:#75af00">end</span><span style="color:#111">)</span> <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#75af00">bytes</span><span style="color:#111">.</span><span style="color:#75af00">Compare</span><span style="color:#111">(</span><span style="color:#75af00">key</span><span style="color:#111">,</span> <span style="color:#75af00">end</span><span style="color:#111">)</span> <span style="color:#f92672">!=</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>		<span style="color:#00a8c8">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span><span style="color:#111">,</span> <span style="color:#75af00">ErrEmptyWatcherRange</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
@@ -1905,11 +1905,13 @@ BoltDB 的写操作都是在内存中进行，若事务未 commit 时出错，�
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">ws</span><span style="color:#111">.</span><span style="color:#75af00">watchers</span><span style="color:#111">[</span><span style="color:#75af00">id</span><span style="color:#111">]</span> <span style="color:#111">=</span> <span style="color:#75af00">w</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">return</span> <span style="color:#75af00">id</span><span style="color:#111">,</span> <span style="color:#00a8c8">nil</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">// Chan 返回用于接收watch响应的通道。</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// Chan 返回用于接收 watch 响应的通道。</span>
 </span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#111">(</span><span style="color:#75af00">ws</span> <span style="color:#f92672">*</span><span style="color:#75af00">watchStream</span><span style="color:#111">)</span> <span style="color:#75af00">Chan</span><span style="color:#111">()</span> <span style="color:#f92672">&lt;-</span><span style="color:#00a8c8">chan</span> <span style="color:#75af00">WatchResponse</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">return</span> <span style="color:#75af00">ws</span><span style="color:#111">.</span><span style="color:#75af00">ch</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">// Cancel 取消具有给定ID的观察者。</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// Cancel 取消具有给定 ID 的观察者。</span>
 </span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#111">(</span><span style="color:#75af00">ws</span> <span style="color:#f92672">*</span><span style="color:#75af00">watchStream</span><span style="color:#111">)</span> <span style="color:#75af00">Cancel</span><span style="color:#111">(</span><span style="color:#75af00">id</span> <span style="color:#75af00">WatchID</span><span style="color:#111">)</span> <span style="color:#00a8c8">error</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 获取互斥锁</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">ws</span><span style="color:#111">.</span><span style="color:#75af00">mu</span><span style="color:#111">.</span><span style="color:#75af00">Lock</span><span style="color:#111">()</span>
@@ -1926,7 +1928,7 @@ BoltDB 的写操作都是在内存中进行，若事务未 commit 时出错，�
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 获取互斥锁</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">ws</span><span style="color:#111">.</span><span style="color:#75af00">mu</span><span style="color:#111">.</span><span style="color:#75af00">Lock</span><span style="color:#111">()</span>
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 在取消之前不删除观察者，以确保 Close() 调用时等待取消</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 在取消之前不删除观察者，以确保 Close() 调用时等待取消完成</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">ww</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">ws</span><span style="color:#111">.</span><span style="color:#75af00">watchers</span><span style="color:#111">[</span><span style="color:#75af00">id</span><span style="color:#111">];</span> <span style="color:#75af00">ww</span> <span style="color:#f92672">==</span> <span style="color:#75af00">w</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>		<span style="color:#111">delete</span><span style="color:#111">(</span><span style="color:#75af00">ws</span><span style="color:#111">.</span><span style="color:#75af00">cancels</span><span style="color:#111">,</span> <span style="color:#75af00">id</span><span style="color:#111">)</span>
 </span></span><span style="display:flex;"><span>		<span style="color:#111">delete</span><span style="color:#111">(</span><span style="color:#75af00">ws</span><span style="color:#111">.</span><span style="color:#75af00">watchers</span><span style="color:#111">,</span> <span style="color:#75af00">id</span><span style="color:#111">)</span>
@@ -1935,6 +1937,7 @@ BoltDB 的写操作都是在内存中进行，若事务未 commit 时出错，�
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">return</span> <span style="color:#00a8c8">nil</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// Close 关闭通道并释放所有相关资源。</span>
 </span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#111">(</span><span style="color:#75af00">ws</span> <span style="color:#f92672">*</span><span style="color:#75af00">watchStream</span><span style="color:#111">)</span> <span style="color:#75af00">Close</span><span style="color:#111">()</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 获取互斥锁</span>
@@ -1950,14 +1953,16 @@ BoltDB 的写操作都是在内存中进行，若事务未 commit 时出错，�
 </span></span><span style="display:flex;"><span>	<span style="color:#111">close</span><span style="color:#111">(</span><span style="color:#75af00">ws</span><span style="color:#111">.</span><span style="color:#75af00">ch</span><span style="color:#111">)</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">watchStreamGauge</span><span style="color:#111">.</span><span style="color:#75af00">Dec</span><span style="color:#111">()</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">// Rev 返回流上观察到的KV的当前修订版本。</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// Rev 返回流上观察到的 KV 的当前修订版本。</span>
 </span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#111">(</span><span style="color:#75af00">ws</span> <span style="color:#f92672">*</span><span style="color:#75af00">watchStream</span><span style="color:#111">)</span> <span style="color:#75af00">Rev</span><span style="color:#111">()</span> <span style="color:#00a8c8">int64</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 获取互斥锁</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">ws</span><span style="color:#111">.</span><span style="color:#75af00">mu</span><span style="color:#111">.</span><span style="color:#75af00">Lock</span><span style="color:#111">()</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">defer</span> <span style="color:#75af00">ws</span><span style="color:#111">.</span><span style="color:#75af00">mu</span><span style="color:#111">.</span><span style="color:#75af00">Unlock</span><span style="color:#111">()</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">return</span> <span style="color:#75af00">ws</span><span style="color:#111">.</span><span style="color:#75af00">watchable</span><span style="color:#111">.</span><span style="color:#75af00">rev</span><span style="color:#111">()</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">// RequestProgress 请求给定ID的观察者的进度。</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// RequestProgress 请求给定 ID 的观察者的进度。</span>
 </span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#111">(</span><span style="color:#75af00">ws</span> <span style="color:#f92672">*</span><span style="color:#75af00">watchStream</span><span style="color:#111">)</span> <span style="color:#75af00">RequestProgress</span><span style="color:#111">(</span><span style="color:#75af00">id</span> <span style="color:#75af00">WatchID</span><span style="color:#111">)</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 获取互斥锁</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">ws</span><span style="color:#111">.</span><span style="color:#75af00">mu</span><span style="color:#111">.</span><span style="color:#75af00">Lock</span><span style="color:#111">()</span>
@@ -1970,6 +1975,7 @@ BoltDB 的写操作都是在内存中进行，若事务未 commit 时出错，�
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 请求进度</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">ws</span><span style="color:#111">.</span><span style="color:#75af00">watchable</span><span style="color:#111">.</span><span style="color:#75af00">progress</span><span style="color:#111">(</span><span style="color:#75af00">w</span><span style="color:#111">)</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// RequestProgressAll 请求所有观察者的进度通知。</span>
 </span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#111">(</span><span style="color:#75af00">ws</span> <span style="color:#f92672">*</span><span style="color:#75af00">watchStream</span><span style="color:#111">)</span> <span style="color:#75af00">RequestProgressAll</span><span style="color:#111">()</span> <span style="color:#00a8c8">bool</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 获取互斥锁</span>
@@ -1978,34 +1984,34 @@ BoltDB 的写操作都是在内存中进行，若事务未 commit 时出错，�
 </span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">return</span> <span style="color:#75af00">ws</span><span style="color:#111">.</span><span style="color:#75af00">watchable</span><span style="color:#111">.</span><span style="color:#75af00">progressAll</span><span style="color:#111">(</span><span style="color:#75af00">ws</span><span style="color:#111">.</span><span style="color:#75af00">watchers</span><span style="color:#111">)</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>
 </span></span></code></pre></div><ol>
-<li>Watch 方法：创建一个新的观察者，如果指定的范围不正确或观察者ID重复，则返回错误。否则，创建观察者并保存取消函数和观察者实例。</li>
-<li>Chan 方法：返回用于接收watch响应的通道。</li>
-<li>Cancel 方法：取消给定ID的观察者，删除相关的取消函数和观察者实例。</li>
-<li>Close 方法：关闭所有观察者并释放资源。</li>
-<li>Rev 方法：返回当前观察到的KV修订版本。</li>
-<li>RequestProgress 方法：请求特定观察者的进度。</li>
-<li>RequestProgressAll 方法：请求所有观察者的进度通知。</li>
+<li><strong>Watch 方法</strong>：创建一个新的观察者，如果指定的范围不正确或观察者 ID 重复，则返回错误。否则，创建观察者并保存取消函数和观察者实例。</li>
+<li><strong>Chan 方法</strong>：返回用于接收 watch 响应的通道。</li>
+<li><strong>Cancel 方法</strong>：取消给定 ID 的观察者，删除相关的取消函数和观察者实例。</li>
+<li><strong>Close 方法</strong>：关闭所有观察者并释放资源。</li>
+<li><strong>Rev 方法</strong>：返回当前观察到的 KV 修订版本。</li>
+<li><strong>RequestProgress 方法</strong>：请求特定观察者的进度。</li>
+<li><strong>RequestProgressAll 方法</strong>：请求所有观察者的进度通知。</li>
 </ol>
-<p>可以可到 当调用 Watch 的时候 每个 watchId 都会调用 <code>watchable.watch</code> 并把自己 ch 放入进去</p>
+<p>可以看到，当调用 <code>Watch</code> 的时候，每个 watchId 都会调用 <code>watchable.watch</code> 并把自己的 <code>ch</code> 传入进去，使得所有 watcher 的事件都推送到同一个 channel 中统一消费。</p>
 <h2 id="watchable">watchable</h2>
-<p><img src="/images/ad802824-86e0-42a7-b84d-d2dfe2076620.png" alt=""></p>
+<p><img src="/images/ad802824-86e0-42a7-b84d-d2dfe2076620.png" alt="watchable 架构图"></p>
+<p><code>watchableStore</code> 才是 watch 机制真正的事件引擎，它实现了 <code>watchable</code> 接口，维护了 synced、unsynced、victims 三组 watcher，并通过两个后台 goroutine 持续驱动事件推送。</p>
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// watchable 接口定义了可观察对象的行为</span>
 </span></span><span style="display:flex;"><span><span style="color:#00a8c8">type</span> <span style="color:#75af00">watchable</span> <span style="color:#00a8c8">interface</span> <span style="color:#111">{</span>
-</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// watch 创建一个新的观察者，用于监听指定键或范围[startRev, end)上的事件。</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// watch 创建一个新的观察者，监听键范围 [key, end) 内从 startRev 开始的事件。</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 返回观察者指针和取消函数。</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75af00">watch</span><span style="color:#111">(</span><span style="color:#75af00">key</span><span style="color:#111">,</span> <span style="color:#75af00">end</span> <span style="color:#111">[]</span><span style="color:#00a8c8">byte</span><span style="color:#111">,</span> <span style="color:#75af00">startRev</span> <span style="color:#00a8c8">int64</span><span style="color:#111">,</span> <span style="color:#75af00">id</span> <span style="color:#75af00">WatchID</span><span style="color:#111">,</span> <span style="color:#75af00">ch</span> <span style="color:#00a8c8">chan</span><span style="color:#f92672">&lt;-</span> <span style="color:#75af00">WatchResponse</span><span style="color:#111">,</span> <span style="color:#75af00">fcs</span> <span style="color:#f92672">...</span><span style="color:#75af00">FilterFunc</span><span style="color:#111">)</span> <span style="color:#111">(</span><span style="color:#f92672">*</span><span style="color:#75af00">watcher</span><span style="color:#111">,</span> <span style="color:#75af00">cancelFunc</span><span style="color:#111">)</span>
-</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// progress 通知特定观察者当前的进度。</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75af00">progress</span><span style="color:#111">(</span><span style="color:#75af00">w</span> <span style="color:#f92672">*</span><span style="color:#75af00">watcher</span><span style="color:#111">)</span>
-</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// progressAll 通知所有观察者当前的进度。</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 如果所有观察者都已同步，则返回 true。</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75af00">progressAll</span><span style="color:#111">(</span><span style="color:#75af00">watchers</span> <span style="color:#00a8c8">map</span><span style="color:#111">[</span><span style="color:#75af00">WatchID</span><span style="color:#111">]</span><span style="color:#f92672">*</span><span style="color:#75af00">watcher</span><span style="color:#111">)</span> <span style="color:#00a8c8">bool</span>
-</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// rev 返回当前观察到的修订版本。</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75af00">rev</span><span style="color:#111">()</span> <span style="color:#00a8c8">int64</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>
-</span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// watchableStore 是一个实现了 watchable 接口的结构体，代表一个可观察的存储</span>
 </span></span><span style="display:flex;"><span><span style="color:#00a8c8">type</span> <span style="color:#75af00">watchableStore</span> <span style="color:#00a8c8">struct</span> <span style="color:#111">{</span>
@@ -2048,7 +2054,9 @@ BoltDB 的写操作都是在内存中进行，若事务未 commit 时出错，�
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">s</span><span style="color:#111">.</span><span style="color:#75af00">mu</span><span style="color:#111">.</span><span style="color:#75af00">Lock</span><span style="color:#111">()</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 锁定 store 的读写锁用于获取当前修订版本</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">s</span><span style="color:#111">.</span><span style="color:#75af00">revMu</span><span style="color:#111">.</span><span style="color:#75af00">RLock</span><span style="color:#111">()</span>
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 判断观察者是否与当前存储修订版本同步</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 判断观察者是否与当前存储修订版本同步：</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// startRev == 0 表示从当前版本开始监听（无需追历史）；</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// startRev &gt; currentRev 表示指定了一个未来版本，同样直接进入 synced 等待。</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">synced</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">startRev</span> <span style="color:#111">&gt;</span> <span style="color:#75af00">s</span><span style="color:#111">.</span><span style="color:#75af00">store</span><span style="color:#111">.</span><span style="color:#75af00">currentRev</span> <span style="color:#f92672">||</span> <span style="color:#75af00">startRev</span> <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">synced</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>		<span style="color:#75715e">// 如果同步，设置最小修订版本为当前修订版本的下一个版本</span>
@@ -2059,7 +2067,7 @@ BoltDB 的写操作都是在内存中进行，若事务未 commit 时出错，�
 </span></span><span style="display:flex;"><span>		<span style="color:#75715e">// 将观察者添加到同步观察者组中</span>
 </span></span><span style="display:flex;"><span>		<span style="color:#75af00">s</span><span style="color:#111">.</span><span style="color:#75af00">synced</span><span style="color:#111">.</span><span style="color:#75af00">add</span><span style="color:#111">(</span><span style="color:#75af00">wa</span><span style="color:#111">)</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#111">}</span> <span style="color:#00a8c8">else</span> <span style="color:#111">{</span>
-</span></span><span style="display:flex;"><span>		<span style="color:#75715e">// 如果未同步，增加慢速观察者计数器</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75715e">// 如果未同步（startRev &lt; currentRev），需要追赶历史事件，增加慢速观察者计数器</span>
 </span></span><span style="display:flex;"><span>		<span style="color:#75af00">slowWatcherGauge</span><span style="color:#111">.</span><span style="color:#75af00">Inc</span><span style="color:#111">()</span>
 </span></span><span style="display:flex;"><span>		<span style="color:#75715e">// 将观察者添加到未同步观察者组中</span>
 </span></span><span style="display:flex;"><span>		<span style="color:#75af00">s</span><span style="color:#111">.</span><span style="color:#75af00">unsynced</span><span style="color:#111">.</span><span style="color:#75af00">add</span><span style="color:#111">(</span><span style="color:#75af00">wa</span><span style="color:#111">)</span>
@@ -2099,7 +2107,7 @@ BoltDB 的写操作都是在内存中进行，若事务未 commit 时出错，�
 </span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">return</span> <span style="color:#75af00">s</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>
 </span></span></code></pre></div><h3 id="syncwatchersloop">syncWatchersLoop</h3>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// syncWatchersLoop 每100毫秒同步一次unsynced集合中的观察者。</span>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// syncWatchersLoop 每100毫秒同步一次 unsynced 集合中的观察者。</span>
 </span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#111">(</span><span style="color:#75af00">s</span> <span style="color:#f92672">*</span><span style="color:#75af00">watchableStore</span><span style="color:#111">)</span> <span style="color:#75af00">syncWatchersLoop</span><span style="color:#111">()</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">defer</span> <span style="color:#75af00">s</span><span style="color:#111">.</span><span style="color:#75af00">wg</span><span style="color:#111">.</span><span style="color:#75af00">Done</span><span style="color:#111">()</span>
 </span></span><span style="display:flex;"><span>
@@ -2142,7 +2150,8 @@ BoltDB 的写操作都是在内存中进行，若事务未 commit 时出错，�
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// syncWatchers 通过以下步骤同步未同步的观察者：</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">//  1. 从未同步观察者组中选择一组观察者</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">//  2. 迭代该组以获取最小修订版本并移除压缩的观察者</span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">//  3. 使用最小修订版本获取所有键值对，并将这些事件发送给观察者</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">//  3. 从 BoltDB 中读取修订版本范围 [minRev, curRev+1) 内的所有键值对，</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">//     生成事件并发送给对应的观察者</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">//  4. 从未同步组中移除已同步的观察者，并移动到同步组中</span>
 </span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#111">(</span><span style="color:#75af00">s</span> <span style="color:#f92672">*</span><span style="color:#75af00">watchableStore</span><span style="color:#111">)</span> <span style="color:#75af00">syncWatchers</span><span style="color:#111">()</span> <span style="color:#00a8c8">int</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 锁定</span>
@@ -2168,14 +2177,14 @@ BoltDB 的写操作都是在内存中进行，若事务未 commit 时出错，�
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">minBytes</span> <span style="color:#111">=</span> <span style="color:#75af00">RevToBytes</span><span style="color:#111">(</span><span style="color:#75af00">Revision</span><span style="color:#111">{</span><span style="color:#75af00">Main</span><span style="color:#111">:</span> <span style="color:#75af00">minRev</span><span style="color:#111">},</span> <span style="color:#75af00">minBytes</span><span style="color:#111">)</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">maxBytes</span> <span style="color:#111">=</span> <span style="color:#75af00">RevToBytes</span><span style="color:#111">(</span><span style="color:#75af00">Revision</span><span style="color:#111">{</span><span style="color:#75af00">Main</span><span style="color:#111">:</span> <span style="color:#75af00">curRev</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span><span style="color:#111">},</span> <span style="color:#75af00">maxBytes</span><span style="color:#111">)</span>
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// UnsafeRange 返回键和值。在boltdb中，键是修订版本，值是实际的键值对。</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// UnsafeRange 返回键和值。在 boltdb 中，键是修订版本，值是实际的键值对。</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">tx</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">s</span><span style="color:#111">.</span><span style="color:#75af00">store</span><span style="color:#111">.</span><span style="color:#75af00">b</span><span style="color:#111">.</span><span style="color:#75af00">ReadTx</span><span style="color:#111">()</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">tx</span><span style="color:#111">.</span><span style="color:#75af00">RLock</span><span style="color:#111">()</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">revs</span><span style="color:#111">,</span> <span style="color:#75af00">vs</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">tx</span><span style="color:#111">.</span><span style="color:#75af00">UnsafeRange</span><span style="color:#111">(</span><span style="color:#75af00">schema</span><span style="color:#111">.</span><span style="color:#75af00">Key</span><span style="color:#111">,</span> <span style="color:#75af00">minBytes</span><span style="color:#111">,</span> <span style="color:#75af00">maxBytes</span><span style="color:#111">,</span> <span style="color:#ae81ff">0</span><span style="color:#111">)</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">evs</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">kvsToEvents</span><span style="color:#111">(</span><span style="color:#75af00">s</span><span style="color:#111">.</span><span style="color:#75af00">store</span><span style="color:#111">.</span><span style="color:#75af00">lg</span><span style="color:#111">,</span> <span style="color:#75af00">wg</span><span style="color:#111">,</span> <span style="color:#75af00">revs</span><span style="color:#111">,</span> <span style="color:#75af00">vs</span><span style="color:#111">)</span>
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 必须在kvsToEvents之后解锁，因为vs（来自boltdb内存）不是深拷贝。</span>
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 我们只能在Unmarshal之后解锁，这将进行深拷贝。</span>
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 否则我们将在boltdb重新mmap期间触发SIGSEGV。</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 必须在 kvsToEvents 之后解锁，因为 vs（来自 boltdb 内存）不是深拷贝。</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 我们只能在 Unmarshal 之后解锁，这将进行深拷贝。</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 否则我们将在 boltdb 重新 mmap 期间触发 SIGSEGV。</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">tx</span><span style="color:#111">.</span><span style="color:#75af00">RUnlock</span><span style="color:#111">()</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 创建一个新的观察者批次</span>
@@ -2190,7 +2199,7 @@ BoltDB 的写操作都是在内存中进行，若事务未 commit 时出错，�
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>		<span style="color:#75af00">eb</span><span style="color:#111">,</span> <span style="color:#75af00">ok</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">wb</span><span style="color:#111">[</span><span style="color:#75af00">w</span><span style="color:#111">]</span>
 </span></span><span style="display:flex;"><span>		<span style="color:#00a8c8">if</span> <span style="color:#111">!</span><span style="color:#75af00">ok</span> <span style="color:#111">{</span>
-</span></span><span style="display:flex;"><span>			<span style="color:#75715e">// 将未通知的观察者移至同步</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#75715e">// 将未通知的观察者移至同步组</span>
 </span></span><span style="display:flex;"><span>			<span style="color:#75af00">s</span><span style="color:#111">.</span><span style="color:#75af00">synced</span><span style="color:#111">.</span><span style="color:#75af00">add</span><span style="color:#111">(</span><span style="color:#75af00">w</span><span style="color:#111">)</span>
 </span></span><span style="display:flex;"><span>			<span style="color:#75af00">s</span><span style="color:#111">.</span><span style="color:#75af00">unsynced</span><span style="color:#111">.</span><span style="color:#111">delete</span><span style="color:#111">(</span><span style="color:#75af00">w</span><span style="color:#111">)</span>
 </span></span><span style="display:flex;"><span>			<span style="color:#00a8c8">continue</span>
@@ -2355,7 +2364,7 @@ BoltDB 的写操作都是在内存中进行，若事务未 commit 时出错，�
 </span></span><span style="display:flex;"><span>		<span style="color:#75af00">curRev</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">s</span><span style="color:#111">.</span><span style="color:#75af00">store</span><span style="color:#111">.</span><span style="color:#75af00">currentRev</span>
 </span></span><span style="display:flex;"><span>		<span style="color:#00a8c8">for</span> <span style="color:#75af00">w</span><span style="color:#111">,</span> <span style="color:#75af00">eb</span> <span style="color:#f92672">:=</span> <span style="color:#00a8c8">range</span> <span style="color:#75af00">wb</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>			<span style="color:#00a8c8">if</span> <span style="color:#75af00">newVictim</span> <span style="color:#f92672">!=</span> <span style="color:#00a8c8">nil</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#75af00">newVictim</span><span style="color:#111">[</span><span style="color:#75af00">w</span><span style="color:#111">]</span> <span style="color:#f92672">!=</span> <span style="color:#00a8c8">nil</span> <span style="color:#111">{</span>
-</span></span><span style="display:flex;"><span>				<span style="color:#75715e">// 无法发送watch响应，仍然是受害者</span>
+</span></span><span style="display:flex;"><span>				<span style="color:#75715e">// 无法发送 watch 响应，仍然是受害者</span>
 </span></span><span style="display:flex;"><span>				<span style="color:#00a8c8">continue</span>
 </span></span><span style="display:flex;"><span>			<span style="color:#111">}</span>
 </span></span><span style="display:flex;"><span>			<span style="color:#75af00">w</span><span style="color:#111">.</span><span style="color:#75af00">victim</span> <span style="color:#111">=</span> <span style="color:#00a8c8">false</span>
