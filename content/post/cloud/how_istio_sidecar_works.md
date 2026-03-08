@@ -23,7 +23,7 @@ sidecar 是一种设计模式，它将挂在业务容器旁边作为辅助，当
 
 在 istio 中，sidecar 使用的是 envoy，envoy 是一个高性能的代理，它支持 http1.1, http2, grpc, tcp 等协议，支持负载均衡，熔断，限流，监控等功能。envoy 是一个 c++ 项目，它的性能非常好。通过 istiod 控制平面，使用 grpc stream 的方式更新 envoy 的配置，从而实现了动态配置。
 
-![](/images/c4b0f157-ecec-481d-af65-193843a0f599.png)
+![](/images/sidecar.png)
 
 如果在 pod test 中访问 test namespace 下的 nginx service，那么流量会经过自己的 sidecar，然后到达 nginx 的 sidecar，最后到达 nginx 的容器。nginx 回复同样如此，先到达 sidecar，然后到达 test 的 sidecar，最后到达 test 的容器。
 
@@ -253,7 +253,7 @@ nginx   10.244.0.73:80   112m
 
 在 test pod 的 test 容器中 执行 `curl http://nginx.test` 流量的流程图如下
 
-![](/images/2e85632c-fce1-4107-ac22-2c3865093750.png)
+![](/images/sidecar-flow.png)
 
 
 ## 配置查看

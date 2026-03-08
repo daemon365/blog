@@ -59,7 +59,7 @@ const (
 
 在 page 之后会存储对用的结构，比如 meta 或者 freelist。先读取 page 判断自己的结构（定长的：8 + 2 + 2 +4），然后再根据不同的数据类型读取其他的结构（比如BranchPage）。
 
-![](/images/eebaffa3-116e-40f0-95be-2dfc0ee58bd6.png)
+![](/images/boltdb-page.png)
 
 ### BranchPage && LeafPage
 
@@ -85,7 +85,7 @@ type leafPageElement struct {
 
 对应的存储方式为:
 
-![](/images/c5206aef-62de-447a-880a-3024a75f4b3d.png)
+![](/images/boltdb-element.png)
 
 从 page 中拿取数据：
 

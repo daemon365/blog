@@ -63,7 +63,7 @@ root       15042   15021  0 22:02 pts/0    00:00:00 sleep 3000
 
 ## 架构图
 
-![](/images/1a309094-015a-4bcf-b371-134a5a275089.png)
+![](/images/containerd-runc.png)
 
 ## 代码分析
 

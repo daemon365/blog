@@ -332,4 +332,4 @@ func (baseReadTx *baseReadTx) UnsafeRange(bucketType Bucket, key, endKey []byte,
 4. etcd 将 value 值反序列化成 mvccpb.KeyValue
 5. etcd 将 mvccpb.KeyValue 返回给用户
 
-![](/images/658af763-0bf3-4af0-b7c9-3da26ed87db3.png)
+![](/images/etcd-mvcc.png)

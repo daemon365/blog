@@ -97,7 +97,7 @@ CNI 插件主要分为三类：
 
 计算机五层网络如下：
 
-![](/images/4bcdd10b-42da-470b-91b0-d87746410aeb.png)
+![](/images/five-network.png)
 
 如果我们想把 pod 中的网络对外，首先想到的就是七层代理，比如nginx，但是我们并不知道 pod 里的网络一定是 http，甚至他可能不是tcp。所以我们像做一些网络操作，就不能在五层做了，只能在二三四层做。
 
@@ -158,7 +158,7 @@ PING 172.17.0.2 (172.17.0.2) 56(84) bytes of data.
 
 ### 通信方式
 
-![](/images/a6754f75-f177-42d3-b9d3-0d362ef038a9.png)
+![](/images/docker-container-communication.png)
 
 ## 常见 CNI 插件对比
 
@@ -174,7 +174,7 @@ PING 172.17.0.2 (172.17.0.2) 56(84) bytes of data.
 
 当 pod 在不同节点上的时候，两个 pod 不可以直接通信，那最简单的方式就是通过 udp 封包，把整个网络包使用 udp 封包起来，然后第二个节点再解包，然后发给网桥。
 
-![](/images/2fca7256-2cac-436f-a379-4e12891fac39.png)
+![](/images/cni-udp.png)
 
 整个过程就是 node1 上的 pod 把网络包封装，然后由于 `process` 再封装发给 node2，node2 再解包，然后发给 pod2。
 
@@ -202,7 +202,7 @@ ip 路由故名思意，就是使用路由表来实现 pod 之间的通信。这
 
 而且路由表跳转是二层网络实现的，所以又要要求所有 node 在同一个二层网络中。
 
-![](/images/7be8c8c9-a60b-4717-9f5a-a3e6f44ebed9.png)
+![](/images/cni-ip-route.png)
 
 查看 node1 上的 container 的是设备
 
@@ -289,7 +289,7 @@ ip-in-ip 是一种隧道技术，它将一个 IP 数据包封装在另一个 IP 
 172.10.180.0/24 via 192.168.228.28 tunl0
 ```
 
-![](/images/62ebd840-1785-46f6-bd04-7b4e78c8cc0b.png)
+![](/images/ip-in-ip.png)
 
 这个只是在源数据包的三层上再封装一层 IP 头部。相比 VXLAN（封装完整的二层以太网帧），IP-in-IP 只封装 IP 头，开销更小。这样性能方面稍微比使用了 UDP 的 VXLAN 要好一点。但是最好还是避免使用 IP-in-IP，尽量保证 node 在同一个二层网络上。
 
