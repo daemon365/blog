@@ -149,7 +149,7 @@
 <li><strong>跨 Agent 复用</strong>：一个 MCP Server 可以同时服务多个不同的 Agent。</li>
 <li><strong>生态丰富</strong>：开源社区已经出现了大量现成的 MCP Server，覆盖文件系统、浏览器、数据库、各类 SaaS 服务等场景。</li>
 </ul>
-<p><img src="./images/mcp.png" alt="MCP"></p>
+<p><img src="/images/mcp.png" alt="MCP"></p>
 <hr>
 <h3 id="skills技能">Skills（技能）</h3>
 <p>除了 Function Calling 和 MCP，Agent 还有一个常见的设计模式叫做 <strong>Skills</strong>（技能）。</p>
@@ -159,7 +159,7 @@
 <p>Skills 通常还包含两个子概念：</p>
 <p><strong>Reference（引用）</strong>：技能文档中可以声明对其他文档的引用。当该技能被激活时，Agent 会自动把被引用文档的内容也一并加载进上下文，为模型提供更完整的参考信息。</p>
 <p><strong>Script（脚本）</strong>：技能文档（或其 Reference）中可以声明需要执行的脚本。Agent 会调用命令执行工具来运行这些脚本，并将执行结果作为上下文信息回传给模型。</p>
-<p><img src="./images/skills.png" alt="Skills"></p>
+<p><img src="/images/skills.png" alt="Skills"></p>
 <hr>
 <h2 id="小结">小结</h2>
 <p>说到底，Agent 的本质就是：<strong>反复调用大语言模型 + 在调用之间穿插执行本地或远程的工具操作</strong>。LLM 负责理解和推理，工具负责与真实世界交互，两者结合才能完成那些复杂的、需要多步骤的任务。没有什么神秘的魔法，理解了这个循环，Agent 的各种架构设计就都说得通了。</p>
