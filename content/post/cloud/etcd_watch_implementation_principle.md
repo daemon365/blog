@@ -13,13 +13,11 @@ categories:
 ---
 
 
-
 ## 介绍
 
 在 etcd 中，watch 是一个非常重要的特性，它可以让客户端监控 etcd 中的 key 或者一组 key，当 key 发生变化时，etcd 会通知客户端。本文将介绍 etcd watch 的实现原理。
 
-
-```BASH
+```bash
 etcdctl watch /test
 # 当 /test 的值发生变化时，会输出如下信息
 PUT
@@ -81,7 +79,7 @@ func (ws *watchServer) Watch(stream pb.Watch_WatchServer) (err error) {
 	}()
 
 	errc := make(chan error, 1)
-	
+
 	go func() {
         // 开启一个 goroutine 处理客户端发送的 watch 请求
 		if rerr := sws.recvLoop(); rerr != nil {
@@ -112,10 +110,9 @@ func (ws *watchServer) Watch(stream pb.Watch_WatchServer) (err error) {
 	sws.close()
 	return err
 }
-
 ```
 
-这里 主要的逻辑是开启两个 goroutine，一个用于处理客户端发送的 watch 请求，另一个用于处理新的 event 然后发送给客户端。
+这里主要的逻辑是开启两个 goroutine，一个用于处理客户端发送的 watch 请求（`recvLoop`），另一个用于将新的 event 发送给客户端（`sendLoop`）。
 
 ### sendLoop
 
@@ -131,7 +128,7 @@ func (sws *serverWatchStream) sendLoop() {
 
 	defer func() {
 		progressTicker.Stop()
-		// 清空chan ，清理待处理 event
+		// 清空 chan，清理待处理 event
 		for ws := range sws.watchStream.Chan() {
 			mvcc.ReportEventReceived(len(ws.Events))
 		}
@@ -146,7 +143,7 @@ func (sws *serverWatchStream) sendLoop() {
 		select {
 		case wresp, ok := <-sws.watchStream.Chan():
             // 从 watchStream.Chan() 中获取 event
-            // 然后发送给客户端 
+            // 然后发送给客户端
 			if !ok {
 				return
 			}
@@ -219,7 +216,7 @@ func (sws *serverWatchStream) sendLoop() {
 			sws.mu.Unlock()
 
 		case c, ok := <-sws.ctrlStream:
-            // 处理客户端发送的 watch 请求
+            // 处理控制响应（watcher 创建确认 / 取消确认），发送给客户端
 			if !ok {
 				return
 			}
@@ -276,15 +273,14 @@ func (sws *serverWatchStream) sendLoop() {
 		}
 	}
 }
-
 ```
 
-这里使用了 for select 循环：
-1. 从 watchStream.Chan() 中获取 event 然后发送给客户端。
-2. 处理客户端发送的 watch 请求。
-3. dispatch progress 事件。
-4. 处理结束。
+这里使用了 for-select 循环，依次处理四类事件：
 
+1. 从 `watchStream.Chan()` 中获取存储层推来的 event，然后发送给客户端。
+2. 从 `ctrlStream` 中获取控制响应（watcher 创建确认 / 取消确认），发送给客户端。注意这里处理的是 `recvLoop` 写入 `ctrlStream` 的控制消息，而不是客户端的原始请求。
+3. 定时 dispatch progress 事件。
+4. 监听 `closec`，stream 关闭时退出。
 
 ### recvLoop
 
@@ -426,60 +422,57 @@ func (sws *serverWatchStream) recvLoop() error {
 }
 ```
 
-
-这里主要处理客户端发送的 watch 请求，然后发送给 ctrlStream。sendLoop 会从 ctrlStream 中获取 event 然后发送给客户端。
-
+`recvLoop` 负责接收客户端发来的所有 watch 请求，处理完成后将控制响应（Created / Canceled）写入 `ctrlStream` channel。`sendLoop` 会从 `ctrlStream` 中取出这些控制响应，发送给客户端。注意 `ctrlStream` 传递的是控制确认消息，而不是数据事件（数据事件走 `watchStream.Chan()`）。
 
 ## WatchStream
 
-这个 inferface 才是处理 watch 的主要逻辑
-
+这个 interface 是连接 gRPC 层与底层存储的桥梁，负责管理一个 stream 连接下所有 watcher 的生命周期。
 
 ```go
-// WatchStream 是一个接口，定义了一个流式处理watch请求的机制
+// WatchStream 是一个接口，定义了一个流式处理 watch 请求的机制
 type WatchStream interface {
 	// Watch 创建一个观察者。观察者会监听在给定的键或范围 [key, end) 上发生的事件或已发生的事件。
 	//
 	// 整个事件历史都可以被观察到，除非被压缩。
-	// 如果 "startRev" <= 0，watch 将观察在当前修订版本之后的事件。
+	// 如果 "startRev" <= 0，watch 将观察当前修订版本之后的事件。
 	//
-	// 返回的 "id" 是这个观察者的ID。它作为 WatchID 出现在通过 stream 通道发送到创建的观察者的事件中。
+	// 返回的 "id" 是这个观察者的 ID。它作为 WatchID 出现在通过 stream 通道发送到创建的观察者的事件中。
 	// 当 WatchID 不等于 AutoWatchID 时，使用指定的 WatchID，否则返回自动生成的 WatchID。
 	Watch(id WatchID, key, end []byte, startRev int64, fcs ...FilterFunc) (WatchID, error)
 
-	// Chan 返回一个通道。所有的watch响应将被发送到这个返回的通道。
+	// Chan 返回一个通道。所有的 watch 响应将被发送到这个返回的通道。
 	Chan() <-chan WatchResponse
 
-	// RequestProgress 请求给定ID的观察者的进度。响应只有在观察者当前同步时才会被发送。
+	// RequestProgress 请求给定 ID 的观察者的进度。响应只有在观察者当前同步时才会被发送。
 	// 响应将通过与此流关联的 WatchResponse 通道发送，以确保正确的顺序。
 	// 响应不包含事件。响应中的修订版本是观察者自同步以来的进度。
 	RequestProgress(id WatchID)
 
 	// RequestProgressAll 请求所有共享此流的观察者的进度通知。
-	// 如果所有观察者都已同步，将向此流的任意观察者发送带有watch ID -1的进度通知，并返回 true。
+	// 如果所有观察者都已同步，将向此流的任意观察者发送带有 watch ID -1 的进度通知，并返回 true。
 	RequestProgressAll() bool
 
-	// Cancel 通过给定ID取消观察者。如果观察者不存在，将返回错误。
+	// Cancel 通过给定 ID 取消观察者。如果观察者不存在，将返回错误。
 	Cancel(id WatchID) error
 
 	// Close 关闭通道并释放所有相关资源。
 	Close()
 
-	// Rev 返回流上观察到的KV的当前修订版本。
+	// Rev 返回流上观察到的 KV 的当前修订版本。
 	Rev() int64
 }
 
-// WatchResponse 表示一个watch操作的响应。
+// WatchResponse 表示一个 watch 操作的响应。
 type WatchResponse struct {
-	// WatchID 是发送此响应的观察者的ID。
+	// WatchID 是发送此响应的观察者的 ID。
 	WatchID WatchID
 
 	// Events 包含所有需要发送的事件。
 	Events []mvccpb.Event
 
-	// Revision 是创建watch响应时KV的修订版本。
-	// 对于正常响应，修订版本应该与Events中最后一个修改的修订版本相同。
-	// 对于延迟响应的未同步观察者，修订版本大于Events中最后一个修改的修订版本。
+	// Revision 是创建 watch 响应时 KV 的修订版本。
+	// 对于正常响应，修订版本应该与 Events 中最后一个修改的修订版本相同。
+	// 对于延迟响应的未同步观察者，修订版本大于 Events 中最后一个修改的修订版本。
 	Revision int64
 
 	// CompactRevision 在观察者由于压缩而被取消时设置。
@@ -489,27 +482,27 @@ type WatchResponse struct {
 // 实现了 WatchStream
 // watchStream 包含共享一个流通道发送被观察事件和其他控制事件的观察者集合。
 type watchStream struct {
-	// 可观察对象（例如KV存储）
+	// 可观察对象（例如 KV 存储）
 	watchable watchable
-	// 用于发送watch响应的通道
+	// 用于发送 watch 响应的通道
 	ch        chan WatchResponse
 
 	// 互斥锁，保护以下字段
-	mu sync.Mutex 
-	// nextID 是为此流中下一个新观察者预分配的ID
+	mu sync.Mutex
+	// nextID 是为此流中下一个新观察者预分配的 ID
 	nextID   WatchID
 	// 标志流是否已关闭
 	closed   bool
 	// 取消函数的映射，用于取消特定的观察者
 	cancels  map[WatchID]cancelFunc
-	// 观察者的映射，根据观察者ID索引
+	// 观察者的映射，根据观察者 ID 索引
 	watchers map[WatchID]*watcher
 }
 
 // Watch 在流中创建一个新的观察者并返回其 WatchID。
 func (ws *watchStream) Watch(id WatchID, key, end []byte, startRev int64, fcs ...FilterFunc) (WatchID, error) {
 	// 防止键 >= 结束键（按字典顺序）的错误范围
-	// 带有 'WithFromKey' 的watch请求具有空字节范围结束
+	// 带有 'WithFromKey' 的 watch 请求具有空字节范围结束
 	if len(end) != 0 && bytes.Compare(key, end) != -1 {
 		return -1, ErrEmptyWatcherRange
 	}
@@ -541,11 +534,13 @@ func (ws *watchStream) Watch(id WatchID, key, end []byte, startRev int64, fcs ..
 	ws.watchers[id] = w
 	return id, nil
 }
-// Chan 返回用于接收watch响应的通道。
+
+// Chan 返回用于接收 watch 响应的通道。
 func (ws *watchStream) Chan() <-chan WatchResponse {
 	return ws.ch
 }
-// Cancel 取消具有给定ID的观察者。
+
+// Cancel 取消具有给定 ID 的观察者。
 func (ws *watchStream) Cancel(id WatchID) error {
 	// 获取互斥锁
 	ws.mu.Lock()
@@ -562,7 +557,7 @@ func (ws *watchStream) Cancel(id WatchID) error {
 
 	// 获取互斥锁
 	ws.mu.Lock()
-	// 在取消之前不删除观察者，以确保 Close() 调用时等待取消
+	// 在取消之前不删除观察者，以确保 Close() 调用时等待取消完成
 	if ww := ws.watchers[id]; ww == w {
 		delete(ws.cancels, id)
 		delete(ws.watchers, id)
@@ -571,6 +566,7 @@ func (ws *watchStream) Cancel(id WatchID) error {
 
 	return nil
 }
+
 // Close 关闭通道并释放所有相关资源。
 func (ws *watchStream) Close() {
 	// 获取互斥锁
@@ -586,14 +582,16 @@ func (ws *watchStream) Close() {
 	close(ws.ch)
 	watchStreamGauge.Dec()
 }
-// Rev 返回流上观察到的KV的当前修订版本。
+
+// Rev 返回流上观察到的 KV 的当前修订版本。
 func (ws *watchStream) Rev() int64 {
 	// 获取互斥锁
 	ws.mu.Lock()
 	defer ws.mu.Unlock()
 	return ws.watchable.rev()
 }
-// RequestProgress 请求给定ID的观察者的进度。
+
+// RequestProgress 请求给定 ID 的观察者的进度。
 func (ws *watchStream) RequestProgress(id WatchID) {
 	// 获取互斥锁
 	ws.mu.Lock()
@@ -606,6 +604,7 @@ func (ws *watchStream) RequestProgress(id WatchID) {
 	// 请求进度
 	ws.watchable.progress(w)
 }
+
 // RequestProgressAll 请求所有观察者的进度通知。
 func (ws *watchStream) RequestProgressAll() bool {
 	// 获取互斥锁
@@ -615,39 +614,39 @@ func (ws *watchStream) RequestProgressAll() bool {
 }
 ```
 
-1. Watch 方法：创建一个新的观察者，如果指定的范围不正确或观察者ID重复，则返回错误。否则，创建观察者并保存取消函数和观察者实例。
-2. Chan 方法：返回用于接收watch响应的通道。
-3. Cancel 方法：取消给定ID的观察者，删除相关的取消函数和观察者实例。
-4. Close 方法：关闭所有观察者并释放资源。
-5. Rev 方法：返回当前观察到的KV修订版本。
-6. RequestProgress 方法：请求特定观察者的进度。
-7. RequestProgressAll 方法：请求所有观察者的进度通知。
+1. **Watch 方法**：创建一个新的观察者，如果指定的范围不正确或观察者 ID 重复，则返回错误。否则，创建观察者并保存取消函数和观察者实例。
+2. **Chan 方法**：返回用于接收 watch 响应的通道。
+3. **Cancel 方法**：取消给定 ID 的观察者，删除相关的取消函数和观察者实例。
+4. **Close 方法**：关闭所有观察者并释放资源。
+5. **Rev 方法**：返回当前观察到的 KV 修订版本。
+6. **RequestProgress 方法**：请求特定观察者的进度。
+7. **RequestProgressAll 方法**：请求所有观察者的进度通知。
 
-可以可到 当调用 Watch 的时候 每个 watchId 都会调用 `watchable.watch` 并把自己 ch 放入进去
+可以看到，当调用 `Watch` 的时候，每个 watchId 都会调用 `watchable.watch` 并把自己的 `ch` 传入进去，使得所有 watcher 的事件都推送到同一个 channel 中统一消费。
 
 ## watchable
 
+![watchable 架构图](/images/ad802824-86e0-42a7-b84d-d2dfe2076620.png)
 
-![](/images/ad802824-86e0-42a7-b84d-d2dfe2076620.png)
+`watchableStore` 才是 watch 机制真正的事件引擎，它实现了 `watchable` 接口，维护了 synced、unsynced、victims 三组 watcher，并通过两个后台 goroutine 持续驱动事件推送。
 
 ```go
 // watchable 接口定义了可观察对象的行为
 type watchable interface {
-    // watch 创建一个新的观察者，用于监听指定键或范围[startRev, end)上的事件。
+    // watch 创建一个新的观察者，监听键范围 [key, end) 内从 startRev 开始的事件。
     // 返回观察者指针和取消函数。
     watch(key, end []byte, startRev int64, id WatchID, ch chan<- WatchResponse, fcs ...FilterFunc) (*watcher, cancelFunc)
-    
+
     // progress 通知特定观察者当前的进度。
     progress(w *watcher)
-    
+
     // progressAll 通知所有观察者当前的进度。
     // 如果所有观察者都已同步，则返回 true。
     progressAll(watchers map[WatchID]*watcher) bool
-    
+
     // rev 返回当前观察到的修订版本。
     rev() int64
 }
-
 
 // watchableStore 是一个实现了 watchable 接口的结构体，代表一个可观察的存储
 type watchableStore struct {
@@ -690,7 +689,9 @@ func (s *watchableStore) watch(key, end []byte, startRev int64, id WatchID, ch c
 	s.mu.Lock()
 	// 锁定 store 的读写锁用于获取当前修订版本
 	s.revMu.RLock()
-	// 判断观察者是否与当前存储修订版本同步
+	// 判断观察者是否与当前存储修订版本同步：
+	// startRev == 0 表示从当前版本开始监听（无需追历史）；
+	// startRev > currentRev 表示指定了一个未来版本，同样直接进入 synced 等待。
 	synced := startRev > s.store.currentRev || startRev == 0
 	if synced {
 		// 如果同步，设置最小修订版本为当前修订版本的下一个版本
@@ -701,7 +702,7 @@ func (s *watchableStore) watch(key, end []byte, startRev int64, id WatchID, ch c
 		// 将观察者添加到同步观察者组中
 		s.synced.add(wa)
 	} else {
-		// 如果未同步，增加慢速观察者计数器
+		// 如果未同步（startRev < currentRev），需要追赶历史事件，增加慢速观察者计数器
 		slowWatcherGauge.Inc()
 		// 将观察者添加到未同步观察者组中
 		s.unsynced.add(wa)
@@ -749,7 +750,7 @@ func newWatchableStore(lg *zap.Logger, b backend.Backend, le lease.Lessor, cfg S
 ### syncWatchersLoop
 
 ```go
-// syncWatchersLoop 每100毫秒同步一次unsynced集合中的观察者。
+// syncWatchersLoop 每100毫秒同步一次 unsynced 集合中的观察者。
 func (s *watchableStore) syncWatchersLoop() {
 	defer s.wg.Done()
 
@@ -792,7 +793,8 @@ func (s *watchableStore) syncWatchersLoop() {
 // syncWatchers 通过以下步骤同步未同步的观察者：
 //  1. 从未同步观察者组中选择一组观察者
 //  2. 迭代该组以获取最小修订版本并移除压缩的观察者
-//  3. 使用最小修订版本获取所有键值对，并将这些事件发送给观察者
+//  3. 从 BoltDB 中读取修订版本范围 [minRev, curRev+1) 内的所有键值对，
+//     生成事件并发送给对应的观察者
 //  4. 从未同步组中移除已同步的观察者，并移动到同步组中
 func (s *watchableStore) syncWatchers() int {
 	// 锁定
@@ -818,14 +820,14 @@ func (s *watchableStore) syncWatchers() int {
 	minBytes = RevToBytes(Revision{Main: minRev}, minBytes)
 	maxBytes = RevToBytes(Revision{Main: curRev + 1}, maxBytes)
 
-	// UnsafeRange 返回键和值。在boltdb中，键是修订版本，值是实际的键值对。
+	// UnsafeRange 返回键和值。在 boltdb 中，键是修订版本，值是实际的键值对。
 	tx := s.store.b.ReadTx()
 	tx.RLock()
 	revs, vs := tx.UnsafeRange(schema.Key, minBytes, maxBytes, 0)
 	evs := kvsToEvents(s.store.lg, wg, revs, vs)
-	// 必须在kvsToEvents之后解锁，因为vs（来自boltdb内存）不是深拷贝。
-	// 我们只能在Unmarshal之后解锁，这将进行深拷贝。
-	// 否则我们将在boltdb重新mmap期间触发SIGSEGV。
+	// 必须在 kvsToEvents 之后解锁，因为 vs（来自 boltdb 内存）不是深拷贝。
+	// 我们只能在 Unmarshal 之后解锁，这将进行深拷贝。
+	// 否则我们将在 boltdb 重新 mmap 期间触发 SIGSEGV。
 	tx.RUnlock()
 
 	// 创建一个新的观察者批次
@@ -840,7 +842,7 @@ func (s *watchableStore) syncWatchers() int {
 
 		eb, ok := wb[w]
 		if !ok {
-			// 将未通知的观察者移至同步
+			// 将未通知的观察者移至同步组
 			s.synced.add(w)
 			s.unsynced.delete(w)
 			continue
@@ -882,9 +884,7 @@ func (s *watchableStore) syncWatchers() int {
 }
 ```
 
-
 #### watcher & send
-
 
 ```go
 type watcher struct {
@@ -949,7 +949,6 @@ func (w *watcher) send(wr WatchResponse) bool {
 		return false
 	}
 }
-
 ```
 
 ### syncVictimsLoop
@@ -1016,7 +1015,7 @@ func (s *watchableStore) moveVictims() (moved int) {
 		curRev := s.store.currentRev
 		for w, eb := range wb {
 			if newVictim != nil && newVictim[w] != nil {
-				// 无法发送watch响应，仍然是受害者
+				// 无法发送 watch 响应，仍然是受害者
 				continue
 			}
 			w.victim = false
@@ -1044,6 +1043,7 @@ func (s *watchableStore) moveVictims() (moved int) {
 	return moved
 }
 ```
+
 ## Reference
 
-- https://blog.csdn.net/qq_24433609/article/details/120653747
+- <https://blog.csdn.net/qq_24433609/article/details/120653747>
