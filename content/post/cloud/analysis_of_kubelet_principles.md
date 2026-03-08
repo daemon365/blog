@@ -51,7 +51,7 @@ kubelet 的架构由 N 多的组件组成，下面简单介绍下比较重要的
 
 ## 流程
 
-首先在 `cmd/kubelet` 中使用传入命令行参数的方式初始化配置，然后创建 `pkg/kubelet` 中的 Bootstrap inferface, kubelet struct 实现了这个接口， 然后调用 `Run` 方法启动 kubelet。
+首先在 `cmd/kubelet` 中使用传入命令行参数的方式初始化配置，然后创建 `pkg/kubelet` 中的 Bootstrap interface, kubelet struct 实现了这个接口， 然后调用 `Run` 方法启动 kubelet。
 
 ```GO
 func startKubelet(k kubelet.Bootstrap, podCfg *config.PodConfig, kubeCfg *kubeletconfiginternal.KubeletConfiguration, kubeDeps *kubelet.Dependencies, enableServer bool) {

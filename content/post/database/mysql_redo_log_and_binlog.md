@@ -1,5 +1,5 @@
 ---
-title: msyql redo log和binlog
+title: mysql redo log和binlog
 date: '2020-04-01T00:00:00+08:00'
 tags:
 - mysql

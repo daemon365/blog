@@ -85,7 +85,7 @@ systemctl start containerd
 
 这里使用 `nerdctl`工具测试
 
-`nerdctl` 是 containerd 房官方提供的加强版命令行工具 [https://github.com/containerd/nerdctl](https://github.com/containerd/nerdctl)
+`nerdctl` 是 containerd 官方提供的加强版命令行工具 [https://github.com/containerd/nerdctl](https://github.com/containerd/nerdctl)
 
 下载方式
 
