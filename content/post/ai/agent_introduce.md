@@ -147,7 +147,7 @@ MCP 的整体架构由三个部分组成：
 - **跨 Agent 复用**：一个 MCP Server 可以同时服务多个不同的 Agent。
 - **生态丰富**：开源社区已经出现了大量现成的 MCP Server，覆盖文件系统、浏览器、数据库、各类 SaaS 服务等场景。
 
-![MCP](./images/mcp.png)
+![MCP](/images/mcp.png)
 
 ---
 
@@ -167,7 +167,7 @@ Skills 通常还包含两个子概念：
 
 **Script（脚本）**：技能文档（或其 Reference）中可以声明需要执行的脚本。Agent 会调用命令执行工具来运行这些脚本，并将执行结果作为上下文信息回传给模型。
 
-![Skills](./images/skills.png)
+![Skills](/images/skills.png)
 
 ---
 
