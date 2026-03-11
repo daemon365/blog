@@ -31,7 +31,7 @@ categories:
 
 ## CNI 插件调用流程
 
-![cni-call](images/cni-call.png)
+![cni-call](/images/cni-call.png)
 
 ### 1. kubelet 触发 Pod 创建
 
@@ -270,5 +270,5 @@ func (args *Args) AsEnv() []string {
 
 ### 调用链路总结
 
-![cni-call-code](images/cni-call-code.png)
+![cni-call-code](/images/cni-call-code.png)
 
