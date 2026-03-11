@@ -5,7 +5,15 @@
 分类</a></li><li><a href=/tags><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83.0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
 标签</a></li><li><button class=search-trigger aria-label=Search>
 <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-搜索</button></li></ul></nav></div></div></header><main class=main-content><div class=home-container><div class=container><section class=recent-posts><div class=posts-list><article class=post-card><div class=post-card-content><h3 class=post-title><a href=/post/cloud/etcd_mvcc_storage_structure_and_process/>etcd MVCC 存储结构及流程</a></h3><div class=post-meta><time datetime=2024-05-26><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+搜索</button></li></ul></nav></div></div></header><main class=main-content><div class=home-container><div class=container><section class=recent-posts><div class=posts-list><article class=post-card><div class=post-card-content><h3 class=post-title><a href=/post/cloud/etcd_watch_implementation_principle/>etcd watch 实现原理</a></h3><div class=post-meta><time datetime=2024-06-10><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+2024-06-10
+</time><span class=post-category><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+cloud
+</span><span class=reading-time><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+13 min read</span></div><p class=post-summary>介绍 在 etcd 中，watch 是一个非常重要的特性，它可以让客户端监控 etcd 中的 key 或者一组 key，当 key 发生变化时，etcd 会通知客户端。本文将介绍 etcd watch 的实现原理。
+etcdctl watch /test # 当 /test 的值发生变化时，会输出如 …</p><div class=post-tags><a href=/tags/boltdb class=tag>boltdb</a>
+<a href=/tags/etcd class=tag>etcd</a>
+<a href=/tags/golang class=tag>golang</a></div></div></article><article class=post-card><div class=post-card-content><h3 class=post-title><a href=/post/cloud/etcd_mvcc_storage_structure_and_process/>etcd MVCC 存储结构及流程</a></h3><div class=post-meta><time datetime=2024-05-26><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
 2024-05-26
 </time><span class=post-category><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
 cloud
@@ -70,14 +78,7 @@ cloud
 </span><span class=reading-time><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
 8 min read</span></div><p class=post-summary>启动流程 containerd 作为一个 api 服务，提供了一系列的接口供外部调用，比如创建容器、删除容器、创建镜像、删除镜像等等。使用 docker 和 ctr 等工具，都是通过调用 containerd 的 api 来实现的。 kubelet 通过 cri 调用 containerd 和这些不 …</p><div class=post-tags><a href=/tags/docker class=tag>docker</a>
 <a href=/tags/containerd class=tag>containerd</a>
-<a href=/tags/runc class=tag>runc</a></div></div></article><article class=post-card><div class=post-card-content><h3 class=post-title><a href=/post/cloud/kubernetes_container_device_interface_cdi/>kubernetes container device interface (CDI)</a></h3><div class=post-meta><time datetime=2023-11-19><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-2023-11-19
-</time><span class=post-category><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
-cloud
-</span><span class=reading-time><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-9 min read</span></div><p class=post-summary>CDI 是什么？ Container Device Interface (CDI) 是一个提议的标准，它定义了如何在容器运行时环境中向容器提供设备。这个提议的目的是使得设备供应商能够更容易地将其设备集成到 Kubernetes 集群中，而不必修改 Kubernetes 核心代码。
-CDI 插件通常负 …</p><div class=post-tags><a href=/tags/cdi class=tag>cdi</a>
-<a href=/tags/kubernetes class=tag>kubernetes</a></div></div></article></div><nav class=pagination><a href=/ class="pagination-nav pagination-prev"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></a><div class=pagination-numbers><a href=/ class=pagination-number>1</a>
+<a href=/tags/runc class=tag>runc</a></div></div></article></div><nav class=pagination><a href=/ class="pagination-nav pagination-prev"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></a><div class=pagination-numbers><a href=/ class=pagination-number>1</a>
 <span class="pagination-number active">2</span>
 <a href=/page/3/ class=pagination-number>3</a>
 <span class=pagination-ellipsis>...</span>
