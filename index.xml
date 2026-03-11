@@ -30,7 +30,7 @@
 &lt;/table&gt;
 &lt;hr&gt;
 &lt;h2 id="cni-插件调用流程"&gt;CNI 插件调用流程&lt;/h2&gt;
-&lt;p&gt;&lt;img src="images/cni-call.png" alt="cni-call"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://daemon365.dev/images/cni-call.png" alt="cni-call"&gt;&lt;/p&gt;
 &lt;h3 id="1-kubelet-触发-pod-创建"&gt;1. kubelet 触发 Pod 创建&lt;/h3&gt;
 &lt;p&gt;kubelet 检测到有新的 Pod 需要调度，随即通过 CRI（Container Runtime Interface）调用 containerd 的 API，请求创建对应的 Sandbox 容器（即 pause 容器）。&lt;/p&gt;
 &lt;h3 id="2-containerd-创建-network-namespace"&gt;2. containerd 创建 Network Namespace&lt;/h3&gt;
@@ -68,7 +68,7 @@
 </table>
 <hr>
 <h2 id="cni-插件调用流程">CNI 插件调用流程</h2>
-<p><img src="images/cni-call.png" alt="cni-call"></p>
+<p><img src="/images/cni-call.png" alt="cni-call"></p>
 <h3 id="1-kubelet-触发-pod-创建">1. kubelet 触发 Pod 创建</h3>
 <p>kubelet 检测到有新的 Pod 需要调度，随即通过 CRI（Container Runtime Interface）调用 containerd 的 API，请求创建对应的 Sandbox 容器（即 pause 容器）。</p>
 <h3 id="2-containerd-创建-network-namespace">2. containerd 创建 Network Namespace</h3>
@@ -259,7 +259,7 @@ CNI_PATH=/opt/cni/bin
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>
 </span></span></code></pre></div><hr>
 <h3 id="调用链路总结">调用链路总结</h3>
-<p><img src="images/cni-call-code.png" alt="cni-call-code"></p>
+<p><img src="/images/cni-call-code.png" alt="cni-call-code"></p>
 ]]></content:encoded><category>cloud</category><category>kubernetes</category><category>cni</category><category>calico</category><category>containerd</category><category>network</category></item><item><title>AI 以及 Agent 介绍</title><link>https://daemon365.dev/post/ai/agent_introduce/</link><pubDate>Sun, 08 Mar 2026 00:00:00 +0000</pubDate><guid>https://daemon365.dev/post/ai/agent_introduce/</guid><description>&lt;h2 id="大语言模型llm"&gt;大语言模型（LLM）&lt;/h2&gt;
 &lt;p&gt;大语言模型（Large Language Model，LLM）是指通过海量文本数据训练、具有数十亿乃至数千亿参数的神经网络模型，能够理解和生成自然语言文本。&lt;/p&gt;
 &lt;p&gt;有一点很关键：&lt;strong&gt;LLM 本身是无状态的&lt;/strong&gt;。每次调用都是一次全新的推理，模型并不会自动记住你上一次说了什么。这就是为什么我们每次对话都需要把历史记录一并带上——把&amp;quot;记忆&amp;quot;作为输入传给模型，它才能结合上下文给出连贯的回复。&lt;/p&gt;
