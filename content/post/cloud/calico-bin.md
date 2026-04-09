@@ -1,5 +1,5 @@
 ---
-title: "Calico 二进制执行流程解析"
+title: "从源码看 Calico 如何为 Pod 配网"
 date: 2026-04-08T18:41:01+08:00
 tags:
 - kubernetes
@@ -12,11 +12,9 @@ categories:
 - cloud
 ---
 
-# Calico CNI 二进制执行流程分析
-
 ## 简介
 
-在 [Kubernetes CNI 插件调用流程](https://daemon365.dev/post/cloud/cni-call/) 中，介绍了 cni 是怎么通过 config 文件调用 cni 的二进制命令配置网络的，本文将以 calico cni 插件为例，分析一下 calico 二进制执行流程。
+在 [Kubernetes CNI 插件调用流程](https://daemon365.dev/post/cloud/cni-call/) 中，介绍了 CNI 是怎么通过 config 文件调用二进制插件配置网络的。本文就顺着这条线，聚焦 Calico CNI 插件本身，看看一个 Pod 的网络是怎么一步步配起来的。
 
 本文基于 calico v3.31.4 版本进行分析，其他版本可能会有一些差异。
 
@@ -32,7 +30,7 @@ categories:
 
 ### 入口：main 函数
 
-calico 把多个 cni 插件打进了同一个二进制，通过判断 `os.Args[0]`（也就是二进制文件本身的文件名）来决定走哪个插件逻辑。这是一个很常见的多路复用技巧，比如 busybox 也是这么玩的——同一个二进制，软链接不同的名字，行为就不一样。
+calico 把多个 CNI 插件打进了同一个二进制，通过判断 `os.Args[0]`（也就是二进制文件本身的文件名）来决定走哪个插件逻辑。这里用了典型的多路复用二进制模式：同一个可执行文件，通过不同的调用名分流到不同插件逻辑，busybox 也采用过类似思路。
 
 ```go
 func main() {
@@ -48,7 +46,7 @@ func main() {
 }
 ```
 
-`plugin.Main` 里注册了三个 CNI 标准回调：Add、Del 和 Check。CNI 规范要求插件实现这三个操作，kubelet 在创建/删除 Pod 网络时会分别调用对应的操作。
+`plugin.Main` 里注册了 CNI 插件处理的几个标准入口，这里 Calico 注册了 Add、Del 和 Check。对 Kubernetes 场景来说，最核心的是 Add/Del，也就是创建和清理 Pod 网络时会走到的入口。
 
 ```go
 func Main(version string) {
@@ -91,16 +89,16 @@ func cmdAdd(args *skel.CmdArgs) (err error) {
 
 ### CmdAddK8s：K8s 场景下的网络配置
 
-这个函数负责处理 k8s Pod 的网络配置，逻辑上分两大块：
+这个函数负责处理 K8s Pod 的网络配置。把代码流程压缩一下，基本可以分成两步：
 
-1. **IP 地址分配**：根据 Pod 上是否有特定 annotation 来决定走哪种 IPAM 策略
-2. **网络配置**：调用 `DoNetworking` 把 veth pair、路由等都配置好
+1. **先决定 Pod 用哪个 IP，以及这个 IP 的生命周期由谁管理**
+2. **再把这个结果交给 dataplane 层，完成 veth、地址、路由等实际配置**
 
-关于 IP 分配，calico 提供了三种模式，通过 annotation 来区分：
+第一步里，Calico 常见的分支主要有三种：
 
-- **默认模式**（没有 annotation）：走 calico 自带的 IPAM，由 calico-ipam 来分配
-- **ipAddrsNoIpam**：完全绕过 IPAM，直接用 annotation 里指定的 IP，适合外部有独立 IPAM 系统的场景
-- **ipAddrs**：用 annotation 里指定的 IP，但生命周期仍然由 calico IPAM 托管
+- **默认路径**：没有相关 annotation，调用 Calico IPAM 分配地址
+- **ipAddrsNoIpam**：直接使用 annotation 里给定的地址，不经过当前配置的 IPAM
+- **ipAddrs**：地址由 annotation 指定，但仍纳入 Calico IPAM 的生命周期管理
 
 ```go
 func CmdAddK8s(ctx context.Context, args *skel.CmdArgs, conf types.NetConf, epIDs utils.WEPIdentifiers, calicoClient calicoclient.Interface, endpoint *libapi.WorkloadEndpoint) (*cniv1.Result, error) {
@@ -151,7 +149,7 @@ func CmdAddK8s(ctx context.Context, args *skel.CmdArgs, conf types.NetConf, epID
 
 ### DoNetworking & DoWorkloadNetnsSetUp：配置 veth 和路由
 
-这一层是真正动手操作网络的地方，核心是创建 veth pair，并在容器 netns 内配置 IP 和路由。
+到这一层，流程就从“决定配置什么”进入“实际修改 netns、链路、地址和路由”的阶段了。核心动作是创建 veth pair，并在容器 netns 内把地址和路由配好。
 
 veth pair 是 Linux 内核提供的一种虚拟网络设备，两端成对出现，数据从一端进，从另一端出。calico 用它来打通容器内部和宿主机之间的网络通路：一端在容器 netns 里（通常叫 `eth0`），另一端在宿主机的 root netns 里（名字类似 `cali1a2b3c4d`）。
 
@@ -276,6 +274,8 @@ func (d *linuxDataplane) DoWorkloadNetnsSetUp(
 }
 ```
 
+这里有一个很容易让人第一次看到时困惑的点：容器内地址会被改成 `/32`（IPv6 时是 `/128`）。这意味着它不是传统二层子网里“和网关同网段”的配置，而更像一个点到点、显式路由模型。容器真正可达的下一跳不是“同网段网关地址”，而是通过一条 `scope link` 路由，把 `169.254.1.1` 指到当前接口。
+
 ---
 
 ### 为什么路由网关是 169.254.1.1？
@@ -290,12 +290,66 @@ default via 169.254.1.1 dev eth0
 
 这里有几个关键点：
 
-1. **169.254.1.1 是一个虚假的网关地址**。这个 IP 根本不存在于任何真实的网络接口上，它只是一个"占位符"。
-2. **所有流量都指向这个虚假网关**。容器内部的默认路由和其他路由都 via 169.254.1.1，然后 169.254.1.1 本身是 scope link，意思是通过 eth0 直连可达，不需要再走下一跳。
-3. **宿主机上的 veth 开启了 proxy ARP**。当容器发 ARP 请求问 169.254.1.1 是谁的 MAC 时，宿主机上的 caliXXXX 接口会用自己的 MAC 来应答（proxy arp）。这样容器就把数据包发给了 veth pair 的另一端，也就是宿主机。
-4. **宿主机上的路由表接管后续转发**。数据包到了宿主机之后，由宿主机的路由表决定下一步怎么走，是直接投递还是通过 BGP 路由到其他节点。
+1. **169.254.1.1 不是宿主机真实配置在接口上的网关地址**。它更准确地说，是 Calico 在容器侧使用的一个链路本地网关地址。
+2. **容器里的默认路由和业务路由都会指向它**。同时 `169.254.1.1` 自身又通过 `scope link` 路由绑定在 `eth0` 上，所以从容器视角看，它就是当前接口可达的下一跳。
+3. **宿主机侧不会真的把这个 IP 配到 veth 上**。相反，host veth 会开启 `proxy_arp`，当容器对 `169.254.1.1` 发起 ARP 查询时，由宿主机侧接口代为响应。
+4. **proxy ARP 的使用范围是收敛的**。Calico 不是让容器把所有目标地址都依赖 proxy ARP 解析；这里主要是为了让容器把 `169.254.1.1` 视作可达网关。
+5. **后续真正的转发发生在宿主机路由表里**。数据包一旦进入 host 侧 veth，就由宿主机根据路由、策略和后续 dataplane 机制继续处理。
 
-这样设计的好处是：**不需要在容器里配置任何真实的网关 IP**，每个节点的 veth 都用同一个虚假地址，路由配置非常统一，也不会跟实际的网络地址产生冲突。
+这种设计的好处是：容器侧不需要感知宿主机上任何“真实网关 IP”，接口配置可以保持统一，而转发决策则统一收敛到宿主机。
+
+---
+
+## 如何在节点上验证这条流程
+
+前面的内容如果只停留在源码层面，读起来还是容易飘。比较好的方式，是到节点上把几个关键现象对一下。
+
+### 1. 看容器里的路由
+
+```bash
+kubectl exec -it <pod> -- ip r
+```
+
+预期会看到类似结果：
+
+```bash
+default via 169.254.1.1 dev eth0
+169.254.1.1 dev eth0 scope link
+```
+
+这说明容器里的默认流量确实是先交给 `169.254.1.1`，而不是交给一个和 Pod IP 同网段的“传统网关”。
+
+### 2. 看 host 侧 veth 是否开启了 proxy_arp
+
+先在节点上找到和这个 Pod 对应的 host veth，然后查看：
+
+```bash
+sysctl net.ipv4.conf.<host-veth>.proxy_arp
+```
+
+或者：
+
+```bash
+cat /proc/sys/net/ipv4/conf/<host-veth>/proxy_arp
+```
+
+如果值是 `1`，就说明这个接口会替 `169.254.1.1` 响应 ARP。
+
+### 3. 看容器是否把 169.254.1.1 当成邻居
+
+```bash
+kubectl exec -it <pod> -- ip neigh
+```
+
+必要时也可以在节点上抓包，看容器是否真的在查询 `169.254.1.1` 的 ARP，以及最终拿到的是 host veth 的 MAC。
+
+### 4. 看当前节点拿到了哪些 IPAM block
+
+```bash
+calicoctl get ipamblocks -o wide
+```
+
+或者结合节点名过滤相关资源，确认这个节点当前关联了哪些 block、这些 block 是否已经接近分满。
 
 ---
 
@@ -305,12 +359,16 @@ IPAM 部分是另一个二进制（或者同一个二进制但文件名是 `cali
 
 ### 整体结构：Block 是核心
 
-calico IPAM 的设计里有一个很重要的概念叫 **Block**。calico 不是给每个 Pod 单独分配 IP，而是先把大的 IP Pool（比如 `192.168.0.0/16`）切分成一块一块的 Block（默认 `/26`，也就是 64 个 IP），然后把每个 Block 分配给某个节点，节点再从自己的 Block 里给 Pod 分 IP。
+calico IPAM 的设计里有一个很重要的概念叫 **Block**。calico 不是把整个 IP Pool 当成一个平面地址池逐个分配，而是先把大的 IP Pool（比如 `192.168.0.0/16`）切分成一块一块的 Block，再把每个 Block 关联给某个节点，节点随后从自己的 Block 里给 Pod 分 IP。
+
+默认情况下，IPv4 block 大小是 `/26`，也就是每个 block 有 64 个地址。这个默认值并不是随便定的，它本质上是在“每节点可承载的 Pod 数量”和“路由聚合、状态同步的规模”之间做折中。
 
 这样设计的好处是：
 - **减少 API Server 压力**：一个 Block 里 64 个 IP，只需要一次 CRD 操作就能表示
 - **配合 BGP 路由聚合**：节点可以把自己拥有的 Block 作为一条路由在 BGP 里广播，减少路由条目数量
 - **分配效率高**：同一个节点的 IP 通常在同一个 Block 里，不需要全局锁
+
+如果一个节点把当前关联 block 里的地址分完了，Calico 会继续给它申领新的 block；如果受 `MaxBlocksPerHost` 等限制拿不到新的 block，某些情况下就只能从其他节点已关联的 block 中借地址来分配。
 
 ### Block 对应的 CRD
 

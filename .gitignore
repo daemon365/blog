@@ -6,3 +6,5 @@ config/development/
 
 *:Zone.Identifier
 *.Zone.Identifier
+
+.codex
