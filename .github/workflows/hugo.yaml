@@ -3,21 +3,24 @@ name: GitHub Pages
 on:
   push:
     branches:
-      - master  # Set a branch to deploy
+      - master
   pull_request:
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
-  deploy:
+  build:
+    permissions:
+      contents: read
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
-          submodules: true  # Fetch Hugo themes (true OR recursive)
-          fetch-depth: 0    # Fetch all history for .GitInfo and .Lastmod
+          submodules: true
+          fetch-depth: 0
 
       - name: Setup Hugo
         uses: peaceiris/actions-hugo@v3
@@ -28,10 +31,24 @@ jobs:
       - name: Build
         run: hugo --minify
 
-      - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
+      - name: Upload Pages artifact
         if: github.ref == 'refs/heads/master'
+        uses: actions/upload-pages-artifact@v5
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./public
-          cname: daemon365.dev
+          path: ./public
+          include-hidden-files: true
+
+  deploy:
+    if: github.ref == 'refs/heads/master'
+    needs: build
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
