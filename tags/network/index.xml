@@ -495,30 +495,30 @@
 <hr>
 <h2 id="涉及项目">涉及项目</h2>
 <table>
-  <thead>
-      <tr>
-          <th>项目</th>
-          <th>地址</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td>CNI 规范与库</td>
-          <td><a href="https://github.com/containernetworking/cni">https://github.com/containernetworking/cni</a></td>
-      </tr>
-      <tr>
-          <td>containerd</td>
-          <td><a href="https://github.com/containerd/containerd">https://github.com/containerd/containerd</a></td>
-      </tr>
-      <tr>
-          <td>go-cni</td>
-          <td><a href="https://github.com/containerd/go-cni">https://github.com/containerd/go-cni</a></td>
-      </tr>
-      <tr>
-          <td>Kubernetes</td>
-          <td><a href="https://github.com/kubernetes/kubernetes">https://github.com/kubernetes/kubernetes</a></td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>项目</th>
+					<th>地址</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>CNI 规范与库</td>
+					<td><a href="https://github.com/containernetworking/cni">https://github.com/containernetworking/cni</a></td>
+			</tr>
+			<tr>
+					<td>containerd</td>
+					<td><a href="https://github.com/containerd/containerd">https://github.com/containerd/containerd</a></td>
+			</tr>
+			<tr>
+					<td>go-cni</td>
+					<td><a href="https://github.com/containerd/go-cni">https://github.com/containerd/go-cni</a></td>
+			</tr>
+			<tr>
+					<td>Kubernetes</td>
+					<td><a href="https://github.com/kubernetes/kubernetes">https://github.com/kubernetes/kubernetes</a></td>
+			</tr>
+	</tbody>
 </table>
 <hr>
 <h2 id="cni-插件调用流程">CNI 插件调用流程</h2>
@@ -1406,45 +1406,45 @@ HTTPS数据传输流程</p>
 <p>例如：主机172.16.10.10/24访问172.16.10.11/24</p>
 <p>一：首先通过ip地址和子网掩码区分出自己所处的子网</p>
 <table>
-  <thead>
-      <tr>
-          <th>场景</th>
-          <th>数据包地址</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td>同一子网</td>
-          <td>目标主机mac，目标主机ip</td>
-      </tr>
-      <tr>
-          <td>不同子网</td>
-          <td>网关mac，目标主机ip</td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>场景</th>
+					<th>数据包地址</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>同一子网</td>
+					<td>目标主机mac，目标主机ip</td>
+			</tr>
+			<tr>
+					<td>不同子网</td>
+					<td>网关mac，目标主机ip</td>
+			</tr>
+	</tbody>
 </table>
 <p>二：分析172.16.10.10/24与172.16.10.11/24处于同一网络(如果不是同一网络，那么下表中目标ip为172.16.10.1,通过arp获取的是网关的mac)</p>
 <table>
-  <thead>
-      <tr>
-          <th>源mac</th>
-          <th>目标mac</th>
-          <th>源ip</th>
-          <th>目标ip</th>
-          <th>数据部分</th>
-          <th></th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td>发送端主机</td>
-          <td>发送端mac</td>
-          <td>FF:FF:FF:FF:FF:FF</td>
-          <td>172.16.10.10/24</td>
-          <td>172.16.10.11/24</td>
-          <td>数据</td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>源mac</th>
+					<th>目标mac</th>
+					<th>源ip</th>
+					<th>目标ip</th>
+					<th>数据部分</th>
+					<th></th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>发送端主机</td>
+					<td>发送端mac</td>
+					<td>FF:FF:FF:FF:FF:FF</td>
+					<td>172.16.10.10/24</td>
+					<td>172.16.10.11/24</td>
+					<td>数据</td>
+			</tr>
+	</tbody>
 </table>
 <p>三：这个包会以广播的方式在发送端所处的自网内传输，所有主机接收后拆开包，发现目标ip为自己的，就响应，返回自己的mac</p>
 <h3 id="传输层">传输层</h3>
@@ -1455,41 +1455,41 @@ HTTPS数据传输流程</p>
 <p>tcp协议：</p>
 <p>可靠传输，TCP数据包没有长度限制，理论上可以无限长，但是为了保证网络的效率，通常TCP数据包的长度不会超过IP数据包的长度，以确保单个TCP数据包不必再分割。</p>
 <table>
-  <thead>
-      <tr>
-          <th>以太网头</th>
-          <th>ip 头</th>
-          <th>tcp头</th>
-          <th>数据</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td>udp协议：</td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>以太网头</th>
+					<th>ip 头</th>
+					<th>tcp头</th>
+					<th>数据</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td>udp协议：</td>
+			</tr>
+	</tbody>
 </table>
 <p>不可靠传输，”报头”部分一共只有8个字节，总长度不超过65,535字节，正好放进一个IP数据包。</p>
 <table>
-  <thead>
-      <tr>
-          <th>以太网头</th>
-          <th>ip头</th>
-          <th>udp头</th>
-          <th>数据</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>以太网头</th>
+					<th>ip头</th>
+					<th>udp头</th>
+					<th>数据</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+			</tr>
+	</tbody>
 </table>
 <p>tcp报文</p>
 <p><img src="/images/757a5ec0-36e3-4fc2-95f8-bd2afc1a8f20.png" alt=""></p>
@@ -1515,22 +1515,22 @@ HTTPS数据传输流程</p>
 <p>2.动态获取</p>
 <p>通过dhcp获取</p>
 <table>
-  <thead>
-      <tr>
-          <th>以太网头</th>
-          <th>ip头</th>
-          <th>udp头</th>
-          <th>dhcp数据包</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>以太网头</th>
+					<th>ip头</th>
+					<th>udp头</th>
+					<th>dhcp数据包</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+			</tr>
+	</tbody>
 </table>
 <p>（1）最前面的”以太网标头”，设置发出方（本机）的MAC地址和接收方（DHCP服务器）的MAC地址。前者就是本机网卡的MAC地址，后者这时不知道，就填入一个广播地址：FF-FF-FF-FF-FF-FF。</p>
 <p>（2）后面的”IP标头”，设置发出方的IP地址和接收方的IP地址。这时，对于这两者，本机都不知道。于是，发出方的IP地址就设为0.0.0.0，接收方的IP地址设为255.255.255.255。</p>

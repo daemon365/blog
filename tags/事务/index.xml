@@ -573,8 +573,8 @@
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 设置节点分裂时的填充阈值。默认情况下，bucket 将填充至 50%，</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 但如果你知道你的写入工作负载主要是追加操作，提高这个比例可能会有用。</span>
-</span></span><span style="display:flex;"><span>    <span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    // 这个设置不会跨事务持久化，因此每个事务都必须设置它。</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 这个设置不会跨事务持久化，因此每个事务都必须设置它。</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75af00">FillPercent</span> <span style="color:#00a8c8">float64</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>
 </span></span><span style="display:flex;"><span>
@@ -947,8 +947,8 @@ BoltDB 的写操作都是在内存中进行，若事务未 commit 时出错，�
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// Tx 代表数据库上的一个只读或读写事务。</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// 只读事务可用于检索键值和创建光标。</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// 读写事务可以创建和删除桶以及创建和删除键。</span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// 重要：必须在使用完事务后提交或回滚事务。</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// 重要：必须在使用完事务后提交或回滚事务。</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// 只有当没有事务在使用页面时，写入者才能回收这些页面。</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// 长时间运行的读事务可能会导致数据库迅速增长。</span>
 </span></span><span style="display:flex;"><span><span style="color:#00a8c8">type</span> <span style="color:#75af00">Tx</span> <span style="color:#00a8c8">struct</span> <span style="color:#111">{</span>
@@ -963,8 +963,8 @@ BoltDB 的写操作都是在内存中进行，若事务未 commit 时出错，�
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// WriteFlag 指定写相关方法（如 WriteTo()）的标志。</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// Tx 使用指定的标志打开数据库文件以复制数据。</span>
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	// 默认情况下，此标志未设置，适合主要在内存中的工作负载。</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 默认情况下，此标志未设置，适合主要在内存中的工作负载。</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 对于大于可用 RAM 的数据库，可以设置为 syscall.O_DIRECT 来避免淘汰页面缓存。</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">WriteFlag</span> <span style="color:#00a8c8">int</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>
@@ -972,14 +972,14 @@ BoltDB 的写操作都是在内存中进行，若事务未 commit 时出错，�
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// Begin 开始一个新事务。</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// 多个只读事务可以并发使用，但一次只能使用一个写事务。</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// 启动多个写事务会导致调用阻塞，并序列化直到当前写事务完成。</span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// 事务不应该彼此依赖。在同一个goroutine中打开一个读事务和一个写事务可能会导致写入者死锁，</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// 事务不应该彼此依赖。在同一个goroutine中打开一个读事务和一个写事务可能会导致写入者死锁，</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// 因为数据库需要定期重新映射自身以应对增长，并且在读事务打开的时候无法进行。</span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// 如果需要长时间运行的读事务（例如，快照事务），你可能想要将DB.InitialMmapSize设置为足够大的值</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// 如果需要长时间运行的读事务（例如，快照事务），你可能想要将DB.InitialMmapSize设置为足够大的值</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// 以避免写事务的潜在阻塞。</span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// 重要：你必须在完成后关闭只读事务，否则数据库将无法回收旧页面。</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// 重要：你必须在完成后关闭只读事务，否则数据库将无法回收旧页面。</span>
 </span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#111">(</span><span style="color:#75af00">db</span> <span style="color:#f92672">*</span><span style="color:#75af00">DB</span><span style="color:#111">)</span> <span style="color:#75af00">Begin</span><span style="color:#111">(</span><span style="color:#75af00">writable</span> <span style="color:#00a8c8">bool</span><span style="color:#111">)</span> <span style="color:#111">(</span><span style="color:#75af00">t</span> <span style="color:#f92672">*</span><span style="color:#75af00">Tx</span><span style="color:#111">,</span> <span style="color:#75af00">err</span> <span style="color:#00a8c8">error</span><span style="color:#111">)</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">lg</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">db</span><span style="color:#111">.</span><span style="color:#75af00">Logger</span><span style="color:#111">();</span> <span style="color:#75af00">lg</span> <span style="color:#f92672">!=</span> <span style="color:#75af00">discardLogger</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>		<span style="color:#75af00">lg</span><span style="color:#111">.</span><span style="color:#75af00">Debugf</span><span style="color:#111">(</span><span style="color:#d88200">&#34;Starting a new transaction [writable: %t]&#34;</span><span style="color:#111">,</span> <span style="color:#75af00">writable</span><span style="color:#111">)</span>
@@ -1258,8 +1258,8 @@ BoltDB 的写操作都是在内存中进行，若事务未 commit 时出错，�
 </span></span></code></pre></div><h2 id="view--update">View &amp;&amp; Update</h2>
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// View 在管理的只读事务上下文中执行一个函数。</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// 从函数返回的任何错误都会从View()方法返回。</span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// 尝试在函数内手动回滚会导致panic。</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// 尝试在函数内手动回滚会导致panic。</span>
 </span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#111">(</span><span style="color:#75af00">db</span> <span style="color:#f92672">*</span><span style="color:#75af00">DB</span><span style="color:#111">)</span> <span style="color:#75af00">View</span><span style="color:#111">(</span><span style="color:#75af00">fn</span> <span style="color:#00a8c8">func</span><span style="color:#111">(</span><span style="color:#f92672">*</span><span style="color:#75af00">Tx</span><span style="color:#111">)</span> <span style="color:#00a8c8">error</span><span style="color:#111">)</span> <span style="color:#00a8c8">error</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75af00">t</span><span style="color:#111">,</span> <span style="color:#75af00">err</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">db</span><span style="color:#111">.</span><span style="color:#75af00">Begin</span><span style="color:#111">(</span><span style="color:#00a8c8">false</span><span style="color:#111">)</span>  <span style="color:#75715e">// 开始一个只读事务</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">if</span> <span style="color:#75af00">err</span> <span style="color:#f92672">!=</span> <span style="color:#00a8c8">nil</span> <span style="color:#111">{</span>
@@ -1291,8 +1291,8 @@ BoltDB 的写操作都是在内存中进行，若事务未 commit 时出错，�
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// 如果函数没有返回错误，则提交事务。</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// 如果返回了错误，则整个事务被回滚。</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// 从函数返回的任何错误或从提交返回的错误都会从Update()方法返回。</span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// 尝试在函数内手动提交或回滚将导致panic。</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// 尝试在函数内手动提交或回滚将导致panic。</span>
 </span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#111">(</span><span style="color:#75af00">db</span> <span style="color:#f92672">*</span><span style="color:#75af00">DB</span><span style="color:#111">)</span> <span style="color:#75af00">Update</span><span style="color:#111">(</span><span style="color:#75af00">fn</span> <span style="color:#00a8c8">func</span><span style="color:#111">(</span><span style="color:#f92672">*</span><span style="color:#75af00">Tx</span><span style="color:#111">)</span> <span style="color:#00a8c8">error</span><span style="color:#111">)</span> <span style="color:#00a8c8">error</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75af00">t</span><span style="color:#111">,</span> <span style="color:#75af00">err</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">db</span><span style="color:#111">.</span><span style="color:#75af00">Begin</span><span style="color:#111">(</span><span style="color:#00a8c8">true</span><span style="color:#111">)</span>  <span style="color:#75715e">// 开始一个读写事务</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">if</span> <span style="color:#75af00">err</span> <span style="color:#f92672">!=</span> <span style="color:#00a8c8">nil</span> <span style="color:#111">{</span>
@@ -1469,30 +1469,30 @@ BoltDB 的写操作都是在内存中进行，若事务未 commit 时出错，�
 <h3 id="脏读">脏读</h3>
 <p>所谓脏读是指一个事务中访问到了另外一个事务未提交的数据，如下图：</p>
 <table>
-  <thead>
-      <tr>
-          <th>s1</th>
-          <th>s2</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td>begin</td>
-          <td>begin</td>
-      </tr>
-      <tr>
-          <td></td>
-          <td>update test set number = 100 where id = 1;</td>
-      </tr>
-      <tr>
-          <td>select number from test where id = 1;</td>
-          <td></td>
-      </tr>
-      <tr>
-          <td>commit</td>
-          <td>commit</td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>s1</th>
+					<th>s2</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>begin</td>
+					<td>begin</td>
+			</tr>
+			<tr>
+					<td></td>
+					<td>update test set number = 100 where id = 1;</td>
+			</tr>
+			<tr>
+					<td>select number from test where id = 1;</td>
+					<td></td>
+			</tr>
+			<tr>
+					<td>commit</td>
+					<td>commit</td>
+			</tr>
+	</tbody>
 </table>
 <ul>
 <li>如果会话 2 更新 number 为 100，但是在 number 之前，会话 1 希望得到 number，那么会获得的值就是更新前的值。或者如果会话 2 更新了值但是执行了 rollback，而会话 1 拿到的仍是 100。这就是脏读。</li>
@@ -1500,38 +1500,38 @@ BoltDB 的写操作都是在内存中进行，若事务未 commit 时出错，�
 <h3 id="不可重复读">不可重复读</h3>
 <p>一个事务查询同一条记录2次，得到的结果不一致：</p>
 <table>
-  <thead>
-      <tr>
-          <th>S1</th>
-          <th>S2</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td>begin</td>
-          <td>begin;</td>
-      </tr>
-      <tr>
-          <td>select number from test where id = 1;</td>
-          <td></td>
-      </tr>
-      <tr>
-          <td></td>
-          <td>update test set number = 200 where id = 1;</td>
-      </tr>
-      <tr>
-          <td></td>
-          <td>commit</td>
-      </tr>
-      <tr>
-          <td>select number from test where id = 1;</td>
-          <td></td>
-      </tr>
-      <tr>
-          <td>commit;</td>
-          <td></td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>S1</th>
+					<th>S2</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>begin</td>
+					<td>begin;</td>
+			</tr>
+			<tr>
+					<td>select number from test where id = 1;</td>
+					<td></td>
+			</tr>
+			<tr>
+					<td></td>
+					<td>update test set number = 200 where id = 1;</td>
+			</tr>
+			<tr>
+					<td></td>
+					<td>commit</td>
+			</tr>
+			<tr>
+					<td>select number from test where id = 1;</td>
+					<td></td>
+			</tr>
+			<tr>
+					<td>commit;</td>
+					<td></td>
+			</tr>
+	</tbody>
 </table>
 <ul>
 <li>由于在读取中间变更了数据，所以会话 1 事务查询期间的得到的结果就不一样了。</li>
@@ -1539,38 +1539,38 @@ BoltDB 的写操作都是在内存中进行，若事务未 commit 时出错，�
 <h3 id="幻读">幻读</h3>
 <p>一个事务查询2次，得到的记录条数不一致：</p>
 <table>
-  <thead>
-      <tr>
-          <th>S1</th>
-          <th>S2</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td>begin</td>
-          <td>begin</td>
-      </tr>
-      <tr>
-          <td>select number from test where id &lt; 5;</td>
-          <td></td>
-      </tr>
-      <tr>
-          <td></td>
-          <td>insert into test value(2,3);</td>
-      </tr>
-      <tr>
-          <td></td>
-          <td>commit</td>
-      </tr>
-      <tr>
-          <td>select number from test where id &lt; 5;</td>
-          <td></td>
-      </tr>
-      <tr>
-          <td>commit</td>
-          <td></td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>S1</th>
+					<th>S2</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>begin</td>
+					<td>begin</td>
+			</tr>
+			<tr>
+					<td>select number from test where id &lt; 5;</td>
+					<td></td>
+			</tr>
+			<tr>
+					<td></td>
+					<td>insert into test value(2,3);</td>
+			</tr>
+			<tr>
+					<td></td>
+					<td>commit</td>
+			</tr>
+			<tr>
+					<td>select number from test where id &lt; 5;</td>
+					<td></td>
+			</tr>
+			<tr>
+					<td>commit</td>
+					<td></td>
+			</tr>
+	</tbody>
 </table>
 <ul>
 <li>幻读是不可重复读的一种特殊场景。</li>
@@ -1595,40 +1595,40 @@ BoltDB 的写操作都是在内存中进行，若事务未 commit 时出错，�
 <p>实际应用中也很少用到这个隔离级别，只有在非常需要确保数据的一致性而且可以接受没有并发的情况下，才考虑采用该级别。</p>
 <h4 id="不同事务隔离级别的效果">不同事务隔离级别的效果：</h4>
 <table>
-  <thead>
-      <tr>
-          <th>隔离级别</th>
-          <th>脏读</th>
-          <th>不可重复读</th>
-          <th>幻读</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td>READ UNCOMMITTED（未提交读）</td>
-          <td>✅</td>
-          <td>✅</td>
-          <td>✅</td>
-      </tr>
-      <tr>
-          <td>READ COMMITTED（提已提交）</td>
-          <td>❎</td>
-          <td>✅</td>
-          <td>✅</td>
-      </tr>
-      <tr>
-          <td>REPEATABLE READ（可重复读）</td>
-          <td>❎</td>
-          <td>❎</td>
-          <td>✅</td>
-      </tr>
-      <tr>
-          <td>SERIZLIZABLE（可串行化）</td>
-          <td>❎</td>
-          <td>❎</td>
-          <td>✅</td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>隔离级别</th>
+					<th>脏读</th>
+					<th>不可重复读</th>
+					<th>幻读</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>READ UNCOMMITTED（未提交读）</td>
+					<td>✅</td>
+					<td>✅</td>
+					<td>✅</td>
+			</tr>
+			<tr>
+					<td>READ COMMITTED（提已提交）</td>
+					<td>❎</td>
+					<td>✅</td>
+					<td>✅</td>
+			</tr>
+			<tr>
+					<td>REPEATABLE READ（可重复读）</td>
+					<td>❎</td>
+					<td>❎</td>
+					<td>✅</td>
+			</tr>
+			<tr>
+					<td>SERIZLIZABLE（可串行化）</td>
+					<td>❎</td>
+					<td>❎</td>
+					<td>✅</td>
+			</tr>
+	</tbody>
 </table>
 <p>在 InnoDB 中，默认为 Repeatable 级别，InnoDB 中使用一种被称为 next-key locking 的策略来避免幻读（phantom）现象的产生。</p>
 <p>隔离级别越高，越能保证数据的完整性和一致性，但是对并发性能的影响也越大。</p>

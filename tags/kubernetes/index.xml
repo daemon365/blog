@@ -495,30 +495,30 @@
 <hr>
 <h2 id="涉及项目">涉及项目</h2>
 <table>
-  <thead>
-      <tr>
-          <th>项目</th>
-          <th>地址</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td>CNI 规范与库</td>
-          <td><a href="https://github.com/containernetworking/cni">https://github.com/containernetworking/cni</a></td>
-      </tr>
-      <tr>
-          <td>containerd</td>
-          <td><a href="https://github.com/containerd/containerd">https://github.com/containerd/containerd</a></td>
-      </tr>
-      <tr>
-          <td>go-cni</td>
-          <td><a href="https://github.com/containerd/go-cni">https://github.com/containerd/go-cni</a></td>
-      </tr>
-      <tr>
-          <td>Kubernetes</td>
-          <td><a href="https://github.com/kubernetes/kubernetes">https://github.com/kubernetes/kubernetes</a></td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>项目</th>
+					<th>地址</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>CNI 规范与库</td>
+					<td><a href="https://github.com/containernetworking/cni">https://github.com/containernetworking/cni</a></td>
+			</tr>
+			<tr>
+					<td>containerd</td>
+					<td><a href="https://github.com/containerd/containerd">https://github.com/containerd/containerd</a></td>
+			</tr>
+			<tr>
+					<td>go-cni</td>
+					<td><a href="https://github.com/containerd/go-cni">https://github.com/containerd/go-cni</a></td>
+			</tr>
+			<tr>
+					<td>Kubernetes</td>
+					<td><a href="https://github.com/kubernetes/kubernetes">https://github.com/kubernetes/kubernetes</a></td>
+			</tr>
+	</tbody>
 </table>
 <hr>
 <h2 id="cni-插件调用流程">CNI 插件调用流程</h2>
@@ -1938,8 +1938,8 @@ backend kube-apiserver
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 设置节点分裂时的填充阈值。默认情况下，bucket 将填充至 50%，</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 但如果你知道你的写入工作负载主要是追加操作，提高这个比例可能会有用。</span>
-</span></span><span style="display:flex;"><span>    <span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    // 这个设置不会跨事务持久化，因此每个事务都必须设置它。</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 这个设置不会跨事务持久化，因此每个事务都必须设置它。</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75af00">FillPercent</span> <span style="color:#00a8c8">float64</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>
 </span></span><span style="display:flex;"><span>
@@ -2312,8 +2312,8 @@ BoltDB 的写操作都是在内存中进行，若事务未 commit 时出错，�
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// Tx 代表数据库上的一个只读或读写事务。</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// 只读事务可用于检索键值和创建光标。</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// 读写事务可以创建和删除桶以及创建和删除键。</span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// 重要：必须在使用完事务后提交或回滚事务。</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// 重要：必须在使用完事务后提交或回滚事务。</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// 只有当没有事务在使用页面时，写入者才能回收这些页面。</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// 长时间运行的读事务可能会导致数据库迅速增长。</span>
 </span></span><span style="display:flex;"><span><span style="color:#00a8c8">type</span> <span style="color:#75af00">Tx</span> <span style="color:#00a8c8">struct</span> <span style="color:#111">{</span>
@@ -2328,8 +2328,8 @@ BoltDB 的写操作都是在内存中进行，若事务未 commit 时出错，�
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// WriteFlag 指定写相关方法（如 WriteTo()）的标志。</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// Tx 使用指定的标志打开数据库文件以复制数据。</span>
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	// 默认情况下，此标志未设置，适合主要在内存中的工作负载。</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 默认情况下，此标志未设置，适合主要在内存中的工作负载。</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 对于大于可用 RAM 的数据库，可以设置为 syscall.O_DIRECT 来避免淘汰页面缓存。</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">WriteFlag</span> <span style="color:#00a8c8">int</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>
@@ -2337,14 +2337,14 @@ BoltDB 的写操作都是在内存中进行，若事务未 commit 时出错，�
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// Begin 开始一个新事务。</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// 多个只读事务可以并发使用，但一次只能使用一个写事务。</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// 启动多个写事务会导致调用阻塞，并序列化直到当前写事务完成。</span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// 事务不应该彼此依赖。在同一个goroutine中打开一个读事务和一个写事务可能会导致写入者死锁，</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// 事务不应该彼此依赖。在同一个goroutine中打开一个读事务和一个写事务可能会导致写入者死锁，</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// 因为数据库需要定期重新映射自身以应对增长，并且在读事务打开的时候无法进行。</span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// 如果需要长时间运行的读事务（例如，快照事务），你可能想要将DB.InitialMmapSize设置为足够大的值</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// 如果需要长时间运行的读事务（例如，快照事务），你可能想要将DB.InitialMmapSize设置为足够大的值</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// 以避免写事务的潜在阻塞。</span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// 重要：你必须在完成后关闭只读事务，否则数据库将无法回收旧页面。</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// 重要：你必须在完成后关闭只读事务，否则数据库将无法回收旧页面。</span>
 </span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#111">(</span><span style="color:#75af00">db</span> <span style="color:#f92672">*</span><span style="color:#75af00">DB</span><span style="color:#111">)</span> <span style="color:#75af00">Begin</span><span style="color:#111">(</span><span style="color:#75af00">writable</span> <span style="color:#00a8c8">bool</span><span style="color:#111">)</span> <span style="color:#111">(</span><span style="color:#75af00">t</span> <span style="color:#f92672">*</span><span style="color:#75af00">Tx</span><span style="color:#111">,</span> <span style="color:#75af00">err</span> <span style="color:#00a8c8">error</span><span style="color:#111">)</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">lg</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">db</span><span style="color:#111">.</span><span style="color:#75af00">Logger</span><span style="color:#111">();</span> <span style="color:#75af00">lg</span> <span style="color:#f92672">!=</span> <span style="color:#75af00">discardLogger</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>		<span style="color:#75af00">lg</span><span style="color:#111">.</span><span style="color:#75af00">Debugf</span><span style="color:#111">(</span><span style="color:#d88200">&#34;Starting a new transaction [writable: %t]&#34;</span><span style="color:#111">,</span> <span style="color:#75af00">writable</span><span style="color:#111">)</span>
@@ -2623,8 +2623,8 @@ BoltDB 的写操作都是在内存中进行，若事务未 commit 时出错，�
 </span></span></code></pre></div><h2 id="view--update">View &amp;&amp; Update</h2>
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// View 在管理的只读事务上下文中执行一个函数。</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// 从函数返回的任何错误都会从View()方法返回。</span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// 尝试在函数内手动回滚会导致panic。</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// 尝试在函数内手动回滚会导致panic。</span>
 </span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#111">(</span><span style="color:#75af00">db</span> <span style="color:#f92672">*</span><span style="color:#75af00">DB</span><span style="color:#111">)</span> <span style="color:#75af00">View</span><span style="color:#111">(</span><span style="color:#75af00">fn</span> <span style="color:#00a8c8">func</span><span style="color:#111">(</span><span style="color:#f92672">*</span><span style="color:#75af00">Tx</span><span style="color:#111">)</span> <span style="color:#00a8c8">error</span><span style="color:#111">)</span> <span style="color:#00a8c8">error</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75af00">t</span><span style="color:#111">,</span> <span style="color:#75af00">err</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">db</span><span style="color:#111">.</span><span style="color:#75af00">Begin</span><span style="color:#111">(</span><span style="color:#00a8c8">false</span><span style="color:#111">)</span>  <span style="color:#75715e">// 开始一个只读事务</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">if</span> <span style="color:#75af00">err</span> <span style="color:#f92672">!=</span> <span style="color:#00a8c8">nil</span> <span style="color:#111">{</span>
@@ -2656,8 +2656,8 @@ BoltDB 的写操作都是在内存中进行，若事务未 commit 时出错，�
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// 如果函数没有返回错误，则提交事务。</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// 如果返回了错误，则整个事务被回滚。</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// 从函数返回的任何错误或从提交返回的错误都会从Update()方法返回。</span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// 尝试在函数内手动提交或回滚将导致panic。</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// 尝试在函数内手动提交或回滚将导致panic。</span>
 </span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#111">(</span><span style="color:#75af00">db</span> <span style="color:#f92672">*</span><span style="color:#75af00">DB</span><span style="color:#111">)</span> <span style="color:#75af00">Update</span><span style="color:#111">(</span><span style="color:#75af00">fn</span> <span style="color:#00a8c8">func</span><span style="color:#111">(</span><span style="color:#f92672">*</span><span style="color:#75af00">Tx</span><span style="color:#111">)</span> <span style="color:#00a8c8">error</span><span style="color:#111">)</span> <span style="color:#00a8c8">error</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75af00">t</span><span style="color:#111">,</span> <span style="color:#75af00">err</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">db</span><span style="color:#111">.</span><span style="color:#75af00">Begin</span><span style="color:#111">(</span><span style="color:#00a8c8">true</span><span style="color:#111">)</span>  <span style="color:#75715e">// 开始一个读写事务</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">if</span> <span style="color:#75af00">err</span> <span style="color:#f92672">!=</span> <span style="color:#00a8c8">nil</span> <span style="color:#111">{</span>
@@ -2705,13 +2705,13 @@ BoltDB 的写操作都是在内存中进行，若事务未 commit 时出错，�
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;/test
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id="watch-的-api"&gt;watch 的 api&lt;/h2&gt;
 &lt;p&gt;etcd watch api 是由 grpc stream 实现的，客户端通过 grpc stream 发送 watch 请求，etcd 会将 key 的变化通过 stream 返回给客户端。&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-protobuf" data-lang="protobuf"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;rpc&lt;/span&gt; &lt;span style="color:#111"&gt;Watch&lt;/span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#111"&gt;stream&lt;/span&gt; &lt;span style="color:#111"&gt;WatchRequest&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;returns&lt;/span&gt; &lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#111"&gt;stream&lt;/span&gt; &lt;span style="color:#111"&gt;WatchResponse&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#00a8c8"&gt;option&lt;/span&gt; &lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#111"&gt;google.api.http&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;post&lt;/span&gt;&lt;span style="color:#f92672"&gt;:&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;/v3/watch&amp;#34;&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;body&lt;/span&gt;&lt;span style="color:#f92672"&gt;:&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;*&amp;#34;&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;};&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#111"&gt;}&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id="api-实现"&gt;api 实现&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-protobuf" data-lang="protobuf"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;rpc&lt;/span&gt; &lt;span style="color:#111"&gt;Watch&lt;/span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#00a8c8"&gt;stream&lt;/span&gt; &lt;span style="color:#111"&gt;WatchRequest&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;returns&lt;/span&gt; &lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#00a8c8"&gt;stream&lt;/span&gt; &lt;span style="color:#111"&gt;WatchResponse&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#00a8c8"&gt;option&lt;/span&gt; &lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#111"&gt;google.api.http&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;post&lt;/span&gt;&lt;span style="color:#f92672"&gt;:&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;/v3/watch&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;body&lt;/span&gt;&lt;span style="color:#f92672"&gt;:&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;*&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;};&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#111"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id="api-实现"&gt;api 实现&lt;/h2&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-go" data-lang="go"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;func&lt;/span&gt; &lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#75af00"&gt;ws&lt;/span&gt; &lt;span style="color:#f92672"&gt;*&lt;/span&gt;&lt;span style="color:#75af00"&gt;watchServer&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#75af00"&gt;Watch&lt;/span&gt;&lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#75af00"&gt;stream&lt;/span&gt; &lt;span style="color:#75af00"&gt;pb&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;Watch_WatchServer&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#75af00"&gt;err&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;error&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;sws&lt;/span&gt; &lt;span style="color:#f92672"&gt;:=&lt;/span&gt; &lt;span style="color:#75af00"&gt;serverWatchStream&lt;/span&gt;&lt;span style="color:#111"&gt;{&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;lg&lt;/span&gt;&lt;span style="color:#111"&gt;:&lt;/span&gt; &lt;span style="color:#75af00"&gt;ws&lt;/span&gt;&lt;span style="color:#111"&gt;.&lt;/span&gt;&lt;span style="color:#75af00"&gt;lg&lt;/span&gt;&lt;span style="color:#111"&gt;,&lt;/span&gt;
@@ -2790,13 +2790,13 @@ BoltDB 的写操作都是在内存中进行，若事务未 commit 时出错，�
 </span></span><span style="display:flex;"><span>/test
 </span></span></code></pre></div><h2 id="watch-的-api">watch 的 api</h2>
 <p>etcd watch api 是由 grpc stream 实现的，客户端通过 grpc stream 发送 watch 请求，etcd 会将 key 的变化通过 stream 返回给客户端。</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-protobuf" data-lang="protobuf"><span style="display:flex;"><span><span style="color:#00a8c8">rpc</span> <span style="color:#111">Watch</span><span style="color:#111">(</span><span style="color:#111">stream</span> <span style="color:#111">WatchRequest</span><span style="color:#111">)</span> <span style="color:#00a8c8">returns</span> <span style="color:#111">(</span><span style="color:#111">stream</span> <span style="color:#111">WatchResponse</span><span style="color:#111">)</span> <span style="color:#111">{</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span>      <span style="color:#00a8c8">option</span> <span style="color:#111">(</span><span style="color:#111">google.api.http</span><span style="color:#111">)</span> <span style="color:#f92672">=</span> <span style="color:#111">{</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span>        <span style="color:#111">post</span><span style="color:#f92672">:</span> <span style="color:#d88200">&#34;/v3/watch&#34;</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span>        <span style="color:#111">body</span><span style="color:#f92672">:</span> <span style="color:#d88200">&#34;*&#34;</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span>    <span style="color:#111">};</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#111">}</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span></code></pre></div><h2 id="api-实现">api 实现</h2>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-protobuf" data-lang="protobuf"><span style="display:flex;"><span><span style="color:#00a8c8">rpc</span> <span style="color:#111">Watch</span><span style="color:#111">(</span><span style="color:#00a8c8">stream</span> <span style="color:#111">WatchRequest</span><span style="color:#111">)</span> <span style="color:#00a8c8">returns</span> <span style="color:#111">(</span><span style="color:#00a8c8">stream</span> <span style="color:#111">WatchResponse</span><span style="color:#111">)</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#00a8c8">option</span> <span style="color:#111">(</span><span style="color:#111">google.api.http</span><span style="color:#111">)</span> <span style="color:#f92672">=</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#111">post</span><span style="color:#f92672">:</span> <span style="color:#d88200">&#34;/v3/watch&#34;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#111">body</span><span style="color:#f92672">:</span> <span style="color:#d88200">&#34;*&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">};</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span></code></pre></div><h2 id="api-实现">api 实现</h2>
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#111">(</span><span style="color:#75af00">ws</span> <span style="color:#f92672">*</span><span style="color:#75af00">watchServer</span><span style="color:#111">)</span> <span style="color:#75af00">Watch</span><span style="color:#111">(</span><span style="color:#75af00">stream</span> <span style="color:#75af00">pb</span><span style="color:#111">.</span><span style="color:#75af00">Watch_WatchServer</span><span style="color:#111">)</span> <span style="color:#111">(</span><span style="color:#75af00">err</span> <span style="color:#00a8c8">error</span><span style="color:#111">)</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">sws</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">serverWatchStream</span><span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>		<span style="color:#75af00">lg</span><span style="color:#111">:</span> <span style="color:#75af00">ws</span><span style="color:#111">.</span><span style="color:#75af00">lg</span><span style="color:#111">,</span>
@@ -3168,11 +3168,11 @@ BoltDB 的写操作都是在内存中进行，若事务未 commit 时出错，�
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// WatchStream 是一个接口，定义了一个流式处理 watch 请求的机制</span>
 </span></span><span style="display:flex;"><span><span style="color:#00a8c8">type</span> <span style="color:#75af00">WatchStream</span> <span style="color:#00a8c8">interface</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// Watch 创建一个观察者。观察者会监听在给定的键或范围 [key, end) 上发生的事件或已发生的事件。</span>
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	// 整个事件历史都可以被观察到，除非被压缩。</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 整个事件历史都可以被观察到，除非被压缩。</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 如果 &#34;startRev&#34; &lt;= 0，watch 将观察当前修订版本之后的事件。</span>
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	// 返回的 &#34;id&#34; 是这个观察者的 ID。它作为 WatchID 出现在通过 stream 通道发送到创建的观察者的事件中。</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 返回的 &#34;id&#34; 是这个观察者的 ID。它作为 WatchID 出现在通过 stream 通道发送到创建的观察者的事件中。</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 当 WatchID 不等于 AutoWatchID 时，使用指定的 WatchID，否则返回自动生成的 WatchID。</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">Watch</span><span style="color:#111">(</span><span style="color:#75af00">id</span> <span style="color:#75af00">WatchID</span><span style="color:#111">,</span> <span style="color:#75af00">key</span><span style="color:#111">,</span> <span style="color:#75af00">end</span> <span style="color:#111">[]</span><span style="color:#00a8c8">byte</span><span style="color:#111">,</span> <span style="color:#75af00">startRev</span> <span style="color:#00a8c8">int64</span><span style="color:#111">,</span> <span style="color:#75af00">fcs</span> <span style="color:#f92672">...</span><span style="color:#75af00">FilterFunc</span><span style="color:#111">)</span> <span style="color:#111">(</span><span style="color:#75af00">WatchID</span><span style="color:#111">,</span> <span style="color:#00a8c8">error</span><span style="color:#111">)</span>
 </span></span><span style="display:flex;"><span>
@@ -5912,12 +5912,12 @@ PV（PersistentVolume）是集群中的一块存储资源，可以是 NFS、iSCS
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">kl</span><span style="color:#111">.</span><span style="color:#75af00">kubeClient</span> <span style="color:#f92672">!=</span> <span style="color:#00a8c8">nil</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>		<span style="color:#75715e">// Start two go-routines to update the status.</span>
-</span></span><span style="display:flex;"><span>		<span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">		// The first will report to the apiserver every nodeStatusUpdateFrequency and is aimed to provide regular status intervals,</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75715e">// The first will report to the apiserver every nodeStatusUpdateFrequency and is aimed to provide regular status intervals,</span>
 </span></span><span style="display:flex;"><span>		<span style="color:#75715e">// while the second is used to provide a more timely status update during initialization and runs an one-shot update to the apiserver</span>
 </span></span><span style="display:flex;"><span>		<span style="color:#75715e">// once the node becomes ready, then exits afterwards.</span>
-</span></span><span style="display:flex;"><span>		<span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">		// Introduce some small jittering to ensure that over time the requests won&#39;t start</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75715e">// Introduce some small jittering to ensure that over time the requests won&#39;t start</span>
 </span></span><span style="display:flex;"><span>		<span style="color:#75715e">// accumulating at approximately the same time from the set of nodes due to priority and</span>
 </span></span><span style="display:flex;"><span>		<span style="color:#75715e">// fairness effect.</span>
 </span></span><span style="display:flex;"><span>		<span style="color:#00a8c8">go</span> <span style="color:#75af00">wait</span><span style="color:#111">.</span><span style="color:#75af00">JitterUntil</span><span style="color:#111">(</span><span style="color:#75af00">kl</span><span style="color:#111">.</span><span style="color:#75af00">syncNodeStatus</span><span style="color:#111">,</span> <span style="color:#75af00">kl</span><span style="color:#111">.</span><span style="color:#75af00">nodeStatusUpdateFrequency</span><span style="color:#111">,</span> <span style="color:#ae81ff">0.04</span><span style="color:#111">,</span> <span style="color:#00a8c8">true</span><span style="color:#111">,</span> <span style="color:#75af00">wait</span><span style="color:#111">.</span><span style="color:#75af00">NeverStop</span><span style="color:#111">)</span>
@@ -9277,52 +9277,52 @@ kubelet 通过 cri 调用 containerd 和这些不一样，后续我会介绍到�
 <h3 id="介绍">介绍</h3>
 <p>下图为各种 namespace 的参数，支持的起始内核版本，以及隔离内容。</p>
 <table>
-  <thead>
-      <tr>
-          <th>Namespace</th>
-          <th>系统调用参数</th>
-          <th>内核版本</th>
-          <th>隔离内容</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td>UTS (Unix Time-sharing System)</td>
-          <td>CLONE_NEWUTS</td>
-          <td>Linux 2.4.19</td>
-          <td>主机名与域名</td>
-      </tr>
-      <tr>
-          <td>IPC (Inter-Process Communication)</td>
-          <td>CLONE_NEWIPC</td>
-          <td>Linux 2.6.19</td>
-          <td>信号量、消息队列和共享内存</td>
-      </tr>
-      <tr>
-          <td>PID (Process ID)</td>
-          <td>CLONE_NEWPID</td>
-          <td>Linux 2.6.19</td>
-          <td>进程编号</td>
-      </tr>
-      <tr>
-          <td>Network</td>
-          <td>CLONE_NEWNET</td>
-          <td>Linux 2.6.24</td>
-          <td>网络设备、网络栈、端口等等</td>
-      </tr>
-      <tr>
-          <td>Mount</td>
-          <td>CLONE_NEWNS</td>
-          <td>Linux 2.6.29</td>
-          <td>挂载点（文件系统）</td>
-      </tr>
-      <tr>
-          <td>User</td>
-          <td>CLONE_NEWUSER</td>
-          <td>Linux 3.8</td>
-          <td>用户和用户组</td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>Namespace</th>
+					<th>系统调用参数</th>
+					<th>内核版本</th>
+					<th>隔离内容</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>UTS (Unix Time-sharing System)</td>
+					<td>CLONE_NEWUTS</td>
+					<td>Linux 2.4.19</td>
+					<td>主机名与域名</td>
+			</tr>
+			<tr>
+					<td>IPC (Inter-Process Communication)</td>
+					<td>CLONE_NEWIPC</td>
+					<td>Linux 2.6.19</td>
+					<td>信号量、消息队列和共享内存</td>
+			</tr>
+			<tr>
+					<td>PID (Process ID)</td>
+					<td>CLONE_NEWPID</td>
+					<td>Linux 2.6.19</td>
+					<td>进程编号</td>
+			</tr>
+			<tr>
+					<td>Network</td>
+					<td>CLONE_NEWNET</td>
+					<td>Linux 2.6.24</td>
+					<td>网络设备、网络栈、端口等等</td>
+			</tr>
+			<tr>
+					<td>Mount</td>
+					<td>CLONE_NEWNS</td>
+					<td>Linux 2.6.29</td>
+					<td>挂载点（文件系统）</td>
+			</tr>
+			<tr>
+					<td>User</td>
+					<td>CLONE_NEWUSER</td>
+					<td>Linux 3.8</td>
+					<td>用户和用户组</td>
+			</tr>
+	</tbody>
 </table>
 <ol>
 <li>PID Namespace：</li>

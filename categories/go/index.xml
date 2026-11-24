@@ -65,34 +65,34 @@
 </ul>
 <p>两个位的配合：</p>
 <table>
-  <thead>
-      <tr>
-          <th>Seen</th>
-          <th>Scanned</th>
-          <th>状态描述</th>
-          <th>操作</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td>0</td>
-          <td>0</td>
-          <td>新对象，没看过，没扫描</td>
-          <td>标记 Seen=1，入队扫描对象内指针</td>
-      </tr>
-      <tr>
-          <td>1</td>
-          <td>0</td>
-          <td>已知可达，但指针还没扫描</td>
-          <td>扫描指针，标记 Scanned=1</td>
-      </tr>
-      <tr>
-          <td>1</td>
-          <td>1</td>
-          <td>已可达且指针扫描过</td>
-          <td>跳过，不用再扫描</td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>Seen</th>
+					<th>Scanned</th>
+					<th>状态描述</th>
+					<th>操作</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>0</td>
+					<td>0</td>
+					<td>新对象，没看过，没扫描</td>
+					<td>标记 Seen=1，入队扫描对象内指针</td>
+			</tr>
+			<tr>
+					<td>1</td>
+					<td>0</td>
+					<td>已知可达，但指针还没扫描</td>
+					<td>扫描指针，标记 Scanned=1</td>
+			</tr>
+			<tr>
+					<td>1</td>
+					<td>1</td>
+					<td>已可达且指针扫描过</td>
+					<td>跳过，不用再扫描</td>
+			</tr>
+	</tbody>
 </table>
 <p>这样就能实现三色标记的“灰色→黑色”逻辑：</p>
 <ul>
@@ -1629,8 +1629,8 @@ CALL	runtime·wbBufFlush(SB)
 </span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">sl</span><span style="color:#111">.</span><span style="color:#75af00">valid</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>		<span style="color:#75715e">// Now that we&#39;ve swept stale spans in mcaches, they don&#39;t</span>
 </span></span><span style="display:flex;"><span>		<span style="color:#75715e">// count against unswept spans.</span>
-</span></span><span style="display:flex;"><span>		<span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">		// Note: this sweepLocker may not be valid if sweeping had</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75715e">// Note: this sweepLocker may not be valid if sweeping had</span>
 </span></span><span style="display:flex;"><span>		<span style="color:#75715e">// already completed during the STW. See the corresponding</span>
 </span></span><span style="display:flex;"><span>		<span style="color:#75715e">// begin() call that produced sl.</span>
 </span></span><span style="display:flex;"><span>		<span style="color:#75af00">sweep</span><span style="color:#111">.</span><span style="color:#75af00">active</span><span style="color:#111">.</span><span style="color:#75af00">end</span><span style="color:#111">(</span><span style="color:#75af00">sl</span><span style="color:#111">)</span>
@@ -2132,145 +2132,145 @@ CALL	runtime·wbBufFlush(SB)
 <h3 id="mspan">mspan</h3>
 <p>mspan 是 go 内存管理基本单元，一个 mspan 包含一个或者多个 page。go 中有多种 mspan，每种 mspan 给不同的内存大小使用。</p>
 <table>
-  <thead>
-      <tr>
-          <th>class</th>
-          <th>bytes/obj</th>
-          <th>bytes/span</th>
-          <th>objects</th>
-          <th>tail waste</th>
-          <th>max waste</th>
-          <th>min align</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td>1</td>
-          <td>8</td>
-          <td>8192</td>
-          <td>1024</td>
-          <td>0</td>
-          <td>87.50%</td>
-          <td>8</td>
-      </tr>
-      <tr>
-          <td>2</td>
-          <td>16</td>
-          <td>8192</td>
-          <td>512</td>
-          <td>0</td>
-          <td>43.75%</td>
-          <td>16</td>
-      </tr>
-      <tr>
-          <td>3</td>
-          <td>24</td>
-          <td>8192</td>
-          <td>341</td>
-          <td>8</td>
-          <td>29.24%</td>
-          <td>8</td>
-      </tr>
-      <tr>
-          <td>4</td>
-          <td>32</td>
-          <td>8192</td>
-          <td>256</td>
-          <td>0</td>
-          <td>21.88%</td>
-          <td>32</td>
-      </tr>
-      <tr>
-          <td>5</td>
-          <td>48</td>
-          <td>8192</td>
-          <td>170</td>
-          <td>32</td>
-          <td>31.52%</td>
-          <td>16</td>
-      </tr>
-      <tr>
-          <td>6</td>
-          <td>64</td>
-          <td>8192</td>
-          <td>128</td>
-          <td>0</td>
-          <td>23.44%</td>
-          <td>64</td>
-      </tr>
-      <tr>
-          <td>7</td>
-          <td>80</td>
-          <td>8192</td>
-          <td>102</td>
-          <td>32</td>
-          <td>19.07%</td>
-          <td>16</td>
-      </tr>
-      <tr>
-          <td>8</td>
-          <td>96</td>
-          <td>8192</td>
-          <td>85</td>
-          <td>32</td>
-          <td>15.95%</td>
-          <td>32</td>
-      </tr>
-      <tr>
-          <td>9</td>
-          <td>112</td>
-          <td>8192</td>
-          <td>73</td>
-          <td>16</td>
-          <td>13.56%</td>
-          <td>16</td>
-      </tr>
-      <tr>
-          <td>&hellip;</td>
-          <td>&hellip;</td>
-          <td>&hellip;</td>
-          <td>&hellip;</td>
-          <td>&hellip;</td>
-          <td>&hellip;</td>
-          <td>&hellip;</td>
-      </tr>
-      <tr>
-          <td>64</td>
-          <td>24576</td>
-          <td>24576</td>
-          <td>1</td>
-          <td>0</td>
-          <td>11.45%</td>
-          <td>8192</td>
-      </tr>
-      <tr>
-          <td>65</td>
-          <td>27264</td>
-          <td>81920</td>
-          <td>3</td>
-          <td>128</td>
-          <td>10.00%</td>
-          <td>128</td>
-      </tr>
-      <tr>
-          <td>66</td>
-          <td>28672</td>
-          <td>57344</td>
-          <td>2</td>
-          <td>0</td>
-          <td>4.91%</td>
-          <td>4096</td>
-      </tr>
-      <tr>
-          <td>67</td>
-          <td>32768</td>
-          <td>32768</td>
-          <td>1</td>
-          <td>0</td>
-          <td>12.50%</td>
-          <td>8192</td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>class</th>
+					<th>bytes/obj</th>
+					<th>bytes/span</th>
+					<th>objects</th>
+					<th>tail waste</th>
+					<th>max waste</th>
+					<th>min align</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>1</td>
+					<td>8</td>
+					<td>8192</td>
+					<td>1024</td>
+					<td>0</td>
+					<td>87.50%</td>
+					<td>8</td>
+			</tr>
+			<tr>
+					<td>2</td>
+					<td>16</td>
+					<td>8192</td>
+					<td>512</td>
+					<td>0</td>
+					<td>43.75%</td>
+					<td>16</td>
+			</tr>
+			<tr>
+					<td>3</td>
+					<td>24</td>
+					<td>8192</td>
+					<td>341</td>
+					<td>8</td>
+					<td>29.24%</td>
+					<td>8</td>
+			</tr>
+			<tr>
+					<td>4</td>
+					<td>32</td>
+					<td>8192</td>
+					<td>256</td>
+					<td>0</td>
+					<td>21.88%</td>
+					<td>32</td>
+			</tr>
+			<tr>
+					<td>5</td>
+					<td>48</td>
+					<td>8192</td>
+					<td>170</td>
+					<td>32</td>
+					<td>31.52%</td>
+					<td>16</td>
+			</tr>
+			<tr>
+					<td>6</td>
+					<td>64</td>
+					<td>8192</td>
+					<td>128</td>
+					<td>0</td>
+					<td>23.44%</td>
+					<td>64</td>
+			</tr>
+			<tr>
+					<td>7</td>
+					<td>80</td>
+					<td>8192</td>
+					<td>102</td>
+					<td>32</td>
+					<td>19.07%</td>
+					<td>16</td>
+			</tr>
+			<tr>
+					<td>8</td>
+					<td>96</td>
+					<td>8192</td>
+					<td>85</td>
+					<td>32</td>
+					<td>15.95%</td>
+					<td>32</td>
+			</tr>
+			<tr>
+					<td>9</td>
+					<td>112</td>
+					<td>8192</td>
+					<td>73</td>
+					<td>16</td>
+					<td>13.56%</td>
+					<td>16</td>
+			</tr>
+			<tr>
+					<td>&hellip;</td>
+					<td>&hellip;</td>
+					<td>&hellip;</td>
+					<td>&hellip;</td>
+					<td>&hellip;</td>
+					<td>&hellip;</td>
+					<td>&hellip;</td>
+			</tr>
+			<tr>
+					<td>64</td>
+					<td>24576</td>
+					<td>24576</td>
+					<td>1</td>
+					<td>0</td>
+					<td>11.45%</td>
+					<td>8192</td>
+			</tr>
+			<tr>
+					<td>65</td>
+					<td>27264</td>
+					<td>81920</td>
+					<td>3</td>
+					<td>128</td>
+					<td>10.00%</td>
+					<td>128</td>
+			</tr>
+			<tr>
+					<td>66</td>
+					<td>28672</td>
+					<td>57344</td>
+					<td>2</td>
+					<td>0</td>
+					<td>4.91%</td>
+					<td>4096</td>
+			</tr>
+			<tr>
+					<td>67</td>
+					<td>32768</td>
+					<td>32768</td>
+					<td>1</td>
+					<td>0</td>
+					<td>12.50%</td>
+					<td>8192</td>
+			</tr>
+	</tbody>
 </table>
 <ol>
 <li>class 是 mspan 的类型，每种类型对应不同的内存大小。</li>
@@ -2390,8 +2390,8 @@ CALL	runtime·wbBufFlush(SB)
 </span></span><span style="display:flex;"><span><span style="color:#00a8c8">type</span> <span style="color:#75af00">spanSet</span> <span style="color:#00a8c8">struct</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// spanSet是一个两级数据结构，由一个可增长的主干（spine）指向固定大小的块组成。</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 访问spine不需要锁，但添加块或扩展spine时需要获取spine锁。</span>
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	// 因为每个mspan至少覆盖8K的堆内存，且在spanSet中最多占用8字节，</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 因为每个mspan至少覆盖8K的堆内存，且在spanSet中最多占用8字节，</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 所以spine的增长是相当有限的。</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 锁</span>
@@ -2406,8 +2406,8 @@ CALL	runtime·wbBufFlush(SB)
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// index是spanSet中的头尾指针，被压缩在一个字段中。</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// head和tail都表示所有块的逻辑连接中的索引位置，其中head总是在tail之后或等于tail</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// （等于tail时表示集合为空）。这个字段始终通过原子操作访问。</span>
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	// head和tail各自的宽度为32位，这意味着在需要重置之前，我们最多支持2^32次push操作。</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// head和tail各自的宽度为32位，这意味着在需要重置之前，我们最多支持2^32次push操作。</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 如果堆中的每个span都存储在这个集合中，且每个span都是最小尺寸（1个运行时页面，8 KiB），</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 那么大约需要32 TiB大小的堆才会导致无法表示的情况。</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 头部索引</span>
@@ -3787,8 +3787,8 @@ M 的空闲列表： 线程的创建于销毁代价是很大的 为了复用性<
 </span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// Spinning Ms: steal work from other Ps.</span>
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	// Limit the number of spinning Ms to half the number of busy Ps.</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// Limit the number of spinning Ms to half the number of busy Ps.</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// This is necessary to prevent excessive CPU consumption when</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// GOMAXPROCS&gt;&gt;1 but the program parallelism is low.</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">mp</span><span style="color:#111">.</span><span style="color:#75af00">spinning</span> <span style="color:#f92672">||</span> <span style="color:#ae81ff">2</span><span style="color:#f92672">*</span><span style="color:#75af00">sched</span><span style="color:#111">.</span><span style="color:#75af00">nmspinning</span><span style="color:#111">.</span><span style="color:#75af00">Load</span><span style="color:#111">()</span> <span style="color:#111">&lt;</span> <span style="color:#75af00">gomaxprocs</span><span style="color:#f92672">-</span><span style="color:#75af00">sched</span><span style="color:#111">.</span><span style="color:#75af00">npidle</span><span style="color:#111">.</span><span style="color:#75af00">Load</span><span style="color:#111">()</span> <span style="color:#111">{</span>
@@ -3959,8 +3959,8 @@ M 的空闲列表： 线程的创建于销毁代价是很大的 为了复用性<
 </span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">locked</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>		<span style="color:#75715e">// Wait until another thread schedules gp and so m again.</span>
-</span></span><span style="display:flex;"><span>		<span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">		// N.B. lockedm must be this M, as this g was running on this M</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75715e">// N.B. lockedm must be this M, as this g was running on this M</span>
 </span></span><span style="display:flex;"><span>		<span style="color:#75715e">// before entersyscall.</span>
 </span></span><span style="display:flex;"><span>		<span style="color:#75af00">stoplockedm</span><span style="color:#111">()</span>
 </span></span><span style="display:flex;"><span>		<span style="color:#75af00">execute</span><span style="color:#111">(</span><span style="color:#75af00">gp</span><span style="color:#111">,</span> <span style="color:#00a8c8">false</span><span style="color:#111">)</span> <span style="color:#75715e">// Never returns.</span>
@@ -7168,38 +7168,38 @@ type hmap struct {
 </span></span></code></pre></div><p>源码里，函数命名不拘小节，直接带上后缀 1，2，完全不理会《代码大全》里的那一套命名的做法。从上面两个函数的声明也可以看出差别了，<code>mapaccess2</code> 函数返回值多了一个 bool 型变量，两者的代码也是完全一样的，只是在返回值后面多加了一个 false 或者 true。</p>
 <p>另外，根据 key 的不同类型，编译器还会将查找、插入、删除的函数用更具体的函数替换，以优化效率：</p>
 <table>
-  <thead>
-      <tr>
-          <th>key 类型</th>
-          <th>查找</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td>uint32</td>
-          <td>mapaccess1_fast32(t *maptype, h *hmap, key uint32) unsafe.Pointer</td>
-      </tr>
-      <tr>
-          <td>uint32</td>
-          <td>mapaccess2_fast32(t *maptype, h *hmap, key uint32) (unsafe.Pointer, bool)</td>
-      </tr>
-      <tr>
-          <td>uint64</td>
-          <td>mapaccess1_fast64(t *maptype, h *hmap, key uint64) unsafe.Pointer</td>
-      </tr>
-      <tr>
-          <td>uint64</td>
-          <td>mapaccess2_fast64(t *maptype, h *hmap, key uint64) (unsafe.Pointer, bool)</td>
-      </tr>
-      <tr>
-          <td>string</td>
-          <td>mapaccess1_faststr(t *maptype, h *hmap, ky string) unsafe.Pointer</td>
-      </tr>
-      <tr>
-          <td>string</td>
-          <td>mapaccess2_faststr(t *maptype, h *hmap, ky string) (unsafe.Pointer, bool)</td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>key 类型</th>
+					<th>查找</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>uint32</td>
+					<td>mapaccess1_fast32(t *maptype, h *hmap, key uint32) unsafe.Pointer</td>
+			</tr>
+			<tr>
+					<td>uint32</td>
+					<td>mapaccess2_fast32(t *maptype, h *hmap, key uint32) (unsafe.Pointer, bool)</td>
+			</tr>
+			<tr>
+					<td>uint64</td>
+					<td>mapaccess1_fast64(t *maptype, h *hmap, key uint64) unsafe.Pointer</td>
+			</tr>
+			<tr>
+					<td>uint64</td>
+					<td>mapaccess2_fast64(t *maptype, h *hmap, key uint64) (unsafe.Pointer, bool)</td>
+			</tr>
+			<tr>
+					<td>string</td>
+					<td>mapaccess1_faststr(t *maptype, h *hmap, ky string) unsafe.Pointer</td>
+			</tr>
+			<tr>
+					<td>string</td>
+					<td>mapaccess2_faststr(t *maptype, h *hmap, ky string) (unsafe.Pointer, bool)</td>
+			</tr>
+	</tbody>
 </table>
 <p>这些函数的参数类型直接是具体的 uint32、unt64、string，在函数内部由于提前知晓了 key 的类型，所以内存布局是很清楚的，因此能节省很多操作，提高效率。</p>
 <p>上面这些函数都是在文件 <code>src/runtime/hashmap_fast.go</code> 里。</p>
@@ -7667,26 +7667,26 @@ type hmap struct {
 <p>实际上插入或修改 key 的语法是一样的，只不过前者操作的 key 在 map 中不存在，而后者操作的 key 存在 map 中。</p>
 <p>mapassign 有一个系列的函数，根据 key 类型的不同，编译器会将其优化为相应的“快速函数”。</p>
 <table>
-  <thead>
-      <tr>
-          <th>key 类型</th>
-          <th>插入</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td>uint32</td>
-          <td>mapassign_fast32(t *maptype, h *hmap, key uint32) unsafe.Pointer</td>
-      </tr>
-      <tr>
-          <td>uint64</td>
-          <td>mapassign_fast64(t *maptype, h *hmap, key uint64) unsafe.Pointer</td>
-      </tr>
-      <tr>
-          <td>string</td>
-          <td>mapassign_faststr(t *maptype, h *hmap, ky string) unsafe.Pointer</td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>key 类型</th>
+					<th>插入</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>uint32</td>
+					<td>mapassign_fast32(t *maptype, h *hmap, key uint32) unsafe.Pointer</td>
+			</tr>
+			<tr>
+					<td>uint64</td>
+					<td>mapassign_fast64(t *maptype, h *hmap, key uint64) unsafe.Pointer</td>
+			</tr>
+			<tr>
+					<td>string</td>
+					<td>mapassign_faststr(t *maptype, h *hmap, ky string) unsafe.Pointer</td>
+			</tr>
+	</tbody>
 </table>
 <p>我们只用研究最一般的赋值函数 <code>mapassign</code>。</p>
 <p>整体来看，流程非常得简单：对 key 计算 hash 值，根据 hash 值按照之前的流程，找到要赋值的位置（可能是插入新 key，也可能是更新老 key），对相应位置进行赋值。</p>
@@ -7709,26 +7709,26 @@ type hmap struct {
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#75af00">mapdelete</span><span style="color:#111">(</span><span style="color:#75af00">t</span> <span style="color:#f92672">*</span><span style="color:#75af00">maptype</span><span style="color:#111">,</span> <span style="color:#75af00">h</span> <span style="color:#f92672">*</span><span style="color:#75af00">hmap</span><span style="color:#111">,</span> <span style="color:#75af00">key</span> <span style="color:#75af00">unsafe</span><span style="color:#111">.</span><span style="color:#75af00">Pointer</span><span style="color:#111">)</span> 
 </span></span></code></pre></div><p>根据 key 类型的不同，删除操作会被优化成更具体的函数：</p>
 <table>
-  <thead>
-      <tr>
-          <th>key 类型</th>
-          <th>删除</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td>uint32</td>
-          <td>mapdelete_fast32(t *maptype, h *hmap, key uint32)</td>
-      </tr>
-      <tr>
-          <td>uint64</td>
-          <td>mapdelete_fast64(t *maptype, h *hmap, key uint64)</td>
-      </tr>
-      <tr>
-          <td>string</td>
-          <td>mapdelete_faststr(t *maptype, h *hmap, ky string)</td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>key 类型</th>
+					<th>删除</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>uint32</td>
+					<td>mapdelete_fast32(t *maptype, h *hmap, key uint32)</td>
+			</tr>
+			<tr>
+					<td>uint64</td>
+					<td>mapdelete_fast64(t *maptype, h *hmap, key uint64)</td>
+			</tr>
+			<tr>
+					<td>string</td>
+					<td>mapdelete_faststr(t *maptype, h *hmap, ky string)</td>
+			</tr>
+	</tbody>
 </table>
 <p>当然，我们只关心 <code>mapdelete</code> 函数。它首先会检查 h.flags 标志，如果发现写标位是 1，直接 panic，因为这表明有其他协程同时在进行写操作。</p>
 <p>计算 key 的哈希，找到落入的 bucket。检查此 map 如果正在扩容的过程中，直接触发一次搬迁操作。</p>
@@ -7949,119 +7949,119 @@ false
 <p>根据Uber-go Zap的文档，它的性能比类似的结构化日志包更好——也比标准库更快。 以下是Zap发布的基准测试信息</p>
 <p>记录一条消息和10个字段:</p>
 <table>
-  <thead>
-      <tr>
-          <th style="text-align: center">Package</th>
-          <th style="text-align: center">Time</th>
-          <th style="text-align: center">Time % to zap</th>
-          <th style="text-align: center">Objects Allocated</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td style="text-align: center">⚡️ zap</td>
-          <td style="text-align: center">862 ns/op</td>
-          <td style="text-align: center">+0%</td>
-          <td style="text-align: center">5 allocs/op</td>
-      </tr>
-      <tr>
-          <td style="text-align: center">⚡️ zap (sugared)</td>
-          <td style="text-align: center">1250 ns/op</td>
-          <td style="text-align: center">+45%</td>
-          <td style="text-align: center">11 allocs/op</td>
-      </tr>
-      <tr>
-          <td style="text-align: center">zerolog</td>
-          <td style="text-align: center">4021 ns/op</td>
-          <td style="text-align: center">+366%</td>
-          <td style="text-align: center">76 allocs/op</td>
-      </tr>
-      <tr>
-          <td style="text-align: center">go-kit</td>
-          <td style="text-align: center">4542 ns/op</td>
-          <td style="text-align: center">+427%</td>
-          <td style="text-align: center">105 allocs/op</td>
-      </tr>
-      <tr>
-          <td style="text-align: center">apex/log</td>
-          <td style="text-align: center">26785 ns/op</td>
-          <td style="text-align: center">+3007%</td>
-          <td style="text-align: center">115 allocs/op</td>
-      </tr>
-      <tr>
-          <td style="text-align: center">logrus</td>
-          <td style="text-align: center">29501 ns/op</td>
-          <td style="text-align: center">+3322%</td>
-          <td style="text-align: center">125 allocs/op</td>
-      </tr>
-      <tr>
-          <td style="text-align: center">log15</td>
-          <td style="text-align: center">29906 ns/op</td>
-          <td style="text-align: center">+3369%</td>
-          <td style="text-align: center">122 allocs/op</td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th style="text-align: center">Package</th>
+					<th style="text-align: center">Time</th>
+					<th style="text-align: center">Time % to zap</th>
+					<th style="text-align: center">Objects Allocated</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td style="text-align: center">⚡️ zap</td>
+					<td style="text-align: center">862 ns/op</td>
+					<td style="text-align: center">+0%</td>
+					<td style="text-align: center">5 allocs/op</td>
+			</tr>
+			<tr>
+					<td style="text-align: center">⚡️ zap (sugared)</td>
+					<td style="text-align: center">1250 ns/op</td>
+					<td style="text-align: center">+45%</td>
+					<td style="text-align: center">11 allocs/op</td>
+			</tr>
+			<tr>
+					<td style="text-align: center">zerolog</td>
+					<td style="text-align: center">4021 ns/op</td>
+					<td style="text-align: center">+366%</td>
+					<td style="text-align: center">76 allocs/op</td>
+			</tr>
+			<tr>
+					<td style="text-align: center">go-kit</td>
+					<td style="text-align: center">4542 ns/op</td>
+					<td style="text-align: center">+427%</td>
+					<td style="text-align: center">105 allocs/op</td>
+			</tr>
+			<tr>
+					<td style="text-align: center">apex/log</td>
+					<td style="text-align: center">26785 ns/op</td>
+					<td style="text-align: center">+3007%</td>
+					<td style="text-align: center">115 allocs/op</td>
+			</tr>
+			<tr>
+					<td style="text-align: center">logrus</td>
+					<td style="text-align: center">29501 ns/op</td>
+					<td style="text-align: center">+3322%</td>
+					<td style="text-align: center">125 allocs/op</td>
+			</tr>
+			<tr>
+					<td style="text-align: center">log15</td>
+					<td style="text-align: center">29906 ns/op</td>
+					<td style="text-align: center">+3369%</td>
+					<td style="text-align: center">122 allocs/op</td>
+			</tr>
+	</tbody>
 </table>
 <p>记录一个静态字符串，没有任何上下文或printf风格的模板：</p>
 <table>
-  <thead>
-      <tr>
-          <th style="text-align: center">Package</th>
-          <th style="text-align: center">Time</th>
-          <th style="text-align: center">Time % to zap</th>
-          <th style="text-align: center">Objects Allocated</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td style="text-align: center">⚡️ zap</td>
-          <td style="text-align: center">118 ns/op</td>
-          <td style="text-align: center">+0%</td>
-          <td style="text-align: center">0 allocs/op</td>
-      </tr>
-      <tr>
-          <td style="text-align: center">⚡️ zap (sugared)</td>
-          <td style="text-align: center">191 ns/op</td>
-          <td style="text-align: center">+62%</td>
-          <td style="text-align: center">2 allocs/op</td>
-      </tr>
-      <tr>
-          <td style="text-align: center">zerolog</td>
-          <td style="text-align: center">93 ns/op</td>
-          <td style="text-align: center">-21%</td>
-          <td style="text-align: center">0 allocs/op</td>
-      </tr>
-      <tr>
-          <td style="text-align: center">go-kit</td>
-          <td style="text-align: center">280 ns/op</td>
-          <td style="text-align: center">+137%</td>
-          <td style="text-align: center">11 allocs/op</td>
-      </tr>
-      <tr>
-          <td style="text-align: center">standard library</td>
-          <td style="text-align: center">499 ns/op</td>
-          <td style="text-align: center">+323%</td>
-          <td style="text-align: center">2 allocs/op</td>
-      </tr>
-      <tr>
-          <td style="text-align: center">apex/log</td>
-          <td style="text-align: center">1990 ns/op</td>
-          <td style="text-align: center">+1586%</td>
-          <td style="text-align: center">10 allocs/op</td>
-      </tr>
-      <tr>
-          <td style="text-align: center">logrus</td>
-          <td style="text-align: center">3129 ns/op</td>
-          <td style="text-align: center">+2552%</td>
-          <td style="text-align: center">24 allocs/op</td>
-      </tr>
-      <tr>
-          <td style="text-align: center">log15</td>
-          <td style="text-align: center">3887 ns/op</td>
-          <td style="text-align: center">+3194%</td>
-          <td style="text-align: center">23 allocs/op</td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th style="text-align: center">Package</th>
+					<th style="text-align: center">Time</th>
+					<th style="text-align: center">Time % to zap</th>
+					<th style="text-align: center">Objects Allocated</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td style="text-align: center">⚡️ zap</td>
+					<td style="text-align: center">118 ns/op</td>
+					<td style="text-align: center">+0%</td>
+					<td style="text-align: center">0 allocs/op</td>
+			</tr>
+			<tr>
+					<td style="text-align: center">⚡️ zap (sugared)</td>
+					<td style="text-align: center">191 ns/op</td>
+					<td style="text-align: center">+62%</td>
+					<td style="text-align: center">2 allocs/op</td>
+			</tr>
+			<tr>
+					<td style="text-align: center">zerolog</td>
+					<td style="text-align: center">93 ns/op</td>
+					<td style="text-align: center">-21%</td>
+					<td style="text-align: center">0 allocs/op</td>
+			</tr>
+			<tr>
+					<td style="text-align: center">go-kit</td>
+					<td style="text-align: center">280 ns/op</td>
+					<td style="text-align: center">+137%</td>
+					<td style="text-align: center">11 allocs/op</td>
+			</tr>
+			<tr>
+					<td style="text-align: center">standard library</td>
+					<td style="text-align: center">499 ns/op</td>
+					<td style="text-align: center">+323%</td>
+					<td style="text-align: center">2 allocs/op</td>
+			</tr>
+			<tr>
+					<td style="text-align: center">apex/log</td>
+					<td style="text-align: center">1990 ns/op</td>
+					<td style="text-align: center">+1586%</td>
+					<td style="text-align: center">10 allocs/op</td>
+			</tr>
+			<tr>
+					<td style="text-align: center">logrus</td>
+					<td style="text-align: center">3129 ns/op</td>
+					<td style="text-align: center">+2552%</td>
+					<td style="text-align: center">24 allocs/op</td>
+			</tr>
+			<tr>
+					<td style="text-align: center">log15</td>
+					<td style="text-align: center">3887 ns/op</td>
+					<td style="text-align: center">+3194%</td>
+					<td style="text-align: center">23 allocs/op</td>
+			</tr>
+	</tbody>
 </table>
 <h2 id="安装">安装</h2>
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>go get -u go.uber.org/zap
@@ -8185,8 +8185,8 @@ zap 不支持文件归档，如果要支持文件按大小或者时间归档，�
 </span></span><span style="display:flex;"><span>        <span style="color:#75af00">LineEnding</span><span style="color:#111">:</span>     <span style="color:#75af00">zapcore</span><span style="color:#111">.</span><span style="color:#75af00">DefaultLineEnding</span><span style="color:#111">,</span>
 </span></span><span style="display:flex;"><span>        <span style="color:#75af00">EncodeLevel</span><span style="color:#111">:</span>    <span style="color:#75af00">zapcore</span><span style="color:#111">.</span><span style="color:#75af00">LowercaseLevelEncoder</span><span style="color:#111">,</span>  <span style="color:#75715e">// 小写编码器</span>
 </span></span><span style="display:flex;"><span>        <span style="color:#75af00">EncodeTime</span><span style="color:#111">:</span>     <span style="color:#75af00">zapcore</span><span style="color:#111">.</span><span style="color:#75af00">ISO8601TimeEncoder</span><span style="color:#111">,</span>     <span style="color:#75715e">// ISO8601 UTC 时间格式</span>
-</span></span><span style="display:flex;"><span>        <span style="color:#75af00">EncodeDuration</span><span style="color:#111">:</span> <span style="color:#75af00">zapcore</span><span style="color:#111">.</span><span style="color:#75af00">SecondsDurationEncoder</span><span style="color:#111">,</span> <span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">        EncodeCaller:   zapcore.FullCallerEncoder,      // 全路径编码器</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">EncodeDuration</span><span style="color:#111">:</span> <span style="color:#75af00">zapcore</span><span style="color:#111">.</span><span style="color:#75af00">SecondsDurationEncoder</span><span style="color:#111">,</span> <span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">EncodeCaller</span><span style="color:#111">:</span>   <span style="color:#75af00">zapcore</span><span style="color:#111">.</span><span style="color:#75af00">FullCallerEncoder</span><span style="color:#111">,</span>      <span style="color:#75715e">// 全路径编码器</span>
 </span></span><span style="display:flex;"><span>        <span style="color:#75af00">EncodeName</span><span style="color:#111">:</span>     <span style="color:#75af00">zapcore</span><span style="color:#111">.</span><span style="color:#75af00">FullNameEncoder</span><span style="color:#111">,</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#111">}</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 设置日志级别</span>
@@ -8382,8 +8382,8 @@ zap 不支持文件归档，如果要支持文件按大小或者时间归档，�
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// lock protects all fields in hchan, as well as several&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// fields in sudogs blocked on this channel.&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;//
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt; // Do not change another G&amp;#39;s status while holding this lock&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;//&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// Do not change another G&amp;#39;s status while holding this lock&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// (in particular, do not ready a G), as this can deadlock&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// with stack shrinking.&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;lock&lt;/span&gt; &lt;span style="color:#75af00"&gt;mutex&lt;/span&gt;
@@ -8436,8 +8436,8 @@ zap 不支持文件归档，如果要支持文件按大小或者时间归档，�
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>   <span style="color:#75715e">// lock protects all fields in hchan, as well as several</span>
 </span></span><span style="display:flex;"><span>   <span style="color:#75715e">// fields in sudogs blocked on this channel.</span>
-</span></span><span style="display:flex;"><span>   <span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">   // Do not change another G&#39;s status while holding this lock</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#75715e">// Do not change another G&#39;s status while holding this lock</span>
 </span></span><span style="display:flex;"><span>   <span style="color:#75715e">// (in particular, do not ready a G), as this can deadlock</span>
 </span></span><span style="display:flex;"><span>   <span style="color:#75715e">// with stack shrinking.</span>
 </span></span><span style="display:flex;"><span>   <span style="color:#75af00">lock</span> <span style="color:#75af00">mutex</span>
@@ -8561,8 +8561,8 @@ zap 不支持文件归档，如果要支持文件按大小或者时间归档，�
 </span></span><span style="display:flex;"><span>    <span style="color:#75af00">sendq</span> <span style="color:#75af00">waitq</span> <span style="color:#75715e">// list of send waiters </span>
 </span></span><span style="display:flex;"><span>    <span style="color:#f92672">...</span> 
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span> 
-</span></span><span style="display:flex;"><span><span style="color:#75715e">// 
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">type waitq struct { </span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// </span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">type</span> <span style="color:#75af00">waitq</span> <span style="color:#00a8c8">struct</span> <span style="color:#111">{</span> 
 </span></span><span style="display:flex;"><span>    <span style="color:#75af00">first</span> <span style="color:#f92672">*</span><span style="color:#75af00">sudog</span> 
 </span></span><span style="display:flex;"><span>    <span style="color:#75af00">last</span> <span style="color:#f92672">*</span><span style="color:#75af00">sudog</span> 
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span> 
@@ -12842,67 +12842,67 @@ max: strconv.ParseInt: parsing &#34;lots&#34;: invalid syntax
 <p>只要API程序遵循了REST风格，那就可以称其为RESTful API。目前在前后端分离的架构中，前后端基本都是通过RESTful API来进行交互。</p>
 <p>例如，我们现在要编写一个管理书籍的系统，我们可以查询对一本书进行查询、创建、更新和删除等操作，我们在编写程序的时候就要设计客户端浏览器与我们Web服务端交互的方式和路径。按照经验我们通常会设计成如下模式：</p>
 <table>
-  <thead>
-      <tr>
-          <th>请求方法</th>
-          <th>URL</th>
-          <th>含义</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td>GET</td>
-          <td>/book</td>
-          <td>查询书籍信息</td>
-      </tr>
-      <tr>
-          <td>POST</td>
-          <td>/create_book</td>
-          <td>创建书籍记录</td>
-      </tr>
-      <tr>
-          <td>POST</td>
-          <td>/update_book</td>
-          <td>更新书籍信息</td>
-      </tr>
-      <tr>
-          <td>POST</td>
-          <td>/delete_book</td>
-          <td>删除书籍信息</td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>请求方法</th>
+					<th>URL</th>
+					<th>含义</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>GET</td>
+					<td>/book</td>
+					<td>查询书籍信息</td>
+			</tr>
+			<tr>
+					<td>POST</td>
+					<td>/create_book</td>
+					<td>创建书籍记录</td>
+			</tr>
+			<tr>
+					<td>POST</td>
+					<td>/update_book</td>
+					<td>更新书籍信息</td>
+			</tr>
+			<tr>
+					<td>POST</td>
+					<td>/delete_book</td>
+					<td>删除书籍信息</td>
+			</tr>
+	</tbody>
 </table>
 <p>同样的需求我们按照RESTful API设计如下：</p>
 <table>
-  <thead>
-      <tr>
-          <th>请求方法</th>
-          <th>URL</th>
-          <th>含义</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td>GET</td>
-          <td>/book</td>
-          <td>查询书籍信息</td>
-      </tr>
-      <tr>
-          <td>POST</td>
-          <td>/book</td>
-          <td>创建书籍记录</td>
-      </tr>
-      <tr>
-          <td>PUT</td>
-          <td>/book</td>
-          <td>更新书籍信息</td>
-      </tr>
-      <tr>
-          <td>DELETE</td>
-          <td>/book</td>
-          <td>删除书籍信息</td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>请求方法</th>
+					<th>URL</th>
+					<th>含义</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>GET</td>
+					<td>/book</td>
+					<td>查询书籍信息</td>
+			</tr>
+			<tr>
+					<td>POST</td>
+					<td>/book</td>
+					<td>创建书籍记录</td>
+			</tr>
+			<tr>
+					<td>PUT</td>
+					<td>/book</td>
+					<td>更新书籍信息</td>
+			</tr>
+			<tr>
+					<td>DELETE</td>
+					<td>/book</td>
+					<td>删除书籍信息</td>
+			</tr>
+	</tbody>
 </table>
 <p>Gin框架支持开发RESTful API的开发。</p>
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#75af00">main</span><span style="color:#111">()</span> <span style="color:#111">{</span>
@@ -13027,12 +13027,12 @@ max: strconv.ParseInt: parsing &#34;lots&#34;: invalid syntax
 </span></span><span style="display:flex;"><span><span style="color:#111">})</span>
 </span></span></code></pre></div><h3 id="protobuf渲染">protobuf渲染</h3>
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-protobuf" data-lang="protobuf"><span style="display:flex;"><span><span style="color:#75715e">// protobuf文件
-</span></span></span><span style="display:flex;"><span><span style="color:#111">syntax</span> <span style="color:#f92672">=</span> <span style="color:#d88200">&#34;proto3&#34;</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#111">models</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">message</span> <span style="color:#75af00">hello</span> <span style="color:#111">{</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">string</span> <span style="color:#111">content</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#111">}</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">syntax</span> <span style="color:#f92672">=</span> <span style="color:#d88200">&#34;proto3&#34;</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#111">models</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">message</span> <span style="color:#75af00">hello</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">string</span> <span style="color:#111">content</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;net/http&#34;</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;test/models&#34;</span>
@@ -13417,30 +13417,30 @@ max: strconv.ParseInt: parsing &#34;lots&#34;: invalid syntax
 <p>go test命令会遍历所有的*_test.go文件中符合上述命名规则的函数，生成一个临时的main包用于调用相应的测试函数，接着构建并运行、报告测试结果，最后清理测试中生成的临时文件。</p>
 <p>在*_test.go文件中有三种类型的函数，单元测试函数、基准测试函数和示例函数。</p>
 <table>
-  <thead>
-      <tr>
-          <th>类型</th>
-          <th>格式</th>
-          <th>作用</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td>测试函数</td>
-          <td>函数名前缀为Test</td>
-          <td>测试程序的一些逻辑行为是否正确</td>
-      </tr>
-      <tr>
-          <td>基准函数</td>
-          <td>函数名前缀为Benchmark</td>
-          <td>测试函数的性能</td>
-      </tr>
-      <tr>
-          <td>示例函数</td>
-          <td>函数名前缀为Example</td>
-          <td>为文档提供示例文档</td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>类型</th>
+					<th>格式</th>
+					<th>作用</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>测试函数</td>
+					<td>函数名前缀为Test</td>
+					<td>测试程序的一些逻辑行为是否正确</td>
+			</tr>
+			<tr>
+					<td>基准函数</td>
+					<td>函数名前缀为Benchmark</td>
+					<td>测试函数的性能</td>
+			</tr>
+			<tr>
+					<td>示例函数</td>
+					<td>函数名前缀为Example</td>
+					<td>为文档提供示例文档</td>
+			</tr>
+	</tbody>
 </table>
 <h2 id="测试函数">测试函数</h2>
 <p>每个测试函数必须导入testing包。测试函数有如下的签名：</p>
@@ -14465,15 +14465,15 @@ Go 1.7 引入一个 context 包，它使得跨 API 边界的请求范围元数�
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// never be canceled. Successive calls to Done return the same value.</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// The close of the Done channel may happen asynchronously,</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// after the cancel function returns.</span>
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	// WithCancel arranges for Done to be closed when cancel is called;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// WithCancel arranges for Done to be closed when cancel is called;</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// WithDeadline arranges for Done to be closed when the deadline</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// expires; WithTimeout arranges for Done to be closed when the timeout</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// elapses.</span>
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	// Done is provided for use in select statements:</span>
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	//  // Stream generates values with DoSomething and sends them to out</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// Done is provided for use in select statements:</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//  // Stream generates values with DoSomething and sends them to out</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">//  // until DoSomething returns an error or ctx.Done is closed.</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">//  func Stream(ctx context.Context, out chan&lt;- Value) error {</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">//  	for {</span>
@@ -14488,8 +14488,8 @@ Go 1.7 引入一个 context 包，它使得跨 API 边界的请求范围元数�
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">//  		}</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">//  	}</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">//  }</span>
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	// See https://blog.golang.org/pipelines for more examples of how to use</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// See https://blog.golang.org/pipelines for more examples of how to use</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// a Done channel for cancellation.</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">Done</span><span style="color:#111">()</span> <span style="color:#f92672">&lt;-</span><span style="color:#00a8c8">chan</span> <span style="color:#00a8c8">struct</span><span style="color:#111">{}</span>
 </span></span><span style="display:flex;"><span>
@@ -14503,44 +14503,44 @@ Go 1.7 引入一个 context 包，它使得跨 API 边界的请求范围元数�
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// Value returns the value associated with this context for key, or nil</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// if no value is associated with key. Successive calls to Value with</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// the same key returns the same result.</span>
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	// Use context values only for request-scoped data that transits</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// Use context values only for request-scoped data that transits</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// processes and API boundaries, not for passing optional parameters to</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// functions.</span>
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	// A key identifies a specific value in a Context. Functions that wish</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// A key identifies a specific value in a Context. Functions that wish</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// to store values in Context typically allocate a key in a global</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// variable then use that key as the argument to context.WithValue and</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// Context.Value. A key can be any type that supports equality;</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// packages should define keys as an unexported type to avoid</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// collisions.</span>
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	// Packages that define a Context key should provide type-safe accessors</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// Packages that define a Context key should provide type-safe accessors</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// for the values stored using that key:</span>
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	// 	// Package user defines a User type that&#39;s stored in Contexts.</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 	// Package user defines a User type that&#39;s stored in Contexts.</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 	package user</span>
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	// 	import &#34;context&#34;</span>
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	// 	// User is the type of value stored in the Contexts.</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 	import &#34;context&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 	// User is the type of value stored in the Contexts.</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 	type User struct {...}</span>
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	// 	// key is an unexported type for keys defined in this package.</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 	// key is an unexported type for keys defined in this package.</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 	// This prevents collisions with keys defined in other packages.</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 	type key int</span>
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	// 	// userKey is the key for user.User values in Contexts. It is</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 	// userKey is the key for user.User values in Contexts. It is</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 	// unexported; clients use user.NewContext and user.FromContext</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 	// instead of using this key directly.</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 	var userKey key</span>
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	// 	// NewContext returns a new Context that carries value u.</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 	// NewContext returns a new Context that carries value u.</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 	func NewContext(ctx context.Context, u *User) context.Context {</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 		return context.WithValue(ctx, userKey, u)</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 	}</span>
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	// 	// FromContext returns the User value stored in ctx, if any.</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 	// FromContext returns the User value stored in ctx, if any.</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 	func FromContext(ctx context.Context) (*User, bool) {</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 		u, ok := ctx.Value(userKey).(*User)</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 		return u, ok</span>
@@ -17357,236 +17357,236 @@ y, err := strconv.ParseInt(&#34;123&#34;, 10, 64) // base 10, up to 64 bits
 <p>*printf系列函数都支持format格式化参数，在这里我们按照占位符将被替换的变量类型划分，方便查询和记忆。</p>
 <h3 id="通用占位符">通用占位符</h3>
 <table>
-  <thead>
-      <tr>
-          <th>占位符</th>
-          <th>说明</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td>%v</td>
-          <td>值的默认格式表示</td>
-      </tr>
-      <tr>
-          <td>%+v</td>
-          <td>类似%v，但输出结构体时会添加字段名</td>
-      </tr>
-      <tr>
-          <td>%#v</td>
-          <td>值的Go语法表示</td>
-      </tr>
-      <tr>
-          <td>%T</td>
-          <td>打印值的类型</td>
-      </tr>
-      <tr>
-          <td>%%</td>
-          <td>百分号</td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>占位符</th>
+					<th>说明</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>%v</td>
+					<td>值的默认格式表示</td>
+			</tr>
+			<tr>
+					<td>%+v</td>
+					<td>类似%v，但输出结构体时会添加字段名</td>
+			</tr>
+			<tr>
+					<td>%#v</td>
+					<td>值的Go语法表示</td>
+			</tr>
+			<tr>
+					<td>%T</td>
+					<td>打印值的类型</td>
+			</tr>
+			<tr>
+					<td>%%</td>
+					<td>百分号</td>
+			</tr>
+	</tbody>
 </table>
 <h3 id="布尔型">布尔型</h3>
 <table>
-  <thead>
-      <tr>
-          <th>占位符</th>
-          <th>说明</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td>%t</td>
-          <td>true或false</td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>占位符</th>
+					<th>说明</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>%t</td>
+					<td>true或false</td>
+			</tr>
+	</tbody>
 </table>
 <h3 id="整型">整型</h3>
 <table>
-  <thead>
-      <tr>
-          <th>占位符</th>
-          <th>说明</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td>%b</td>
-          <td>表示为二进制</td>
-      </tr>
-      <tr>
-          <td>%c</td>
-          <td>该值对应的unicode码值</td>
-      </tr>
-      <tr>
-          <td>%d</td>
-          <td>表示为十进制</td>
-      </tr>
-      <tr>
-          <td>%o</td>
-          <td>表示为八进制</td>
-      </tr>
-      <tr>
-          <td>%x</td>
-          <td>表示为十六进制，使用a-f</td>
-      </tr>
-      <tr>
-          <td>%X</td>
-          <td>表示为十六进制，使用A-F</td>
-      </tr>
-      <tr>
-          <td>%U</td>
-          <td>表示为Unicode格式：U+1234，等价于”U+%04X”</td>
-      </tr>
-      <tr>
-          <td>%q</td>
-          <td>该值对应的单引号括起来的go语法字符字面值，必要时会采用安全的转义表示</td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>占位符</th>
+					<th>说明</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>%b</td>
+					<td>表示为二进制</td>
+			</tr>
+			<tr>
+					<td>%c</td>
+					<td>该值对应的unicode码值</td>
+			</tr>
+			<tr>
+					<td>%d</td>
+					<td>表示为十进制</td>
+			</tr>
+			<tr>
+					<td>%o</td>
+					<td>表示为八进制</td>
+			</tr>
+			<tr>
+					<td>%x</td>
+					<td>表示为十六进制，使用a-f</td>
+			</tr>
+			<tr>
+					<td>%X</td>
+					<td>表示为十六进制，使用A-F</td>
+			</tr>
+			<tr>
+					<td>%U</td>
+					<td>表示为Unicode格式：U+1234，等价于”U+%04X”</td>
+			</tr>
+			<tr>
+					<td>%q</td>
+					<td>该值对应的单引号括起来的go语法字符字面值，必要时会采用安全的转义表示</td>
+			</tr>
+	</tbody>
 </table>
 <h3 id="浮点数与复数">浮点数与复数</h3>
 <table>
-  <thead>
-      <tr>
-          <th>占位符</th>
-          <th>说明</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td>%b</td>
-          <td>无小数部分、二进制指数的科学计数法，如-123456p-78</td>
-      </tr>
-      <tr>
-          <td>%e</td>
-          <td>科学计数法，如-1234.456e+78</td>
-      </tr>
-      <tr>
-          <td>%E</td>
-          <td>科学计数法，如-1234.456E+78</td>
-      </tr>
-      <tr>
-          <td>%f</td>
-          <td>有小数部分但无指数部分，如123.456</td>
-      </tr>
-      <tr>
-          <td>%F</td>
-          <td>等价于%f</td>
-      </tr>
-      <tr>
-          <td>%g</td>
-          <td>根据实际情况采用%e或%f格式（以获得更简洁、准确的输出）</td>
-      </tr>
-      <tr>
-          <td>%G</td>
-          <td>根据实际情况采用%E或%F格式（以获得更简洁、准确的输出）</td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>占位符</th>
+					<th>说明</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>%b</td>
+					<td>无小数部分、二进制指数的科学计数法，如-123456p-78</td>
+			</tr>
+			<tr>
+					<td>%e</td>
+					<td>科学计数法，如-1234.456e+78</td>
+			</tr>
+			<tr>
+					<td>%E</td>
+					<td>科学计数法，如-1234.456E+78</td>
+			</tr>
+			<tr>
+					<td>%f</td>
+					<td>有小数部分但无指数部分，如123.456</td>
+			</tr>
+			<tr>
+					<td>%F</td>
+					<td>等价于%f</td>
+			</tr>
+			<tr>
+					<td>%g</td>
+					<td>根据实际情况采用%e或%f格式（以获得更简洁、准确的输出）</td>
+			</tr>
+			<tr>
+					<td>%G</td>
+					<td>根据实际情况采用%E或%F格式（以获得更简洁、准确的输出）</td>
+			</tr>
+	</tbody>
 </table>
 <h3 id="字符串和byte">字符串和[]byte</h3>
 <table>
-  <thead>
-      <tr>
-          <th>占位符</th>
-          <th>说明</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td>%s</td>
-          <td>直接输出字符串或者[]byte</td>
-      </tr>
-      <tr>
-          <td>%q</td>
-          <td>该值对应的双引号括起来的go语法字符串字面值，必要时会采用安全的转义表示</td>
-      </tr>
-      <tr>
-          <td>%x</td>
-          <td>每个字节用两字符十六进制数表示（使用a-f）</td>
-      </tr>
-      <tr>
-          <td>%X</td>
-          <td>每个字节用两字符十六进制数表示（使用A-F）</td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>占位符</th>
+					<th>说明</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>%s</td>
+					<td>直接输出字符串或者[]byte</td>
+			</tr>
+			<tr>
+					<td>%q</td>
+					<td>该值对应的双引号括起来的go语法字符串字面值，必要时会采用安全的转义表示</td>
+			</tr>
+			<tr>
+					<td>%x</td>
+					<td>每个字节用两字符十六进制数表示（使用a-f）</td>
+			</tr>
+			<tr>
+					<td>%X</td>
+					<td>每个字节用两字符十六进制数表示（使用A-F）</td>
+			</tr>
+	</tbody>
 </table>
 <h3 id="指针">指针</h3>
 <table>
-  <thead>
-      <tr>
-          <th>占位符</th>
-          <th>说明</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td>%p</td>
-          <td>表示为十六进制，并加上前导的0x</td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>占位符</th>
+					<th>说明</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>%p</td>
+					<td>表示为十六进制，并加上前导的0x</td>
+			</tr>
+	</tbody>
 </table>
 <h3 id="宽度标识符">宽度标识符</h3>
 <p>宽度通过一个紧跟在百分号后面的十进制数指定，如果未指定宽度，则表示值时除必需之外不作填充。精度通过（可选的）宽度后跟点号后跟的十进制数指定。如果未指定精度，会使用默认精度；如果点号后没有跟数字，表示精度为0。举例如下：</p>
 <table>
-  <thead>
-      <tr>
-          <th>占位符</th>
-          <th>说明</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td>%f</td>
-          <td>默认宽度，默认精度</td>
-      </tr>
-      <tr>
-          <td>%9f</td>
-          <td>宽度9，默认精度</td>
-      </tr>
-      <tr>
-          <td>%.2f</td>
-          <td>默认宽度，精度2</td>
-      </tr>
-      <tr>
-          <td>%9.2f</td>
-          <td>宽度9，精度2</td>
-      </tr>
-      <tr>
-          <td>%9.f</td>
-          <td>宽度9，精度0</td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>占位符</th>
+					<th>说明</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>%f</td>
+					<td>默认宽度，默认精度</td>
+			</tr>
+			<tr>
+					<td>%9f</td>
+					<td>宽度9，默认精度</td>
+			</tr>
+			<tr>
+					<td>%.2f</td>
+					<td>默认宽度，精度2</td>
+			</tr>
+			<tr>
+					<td>%9.2f</td>
+					<td>宽度9，精度2</td>
+			</tr>
+			<tr>
+					<td>%9.f</td>
+					<td>宽度9，精度0</td>
+			</tr>
+	</tbody>
 </table>
 <h3 id="其他falg">其他falg</h3>
 <table>
-  <thead>
-      <tr>
-          <th>占位符</th>
-          <th>说明</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td>’+’</td>
-          <td>总是输出数值的正负号；对%q（%+q）会生成全部是ASCII字符的输出（通过转义）；</td>
-      </tr>
-      <tr>
-          <td>’ ‘</td>
-          <td>对数值，正数前加空格而负数前加负号；对字符串采用%x或%X时（% x或% X）会给各打印的字节之间加空格</td>
-      </tr>
-      <tr>
-          <td>’-’</td>
-          <td>在输出右边填充空白而不是默认的左边（即从默认的右对齐切换为左对齐）；</td>
-      </tr>
-      <tr>
-          <td>’#’</td>
-          <td>八进制数前加0（%#o），十六进制数前加0x（%#x）或0X（%#X），指针去掉前面的0x（%#p）对%q（%#q），对%U（%#U）会输出空格和单引号括起来的go字面值；</td>
-      </tr>
-      <tr>
-          <td>‘0’</td>
-          <td>使用0而不是空格填充，对于数值类型会把填充的0放在正负号后面；</td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>占位符</th>
+					<th>说明</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>’+’</td>
+					<td>总是输出数值的正负号；对%q（%+q）会生成全部是ASCII字符的输出（通过转义）；</td>
+			</tr>
+			<tr>
+					<td>’ ‘</td>
+					<td>对数值，正数前加空格而负数前加负号；对字符串采用%x或%X时（% x或% X）会给各打印的字节之间加空格</td>
+			</tr>
+			<tr>
+					<td>’-’</td>
+					<td>在输出右边填充空白而不是默认的左边（即从默认的右对齐切换为左对齐）；</td>
+			</tr>
+			<tr>
+					<td>’#’</td>
+					<td>八进制数前加0（%#o），十六进制数前加0x（%#x）或0X（%#X），指针去掉前面的0x（%#p）对%q（%#q），对%U（%#U）会输出空格和单引号括起来的go字面值；</td>
+			</tr>
+			<tr>
+					<td>‘0’</td>
+					<td>使用0而不是空格填充，对于数值类型会把填充的0放在正负号后面；</td>
+			</tr>
+	</tbody>
 </table>
 <h2 id="获取输入">获取输入</h2>
 <p>Go语言fmt包下有fmt.Scan、fmt.Scanf、fmt.Scanln三个函数，可以在程序运行过程中从标准输入获取用户的输入。</p>

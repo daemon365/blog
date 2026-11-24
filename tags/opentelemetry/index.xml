@@ -29,7 +29,8 @@
 谷歌和微软下定决心结束江湖之乱，首要的问题是如何整合两个两个社区已有的项目，OpenTelemetry 主要的理念就是，兼容 &lt;strong&gt;OpenCensus&lt;/strong&gt; 和 &lt;strong&gt;OpenTracing&lt;/strong&gt; ，可以让使用者无需改动或者很小的改动就可以接入 &lt;strong&gt;OpenTelemetry&lt;/strong&gt;&lt;/p&gt;
 &lt;h2 id="kratos-的链路追踪实践"&gt;Kratos 的链路追踪实践&lt;/h2&gt;
 &lt;blockquote&gt;
-&lt;p&gt;Kratos 一套轻量级 Go 微服务框架，包含大量微服务相关框架及工具。&lt;/p&gt;</description><content:encoded><![CDATA[<h2 id="链路追踪的前世今生">链路追踪的前世今生</h2>
+&lt;p&gt;Kratos 一套轻量级 Go 微服务框架，包含大量微服务相关框架及工具。&lt;/p&gt;
+&lt;/blockquote&gt;</description><content:encoded><![CDATA[<h2 id="链路追踪的前世今生">链路追踪的前世今生</h2>
 <blockquote>
 <p>分布式跟踪（也称为分布式请求跟踪）是一种用于分析和监控应用程序的方法，尤其是使用微服务架构构建的应用程序。分布式跟踪有助于精确定位故障发生的位置以及导致性能差的原因。</p>
 </blockquote>
@@ -133,8 +134,8 @@
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// Grpc</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">component</span> <span style="color:#111">=</span> <span style="color:#d88200">&#34;gRPC&#34;</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">operation</span> <span style="color:#111">=</span> <span style="color:#75af00">info</span><span style="color:#111">.</span><span style="color:#75af00">FullMethod</span>
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	// 调用 grpc/metadata包中metadata.FromIncomingContext(ctx)传入 ctx，转换 grpc 的元数据</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 调用 grpc/metadata包中metadata.FromIncomingContext(ctx)传入 ctx，转换 grpc 的元数据</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">md</span><span style="color:#111">,</span> <span style="color:#75af00">ok</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">metadata</span><span style="color:#111">.</span><span style="color:#75af00">FromIncomingContext</span><span style="color:#111">(</span><span style="color:#75af00">ctx</span><span style="color:#111">);</span> <span style="color:#75af00">ok</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>		<span style="color:#75715e">// 调用carrier.go 中的 MetadataCarrier 将 MD 转换 成文本映射载体</span>
 </span></span><span style="display:flex;"><span>		<span style="color:#75af00">carrier</span> <span style="color:#111">=</span> <span style="color:#75af00">MetadataCarrier</span><span style="color:#111">(</span><span style="color:#75af00">md</span><span style="color:#111">)</span>

@@ -573,8 +573,8 @@
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 设置节点分裂时的填充阈值。默认情况下，bucket 将填充至 50%，</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 但如果你知道你的写入工作负载主要是追加操作，提高这个比例可能会有用。</span>
-</span></span><span style="display:flex;"><span>    <span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    // 这个设置不会跨事务持久化，因此每个事务都必须设置它。</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 这个设置不会跨事务持久化，因此每个事务都必须设置它。</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75af00">FillPercent</span> <span style="color:#00a8c8">float64</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>
 </span></span><span style="display:flex;"><span>
@@ -947,8 +947,8 @@ BoltDB 的写操作都是在内存中进行，若事务未 commit 时出错，�
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// Tx 代表数据库上的一个只读或读写事务。</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// 只读事务可用于检索键值和创建光标。</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// 读写事务可以创建和删除桶以及创建和删除键。</span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// 重要：必须在使用完事务后提交或回滚事务。</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// 重要：必须在使用完事务后提交或回滚事务。</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// 只有当没有事务在使用页面时，写入者才能回收这些页面。</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// 长时间运行的读事务可能会导致数据库迅速增长。</span>
 </span></span><span style="display:flex;"><span><span style="color:#00a8c8">type</span> <span style="color:#75af00">Tx</span> <span style="color:#00a8c8">struct</span> <span style="color:#111">{</span>
@@ -963,8 +963,8 @@ BoltDB 的写操作都是在内存中进行，若事务未 commit 时出错，�
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// WriteFlag 指定写相关方法（如 WriteTo()）的标志。</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// Tx 使用指定的标志打开数据库文件以复制数据。</span>
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	// 默认情况下，此标志未设置，适合主要在内存中的工作负载。</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 默认情况下，此标志未设置，适合主要在内存中的工作负载。</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 对于大于可用 RAM 的数据库，可以设置为 syscall.O_DIRECT 来避免淘汰页面缓存。</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">WriteFlag</span> <span style="color:#00a8c8">int</span>
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>
@@ -972,14 +972,14 @@ BoltDB 的写操作都是在内存中进行，若事务未 commit 时出错，�
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// Begin 开始一个新事务。</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// 多个只读事务可以并发使用，但一次只能使用一个写事务。</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// 启动多个写事务会导致调用阻塞，并序列化直到当前写事务完成。</span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// 事务不应该彼此依赖。在同一个goroutine中打开一个读事务和一个写事务可能会导致写入者死锁，</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// 事务不应该彼此依赖。在同一个goroutine中打开一个读事务和一个写事务可能会导致写入者死锁，</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// 因为数据库需要定期重新映射自身以应对增长，并且在读事务打开的时候无法进行。</span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// 如果需要长时间运行的读事务（例如，快照事务），你可能想要将DB.InitialMmapSize设置为足够大的值</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// 如果需要长时间运行的读事务（例如，快照事务），你可能想要将DB.InitialMmapSize设置为足够大的值</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// 以避免写事务的潜在阻塞。</span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// 重要：你必须在完成后关闭只读事务，否则数据库将无法回收旧页面。</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// 重要：你必须在完成后关闭只读事务，否则数据库将无法回收旧页面。</span>
 </span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#111">(</span><span style="color:#75af00">db</span> <span style="color:#f92672">*</span><span style="color:#75af00">DB</span><span style="color:#111">)</span> <span style="color:#75af00">Begin</span><span style="color:#111">(</span><span style="color:#75af00">writable</span> <span style="color:#00a8c8">bool</span><span style="color:#111">)</span> <span style="color:#111">(</span><span style="color:#75af00">t</span> <span style="color:#f92672">*</span><span style="color:#75af00">Tx</span><span style="color:#111">,</span> <span style="color:#75af00">err</span> <span style="color:#00a8c8">error</span><span style="color:#111">)</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">lg</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">db</span><span style="color:#111">.</span><span style="color:#75af00">Logger</span><span style="color:#111">();</span> <span style="color:#75af00">lg</span> <span style="color:#f92672">!=</span> <span style="color:#75af00">discardLogger</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>		<span style="color:#75af00">lg</span><span style="color:#111">.</span><span style="color:#75af00">Debugf</span><span style="color:#111">(</span><span style="color:#d88200">&#34;Starting a new transaction [writable: %t]&#34;</span><span style="color:#111">,</span> <span style="color:#75af00">writable</span><span style="color:#111">)</span>
@@ -1258,8 +1258,8 @@ BoltDB 的写操作都是在内存中进行，若事务未 commit 时出错，�
 </span></span></code></pre></div><h2 id="view--update">View &amp;&amp; Update</h2>
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// View 在管理的只读事务上下文中执行一个函数。</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// 从函数返回的任何错误都会从View()方法返回。</span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// 尝试在函数内手动回滚会导致panic。</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// 尝试在函数内手动回滚会导致panic。</span>
 </span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#111">(</span><span style="color:#75af00">db</span> <span style="color:#f92672">*</span><span style="color:#75af00">DB</span><span style="color:#111">)</span> <span style="color:#75af00">View</span><span style="color:#111">(</span><span style="color:#75af00">fn</span> <span style="color:#00a8c8">func</span><span style="color:#111">(</span><span style="color:#f92672">*</span><span style="color:#75af00">Tx</span><span style="color:#111">)</span> <span style="color:#00a8c8">error</span><span style="color:#111">)</span> <span style="color:#00a8c8">error</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75af00">t</span><span style="color:#111">,</span> <span style="color:#75af00">err</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">db</span><span style="color:#111">.</span><span style="color:#75af00">Begin</span><span style="color:#111">(</span><span style="color:#00a8c8">false</span><span style="color:#111">)</span>  <span style="color:#75715e">// 开始一个只读事务</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">if</span> <span style="color:#75af00">err</span> <span style="color:#f92672">!=</span> <span style="color:#00a8c8">nil</span> <span style="color:#111">{</span>
@@ -1291,8 +1291,8 @@ BoltDB 的写操作都是在内存中进行，若事务未 commit 时出错，�
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// 如果函数没有返回错误，则提交事务。</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// 如果返回了错误，则整个事务被回滚。</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// 从函数返回的任何错误或从提交返回的错误都会从Update()方法返回。</span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// 尝试在函数内手动提交或回滚将导致panic。</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// 尝试在函数内手动提交或回滚将导致panic。</span>
 </span></span><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#111">(</span><span style="color:#75af00">db</span> <span style="color:#f92672">*</span><span style="color:#75af00">DB</span><span style="color:#111">)</span> <span style="color:#75af00">Update</span><span style="color:#111">(</span><span style="color:#75af00">fn</span> <span style="color:#00a8c8">func</span><span style="color:#111">(</span><span style="color:#f92672">*</span><span style="color:#75af00">Tx</span><span style="color:#111">)</span> <span style="color:#00a8c8">error</span><span style="color:#111">)</span> <span style="color:#00a8c8">error</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75af00">t</span><span style="color:#111">,</span> <span style="color:#75af00">err</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">db</span><span style="color:#111">.</span><span style="color:#75af00">Begin</span><span style="color:#111">(</span><span style="color:#00a8c8">true</span><span style="color:#111">)</span>  <span style="color:#75715e">// 开始一个读写事务</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">if</span> <span style="color:#75af00">err</span> <span style="color:#f92672">!=</span> <span style="color:#00a8c8">nil</span> <span style="color:#111">{</span>
@@ -1615,12 +1615,12 @@ BoltDB 的写操作都是在内存中进行，若事务未 commit 时出错，�
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">kl</span><span style="color:#111">.</span><span style="color:#75af00">kubeClient</span> <span style="color:#f92672">!=</span> <span style="color:#00a8c8">nil</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>		<span style="color:#75715e">// Start two go-routines to update the status.</span>
-</span></span><span style="display:flex;"><span>		<span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">		// The first will report to the apiserver every nodeStatusUpdateFrequency and is aimed to provide regular status intervals,</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75715e">// The first will report to the apiserver every nodeStatusUpdateFrequency and is aimed to provide regular status intervals,</span>
 </span></span><span style="display:flex;"><span>		<span style="color:#75715e">// while the second is used to provide a more timely status update during initialization and runs an one-shot update to the apiserver</span>
 </span></span><span style="display:flex;"><span>		<span style="color:#75715e">// once the node becomes ready, then exits afterwards.</span>
-</span></span><span style="display:flex;"><span>		<span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">		// Introduce some small jittering to ensure that over time the requests won&#39;t start</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75715e">// Introduce some small jittering to ensure that over time the requests won&#39;t start</span>
 </span></span><span style="display:flex;"><span>		<span style="color:#75715e">// accumulating at approximately the same time from the set of nodes due to priority and</span>
 </span></span><span style="display:flex;"><span>		<span style="color:#75715e">// fairness effect.</span>
 </span></span><span style="display:flex;"><span>		<span style="color:#00a8c8">go</span> <span style="color:#75af00">wait</span><span style="color:#111">.</span><span style="color:#75af00">JitterUntil</span><span style="color:#111">(</span><span style="color:#75af00">kl</span><span style="color:#111">.</span><span style="color:#75af00">syncNodeStatus</span><span style="color:#111">,</span> <span style="color:#75af00">kl</span><span style="color:#111">.</span><span style="color:#75af00">nodeStatusUpdateFrequency</span><span style="color:#111">,</span> <span style="color:#ae81ff">0.04</span><span style="color:#111">,</span> <span style="color:#00a8c8">true</span><span style="color:#111">,</span> <span style="color:#75af00">wait</span><span style="color:#111">.</span><span style="color:#75af00">NeverStop</span><span style="color:#111">)</span>
@@ -3328,32 +3328,32 @@ kubelet 通过 cri 调用 containerd 和这些不一样，后续我会介绍到�
 &lt;p&gt;&lt;a href="https://github.com/go-kratos/kratos"&gt;kratos&lt;/a&gt; 为了使http协议的逻辑代码和grpc的逻辑代码使用同一份，选择了基于protobuf的IDL文件使用proto插件生成辅助代码的方式。&lt;/p&gt;
 &lt;p&gt;protoc http插件的地址为：&lt;a href="https://github.com/go-kratos/kratos/tree/main/cmd/protoc-gen-go-http"&gt;https://github.com/go-kratos/kratos/tree/main/cmd/protoc-gen-go-http&lt;/a&gt;&lt;/p&gt;
 &lt;h2 id="示例"&gt;示例&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-protobuf" data-lang="protobuf"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#111"&gt;syntax&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;proto3&amp;#34;&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f92672"&gt;package&lt;/span&gt; &lt;span style="color:#111"&gt;helloworld&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;option&lt;/span&gt; &lt;span style="color:#111"&gt;go_package&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;test/helloworld;helloworld&amp;#34;&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;option&lt;/span&gt; &lt;span style="color:#111"&gt;java_multiple_files&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;true&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;option&lt;/span&gt; &lt;span style="color:#111"&gt;java_package&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;helloworld&amp;#34;&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;import&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;google/api/annotations.proto&amp;#34;&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;service&lt;/span&gt; &lt;span style="color:#111"&gt;Greeter&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#00a8c8"&gt;rpc&lt;/span&gt; &lt;span style="color:#111"&gt;SayHello&lt;/span&gt; &lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#111"&gt;HelloRequest&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;returns&lt;/span&gt; &lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#111"&gt;HelloReply&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#00a8c8"&gt;option&lt;/span&gt; &lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#111"&gt;google.api.http&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;post&lt;/span&gt;&lt;span style="color:#f92672"&gt;:&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;/helloworld&amp;#34;&lt;/span&gt;&lt;span style="color:#111"&gt;,&lt;/span&gt; &lt;span style="color:#75715e"&gt;// 声明路由
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;body&lt;/span&gt;&lt;span style="color:#f92672"&gt;:&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;*&amp;#34;&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;};&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;}&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;}&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;message&lt;/span&gt; &lt;span style="color:#75af00"&gt;HelloRequest&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#00a8c8"&gt;string&lt;/span&gt; &lt;span style="color:#111"&gt;name&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#ae81ff"&gt;1&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#111"&gt;}&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;message&lt;/span&gt; &lt;span style="color:#75af00"&gt;HelloReply&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#00a8c8"&gt;string&lt;/span&gt; &lt;span style="color:#111"&gt;msg&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#ae81ff"&gt;1&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#111"&gt;}&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;使用&lt;code&gt;kratos proto client xxx&lt;/code&gt; 生成的代码为：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-protobuf" data-lang="protobuf"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;syntax&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;proto3&amp;#34;&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f92672"&gt;package&lt;/span&gt; &lt;span style="color:#111"&gt;helloworld&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;option&lt;/span&gt; &lt;span style="color:#111"&gt;go_package&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;test/helloworld;helloworld&amp;#34;&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;option&lt;/span&gt; &lt;span style="color:#111"&gt;java_multiple_files&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;true&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;option&lt;/span&gt; &lt;span style="color:#111"&gt;java_package&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;helloworld&amp;#34;&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f92672"&gt;import&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;google/api/annotations.proto&amp;#34;&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;service&lt;/span&gt; &lt;span style="color:#111"&gt;Greeter&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#00a8c8"&gt;rpc&lt;/span&gt; &lt;span style="color:#111"&gt;SayHello&lt;/span&gt; &lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#111"&gt;HelloRequest&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;returns&lt;/span&gt; &lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#111"&gt;HelloReply&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#00a8c8"&gt;option&lt;/span&gt; &lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#111"&gt;google.api.http&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;post&lt;/span&gt;&lt;span style="color:#f92672"&gt;:&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;/helloworld&amp;#34;&lt;/span&gt;&lt;span style="color:#111"&gt;,&lt;/span&gt; &lt;span style="color:#75715e"&gt;// 声明路由
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;body&lt;/span&gt;&lt;span style="color:#f92672"&gt;:&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;*&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;};&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;message&lt;/span&gt; &lt;span style="color:#75af00"&gt;HelloRequest&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#00a8c8"&gt;string&lt;/span&gt; &lt;span style="color:#111"&gt;name&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#ae81ff"&gt;1&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#111"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;message&lt;/span&gt; &lt;span style="color:#75af00"&gt;HelloReply&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#00a8c8"&gt;string&lt;/span&gt; &lt;span style="color:#111"&gt;msg&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#ae81ff"&gt;1&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#111"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;使用&lt;code&gt;kratos proto client xxx&lt;/code&gt; 生成的代码为：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-go" data-lang="go"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;// Code generated by protoc-gen-go-http. DO NOT EDIT.&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;// versions:&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;// - protoc-gen-go-http v2.4.0&lt;/span&gt;
@@ -3433,32 +3433,32 @@ kubelet 通过 cri 调用 containerd 和这些不一样，后续我会介绍到�
 <p><a href="https://github.com/go-kratos/kratos">kratos</a> 为了使http协议的逻辑代码和grpc的逻辑代码使用同一份，选择了基于protobuf的IDL文件使用proto插件生成辅助代码的方式。</p>
 <p>protoc http插件的地址为：<a href="https://github.com/go-kratos/kratos/tree/main/cmd/protoc-gen-go-http">https://github.com/go-kratos/kratos/tree/main/cmd/protoc-gen-go-http</a></p>
 <h2 id="示例">示例</h2>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-protobuf" data-lang="protobuf"><span style="display:flex;"><span><span style="color:#111">syntax</span> <span style="color:#f92672">=</span> <span style="color:#d88200">&#34;proto3&#34;</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#111">helloworld</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">option</span> <span style="color:#111">go_package</span> <span style="color:#f92672">=</span> <span style="color:#d88200">&#34;test/helloworld;helloworld&#34;</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">option</span> <span style="color:#111">java_multiple_files</span> <span style="color:#f92672">=</span> <span style="color:#00a8c8">true</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">option</span> <span style="color:#111">java_package</span> <span style="color:#f92672">=</span> <span style="color:#d88200">&#34;helloworld&#34;</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">import</span> <span style="color:#d88200">&#34;google/api/annotations.proto&#34;</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">service</span> <span style="color:#111">Greeter</span> <span style="color:#111">{</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">rpc</span> <span style="color:#111">SayHello</span> <span style="color:#111">(</span><span style="color:#111">HelloRequest</span><span style="color:#111">)</span> <span style="color:#00a8c8">returns</span> <span style="color:#111">(</span><span style="color:#111">HelloReply</span><span style="color:#111">)</span>  <span style="color:#111">{</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span>		  <span style="color:#00a8c8">option</span> <span style="color:#111">(</span><span style="color:#111">google.api.http</span><span style="color:#111">)</span> <span style="color:#f92672">=</span> <span style="color:#111">{</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span>			  <span style="color:#111">post</span><span style="color:#f92672">:</span> <span style="color:#d88200">&#34;/helloworld&#34;</span><span style="color:#111">,</span> <span style="color:#75715e">// 声明路由
-</span></span></span><span style="display:flex;"><span>			  <span style="color:#111">body</span><span style="color:#f92672">:</span> <span style="color:#d88200">&#34;*&#34;</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span>		  <span style="color:#111">};</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span>	<span style="color:#111">}</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span>  <span style="color:#111">}</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span>  <span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">message</span> <span style="color:#75af00">HelloRequest</span> <span style="color:#111">{</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">string</span> <span style="color:#111">name</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#111">}</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span>  <span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">message</span> <span style="color:#75af00">HelloReply</span> <span style="color:#111">{</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">string</span> <span style="color:#111">msg</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#111">}</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span></code></pre></div><p>使用<code>kratos proto client xxx</code> 生成的代码为：</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-protobuf" data-lang="protobuf"><span style="display:flex;"><span><span style="color:#00a8c8">syntax</span> <span style="color:#f92672">=</span> <span style="color:#d88200">&#34;proto3&#34;</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#111">helloworld</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">option</span> <span style="color:#111">go_package</span> <span style="color:#f92672">=</span> <span style="color:#d88200">&#34;test/helloworld;helloworld&#34;</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">option</span> <span style="color:#111">java_multiple_files</span> <span style="color:#f92672">=</span> <span style="color:#00a8c8">true</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">option</span> <span style="color:#111">java_package</span> <span style="color:#f92672">=</span> <span style="color:#d88200">&#34;helloworld&#34;</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#d88200">&#34;google/api/annotations.proto&#34;</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">service</span> <span style="color:#111">Greeter</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">rpc</span> <span style="color:#111">SayHello</span> <span style="color:#111">(</span><span style="color:#111">HelloRequest</span><span style="color:#111">)</span> <span style="color:#00a8c8">returns</span> <span style="color:#111">(</span><span style="color:#111">HelloReply</span><span style="color:#111">)</span>  <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		  <span style="color:#00a8c8">option</span> <span style="color:#111">(</span><span style="color:#111">google.api.http</span><span style="color:#111">)</span> <span style="color:#f92672">=</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>			  <span style="color:#111">post</span><span style="color:#f92672">:</span> <span style="color:#d88200">&#34;/helloworld&#34;</span><span style="color:#111">,</span> <span style="color:#75715e">// 声明路由
+</span></span></span><span style="display:flex;"><span>			  <span style="color:#111">body</span><span style="color:#f92672">:</span> <span style="color:#d88200">&#34;*&#34;</span>
+</span></span><span style="display:flex;"><span>		  <span style="color:#111">};</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">message</span> <span style="color:#75af00">HelloRequest</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">string</span> <span style="color:#111">name</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">message</span> <span style="color:#75af00">HelloReply</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">string</span> <span style="color:#111">msg</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span></code></pre></div><p>使用<code>kratos proto client xxx</code> 生成的代码为：</p>
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// Code generated by protoc-gen-go-http. DO NOT EDIT.</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// versions:</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// - protoc-gen-go-http v2.4.0</span>
@@ -4228,30 +4228,30 @@ kubelet 通过 cri 调用 containerd 和这些不一样，后续我会介绍到�
 <p>同理，我们可以将 <code>λ</code> 当做 QPS， <code>W</code> 呢是每个请求需要花费的时间，那我们的系统的吞吐就是 <code>L = λ * W</code> ，所以我们可以使用利特尔法则来计算系统的吞吐量。</p>
 <h3 id="指标介绍">指标介绍</h3>
 <table>
-  <thead>
-      <tr>
-          <th>指标名称</th>
-          <th>指标含义</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td>cpu</td>
-          <td>最近 1s 的 CPU 使用率均值，使用滑动平均计算，采样周期是 250ms</td>
-      </tr>
-      <tr>
-          <td>inflight</td>
-          <td>当前处理中正在处理的请求数量</td>
-      </tr>
-      <tr>
-          <td>pass</td>
-          <td>请求处理成功的量</td>
-      </tr>
-      <tr>
-          <td>rt</td>
-          <td>请求成功的响应耗时</td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>指标名称</th>
+					<th>指标含义</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>cpu</td>
+					<td>最近 1s 的 CPU 使用率均值，使用滑动平均计算，采样周期是 250ms</td>
+			</tr>
+			<tr>
+					<td>inflight</td>
+					<td>当前处理中正在处理的请求数量</td>
+			</tr>
+			<tr>
+					<td>pass</td>
+					<td>请求处理成功的量</td>
+			</tr>
+			<tr>
+					<td>rt</td>
+					<td>请求成功的响应耗时</td>
+			</tr>
+	</tbody>
 </table>
 <h3 id="滑动窗口">滑动窗口</h3>
 <p>在自适应限流保护中，采集到的指标的时效性非常强，系统只需要采集最近一小段时间内的 qps、rt 即可，对于较老的数据，会自动丢弃。为了实现这个效果，kratos 使用了滑动窗口来保存采样数据。</p>
@@ -4776,38 +4776,38 @@ type hmap struct {
 </span></span></code></pre></div><p>源码里，函数命名不拘小节，直接带上后缀 1，2，完全不理会《代码大全》里的那一套命名的做法。从上面两个函数的声明也可以看出差别了，<code>mapaccess2</code> 函数返回值多了一个 bool 型变量，两者的代码也是完全一样的，只是在返回值后面多加了一个 false 或者 true。</p>
 <p>另外，根据 key 的不同类型，编译器还会将查找、插入、删除的函数用更具体的函数替换，以优化效率：</p>
 <table>
-  <thead>
-      <tr>
-          <th>key 类型</th>
-          <th>查找</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td>uint32</td>
-          <td>mapaccess1_fast32(t *maptype, h *hmap, key uint32) unsafe.Pointer</td>
-      </tr>
-      <tr>
-          <td>uint32</td>
-          <td>mapaccess2_fast32(t *maptype, h *hmap, key uint32) (unsafe.Pointer, bool)</td>
-      </tr>
-      <tr>
-          <td>uint64</td>
-          <td>mapaccess1_fast64(t *maptype, h *hmap, key uint64) unsafe.Pointer</td>
-      </tr>
-      <tr>
-          <td>uint64</td>
-          <td>mapaccess2_fast64(t *maptype, h *hmap, key uint64) (unsafe.Pointer, bool)</td>
-      </tr>
-      <tr>
-          <td>string</td>
-          <td>mapaccess1_faststr(t *maptype, h *hmap, ky string) unsafe.Pointer</td>
-      </tr>
-      <tr>
-          <td>string</td>
-          <td>mapaccess2_faststr(t *maptype, h *hmap, ky string) (unsafe.Pointer, bool)</td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>key 类型</th>
+					<th>查找</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>uint32</td>
+					<td>mapaccess1_fast32(t *maptype, h *hmap, key uint32) unsafe.Pointer</td>
+			</tr>
+			<tr>
+					<td>uint32</td>
+					<td>mapaccess2_fast32(t *maptype, h *hmap, key uint32) (unsafe.Pointer, bool)</td>
+			</tr>
+			<tr>
+					<td>uint64</td>
+					<td>mapaccess1_fast64(t *maptype, h *hmap, key uint64) unsafe.Pointer</td>
+			</tr>
+			<tr>
+					<td>uint64</td>
+					<td>mapaccess2_fast64(t *maptype, h *hmap, key uint64) (unsafe.Pointer, bool)</td>
+			</tr>
+			<tr>
+					<td>string</td>
+					<td>mapaccess1_faststr(t *maptype, h *hmap, ky string) unsafe.Pointer</td>
+			</tr>
+			<tr>
+					<td>string</td>
+					<td>mapaccess2_faststr(t *maptype, h *hmap, ky string) (unsafe.Pointer, bool)</td>
+			</tr>
+	</tbody>
 </table>
 <p>这些函数的参数类型直接是具体的 uint32、unt64、string，在函数内部由于提前知晓了 key 的类型，所以内存布局是很清楚的，因此能节省很多操作，提高效率。</p>
 <p>上面这些函数都是在文件 <code>src/runtime/hashmap_fast.go</code> 里。</p>
@@ -5275,26 +5275,26 @@ type hmap struct {
 <p>实际上插入或修改 key 的语法是一样的，只不过前者操作的 key 在 map 中不存在，而后者操作的 key 存在 map 中。</p>
 <p>mapassign 有一个系列的函数，根据 key 类型的不同，编译器会将其优化为相应的“快速函数”。</p>
 <table>
-  <thead>
-      <tr>
-          <th>key 类型</th>
-          <th>插入</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td>uint32</td>
-          <td>mapassign_fast32(t *maptype, h *hmap, key uint32) unsafe.Pointer</td>
-      </tr>
-      <tr>
-          <td>uint64</td>
-          <td>mapassign_fast64(t *maptype, h *hmap, key uint64) unsafe.Pointer</td>
-      </tr>
-      <tr>
-          <td>string</td>
-          <td>mapassign_faststr(t *maptype, h *hmap, ky string) unsafe.Pointer</td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>key 类型</th>
+					<th>插入</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>uint32</td>
+					<td>mapassign_fast32(t *maptype, h *hmap, key uint32) unsafe.Pointer</td>
+			</tr>
+			<tr>
+					<td>uint64</td>
+					<td>mapassign_fast64(t *maptype, h *hmap, key uint64) unsafe.Pointer</td>
+			</tr>
+			<tr>
+					<td>string</td>
+					<td>mapassign_faststr(t *maptype, h *hmap, ky string) unsafe.Pointer</td>
+			</tr>
+	</tbody>
 </table>
 <p>我们只用研究最一般的赋值函数 <code>mapassign</code>。</p>
 <p>整体来看，流程非常得简单：对 key 计算 hash 值，根据 hash 值按照之前的流程，找到要赋值的位置（可能是插入新 key，也可能是更新老 key），对相应位置进行赋值。</p>
@@ -5317,26 +5317,26 @@ type hmap struct {
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#75af00">mapdelete</span><span style="color:#111">(</span><span style="color:#75af00">t</span> <span style="color:#f92672">*</span><span style="color:#75af00">maptype</span><span style="color:#111">,</span> <span style="color:#75af00">h</span> <span style="color:#f92672">*</span><span style="color:#75af00">hmap</span><span style="color:#111">,</span> <span style="color:#75af00">key</span> <span style="color:#75af00">unsafe</span><span style="color:#111">.</span><span style="color:#75af00">Pointer</span><span style="color:#111">)</span> 
 </span></span></code></pre></div><p>根据 key 类型的不同，删除操作会被优化成更具体的函数：</p>
 <table>
-  <thead>
-      <tr>
-          <th>key 类型</th>
-          <th>删除</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td>uint32</td>
-          <td>mapdelete_fast32(t *maptype, h *hmap, key uint32)</td>
-      </tr>
-      <tr>
-          <td>uint64</td>
-          <td>mapdelete_fast64(t *maptype, h *hmap, key uint64)</td>
-      </tr>
-      <tr>
-          <td>string</td>
-          <td>mapdelete_faststr(t *maptype, h *hmap, ky string)</td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>key 类型</th>
+					<th>删除</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>uint32</td>
+					<td>mapdelete_fast32(t *maptype, h *hmap, key uint32)</td>
+			</tr>
+			<tr>
+					<td>uint64</td>
+					<td>mapdelete_fast64(t *maptype, h *hmap, key uint64)</td>
+			</tr>
+			<tr>
+					<td>string</td>
+					<td>mapdelete_faststr(t *maptype, h *hmap, ky string)</td>
+			</tr>
+	</tbody>
 </table>
 <p>当然，我们只关心 <code>mapdelete</code> 函数。它首先会检查 h.flags 标志，如果发现写标位是 1，直接 panic，因为这表明有其他协程同时在进行写操作。</p>
 <p>计算 key 的哈希，找到落入的 bucket。检查此 map 如果正在扩容的过程中，直接触发一次搬迁操作。</p>
@@ -5510,8 +5510,8 @@ false
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// lock protects all fields in hchan, as well as several&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// fields in sudogs blocked on this channel.&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;//
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt; // Do not change another G&amp;#39;s status while holding this lock&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;//&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// Do not change another G&amp;#39;s status while holding this lock&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// (in particular, do not ready a G), as this can deadlock&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// with stack shrinking.&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75af00"&gt;lock&lt;/span&gt; &lt;span style="color:#75af00"&gt;mutex&lt;/span&gt;
@@ -5564,8 +5564,8 @@ false
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>   <span style="color:#75715e">// lock protects all fields in hchan, as well as several</span>
 </span></span><span style="display:flex;"><span>   <span style="color:#75715e">// fields in sudogs blocked on this channel.</span>
-</span></span><span style="display:flex;"><span>   <span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">   // Do not change another G&#39;s status while holding this lock</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#75715e">// Do not change another G&#39;s status while holding this lock</span>
 </span></span><span style="display:flex;"><span>   <span style="color:#75715e">// (in particular, do not ready a G), as this can deadlock</span>
 </span></span><span style="display:flex;"><span>   <span style="color:#75715e">// with stack shrinking.</span>
 </span></span><span style="display:flex;"><span>   <span style="color:#75af00">lock</span> <span style="color:#75af00">mutex</span>
@@ -5689,8 +5689,8 @@ false
 </span></span><span style="display:flex;"><span>    <span style="color:#75af00">sendq</span> <span style="color:#75af00">waitq</span> <span style="color:#75715e">// list of send waiters </span>
 </span></span><span style="display:flex;"><span>    <span style="color:#f92672">...</span> 
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span> 
-</span></span><span style="display:flex;"><span><span style="color:#75715e">// 
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">type waitq struct { </span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// </span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">type</span> <span style="color:#75af00">waitq</span> <span style="color:#00a8c8">struct</span> <span style="color:#111">{</span> 
 </span></span><span style="display:flex;"><span>    <span style="color:#75af00">first</span> <span style="color:#f92672">*</span><span style="color:#75af00">sudog</span> 
 </span></span><span style="display:flex;"><span>    <span style="color:#75af00">last</span> <span style="color:#f92672">*</span><span style="color:#75af00">sudog</span> 
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span> 

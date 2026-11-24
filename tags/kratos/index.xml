@@ -2,32 +2,32 @@
 &lt;p&gt;&lt;a href="https://github.com/go-kratos/kratos"&gt;kratos&lt;/a&gt; 为了使http协议的逻辑代码和grpc的逻辑代码使用同一份，选择了基于protobuf的IDL文件使用proto插件生成辅助代码的方式。&lt;/p&gt;
 &lt;p&gt;protoc http插件的地址为：&lt;a href="https://github.com/go-kratos/kratos/tree/main/cmd/protoc-gen-go-http"&gt;https://github.com/go-kratos/kratos/tree/main/cmd/protoc-gen-go-http&lt;/a&gt;&lt;/p&gt;
 &lt;h2 id="示例"&gt;示例&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-protobuf" data-lang="protobuf"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#111"&gt;syntax&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;proto3&amp;#34;&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f92672"&gt;package&lt;/span&gt; &lt;span style="color:#111"&gt;helloworld&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;option&lt;/span&gt; &lt;span style="color:#111"&gt;go_package&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;test/helloworld;helloworld&amp;#34;&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;option&lt;/span&gt; &lt;span style="color:#111"&gt;java_multiple_files&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;true&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;option&lt;/span&gt; &lt;span style="color:#111"&gt;java_package&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;helloworld&amp;#34;&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;import&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;google/api/annotations.proto&amp;#34;&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;service&lt;/span&gt; &lt;span style="color:#111"&gt;Greeter&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#00a8c8"&gt;rpc&lt;/span&gt; &lt;span style="color:#111"&gt;SayHello&lt;/span&gt; &lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#111"&gt;HelloRequest&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;returns&lt;/span&gt; &lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#111"&gt;HelloReply&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#00a8c8"&gt;option&lt;/span&gt; &lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#111"&gt;google.api.http&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;post&lt;/span&gt;&lt;span style="color:#f92672"&gt;:&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;/helloworld&amp;#34;&lt;/span&gt;&lt;span style="color:#111"&gt;,&lt;/span&gt; &lt;span style="color:#75715e"&gt;// 声明路由
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;body&lt;/span&gt;&lt;span style="color:#f92672"&gt;:&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;*&amp;#34;&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;};&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;}&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;}&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;message&lt;/span&gt; &lt;span style="color:#75af00"&gt;HelloRequest&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#00a8c8"&gt;string&lt;/span&gt; &lt;span style="color:#111"&gt;name&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#ae81ff"&gt;1&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#111"&gt;}&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;message&lt;/span&gt; &lt;span style="color:#75af00"&gt;HelloReply&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#00a8c8"&gt;string&lt;/span&gt; &lt;span style="color:#111"&gt;msg&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#ae81ff"&gt;1&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#111"&gt;}&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;使用&lt;code&gt;kratos proto client xxx&lt;/code&gt; 生成的代码为：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-protobuf" data-lang="protobuf"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;syntax&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;proto3&amp;#34;&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f92672"&gt;package&lt;/span&gt; &lt;span style="color:#111"&gt;helloworld&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;option&lt;/span&gt; &lt;span style="color:#111"&gt;go_package&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;test/helloworld;helloworld&amp;#34;&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;option&lt;/span&gt; &lt;span style="color:#111"&gt;java_multiple_files&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;true&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;option&lt;/span&gt; &lt;span style="color:#111"&gt;java_package&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;helloworld&amp;#34;&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f92672"&gt;import&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;google/api/annotations.proto&amp;#34;&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;service&lt;/span&gt; &lt;span style="color:#111"&gt;Greeter&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#00a8c8"&gt;rpc&lt;/span&gt; &lt;span style="color:#111"&gt;SayHello&lt;/span&gt; &lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#111"&gt;HelloRequest&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;returns&lt;/span&gt; &lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#111"&gt;HelloReply&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#00a8c8"&gt;option&lt;/span&gt; &lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#111"&gt;google.api.http&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;post&lt;/span&gt;&lt;span style="color:#f92672"&gt;:&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;/helloworld&amp;#34;&lt;/span&gt;&lt;span style="color:#111"&gt;,&lt;/span&gt; &lt;span style="color:#75715e"&gt;// 声明路由
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;body&lt;/span&gt;&lt;span style="color:#f92672"&gt;:&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;*&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;};&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;message&lt;/span&gt; &lt;span style="color:#75af00"&gt;HelloRequest&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#00a8c8"&gt;string&lt;/span&gt; &lt;span style="color:#111"&gt;name&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#ae81ff"&gt;1&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#111"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;message&lt;/span&gt; &lt;span style="color:#75af00"&gt;HelloReply&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#00a8c8"&gt;string&lt;/span&gt; &lt;span style="color:#111"&gt;msg&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#ae81ff"&gt;1&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#111"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;使用&lt;code&gt;kratos proto client xxx&lt;/code&gt; 生成的代码为：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-go" data-lang="go"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;// Code generated by protoc-gen-go-http. DO NOT EDIT.&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;// versions:&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;// - protoc-gen-go-http v2.4.0&lt;/span&gt;
@@ -107,32 +107,32 @@
 <p><a href="https://github.com/go-kratos/kratos">kratos</a> 为了使http协议的逻辑代码和grpc的逻辑代码使用同一份，选择了基于protobuf的IDL文件使用proto插件生成辅助代码的方式。</p>
 <p>protoc http插件的地址为：<a href="https://github.com/go-kratos/kratos/tree/main/cmd/protoc-gen-go-http">https://github.com/go-kratos/kratos/tree/main/cmd/protoc-gen-go-http</a></p>
 <h2 id="示例">示例</h2>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-protobuf" data-lang="protobuf"><span style="display:flex;"><span><span style="color:#111">syntax</span> <span style="color:#f92672">=</span> <span style="color:#d88200">&#34;proto3&#34;</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#111">helloworld</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">option</span> <span style="color:#111">go_package</span> <span style="color:#f92672">=</span> <span style="color:#d88200">&#34;test/helloworld;helloworld&#34;</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">option</span> <span style="color:#111">java_multiple_files</span> <span style="color:#f92672">=</span> <span style="color:#00a8c8">true</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">option</span> <span style="color:#111">java_package</span> <span style="color:#f92672">=</span> <span style="color:#d88200">&#34;helloworld&#34;</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">import</span> <span style="color:#d88200">&#34;google/api/annotations.proto&#34;</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">service</span> <span style="color:#111">Greeter</span> <span style="color:#111">{</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">rpc</span> <span style="color:#111">SayHello</span> <span style="color:#111">(</span><span style="color:#111">HelloRequest</span><span style="color:#111">)</span> <span style="color:#00a8c8">returns</span> <span style="color:#111">(</span><span style="color:#111">HelloReply</span><span style="color:#111">)</span>  <span style="color:#111">{</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span>		  <span style="color:#00a8c8">option</span> <span style="color:#111">(</span><span style="color:#111">google.api.http</span><span style="color:#111">)</span> <span style="color:#f92672">=</span> <span style="color:#111">{</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span>			  <span style="color:#111">post</span><span style="color:#f92672">:</span> <span style="color:#d88200">&#34;/helloworld&#34;</span><span style="color:#111">,</span> <span style="color:#75715e">// 声明路由
-</span></span></span><span style="display:flex;"><span>			  <span style="color:#111">body</span><span style="color:#f92672">:</span> <span style="color:#d88200">&#34;*&#34;</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span>		  <span style="color:#111">};</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span>	<span style="color:#111">}</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span>  <span style="color:#111">}</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span>  <span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">message</span> <span style="color:#75af00">HelloRequest</span> <span style="color:#111">{</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">string</span> <span style="color:#111">name</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#111">}</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span>  <span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">message</span> <span style="color:#75af00">HelloReply</span> <span style="color:#111">{</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">string</span> <span style="color:#111">msg</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#111">}</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span></code></pre></div><p>使用<code>kratos proto client xxx</code> 生成的代码为：</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-protobuf" data-lang="protobuf"><span style="display:flex;"><span><span style="color:#00a8c8">syntax</span> <span style="color:#f92672">=</span> <span style="color:#d88200">&#34;proto3&#34;</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#111">helloworld</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">option</span> <span style="color:#111">go_package</span> <span style="color:#f92672">=</span> <span style="color:#d88200">&#34;test/helloworld;helloworld&#34;</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">option</span> <span style="color:#111">java_multiple_files</span> <span style="color:#f92672">=</span> <span style="color:#00a8c8">true</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">option</span> <span style="color:#111">java_package</span> <span style="color:#f92672">=</span> <span style="color:#d88200">&#34;helloworld&#34;</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#d88200">&#34;google/api/annotations.proto&#34;</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">service</span> <span style="color:#111">Greeter</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">rpc</span> <span style="color:#111">SayHello</span> <span style="color:#111">(</span><span style="color:#111">HelloRequest</span><span style="color:#111">)</span> <span style="color:#00a8c8">returns</span> <span style="color:#111">(</span><span style="color:#111">HelloReply</span><span style="color:#111">)</span>  <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>		  <span style="color:#00a8c8">option</span> <span style="color:#111">(</span><span style="color:#111">google.api.http</span><span style="color:#111">)</span> <span style="color:#f92672">=</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>			  <span style="color:#111">post</span><span style="color:#f92672">:</span> <span style="color:#d88200">&#34;/helloworld&#34;</span><span style="color:#111">,</span> <span style="color:#75715e">// 声明路由
+</span></span></span><span style="display:flex;"><span>			  <span style="color:#111">body</span><span style="color:#f92672">:</span> <span style="color:#d88200">&#34;*&#34;</span>
+</span></span><span style="display:flex;"><span>		  <span style="color:#111">};</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">message</span> <span style="color:#75af00">HelloRequest</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">string</span> <span style="color:#111">name</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">message</span> <span style="color:#75af00">HelloReply</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">string</span> <span style="color:#111">msg</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span></code></pre></div><p>使用<code>kratos proto client xxx</code> 生成的代码为：</p>
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// Code generated by protoc-gen-go-http. DO NOT EDIT.</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// versions:</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// - protoc-gen-go-http v2.4.0</span>
@@ -933,37 +933,37 @@ Use &#34;kratos [command] --help&#34; for more information about a command.
 <p><code>kratos proto add</code> 为创建一个proto模板</p>
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>kratos proto add api/helloworld/v2/hello.proto
 </span></span></code></pre></div><p>在目录<code>api/helloworld/v2</code> 下可以看到生成的文件</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-protobuf" data-lang="protobuf"><span style="display:flex;"><span><span style="color:#111">syntax</span> <span style="color:#f92672">=</span> <span style="color:#d88200">&#34;proto3&#34;</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#111">api</span><span style="color:#f92672">.</span><span style="color:#111">helloworld.v2</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">option</span> <span style="color:#111">go_package</span> <span style="color:#f92672">=</span> <span style="color:#d88200">&#34;helloworld/api/helloworld/v2;v2&#34;</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">option</span> <span style="color:#111">java_multiple_files</span> <span style="color:#f92672">=</span> <span style="color:#00a8c8">true</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">option</span> <span style="color:#111">java_package</span> <span style="color:#f92672">=</span> <span style="color:#d88200">&#34;api.helloworld.v2&#34;</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">service</span> <span style="color:#111">Hello</span> <span style="color:#111">{</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">rpc</span> <span style="color:#111">CreateHello</span> <span style="color:#111">(</span><span style="color:#111">CreateHelloRequest</span><span style="color:#111">)</span> <span style="color:#00a8c8">returns</span> <span style="color:#111">(</span><span style="color:#111">CreateHelloReply</span><span style="color:#111">);</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">rpc</span> <span style="color:#111">UpdateHello</span> <span style="color:#111">(</span><span style="color:#111">UpdateHelloRequest</span><span style="color:#111">)</span> <span style="color:#00a8c8">returns</span> <span style="color:#111">(</span><span style="color:#111">UpdateHelloReply</span><span style="color:#111">);</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">rpc</span> <span style="color:#111">DeleteHello</span> <span style="color:#111">(</span><span style="color:#111">DeleteHelloRequest</span><span style="color:#111">)</span> <span style="color:#00a8c8">returns</span> <span style="color:#111">(</span><span style="color:#111">DeleteHelloReply</span><span style="color:#111">);</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">rpc</span> <span style="color:#111">GetHello</span> <span style="color:#111">(</span><span style="color:#111">GetHelloRequest</span><span style="color:#111">)</span> <span style="color:#00a8c8">returns</span> <span style="color:#111">(</span><span style="color:#111">GetHelloReply</span><span style="color:#111">);</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">rpc</span> <span style="color:#111">ListHello</span> <span style="color:#111">(</span><span style="color:#111">ListHelloRequest</span><span style="color:#111">)</span> <span style="color:#00a8c8">returns</span> <span style="color:#111">(</span><span style="color:#111">ListHelloReply</span><span style="color:#111">);</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#111">}</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">message</span> <span style="color:#75af00">CreateHelloRequest</span> <span style="color:#111">{}</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">message</span> <span style="color:#75af00">CreateHelloReply</span> <span style="color:#111">{}</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">message</span> <span style="color:#75af00">UpdateHelloRequest</span> <span style="color:#111">{}</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">message</span> <span style="color:#75af00">UpdateHelloReply</span> <span style="color:#111">{}</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">message</span> <span style="color:#75af00">DeleteHelloRequest</span> <span style="color:#111">{}</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">message</span> <span style="color:#75af00">DeleteHelloReply</span> <span style="color:#111">{}</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">message</span> <span style="color:#75af00">GetHelloRequest</span> <span style="color:#111">{}</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">message</span> <span style="color:#75af00">GetHelloReply</span> <span style="color:#111">{}</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">message</span> <span style="color:#75af00">ListHelloRequest</span> <span style="color:#111">{}</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">message</span> <span style="color:#75af00">ListHelloReply</span> <span style="color:#111">{}</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span></code></pre></div><h3 id="client">client</h3>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-protobuf" data-lang="protobuf"><span style="display:flex;"><span><span style="color:#00a8c8">syntax</span> <span style="color:#f92672">=</span> <span style="color:#d88200">&#34;proto3&#34;</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#111">api.helloworld.v2</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">option</span> <span style="color:#111">go_package</span> <span style="color:#f92672">=</span> <span style="color:#d88200">&#34;helloworld/api/helloworld/v2;v2&#34;</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">option</span> <span style="color:#111">java_multiple_files</span> <span style="color:#f92672">=</span> <span style="color:#00a8c8">true</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">option</span> <span style="color:#111">java_package</span> <span style="color:#f92672">=</span> <span style="color:#d88200">&#34;api.helloworld.v2&#34;</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">service</span> <span style="color:#111">Hello</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">rpc</span> <span style="color:#111">CreateHello</span> <span style="color:#111">(</span><span style="color:#111">CreateHelloRequest</span><span style="color:#111">)</span> <span style="color:#00a8c8">returns</span> <span style="color:#111">(</span><span style="color:#111">CreateHelloReply</span><span style="color:#111">);</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">rpc</span> <span style="color:#111">UpdateHello</span> <span style="color:#111">(</span><span style="color:#111">UpdateHelloRequest</span><span style="color:#111">)</span> <span style="color:#00a8c8">returns</span> <span style="color:#111">(</span><span style="color:#111">UpdateHelloReply</span><span style="color:#111">);</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">rpc</span> <span style="color:#111">DeleteHello</span> <span style="color:#111">(</span><span style="color:#111">DeleteHelloRequest</span><span style="color:#111">)</span> <span style="color:#00a8c8">returns</span> <span style="color:#111">(</span><span style="color:#111">DeleteHelloReply</span><span style="color:#111">);</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">rpc</span> <span style="color:#111">GetHello</span> <span style="color:#111">(</span><span style="color:#111">GetHelloRequest</span><span style="color:#111">)</span> <span style="color:#00a8c8">returns</span> <span style="color:#111">(</span><span style="color:#111">GetHelloReply</span><span style="color:#111">);</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">rpc</span> <span style="color:#111">ListHello</span> <span style="color:#111">(</span><span style="color:#111">ListHelloRequest</span><span style="color:#111">)</span> <span style="color:#00a8c8">returns</span> <span style="color:#111">(</span><span style="color:#111">ListHelloReply</span><span style="color:#111">);</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">message</span> <span style="color:#75af00">CreateHelloRequest</span> <span style="color:#111">{}</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">message</span> <span style="color:#75af00">CreateHelloReply</span> <span style="color:#111">{}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">message</span> <span style="color:#75af00">UpdateHelloRequest</span> <span style="color:#111">{}</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">message</span> <span style="color:#75af00">UpdateHelloReply</span> <span style="color:#111">{}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">message</span> <span style="color:#75af00">DeleteHelloRequest</span> <span style="color:#111">{}</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">message</span> <span style="color:#75af00">DeleteHelloReply</span> <span style="color:#111">{}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">message</span> <span style="color:#75af00">GetHelloRequest</span> <span style="color:#111">{}</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">message</span> <span style="color:#75af00">GetHelloReply</span> <span style="color:#111">{}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">message</span> <span style="color:#75af00">ListHelloRequest</span> <span style="color:#111">{}</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">message</span> <span style="color:#75af00">ListHelloReply</span> <span style="color:#111">{}</span>
+</span></span></code></pre></div><h3 id="client">client</h3>
 <p><code>kratos proto client</code> 为生成 Proto 代码</p>
 <p>使用这个命令需要下载 protobuf 工具 protoc，可以在官网下载对应版本 <a href="https://github.com/protocolbuffers/protobuf/releases">Protobuf release版本</a></p>
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>kratos proto client api/helloworld/v2/
@@ -1411,30 +1411,30 @@ Use &#34;kratos [command] --help&#34; for more information about a command.
 <p>同理，我们可以将 <code>λ</code> 当做 QPS， <code>W</code> 呢是每个请求需要花费的时间，那我们的系统的吞吐就是 <code>L = λ * W</code> ，所以我们可以使用利特尔法则来计算系统的吞吐量。</p>
 <h3 id="指标介绍">指标介绍</h3>
 <table>
-  <thead>
-      <tr>
-          <th>指标名称</th>
-          <th>指标含义</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td>cpu</td>
-          <td>最近 1s 的 CPU 使用率均值，使用滑动平均计算，采样周期是 250ms</td>
-      </tr>
-      <tr>
-          <td>inflight</td>
-          <td>当前处理中正在处理的请求数量</td>
-      </tr>
-      <tr>
-          <td>pass</td>
-          <td>请求处理成功的量</td>
-      </tr>
-      <tr>
-          <td>rt</td>
-          <td>请求成功的响应耗时</td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>指标名称</th>
+					<th>指标含义</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>cpu</td>
+					<td>最近 1s 的 CPU 使用率均值，使用滑动平均计算，采样周期是 250ms</td>
+			</tr>
+			<tr>
+					<td>inflight</td>
+					<td>当前处理中正在处理的请求数量</td>
+			</tr>
+			<tr>
+					<td>pass</td>
+					<td>请求处理成功的量</td>
+			</tr>
+			<tr>
+					<td>rt</td>
+					<td>请求成功的响应耗时</td>
+			</tr>
+	</tbody>
 </table>
 <h3 id="滑动窗口">滑动窗口</h3>
 <p>在自适应限流保护中，采集到的指标的时效性非常强，系统只需要采集最近一小段时间内的 qps、rt 即可，对于较老的数据，会自动丢弃。为了实现这个效果，kratos 使用了滑动窗口来保存采样数据。</p>
@@ -1645,34 +1645,34 @@ Discord：&lt;a href="https://discord.com/invite/BWzJsUJ"&gt;go-kratos&lt;/a&gt;
 &lt;p&gt;Kratos使用Protobuf进行API定义。Protobuf是由Google开发的一种语言中立的数据序列化协议。它有结构定义清晰、可扩展性好、体积小、性能优秀等特点，在众多公司和项目被广泛使用。&lt;/p&gt;
 &lt;p&gt;在使用Kratos的项目中，您将使用如下的IDL进行您的接口定义，并且通过&lt;code&gt;protoc&lt;/code&gt;工具生成相应的&lt;code&gt;.pb.go&lt;/code&gt;文件，其中包含根据定义生成的的服务端和客户端代码。随后您就可以在自己的项目内部注册服务端代码使用，或引用客户端代码进行远程调用。&lt;/p&gt;
 &lt;p&gt;Kratos默认仅生成gRPC接口的代码，如果需要生成HTTP代码，请在proto文件中使用&lt;code&gt;option (google.api.http)&lt;/code&gt;来添加HTTP部分的定义后再进行生成。默认情况下，HTTP接口将使用JSON作为序列化格式，如果想使用其它序列化格式（form，XML等），请参考文档&lt;a href="https://go-kratos.dev/docs/component/encoding"&gt;序列化&lt;/a&gt;进行相应的配置即可。&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-protobuf" data-lang="protobuf"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#111"&gt;syntax&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;proto3&amp;#34;&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f92672"&gt;package&lt;/span&gt; &lt;span style="color:#111"&gt;helloworld&lt;/span&gt;&lt;span style="color:#f92672"&gt;.&lt;/span&gt;&lt;span style="color:#111"&gt;v1&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;import&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;google/api/annotations.proto&amp;#34;&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;option&lt;/span&gt; &lt;span style="color:#111"&gt;go_package&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;github.com/go-kratos/kratos-layout/api/helloworld/v1;v1&amp;#34;&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;// The greeting service definition.
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;service&lt;/span&gt; &lt;span style="color:#111"&gt;Greeter&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// Sends a greeting
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#00a8c8"&gt;rpc&lt;/span&gt; &lt;span style="color:#111"&gt;SayHello&lt;/span&gt; &lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#111"&gt;HelloRequest&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;returns&lt;/span&gt; &lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#111"&gt;HelloReply&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#00a8c8"&gt;option&lt;/span&gt; &lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#111"&gt;google.api.http&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;get&lt;/span&gt;&lt;span style="color:#f92672"&gt;:&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;/helloworld/{name}&amp;#34;&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;};&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;}&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#111"&gt;}&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;// The request message containing the user&amp;#39;s name.
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;message&lt;/span&gt; &lt;span style="color:#75af00"&gt;HelloRequest&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#00a8c8"&gt;string&lt;/span&gt; &lt;span style="color:#111"&gt;name&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#ae81ff"&gt;1&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#111"&gt;}&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;// The response message containing the greetings
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;message&lt;/span&gt; &lt;span style="color:#75af00"&gt;HelloReply&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#00a8c8"&gt;string&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;message&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#ae81ff"&gt;1&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#111"&gt;}&lt;/span&gt;&lt;span style="color:#960050;background-color:#1e0010"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;需要注意，虽然Protobuf定义的API的可靠性更强，但字段结构灵活性相对JSON要弱一些，因此如果您有诸如文件上传接口，或者某些无法对应到proto的JSON结构需要使用，我门还提供了“逃生门”，在我们的Protobuf体系之外定义这些接口，实现为普通的http.Handler并且挂载到路由上，或者用struct来定义您的字段。可以参考我们的&lt;a href="https://github.com/go-kratos/kratos/blob/main/examples/http/upload/main.go"&gt;upload例子&lt;/a&gt;进行实现。&lt;/p&gt;</description><content:encoded><![CDATA[<p>您好，地球人，欢迎来到Kratos漫游指南。</p>
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-protobuf" data-lang="protobuf"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;syntax&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;proto3&amp;#34;&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f92672"&gt;package&lt;/span&gt; &lt;span style="color:#111"&gt;helloworld.v1&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f92672"&gt;import&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;google/api/annotations.proto&amp;#34;&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;option&lt;/span&gt; &lt;span style="color:#111"&gt;go_package&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;github.com/go-kratos/kratos-layout/api/helloworld/v1;v1&amp;#34;&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;// The greeting service definition.
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;service&lt;/span&gt; &lt;span style="color:#111"&gt;Greeter&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// Sends a greeting
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#00a8c8"&gt;rpc&lt;/span&gt; &lt;span style="color:#111"&gt;SayHello&lt;/span&gt; &lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#111"&gt;HelloRequest&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;returns&lt;/span&gt; &lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#111"&gt;HelloReply&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#00a8c8"&gt;option&lt;/span&gt; &lt;span style="color:#111"&gt;(&lt;/span&gt;&lt;span style="color:#111"&gt;google.api.http&lt;/span&gt;&lt;span style="color:#111"&gt;)&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;get&lt;/span&gt;&lt;span style="color:#f92672"&gt;:&lt;/span&gt; &lt;span style="color:#d88200"&gt;&amp;#34;/helloworld/{name}&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;};&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#111"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#111"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;// The request message containing the user&amp;#39;s name.
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;message&lt;/span&gt; &lt;span style="color:#75af00"&gt;HelloRequest&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#00a8c8"&gt;string&lt;/span&gt; &lt;span style="color:#111"&gt;name&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#ae81ff"&gt;1&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#111"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;// The response message containing the greetings
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00a8c8"&gt;message&lt;/span&gt; &lt;span style="color:#75af00"&gt;HelloReply&lt;/span&gt; &lt;span style="color:#111"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#00a8c8"&gt;string&lt;/span&gt; &lt;span style="color:#00a8c8"&gt;message&lt;/span&gt; &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#ae81ff"&gt;1&lt;/span&gt;&lt;span style="color:#111"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#111"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;需要注意，虽然Protobuf定义的API的可靠性更强，但字段结构灵活性相对JSON要弱一些，因此如果您有诸如文件上传接口，或者某些无法对应到proto的JSON结构需要使用，我门还提供了“逃生门”，在我们的Protobuf体系之外定义这些接口，实现为普通的http.Handler并且挂载到路由上，或者用struct来定义您的字段。可以参考我们的&lt;a href="https://github.com/go-kratos/kratos/blob/main/examples/http/upload/main.go"&gt;upload例子&lt;/a&gt;进行实现。&lt;/p&gt;</description><content:encoded><![CDATA[<p>您好，地球人，欢迎来到Kratos漫游指南。</p>
 <p>对于刚开始研究Kratos框架的开发者来说，目前的文档有些零散，这与我们的模块化设计有一些关系，不过Don&rsquo;t panic，从这篇文章开始，我将试图打破这一现状，漫游指南系列将循序渐进地介绍Kratos框架，理顺框架的使用思路，使您更快上手Kratos。</p>
 <p>同时，这个系列也会逐步整合进官方文档中，同时重新组织整个文档的结构和内容，敬请期待。</p>
 <p>本篇是该系列的第一篇，主要介绍Kratos的整体概况。</p>
@@ -1727,34 +1727,34 @@ Discord：<a href="https://discord.com/invite/BWzJsUJ">go-kratos</a></p>
 <p>Kratos使用Protobuf进行API定义。Protobuf是由Google开发的一种语言中立的数据序列化协议。它有结构定义清晰、可扩展性好、体积小、性能优秀等特点，在众多公司和项目被广泛使用。</p>
 <p>在使用Kratos的项目中，您将使用如下的IDL进行您的接口定义，并且通过<code>protoc</code>工具生成相应的<code>.pb.go</code>文件，其中包含根据定义生成的的服务端和客户端代码。随后您就可以在自己的项目内部注册服务端代码使用，或引用客户端代码进行远程调用。</p>
 <p>Kratos默认仅生成gRPC接口的代码，如果需要生成HTTP代码，请在proto文件中使用<code>option (google.api.http)</code>来添加HTTP部分的定义后再进行生成。默认情况下，HTTP接口将使用JSON作为序列化格式，如果想使用其它序列化格式（form，XML等），请参考文档<a href="https://go-kratos.dev/docs/component/encoding">序列化</a>进行相应的配置即可。</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-protobuf" data-lang="protobuf"><span style="display:flex;"><span><span style="color:#111">syntax</span> <span style="color:#f92672">=</span> <span style="color:#d88200">&#34;proto3&#34;</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#111">helloworld</span><span style="color:#f92672">.</span><span style="color:#111">v1</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">import</span> <span style="color:#d88200">&#34;google/api/annotations.proto&#34;</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">option</span> <span style="color:#111">go_package</span> <span style="color:#f92672">=</span> <span style="color:#d88200">&#34;github.com/go-kratos/kratos-layout/api/helloworld/v1;v1&#34;</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// The greeting service definition.
-</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">service</span> <span style="color:#111">Greeter</span> <span style="color:#111">{</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span>  <span style="color:#75715e">// Sends a greeting
-</span></span></span><span style="display:flex;"><span>  <span style="color:#00a8c8">rpc</span> <span style="color:#111">SayHello</span> <span style="color:#111">(</span><span style="color:#111">HelloRequest</span><span style="color:#111">)</span> <span style="color:#00a8c8">returns</span> <span style="color:#111">(</span><span style="color:#111">HelloReply</span><span style="color:#111">)</span>  <span style="color:#111">{</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span>        <span style="color:#00a8c8">option</span> <span style="color:#111">(</span><span style="color:#111">google.api.http</span><span style="color:#111">)</span> <span style="color:#f92672">=</span> <span style="color:#111">{</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span>            <span style="color:#111">get</span><span style="color:#f92672">:</span> <span style="color:#d88200">&#34;/helloworld/{name}&#34;</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span>        <span style="color:#111">};</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span>    <span style="color:#111">}</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#111">}</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// The request message containing the user&#39;s name.
-</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">message</span> <span style="color:#75af00">HelloRequest</span> <span style="color:#111">{</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span>  <span style="color:#00a8c8">string</span> <span style="color:#111">name</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#111">}</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// The response message containing the greetings
-</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">message</span> <span style="color:#75af00">HelloReply</span> <span style="color:#111">{</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span>  <span style="color:#00a8c8">string</span> <span style="color:#00a8c8">message</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#111">}</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span></code></pre></div><p>需要注意，虽然Protobuf定义的API的可靠性更强，但字段结构灵活性相对JSON要弱一些，因此如果您有诸如文件上传接口，或者某些无法对应到proto的JSON结构需要使用，我门还提供了“逃生门”，在我们的Protobuf体系之外定义这些接口，实现为普通的http.Handler并且挂载到路由上，或者用struct来定义您的字段。可以参考我们的<a href="https://github.com/go-kratos/kratos/blob/main/examples/http/upload/main.go">upload例子</a>进行实现。</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-protobuf" data-lang="protobuf"><span style="display:flex;"><span><span style="color:#00a8c8">syntax</span> <span style="color:#f92672">=</span> <span style="color:#d88200">&#34;proto3&#34;</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#111">helloworld.v1</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#d88200">&#34;google/api/annotations.proto&#34;</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">option</span> <span style="color:#111">go_package</span> <span style="color:#f92672">=</span> <span style="color:#d88200">&#34;github.com/go-kratos/kratos-layout/api/helloworld/v1;v1&#34;</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// The greeting service definition.
+</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">service</span> <span style="color:#111">Greeter</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// Sends a greeting
+</span></span></span><span style="display:flex;"><span>  <span style="color:#00a8c8">rpc</span> <span style="color:#111">SayHello</span> <span style="color:#111">(</span><span style="color:#111">HelloRequest</span><span style="color:#111">)</span> <span style="color:#00a8c8">returns</span> <span style="color:#111">(</span><span style="color:#111">HelloReply</span><span style="color:#111">)</span>  <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#00a8c8">option</span> <span style="color:#111">(</span><span style="color:#111">google.api.http</span><span style="color:#111">)</span> <span style="color:#f92672">=</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#111">get</span><span style="color:#f92672">:</span> <span style="color:#d88200">&#34;/helloworld/{name}&#34;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#111">};</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// The request message containing the user&#39;s name.
+</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">message</span> <span style="color:#75af00">HelloRequest</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#00a8c8">string</span> <span style="color:#111">name</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// The response message containing the greetings
+</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">message</span> <span style="color:#75af00">HelloReply</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#00a8c8">string</span> <span style="color:#00a8c8">message</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span></code></pre></div><p>需要注意，虽然Protobuf定义的API的可靠性更强，但字段结构灵活性相对JSON要弱一些，因此如果您有诸如文件上传接口，或者某些无法对应到proto的JSON结构需要使用，我门还提供了“逃生门”，在我们的Protobuf体系之外定义这些接口，实现为普通的http.Handler并且挂载到路由上，或者用struct来定义您的字段。可以参考我们的<a href="https://github.com/go-kratos/kratos/blob/main/examples/http/upload/main.go">upload例子</a>进行实现。</p>
 <h2 id="元信息传递">元信息传递</h2>
 <p>服务之间的API调用，如果有某些元信息需要传递过去，而不是写在payload消息中，可以使用Metadata包进行字段设置和提取，具体细节参考<a href="https://go-kratos.dev/docs/component/metadata">元信息传递文档</a></p>
 <h2 id="错误处理">错误处理</h2>
@@ -1779,22 +1779,22 @@ Discord：<a href="https://discord.com/invite/BWzJsUJ">go-kratos</a></p>
 </span></span><span style="display:flex;"><span><span style="color:#111">}</span>
 </span></span></code></pre></div><p>在Kratos中您可以使用proto文件定义您的业务错误，并通过工具生成对应的处理逻辑和方法。（如使用layout中提供的<code>make errors</code>指令。）</p>
 <p>错误定义：</p>
-<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-protobuf" data-lang="protobuf"><span style="display:flex;"><span><span style="color:#111">syntax</span> <span style="color:#f92672">=</span> <span style="color:#d88200">&#34;proto3&#34;</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#111">api</span><span style="color:#f92672">.</span><span style="color:#111">blog.v1</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">import</span> <span style="color:#d88200">&#34;errors/errors.proto&#34;</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">option</span> <span style="color:#111">go_package</span> <span style="color:#f92672">=</span> <span style="color:#d88200">&#34;github.com/go-kratos/kratos/examples/blog/api/v1;v1&#34;</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">enum</span> <span style="color:#111">ErrorReason</span> <span style="color:#111">{</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span>  <span style="color:#75715e">// 设置缺省错误码
-</span></span></span><span style="display:flex;"><span>  <span style="color:#00a8c8">option</span> <span style="color:#111">(</span><span style="color:#111">errors.default_code</span><span style="color:#111">)</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">500</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span>  <span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span>  <span style="color:#75715e">// 为某个枚举单独设置错误码
-</span></span></span><span style="display:flex;"><span>  <span style="color:#111">USER_NOT_FOUND</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span> <span style="color:#111">[(</span><span style="color:#111">errors.code</span><span style="color:#111">)</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">404</span><span style="color:#111">];</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span>  <span style="color:#111">CONTENT_MISSING</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span> <span style="color:#111">[(</span><span style="color:#111">errors.code</span><span style="color:#111">)</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">400</span><span style="color:#111">];;</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#111">}</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span></code></pre></div><p>错误创建：</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-protobuf" data-lang="protobuf"><span style="display:flex;"><span><span style="color:#00a8c8">syntax</span> <span style="color:#f92672">=</span> <span style="color:#d88200">&#34;proto3&#34;</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#111">api.blog.v1</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#d88200">&#34;errors/errors.proto&#34;</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">option</span> <span style="color:#111">go_package</span> <span style="color:#f92672">=</span> <span style="color:#d88200">&#34;github.com/go-kratos/kratos/examples/blog/api/v1;v1&#34;</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">enum</span> <span style="color:#111">ErrorReason</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// 设置缺省错误码
+</span></span></span><span style="display:flex;"><span>  <span style="color:#00a8c8">option</span> <span style="color:#111">(</span><span style="color:#111">errors.default_code</span><span style="color:#111">)</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">500</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// 为某个枚举单独设置错误码
+</span></span></span><span style="display:flex;"><span>  <span style="color:#111">USER_NOT_FOUND</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span> <span style="color:#111">[(</span><span style="color:#111">errors.code</span><span style="color:#111">)</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">404</span><span style="color:#111">];</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#111">CONTENT_MISSING</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span> <span style="color:#111">[(</span><span style="color:#111">errors.code</span><span style="color:#111">)</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">400</span><span style="color:#111">];;</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span></code></pre></div><p>错误创建：</p>
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// 通过 errors.New() 响应错误</span>
 </span></span><span style="display:flex;"><span><span style="color:#75af00">errors</span><span style="color:#111">.</span><span style="color:#75af00">New</span><span style="color:#111">(</span><span style="color:#ae81ff">500</span><span style="color:#111">,</span> <span style="color:#d88200">&#34;USER_NAME_EMPTY&#34;</span><span style="color:#111">,</span> <span style="color:#d88200">&#34;user name is empty&#34;</span><span style="color:#111">)</span>
 </span></span><span style="display:flex;"><span>
@@ -1919,7 +1919,8 @@ Discord：<a href="https://discord.com/invite/BWzJsUJ">go-kratos</a></p>
 谷歌和微软下定决心结束江湖之乱，首要的问题是如何整合两个两个社区已有的项目，OpenTelemetry 主要的理念就是，兼容 &lt;strong&gt;OpenCensus&lt;/strong&gt; 和 &lt;strong&gt;OpenTracing&lt;/strong&gt; ，可以让使用者无需改动或者很小的改动就可以接入 &lt;strong&gt;OpenTelemetry&lt;/strong&gt;&lt;/p&gt;
 &lt;h2 id="kratos-的链路追踪实践"&gt;Kratos 的链路追踪实践&lt;/h2&gt;
 &lt;blockquote&gt;
-&lt;p&gt;Kratos 一套轻量级 Go 微服务框架，包含大量微服务相关框架及工具。&lt;/p&gt;</description><content:encoded><![CDATA[<h2 id="链路追踪的前世今生">链路追踪的前世今生</h2>
+&lt;p&gt;Kratos 一套轻量级 Go 微服务框架，包含大量微服务相关框架及工具。&lt;/p&gt;
+&lt;/blockquote&gt;</description><content:encoded><![CDATA[<h2 id="链路追踪的前世今生">链路追踪的前世今生</h2>
 <blockquote>
 <p>分布式跟踪（也称为分布式请求跟踪）是一种用于分析和监控应用程序的方法，尤其是使用微服务架构构建的应用程序。分布式跟踪有助于精确定位故障发生的位置以及导致性能差的原因。</p>
 </blockquote>
@@ -2023,8 +2024,8 @@ Discord：<a href="https://discord.com/invite/BWzJsUJ">go-kratos</a></p>
 </span></span><span style="display:flex;"><span>	<span style="color:#75715e">// Grpc</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">component</span> <span style="color:#111">=</span> <span style="color:#d88200">&#34;gRPC&#34;</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#75af00">operation</span> <span style="color:#111">=</span> <span style="color:#75af00">info</span><span style="color:#111">.</span><span style="color:#75af00">FullMethod</span>
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	// 调用 grpc/metadata包中metadata.FromIncomingContext(ctx)传入 ctx，转换 grpc 的元数据</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 调用 grpc/metadata包中metadata.FromIncomingContext(ctx)传入 ctx，转换 grpc 的元数据</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">md</span><span style="color:#111">,</span> <span style="color:#75af00">ok</span> <span style="color:#f92672">:=</span> <span style="color:#75af00">metadata</span><span style="color:#111">.</span><span style="color:#75af00">FromIncomingContext</span><span style="color:#111">(</span><span style="color:#75af00">ctx</span><span style="color:#111">);</span> <span style="color:#75af00">ok</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>		<span style="color:#75715e">// 调用carrier.go 中的 MetadataCarrier 将 MD 转换 成文本映射载体</span>
 </span></span><span style="display:flex;"><span>		<span style="color:#75af00">carrier</span> <span style="color:#111">=</span> <span style="color:#75af00">MetadataCarrier</span><span style="color:#111">(</span><span style="color:#75af00">md</span><span style="color:#111">)</span>
@@ -2515,7 +2516,14 @@ Discord：<a href="https://discord.com/invite/BWzJsUJ">go-kratos</a></p>
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#111"&gt;}&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id="kratos-日志库原理解析"&gt;Kratos 日志库原理解析&lt;/h2&gt;
 &lt;blockquote&gt;
-&lt;p&gt;在私下与 &lt;strong&gt;Tony老师&lt;/strong&gt; 沟通时关于日志库的实现理念时，&lt;strong&gt;Tony老师&lt;/strong&gt; 说：由于目前日志库非常多并且好用，在 &lt;strong&gt;Kratos&lt;/strong&gt; 的日志中，主要考虑以下几个问题：&lt;/p&gt;</description><content:encoded><![CDATA[<h2 id="什么是日志">什么是日志</h2>
+&lt;p&gt;在私下与 &lt;strong&gt;Tony老师&lt;/strong&gt; 沟通时关于日志库的实现理念时，&lt;strong&gt;Tony老师&lt;/strong&gt; 说：由于目前日志库非常多并且好用，在 &lt;strong&gt;Kratos&lt;/strong&gt; 的日志中，主要考虑以下几个问题：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;统一日志接口设计&lt;/li&gt;
+&lt;li&gt;组织结构化日志&lt;/li&gt;
+&lt;li&gt;并且需要有友好的日志级别使用&lt;/li&gt;
+&lt;li&gt;支持多输出源对接需求，如log-agent 或者 3rd 日志库&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/blockquote&gt;</description><content:encoded><![CDATA[<h2 id="什么是日志">什么是日志</h2>
 <blockquote>
 <p>所谓日志（Log）是指系统所指定对象的某些操作和其操作结果按时间有序的集合。log文件就是日志文件，log文件记录了系统和系统的用户之间交互的信息，是自动捕获人与系统终端之间交互的类型、内容或时间的数据收集方法。</p>
 </blockquote>

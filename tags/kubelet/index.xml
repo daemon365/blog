@@ -287,12 +287,12 @@
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>	<span style="color:#00a8c8">if</span> <span style="color:#75af00">kl</span><span style="color:#111">.</span><span style="color:#75af00">kubeClient</span> <span style="color:#f92672">!=</span> <span style="color:#00a8c8">nil</span> <span style="color:#111">{</span>
 </span></span><span style="display:flex;"><span>		<span style="color:#75715e">// Start two go-routines to update the status.</span>
-</span></span><span style="display:flex;"><span>		<span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">		// The first will report to the apiserver every nodeStatusUpdateFrequency and is aimed to provide regular status intervals,</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75715e">// The first will report to the apiserver every nodeStatusUpdateFrequency and is aimed to provide regular status intervals,</span>
 </span></span><span style="display:flex;"><span>		<span style="color:#75715e">// while the second is used to provide a more timely status update during initialization and runs an one-shot update to the apiserver</span>
 </span></span><span style="display:flex;"><span>		<span style="color:#75715e">// once the node becomes ready, then exits afterwards.</span>
-</span></span><span style="display:flex;"><span>		<span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">		// Introduce some small jittering to ensure that over time the requests won&#39;t start</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75715e">// Introduce some small jittering to ensure that over time the requests won&#39;t start</span>
 </span></span><span style="display:flex;"><span>		<span style="color:#75715e">// accumulating at approximately the same time from the set of nodes due to priority and</span>
 </span></span><span style="display:flex;"><span>		<span style="color:#75715e">// fairness effect.</span>
 </span></span><span style="display:flex;"><span>		<span style="color:#00a8c8">go</span> <span style="color:#75af00">wait</span><span style="color:#111">.</span><span style="color:#75af00">JitterUntil</span><span style="color:#111">(</span><span style="color:#75af00">kl</span><span style="color:#111">.</span><span style="color:#75af00">syncNodeStatus</span><span style="color:#111">,</span> <span style="color:#75af00">kl</span><span style="color:#111">.</span><span style="color:#75af00">nodeStatusUpdateFrequency</span><span style="color:#111">,</span> <span style="color:#ae81ff">0.04</span><span style="color:#111">,</span> <span style="color:#00a8c8">true</span><span style="color:#111">,</span> <span style="color:#75af00">wait</span><span style="color:#111">.</span><span style="color:#75af00">NeverStop</span><span style="color:#111">)</span>

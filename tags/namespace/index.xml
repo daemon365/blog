@@ -93,52 +93,52 @@
 <h3 id="介绍">介绍</h3>
 <p>下图为各种 namespace 的参数，支持的起始内核版本，以及隔离内容。</p>
 <table>
-  <thead>
-      <tr>
-          <th>Namespace</th>
-          <th>系统调用参数</th>
-          <th>内核版本</th>
-          <th>隔离内容</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td>UTS (Unix Time-sharing System)</td>
-          <td>CLONE_NEWUTS</td>
-          <td>Linux 2.4.19</td>
-          <td>主机名与域名</td>
-      </tr>
-      <tr>
-          <td>IPC (Inter-Process Communication)</td>
-          <td>CLONE_NEWIPC</td>
-          <td>Linux 2.6.19</td>
-          <td>信号量、消息队列和共享内存</td>
-      </tr>
-      <tr>
-          <td>PID (Process ID)</td>
-          <td>CLONE_NEWPID</td>
-          <td>Linux 2.6.19</td>
-          <td>进程编号</td>
-      </tr>
-      <tr>
-          <td>Network</td>
-          <td>CLONE_NEWNET</td>
-          <td>Linux 2.6.24</td>
-          <td>网络设备、网络栈、端口等等</td>
-      </tr>
-      <tr>
-          <td>Mount</td>
-          <td>CLONE_NEWNS</td>
-          <td>Linux 2.6.29</td>
-          <td>挂载点（文件系统）</td>
-      </tr>
-      <tr>
-          <td>User</td>
-          <td>CLONE_NEWUSER</td>
-          <td>Linux 3.8</td>
-          <td>用户和用户组</td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>Namespace</th>
+					<th>系统调用参数</th>
+					<th>内核版本</th>
+					<th>隔离内容</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>UTS (Unix Time-sharing System)</td>
+					<td>CLONE_NEWUTS</td>
+					<td>Linux 2.4.19</td>
+					<td>主机名与域名</td>
+			</tr>
+			<tr>
+					<td>IPC (Inter-Process Communication)</td>
+					<td>CLONE_NEWIPC</td>
+					<td>Linux 2.6.19</td>
+					<td>信号量、消息队列和共享内存</td>
+			</tr>
+			<tr>
+					<td>PID (Process ID)</td>
+					<td>CLONE_NEWPID</td>
+					<td>Linux 2.6.19</td>
+					<td>进程编号</td>
+			</tr>
+			<tr>
+					<td>Network</td>
+					<td>CLONE_NEWNET</td>
+					<td>Linux 2.6.24</td>
+					<td>网络设备、网络栈、端口等等</td>
+			</tr>
+			<tr>
+					<td>Mount</td>
+					<td>CLONE_NEWNS</td>
+					<td>Linux 2.6.29</td>
+					<td>挂载点（文件系统）</td>
+			</tr>
+			<tr>
+					<td>User</td>
+					<td>CLONE_NEWUSER</td>
+					<td>Linux 3.8</td>
+					<td>用户和用户组</td>
+			</tr>
+	</tbody>
 </table>
 <ol>
 <li>PID Namespace：</li>

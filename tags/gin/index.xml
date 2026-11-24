@@ -733,67 +733,67 @@
 <p>只要API程序遵循了REST风格，那就可以称其为RESTful API。目前在前后端分离的架构中，前后端基本都是通过RESTful API来进行交互。</p>
 <p>例如，我们现在要编写一个管理书籍的系统，我们可以查询对一本书进行查询、创建、更新和删除等操作，我们在编写程序的时候就要设计客户端浏览器与我们Web服务端交互的方式和路径。按照经验我们通常会设计成如下模式：</p>
 <table>
-  <thead>
-      <tr>
-          <th>请求方法</th>
-          <th>URL</th>
-          <th>含义</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td>GET</td>
-          <td>/book</td>
-          <td>查询书籍信息</td>
-      </tr>
-      <tr>
-          <td>POST</td>
-          <td>/create_book</td>
-          <td>创建书籍记录</td>
-      </tr>
-      <tr>
-          <td>POST</td>
-          <td>/update_book</td>
-          <td>更新书籍信息</td>
-      </tr>
-      <tr>
-          <td>POST</td>
-          <td>/delete_book</td>
-          <td>删除书籍信息</td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>请求方法</th>
+					<th>URL</th>
+					<th>含义</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>GET</td>
+					<td>/book</td>
+					<td>查询书籍信息</td>
+			</tr>
+			<tr>
+					<td>POST</td>
+					<td>/create_book</td>
+					<td>创建书籍记录</td>
+			</tr>
+			<tr>
+					<td>POST</td>
+					<td>/update_book</td>
+					<td>更新书籍信息</td>
+			</tr>
+			<tr>
+					<td>POST</td>
+					<td>/delete_book</td>
+					<td>删除书籍信息</td>
+			</tr>
+	</tbody>
 </table>
 <p>同样的需求我们按照RESTful API设计如下：</p>
 <table>
-  <thead>
-      <tr>
-          <th>请求方法</th>
-          <th>URL</th>
-          <th>含义</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td>GET</td>
-          <td>/book</td>
-          <td>查询书籍信息</td>
-      </tr>
-      <tr>
-          <td>POST</td>
-          <td>/book</td>
-          <td>创建书籍记录</td>
-      </tr>
-      <tr>
-          <td>PUT</td>
-          <td>/book</td>
-          <td>更新书籍信息</td>
-      </tr>
-      <tr>
-          <td>DELETE</td>
-          <td>/book</td>
-          <td>删除书籍信息</td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>请求方法</th>
+					<th>URL</th>
+					<th>含义</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>GET</td>
+					<td>/book</td>
+					<td>查询书籍信息</td>
+			</tr>
+			<tr>
+					<td>POST</td>
+					<td>/book</td>
+					<td>创建书籍记录</td>
+			</tr>
+			<tr>
+					<td>PUT</td>
+					<td>/book</td>
+					<td>更新书籍信息</td>
+			</tr>
+			<tr>
+					<td>DELETE</td>
+					<td>/book</td>
+					<td>删除书籍信息</td>
+			</tr>
+	</tbody>
 </table>
 <p>Gin框架支持开发RESTful API的开发。</p>
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#00a8c8">func</span> <span style="color:#75af00">main</span><span style="color:#111">()</span> <span style="color:#111">{</span>
@@ -918,12 +918,12 @@
 </span></span><span style="display:flex;"><span><span style="color:#111">})</span>
 </span></span></code></pre></div><h3 id="protobuf渲染">protobuf渲染</h3>
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-protobuf" data-lang="protobuf"><span style="display:flex;"><span><span style="color:#75715e">// protobuf文件
-</span></span></span><span style="display:flex;"><span><span style="color:#111">syntax</span> <span style="color:#f92672">=</span> <span style="color:#d88200">&#34;proto3&#34;</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#111">models</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">message</span> <span style="color:#75af00">hello</span> <span style="color:#111">{</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">string</span> <span style="color:#111">content</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span><span style="color:#111">;</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#111">}</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
+</span></span></span><span style="display:flex;"><span><span style="color:#00a8c8">syntax</span> <span style="color:#f92672">=</span> <span style="color:#d88200">&#34;proto3&#34;</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#111">models</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">message</span> <span style="color:#75af00">hello</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">string</span> <span style="color:#111">content</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#75af00">main</span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> <span style="color:#111">(</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;net/http&#34;</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#d88200">&#34;test/models&#34;</span>

@@ -605,52 +605,52 @@ kubelet 通过 cri 调用 containerd 和这些不一样，后续我会介绍到�
 <h3 id="介绍">介绍</h3>
 <p>下图为各种 namespace 的参数，支持的起始内核版本，以及隔离内容。</p>
 <table>
-  <thead>
-      <tr>
-          <th>Namespace</th>
-          <th>系统调用参数</th>
-          <th>内核版本</th>
-          <th>隔离内容</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td>UTS (Unix Time-sharing System)</td>
-          <td>CLONE_NEWUTS</td>
-          <td>Linux 2.4.19</td>
-          <td>主机名与域名</td>
-      </tr>
-      <tr>
-          <td>IPC (Inter-Process Communication)</td>
-          <td>CLONE_NEWIPC</td>
-          <td>Linux 2.6.19</td>
-          <td>信号量、消息队列和共享内存</td>
-      </tr>
-      <tr>
-          <td>PID (Process ID)</td>
-          <td>CLONE_NEWPID</td>
-          <td>Linux 2.6.19</td>
-          <td>进程编号</td>
-      </tr>
-      <tr>
-          <td>Network</td>
-          <td>CLONE_NEWNET</td>
-          <td>Linux 2.6.24</td>
-          <td>网络设备、网络栈、端口等等</td>
-      </tr>
-      <tr>
-          <td>Mount</td>
-          <td>CLONE_NEWNS</td>
-          <td>Linux 2.6.29</td>
-          <td>挂载点（文件系统）</td>
-      </tr>
-      <tr>
-          <td>User</td>
-          <td>CLONE_NEWUSER</td>
-          <td>Linux 3.8</td>
-          <td>用户和用户组</td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>Namespace</th>
+					<th>系统调用参数</th>
+					<th>内核版本</th>
+					<th>隔离内容</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>UTS (Unix Time-sharing System)</td>
+					<td>CLONE_NEWUTS</td>
+					<td>Linux 2.4.19</td>
+					<td>主机名与域名</td>
+			</tr>
+			<tr>
+					<td>IPC (Inter-Process Communication)</td>
+					<td>CLONE_NEWIPC</td>
+					<td>Linux 2.6.19</td>
+					<td>信号量、消息队列和共享内存</td>
+			</tr>
+			<tr>
+					<td>PID (Process ID)</td>
+					<td>CLONE_NEWPID</td>
+					<td>Linux 2.6.19</td>
+					<td>进程编号</td>
+			</tr>
+			<tr>
+					<td>Network</td>
+					<td>CLONE_NEWNET</td>
+					<td>Linux 2.6.24</td>
+					<td>网络设备、网络栈、端口等等</td>
+			</tr>
+			<tr>
+					<td>Mount</td>
+					<td>CLONE_NEWNS</td>
+					<td>Linux 2.6.29</td>
+					<td>挂载点（文件系统）</td>
+			</tr>
+			<tr>
+					<td>User</td>
+					<td>CLONE_NEWUSER</td>
+					<td>Linux 3.8</td>
+					<td>用户和用户组</td>
+			</tr>
+	</tbody>
 </table>
 <ol>
 <li>PID Namespace：</li>
@@ -1044,35 +1044,35 @@ docker将应用程序与程序的依赖，打包在一个文件里面。运行�
 程序运行在虚拟容器里，如同在真实物理机上运行一样，有了docker，就不用担心环境问题了。</p>
 <h2 id="docker和虚拟机的区别">docker和虚拟机的区别</h2>
 <table>
-  <thead>
-      <tr>
-          <th>特性</th>
-          <th>容器</th>
-          <th>虚拟机</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td>启动</td>
-          <td>秒级</td>
-          <td>分钟级</td>
-      </tr>
-      <tr>
-          <td>硬盘使用</td>
-          <td>一般为 MB</td>
-          <td>一般为 GB</td>
-      </tr>
-      <tr>
-          <td>性能</td>
-          <td>接近原生</td>
-          <td>弱</td>
-      </tr>
-      <tr>
-          <td>系统支持量</td>
-          <td>单机支持上千个容器</td>
-          <td>一般几十个</td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>特性</th>
+					<th>容器</th>
+					<th>虚拟机</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>启动</td>
+					<td>秒级</td>
+					<td>分钟级</td>
+			</tr>
+			<tr>
+					<td>硬盘使用</td>
+					<td>一般为 MB</td>
+					<td>一般为 GB</td>
+			</tr>
+			<tr>
+					<td>性能</td>
+					<td>接近原生</td>
+					<td>弱</td>
+			</tr>
+			<tr>
+					<td>系统支持量</td>
+					<td>单机支持上千个容器</td>
+					<td>一般几十个</td>
+			</tr>
+	</tbody>
 </table>
 <p>虚拟机也可以制作模板，基于模板创建虚拟机，保证环境问题一致</p>
 <p>虚拟机（virtual machine）就是带环境安装的一种解决方案。它可以在一种操作系统里面运行另一种操作系统，比如在 Windows 系统里面运行 Linux 系统。应用程序对此毫无感知，因为虚拟机看上去跟真实系统一模一样，而对于底层系统来说，虚拟机就是一个普通文件，不需要了就删掉，对其他部分毫无影响。</p>
@@ -1554,102 +1554,102 @@ CMD 用于 可变的命令。</p>
 <li>可以进入容器内部:docker-compose exec [name] shell</li>
 </ol>
 <table>
-  <thead>
-      <tr>
-          <th>说明</th>
-          <th>命令</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td>build</td>
-          <td>构建项目中的服务容器</td>
-      </tr>
-      <tr>
-          <td>help</td>
-          <td>获得一个命令的帮助</td>
-      </tr>
-      <tr>
-          <td>kill</td>
-          <td>通过发送SIGKILL信号来强制停止服务容器</td>
-      </tr>
-      <tr>
-          <td>config</td>
-          <td>验证和查看compose文件配置</td>
-      </tr>
-      <tr>
-          <td>create</td>
-          <td>为服务创建容器。只是单纯的create，还需要使用start启动compose</td>
-      </tr>
-      <tr>
-          <td>down</td>
-          <td>停止并删除容器，网络，镜像和数据卷</td>
-      </tr>
-      <tr>
-          <td>exec</td>
-          <td>在运行的容器中执行一个命令</td>
-      </tr>
-      <tr>
-          <td>logs</td>
-          <td>查看服务容器的输出</td>
-      </tr>
-      <tr>
-          <td>pause</td>
-          <td>暂停一个服务容器</td>
-      </tr>
-      <tr>
-          <td>port</td>
-          <td>打印某个容器端口所映射的公共端口</td>
-      </tr>
-      <tr>
-          <td>ps</td>
-          <td>列出项目中目前的所有容器</td>
-      </tr>
-      <tr>
-          <td>pull</td>
-          <td>拉取服务依赖的镜像</td>
-      </tr>
-      <tr>
-          <td>push</td>
-          <td>推送服务镜像</td>
-      </tr>
-      <tr>
-          <td>restart</td>
-          <td>重启项目中的服务</td>
-      </tr>
-      <tr>
-          <td>rm</td>
-          <td>删除所有（停止状态的）服务容器</td>
-      </tr>
-      <tr>
-          <td>run</td>
-          <td>在指定服务上执行一个命令</td>
-      </tr>
-      <tr>
-          <td>scale</td>
-          <td>设置指定服务运行的容器个数</td>
-      </tr>
-      <tr>
-          <td>start</td>
-          <td>启动已经存在的服务容器</td>
-      </tr>
-      <tr>
-          <td>stop</td>
-          <td>停止已经处于运行状态的容器，但不删除它</td>
-      </tr>
-      <tr>
-          <td>top</td>
-          <td>显示运行的进程</td>
-      </tr>
-      <tr>
-          <td>unpause</td>
-          <td>恢复处于暂停状态中的服务</td>
-      </tr>
-      <tr>
-          <td>up</td>
-          <td>自动完成包括构建镜像、创建服务、启动服务并关闭关联服务相关容器的一些列操作</td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>说明</th>
+					<th>命令</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>build</td>
+					<td>构建项目中的服务容器</td>
+			</tr>
+			<tr>
+					<td>help</td>
+					<td>获得一个命令的帮助</td>
+			</tr>
+			<tr>
+					<td>kill</td>
+					<td>通过发送SIGKILL信号来强制停止服务容器</td>
+			</tr>
+			<tr>
+					<td>config</td>
+					<td>验证和查看compose文件配置</td>
+			</tr>
+			<tr>
+					<td>create</td>
+					<td>为服务创建容器。只是单纯的create，还需要使用start启动compose</td>
+			</tr>
+			<tr>
+					<td>down</td>
+					<td>停止并删除容器，网络，镜像和数据卷</td>
+			</tr>
+			<tr>
+					<td>exec</td>
+					<td>在运行的容器中执行一个命令</td>
+			</tr>
+			<tr>
+					<td>logs</td>
+					<td>查看服务容器的输出</td>
+			</tr>
+			<tr>
+					<td>pause</td>
+					<td>暂停一个服务容器</td>
+			</tr>
+			<tr>
+					<td>port</td>
+					<td>打印某个容器端口所映射的公共端口</td>
+			</tr>
+			<tr>
+					<td>ps</td>
+					<td>列出项目中目前的所有容器</td>
+			</tr>
+			<tr>
+					<td>pull</td>
+					<td>拉取服务依赖的镜像</td>
+			</tr>
+			<tr>
+					<td>push</td>
+					<td>推送服务镜像</td>
+			</tr>
+			<tr>
+					<td>restart</td>
+					<td>重启项目中的服务</td>
+			</tr>
+			<tr>
+					<td>rm</td>
+					<td>删除所有（停止状态的）服务容器</td>
+			</tr>
+			<tr>
+					<td>run</td>
+					<td>在指定服务上执行一个命令</td>
+			</tr>
+			<tr>
+					<td>scale</td>
+					<td>设置指定服务运行的容器个数</td>
+			</tr>
+			<tr>
+					<td>start</td>
+					<td>启动已经存在的服务容器</td>
+			</tr>
+			<tr>
+					<td>stop</td>
+					<td>停止已经处于运行状态的容器，但不删除它</td>
+			</tr>
+			<tr>
+					<td>top</td>
+					<td>显示运行的进程</td>
+			</tr>
+			<tr>
+					<td>unpause</td>
+					<td>恢复处于暂停状态中的服务</td>
+			</tr>
+			<tr>
+					<td>up</td>
+					<td>自动完成包括构建镜像、创建服务、启动服务并关闭关联服务相关容器的一些列操作</td>
+			</tr>
+	</tbody>
 </table>
 <p>参考文章:</p>
 <ul>

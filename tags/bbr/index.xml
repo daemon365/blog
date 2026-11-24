@@ -54,30 +54,30 @@
 <p>同理，我们可以将 <code>λ</code> 当做 QPS， <code>W</code> 呢是每个请求需要花费的时间，那我们的系统的吞吐就是 <code>L = λ * W</code> ，所以我们可以使用利特尔法则来计算系统的吞吐量。</p>
 <h3 id="指标介绍">指标介绍</h3>
 <table>
-  <thead>
-      <tr>
-          <th>指标名称</th>
-          <th>指标含义</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td>cpu</td>
-          <td>最近 1s 的 CPU 使用率均值，使用滑动平均计算，采样周期是 250ms</td>
-      </tr>
-      <tr>
-          <td>inflight</td>
-          <td>当前处理中正在处理的请求数量</td>
-      </tr>
-      <tr>
-          <td>pass</td>
-          <td>请求处理成功的量</td>
-      </tr>
-      <tr>
-          <td>rt</td>
-          <td>请求成功的响应耗时</td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>指标名称</th>
+					<th>指标含义</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>cpu</td>
+					<td>最近 1s 的 CPU 使用率均值，使用滑动平均计算，采样周期是 250ms</td>
+			</tr>
+			<tr>
+					<td>inflight</td>
+					<td>当前处理中正在处理的请求数量</td>
+			</tr>
+			<tr>
+					<td>pass</td>
+					<td>请求处理成功的量</td>
+			</tr>
+			<tr>
+					<td>rt</td>
+					<td>请求成功的响应耗时</td>
+			</tr>
+	</tbody>
 </table>
 <h3 id="滑动窗口">滑动窗口</h3>
 <p>在自适应限流保护中，采集到的指标的时效性非常强，系统只需要采集最近一小段时间内的 qps、rt 即可，对于较老的数据，会自动丢弃。为了实现这个效果，kratos 使用了滑动窗口来保存采样数据。</p>

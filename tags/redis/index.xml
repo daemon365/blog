@@ -921,96 +921,96 @@ bitop  and(or/not/xor) <destkey> [key…]</p>
 <h4 id="bitmaps与set对比">Bitmaps与set对比</h4>
 <p>假设网站有1亿用户， 每天独立访问的用户有5千万， 如果每天用集合类型和Bitmaps分别存储活跃用户可以得到表</p>
 <table>
-  <thead>
-      <tr>
-          <th>set和Bitmaps存储一天活跃用户对比</th>
-          <th></th>
-          <th></th>
-          <th></th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td>数据类型</td>
-          <td>每个用户id占用空间</td>
-          <td>需要存储的用户量</td>
-          <td>全部内存量</td>
-      </tr>
-      <tr>
-          <td>集合类型</td>
-          <td>64位</td>
-          <td>50000000</td>
-          <td>64位*50000000 = 400MB</td>
-      </tr>
-      <tr>
-          <td>Bitmaps</td>
-          <td>1位</td>
-          <td>100000000</td>
-          <td>1位*100000000 = 12.5MB</td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>set和Bitmaps存储一天活跃用户对比</th>
+					<th></th>
+					<th></th>
+					<th></th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>数据类型</td>
+					<td>每个用户id占用空间</td>
+					<td>需要存储的用户量</td>
+					<td>全部内存量</td>
+			</tr>
+			<tr>
+					<td>集合类型</td>
+					<td>64位</td>
+					<td>50000000</td>
+					<td>64位*50000000 = 400MB</td>
+			</tr>
+			<tr>
+					<td>Bitmaps</td>
+					<td>1位</td>
+					<td>100000000</td>
+					<td>1位*100000000 = 12.5MB</td>
+			</tr>
+	</tbody>
 </table>
 <p>很明显， 这种情况下使用Bitmaps能节省很多的内存空间， 尤其是随着时间推移节省的内存还是非常可观的</p>
 <table>
-  <thead>
-      <tr>
-          <th>set和Bitmaps存储独立用户空间对比</th>
-          <th></th>
-          <th></th>
-          <th></th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td>数据类型</td>
-          <td>一天</td>
-          <td>一个月</td>
-          <td>一年</td>
-      </tr>
-      <tr>
-          <td>集合类型</td>
-          <td>400MB</td>
-          <td>12GB</td>
-          <td>144GB</td>
-      </tr>
-      <tr>
-          <td>Bitmaps</td>
-          <td>12.5MB</td>
-          <td>375MB</td>
-          <td>4.5GB</td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>set和Bitmaps存储独立用户空间对比</th>
+					<th></th>
+					<th></th>
+					<th></th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>数据类型</td>
+					<td>一天</td>
+					<td>一个月</td>
+					<td>一年</td>
+			</tr>
+			<tr>
+					<td>集合类型</td>
+					<td>400MB</td>
+					<td>12GB</td>
+					<td>144GB</td>
+			</tr>
+			<tr>
+					<td>Bitmaps</td>
+					<td>12.5MB</td>
+					<td>375MB</td>
+					<td>4.5GB</td>
+			</tr>
+	</tbody>
 </table>
 <p>但Bitmaps并不是万金油， 假如该网站每天的独立访问用户很少， 例如只有10万（大量的僵尸用户） ， 那么两者的对比如下表所示， 很显然， 这时候使用Bitmaps就不太合适了， 因为基本上大部分位都是0。</p>
 <table>
-  <thead>
-      <tr>
-          <th>set和Bitmaps存储一天活跃用户对比（独立用户比较少）</th>
-          <th></th>
-          <th></th>
-          <th></th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td>数据类型</td>
-          <td>每个userid占用空间</td>
-          <td>需要存储的用户量</td>
-          <td>全部内存量</td>
-      </tr>
-      <tr>
-          <td>集合类型</td>
-          <td>64位</td>
-          <td>100000</td>
-          <td>64位*100000 = 800KB</td>
-      </tr>
-      <tr>
-          <td>Bitmaps</td>
-          <td>1位</td>
-          <td>100000000</td>
-          <td>1位*100000000 = 12.5MB</td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>set和Bitmaps存储一天活跃用户对比（独立用户比较少）</th>
+					<th></th>
+					<th></th>
+					<th></th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>数据类型</td>
+					<td>每个userid占用空间</td>
+					<td>需要存储的用户量</td>
+					<td>全部内存量</td>
+			</tr>
+			<tr>
+					<td>集合类型</td>
+					<td>64位</td>
+					<td>100000</td>
+					<td>64位*100000 = 800KB</td>
+			</tr>
+			<tr>
+					<td>Bitmaps</td>
+					<td>1位</td>
+					<td>100000000</td>
+					<td>1位*100000000 = 12.5MB</td>
+			</tr>
+	</tbody>
 </table>
 <h3 id="hyperloglog">HyperLogLog</h3>
 <h4 id="简介-6">简介</h4>

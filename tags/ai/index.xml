@@ -95,26 +95,26 @@
 </ul>
 <p>MCP 的整体架构由三个部分组成：</p>
 <table>
-  <thead>
-      <tr>
-          <th>组件</th>
-          <th>职责</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td><strong>MCP Client</strong></td>
-          <td>集成在 Agent 中，负责与 MCP Server 建立连接、发送请求</td>
-      </tr>
-      <tr>
-          <td><strong>MCP Server</strong></td>
-          <td>独立运行的服务，对外暴露具体的工具能力</td>
-      </tr>
-      <tr>
-          <td><strong>Model</strong></td>
-          <td>大语言模型，判断是否需要调用工具并生成调用请求</td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>组件</th>
+					<th>职责</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td><strong>MCP Client</strong></td>
+					<td>集成在 Agent 中，负责与 MCP Server 建立连接、发送请求</td>
+			</tr>
+			<tr>
+					<td><strong>MCP Server</strong></td>
+					<td>独立运行的服务，对外暴露具体的工具能力</td>
+			</tr>
+			<tr>
+					<td><strong>Model</strong></td>
+					<td>大语言模型，判断是否需要调用工具并生成调用请求</td>
+			</tr>
+	</tbody>
 </table>
 <p>一次完整的工作流大致如下：</p>
 <ol>

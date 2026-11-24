@@ -508,30 +508,30 @@
 <h3 id="脏读">脏读</h3>
 <p>所谓脏读是指一个事务中访问到了另外一个事务未提交的数据，如下图：</p>
 <table>
-  <thead>
-      <tr>
-          <th>s1</th>
-          <th>s2</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td>begin</td>
-          <td>begin</td>
-      </tr>
-      <tr>
-          <td></td>
-          <td>update test set number = 100 where id = 1;</td>
-      </tr>
-      <tr>
-          <td>select number from test where id = 1;</td>
-          <td></td>
-      </tr>
-      <tr>
-          <td>commit</td>
-          <td>commit</td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>s1</th>
+					<th>s2</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>begin</td>
+					<td>begin</td>
+			</tr>
+			<tr>
+					<td></td>
+					<td>update test set number = 100 where id = 1;</td>
+			</tr>
+			<tr>
+					<td>select number from test where id = 1;</td>
+					<td></td>
+			</tr>
+			<tr>
+					<td>commit</td>
+					<td>commit</td>
+			</tr>
+	</tbody>
 </table>
 <ul>
 <li>如果会话 2 更新 number 为 100，但是在 number 之前，会话 1 希望得到 number，那么会获得的值就是更新前的值。或者如果会话 2 更新了值但是执行了 rollback，而会话 1 拿到的仍是 100。这就是脏读。</li>
@@ -539,38 +539,38 @@
 <h3 id="不可重复读">不可重复读</h3>
 <p>一个事务查询同一条记录2次，得到的结果不一致：</p>
 <table>
-  <thead>
-      <tr>
-          <th>S1</th>
-          <th>S2</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td>begin</td>
-          <td>begin;</td>
-      </tr>
-      <tr>
-          <td>select number from test where id = 1;</td>
-          <td></td>
-      </tr>
-      <tr>
-          <td></td>
-          <td>update test set number = 200 where id = 1;</td>
-      </tr>
-      <tr>
-          <td></td>
-          <td>commit</td>
-      </tr>
-      <tr>
-          <td>select number from test where id = 1;</td>
-          <td></td>
-      </tr>
-      <tr>
-          <td>commit;</td>
-          <td></td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>S1</th>
+					<th>S2</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>begin</td>
+					<td>begin;</td>
+			</tr>
+			<tr>
+					<td>select number from test where id = 1;</td>
+					<td></td>
+			</tr>
+			<tr>
+					<td></td>
+					<td>update test set number = 200 where id = 1;</td>
+			</tr>
+			<tr>
+					<td></td>
+					<td>commit</td>
+			</tr>
+			<tr>
+					<td>select number from test where id = 1;</td>
+					<td></td>
+			</tr>
+			<tr>
+					<td>commit;</td>
+					<td></td>
+			</tr>
+	</tbody>
 </table>
 <ul>
 <li>由于在读取中间变更了数据，所以会话 1 事务查询期间的得到的结果就不一样了。</li>
@@ -578,38 +578,38 @@
 <h3 id="幻读">幻读</h3>
 <p>一个事务查询2次，得到的记录条数不一致：</p>
 <table>
-  <thead>
-      <tr>
-          <th>S1</th>
-          <th>S2</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td>begin</td>
-          <td>begin</td>
-      </tr>
-      <tr>
-          <td>select number from test where id &lt; 5;</td>
-          <td></td>
-      </tr>
-      <tr>
-          <td></td>
-          <td>insert into test value(2,3);</td>
-      </tr>
-      <tr>
-          <td></td>
-          <td>commit</td>
-      </tr>
-      <tr>
-          <td>select number from test where id &lt; 5;</td>
-          <td></td>
-      </tr>
-      <tr>
-          <td>commit</td>
-          <td></td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>S1</th>
+					<th>S2</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>begin</td>
+					<td>begin</td>
+			</tr>
+			<tr>
+					<td>select number from test where id &lt; 5;</td>
+					<td></td>
+			</tr>
+			<tr>
+					<td></td>
+					<td>insert into test value(2,3);</td>
+			</tr>
+			<tr>
+					<td></td>
+					<td>commit</td>
+			</tr>
+			<tr>
+					<td>select number from test where id &lt; 5;</td>
+					<td></td>
+			</tr>
+			<tr>
+					<td>commit</td>
+					<td></td>
+			</tr>
+	</tbody>
 </table>
 <ul>
 <li>幻读是不可重复读的一种特殊场景。</li>
@@ -634,40 +634,40 @@
 <p>实际应用中也很少用到这个隔离级别，只有在非常需要确保数据的一致性而且可以接受没有并发的情况下，才考虑采用该级别。</p>
 <h4 id="不同事务隔离级别的效果">不同事务隔离级别的效果：</h4>
 <table>
-  <thead>
-      <tr>
-          <th>隔离级别</th>
-          <th>脏读</th>
-          <th>不可重复读</th>
-          <th>幻读</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td>READ UNCOMMITTED（未提交读）</td>
-          <td>✅</td>
-          <td>✅</td>
-          <td>✅</td>
-      </tr>
-      <tr>
-          <td>READ COMMITTED（提已提交）</td>
-          <td>❎</td>
-          <td>✅</td>
-          <td>✅</td>
-      </tr>
-      <tr>
-          <td>REPEATABLE READ（可重复读）</td>
-          <td>❎</td>
-          <td>❎</td>
-          <td>✅</td>
-      </tr>
-      <tr>
-          <td>SERIZLIZABLE（可串行化）</td>
-          <td>❎</td>
-          <td>❎</td>
-          <td>✅</td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>隔离级别</th>
+					<th>脏读</th>
+					<th>不可重复读</th>
+					<th>幻读</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>READ UNCOMMITTED（未提交读）</td>
+					<td>✅</td>
+					<td>✅</td>
+					<td>✅</td>
+			</tr>
+			<tr>
+					<td>READ COMMITTED（提已提交）</td>
+					<td>❎</td>
+					<td>✅</td>
+					<td>✅</td>
+			</tr>
+			<tr>
+					<td>REPEATABLE READ（可重复读）</td>
+					<td>❎</td>
+					<td>❎</td>
+					<td>✅</td>
+			</tr>
+			<tr>
+					<td>SERIZLIZABLE（可串行化）</td>
+					<td>❎</td>
+					<td>❎</td>
+					<td>✅</td>
+			</tr>
+	</tbody>
 </table>
 <p>在 InnoDB 中，默认为 Repeatable 级别，InnoDB 中使用一种被称为 next-key locking 的策略来避免幻读（phantom）现象的产生。</p>
 <p>隔离级别越高，越能保证数据的完整性和一致性，但是对并发性能的影响也越大。</p>
@@ -947,73 +947,73 @@
 <p>BIT数据类型保存位字段值，并且支持MyISAM、MEMORY、InnoDB和BDB表。</p>
 <p>作为SQL标准的扩展，MySQL也支持整数类型TINYINT、MEDIUMINT和BIGINT。下面的表显示了需要的每个整数类型的存储和范围。</p>
 <table>
-  <thead>
-      <tr>
-          <th style="text-align: left">类型</th>
-          <th style="text-align: left">大小</th>
-          <th style="text-align: left">范围（有符号）</th>
-          <th style="text-align: left">范围（无符号）</th>
-          <th style="text-align: left">用途</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td style="text-align: left">TINYINT</td>
-          <td style="text-align: left">1 字节</td>
-          <td style="text-align: left">(-128，127)</td>
-          <td style="text-align: left">(0，255)</td>
-          <td style="text-align: left">小整数值</td>
-      </tr>
-      <tr>
-          <td style="text-align: left">SMALLINT</td>
-          <td style="text-align: left">2 字节</td>
-          <td style="text-align: left">(-32 768，32 767)</td>
-          <td style="text-align: left">(0，65 535)</td>
-          <td style="text-align: left">大整数值</td>
-      </tr>
-      <tr>
-          <td style="text-align: left">MEDIUMINT</td>
-          <td style="text-align: left">3 字节</td>
-          <td style="text-align: left">(-8 388 608，8 388 607)</td>
-          <td style="text-align: left">(0，16 777 215)</td>
-          <td style="text-align: left">大整数值</td>
-      </tr>
-      <tr>
-          <td style="text-align: left">INT或INTEGER</td>
-          <td style="text-align: left">4 字节</td>
-          <td style="text-align: left">(-2 147 483 648，2 147 483 647)</td>
-          <td style="text-align: left">(0，4 294 967 295)</td>
-          <td style="text-align: left">大整数值</td>
-      </tr>
-      <tr>
-          <td style="text-align: left">BIGINT</td>
-          <td style="text-align: left">8 字节</td>
-          <td style="text-align: left">(-9 233 372 036 854 775 808，9 223 372 036 854 775 807)</td>
-          <td style="text-align: left">(0，18 446 744 073 709 551 615)</td>
-          <td style="text-align: left">极大整数值</td>
-      </tr>
-      <tr>
-          <td style="text-align: left">FLOAT</td>
-          <td style="text-align: left">4 字节</td>
-          <td style="text-align: left">(-3.402 823 466 E+38，-1.175 494 351 E-38)，0，(1.175 494 351 E-38，3.402 823 466 351 E+38)</td>
-          <td style="text-align: left">0，(1.175 494 351 E-38，3.402 823 466 E+38)</td>
-          <td style="text-align: left">单精度 浮点数值</td>
-      </tr>
-      <tr>
-          <td style="text-align: left">DOUBLE</td>
-          <td style="text-align: left">8 字节</td>
-          <td style="text-align: left">(-1.797 693 134 862 315 7 E+308，-2.225 073 858 507 201 4 E-308)，0，(2.225 073 858 507 201 4 E-308，1.797 693 134 862 315 7 E+308)</td>
-          <td style="text-align: left">0，(2.225 073 858 507 201 4 E-308，1.797 693 134 862 315 7 E+308)</td>
-          <td style="text-align: left">双精度 浮点数值</td>
-      </tr>
-      <tr>
-          <td style="text-align: left">DECIMAL</td>
-          <td style="text-align: left">对DECIMAL(M,D) ，如果M&gt;D，为M+2否则为D+2</td>
-          <td style="text-align: left">依赖于M和D的值</td>
-          <td style="text-align: left">依赖于M和D的值</td>
-          <td style="text-align: left">小数值</td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th style="text-align: left">类型</th>
+					<th style="text-align: left">大小</th>
+					<th style="text-align: left">范围（有符号）</th>
+					<th style="text-align: left">范围（无符号）</th>
+					<th style="text-align: left">用途</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td style="text-align: left">TINYINT</td>
+					<td style="text-align: left">1 字节</td>
+					<td style="text-align: left">(-128，127)</td>
+					<td style="text-align: left">(0，255)</td>
+					<td style="text-align: left">小整数值</td>
+			</tr>
+			<tr>
+					<td style="text-align: left">SMALLINT</td>
+					<td style="text-align: left">2 字节</td>
+					<td style="text-align: left">(-32 768，32 767)</td>
+					<td style="text-align: left">(0，65 535)</td>
+					<td style="text-align: left">大整数值</td>
+			</tr>
+			<tr>
+					<td style="text-align: left">MEDIUMINT</td>
+					<td style="text-align: left">3 字节</td>
+					<td style="text-align: left">(-8 388 608，8 388 607)</td>
+					<td style="text-align: left">(0，16 777 215)</td>
+					<td style="text-align: left">大整数值</td>
+			</tr>
+			<tr>
+					<td style="text-align: left">INT或INTEGER</td>
+					<td style="text-align: left">4 字节</td>
+					<td style="text-align: left">(-2 147 483 648，2 147 483 647)</td>
+					<td style="text-align: left">(0，4 294 967 295)</td>
+					<td style="text-align: left">大整数值</td>
+			</tr>
+			<tr>
+					<td style="text-align: left">BIGINT</td>
+					<td style="text-align: left">8 字节</td>
+					<td style="text-align: left">(-9 233 372 036 854 775 808，9 223 372 036 854 775 807)</td>
+					<td style="text-align: left">(0，18 446 744 073 709 551 615)</td>
+					<td style="text-align: left">极大整数值</td>
+			</tr>
+			<tr>
+					<td style="text-align: left">FLOAT</td>
+					<td style="text-align: left">4 字节</td>
+					<td style="text-align: left">(-3.402 823 466 E+38，-1.175 494 351 E-38)，0，(1.175 494 351 E-38，3.402 823 466 351 E+38)</td>
+					<td style="text-align: left">0，(1.175 494 351 E-38，3.402 823 466 E+38)</td>
+					<td style="text-align: left">单精度 浮点数值</td>
+			</tr>
+			<tr>
+					<td style="text-align: left">DOUBLE</td>
+					<td style="text-align: left">8 字节</td>
+					<td style="text-align: left">(-1.797 693 134 862 315 7 E+308，-2.225 073 858 507 201 4 E-308)，0，(2.225 073 858 507 201 4 E-308，1.797 693 134 862 315 7 E+308)</td>
+					<td style="text-align: left">0，(2.225 073 858 507 201 4 E-308，1.797 693 134 862 315 7 E+308)</td>
+					<td style="text-align: left">双精度 浮点数值</td>
+			</tr>
+			<tr>
+					<td style="text-align: left">DECIMAL</td>
+					<td style="text-align: left">对DECIMAL(M,D) ，如果M&gt;D，为M+2否则为D+2</td>
+					<td style="text-align: left">依赖于M和D的值</td>
+					<td style="text-align: left">依赖于M和D的值</td>
+					<td style="text-align: left">小数值</td>
+			</tr>
+	</tbody>
 </table>
 <hr>
 <h2 id="日期和时间类型">日期和时间类型</h2>
@@ -1021,116 +1021,116 @@
 <p>每个时间类型有一个有效值范围和一个&quot;零&quot;值，当指定不合法的MySQL不能表示的值时使用&quot;零&quot;值。</p>
 <p>TIMESTAMP类型有专有的自动更新特性，将在后面描述。</p>
 <table>
-  <thead>
-      <tr>
-          <th style="text-align: left">类型</th>
-          <th style="text-align: left">大小 (字节)</th>
-          <th style="text-align: left">范围</th>
-          <th style="text-align: left">格式</th>
-          <th style="text-align: left">用途</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td style="text-align: left">DATE</td>
-          <td style="text-align: left">3</td>
-          <td style="text-align: left">1000-01-01/9999-12-31</td>
-          <td style="text-align: left">YYYY-MM-DD</td>
-          <td style="text-align: left">日期值</td>
-      </tr>
-      <tr>
-          <td style="text-align: left">TIME</td>
-          <td style="text-align: left">3</td>
-          <td style="text-align: left">&lsquo;-838:59:59&rsquo;/&lsquo;838:59:59&rsquo;</td>
-          <td style="text-align: left">HH:MM:SS</td>
-          <td style="text-align: left">时间值或持续时间</td>
-      </tr>
-      <tr>
-          <td style="text-align: left">YEAR</td>
-          <td style="text-align: left">1</td>
-          <td style="text-align: left">1901/2155</td>
-          <td style="text-align: left">YYYY</td>
-          <td style="text-align: left">年份值</td>
-      </tr>
-      <tr>
-          <td style="text-align: left">DATETIME</td>
-          <td style="text-align: left">8</td>
-          <td style="text-align: left">1000-01-01 00:00:00/9999-12-31 23:59:59</td>
-          <td style="text-align: left">YYYY-MM-DD HH:MM:SS</td>
-          <td style="text-align: left">混合日期和时间值</td>
-      </tr>
-      <tr>
-          <td style="text-align: left">TIMESTAMP</td>
-          <td style="text-align: left">4</td>
-          <td style="text-align: left">1970-01-01 00:00:00/2038结束时间是第 <strong>2147483647</strong> 秒，北京时间 <strong>2038-1-19 11:14:07</strong>，格林尼治时间 2038年1月19日 凌晨 03:14:07</td>
-          <td style="text-align: left">YYYYMMDD HHMMSS</td>
-          <td style="text-align: left">混合日期和时间值，时间戳</td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th style="text-align: left">类型</th>
+					<th style="text-align: left">大小 (字节)</th>
+					<th style="text-align: left">范围</th>
+					<th style="text-align: left">格式</th>
+					<th style="text-align: left">用途</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td style="text-align: left">DATE</td>
+					<td style="text-align: left">3</td>
+					<td style="text-align: left">1000-01-01/9999-12-31</td>
+					<td style="text-align: left">YYYY-MM-DD</td>
+					<td style="text-align: left">日期值</td>
+			</tr>
+			<tr>
+					<td style="text-align: left">TIME</td>
+					<td style="text-align: left">3</td>
+					<td style="text-align: left">&lsquo;-838:59:59&rsquo;/&lsquo;838:59:59&rsquo;</td>
+					<td style="text-align: left">HH:MM:SS</td>
+					<td style="text-align: left">时间值或持续时间</td>
+			</tr>
+			<tr>
+					<td style="text-align: left">YEAR</td>
+					<td style="text-align: left">1</td>
+					<td style="text-align: left">1901/2155</td>
+					<td style="text-align: left">YYYY</td>
+					<td style="text-align: left">年份值</td>
+			</tr>
+			<tr>
+					<td style="text-align: left">DATETIME</td>
+					<td style="text-align: left">8</td>
+					<td style="text-align: left">1000-01-01 00:00:00/9999-12-31 23:59:59</td>
+					<td style="text-align: left">YYYY-MM-DD HH:MM:SS</td>
+					<td style="text-align: left">混合日期和时间值</td>
+			</tr>
+			<tr>
+					<td style="text-align: left">TIMESTAMP</td>
+					<td style="text-align: left">4</td>
+					<td style="text-align: left">1970-01-01 00:00:00/2038结束时间是第 <strong>2147483647</strong> 秒，北京时间 <strong>2038-1-19 11:14:07</strong>，格林尼治时间 2038年1月19日 凌晨 03:14:07</td>
+					<td style="text-align: left">YYYYMMDD HHMMSS</td>
+					<td style="text-align: left">混合日期和时间值，时间戳</td>
+			</tr>
+	</tbody>
 </table>
 <hr>
 <h2 id="字符串类型">字符串类型</h2>
 <p>字符串类型指CHAR、VARCHAR、BINARY、VARBINARY、BLOB、TEXT、ENUM和SET。该节描述了这些类型如何工作以及如何在查询中使用这些类型。</p>
 <table>
-  <thead>
-      <tr>
-          <th style="text-align: left">类型</th>
-          <th style="text-align: left">大小</th>
-          <th style="text-align: left">用途</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td style="text-align: left">CHAR</td>
-          <td style="text-align: left">0-255字节</td>
-          <td style="text-align: left">定长字符串</td>
-      </tr>
-      <tr>
-          <td style="text-align: left">VARCHAR</td>
-          <td style="text-align: left">0-65535 字节</td>
-          <td style="text-align: left">变长字符串</td>
-      </tr>
-      <tr>
-          <td style="text-align: left">TINYBLOB</td>
-          <td style="text-align: left">0-255字节</td>
-          <td style="text-align: left">不超过 255 个字符的二进制字符串</td>
-      </tr>
-      <tr>
-          <td style="text-align: left">TINYTEXT</td>
-          <td style="text-align: left">0-255字节</td>
-          <td style="text-align: left">短文本字符串</td>
-      </tr>
-      <tr>
-          <td style="text-align: left">BLOB</td>
-          <td style="text-align: left">0-65 535字节</td>
-          <td style="text-align: left">二进制形式的长文本数据</td>
-      </tr>
-      <tr>
-          <td style="text-align: left">TEXT</td>
-          <td style="text-align: left">0-65 535字节</td>
-          <td style="text-align: left">长文本数据</td>
-      </tr>
-      <tr>
-          <td style="text-align: left">MEDIUMBLOB</td>
-          <td style="text-align: left">0-16 777 215字节</td>
-          <td style="text-align: left">二进制形式的中等长度文本数据</td>
-      </tr>
-      <tr>
-          <td style="text-align: left">MEDIUMTEXT</td>
-          <td style="text-align: left">0-16 777 215字节</td>
-          <td style="text-align: left">中等长度文本数据</td>
-      </tr>
-      <tr>
-          <td style="text-align: left">LONGBLOB</td>
-          <td style="text-align: left">0-4 294 967 295字节</td>
-          <td style="text-align: left">二进制形式的极大文本数据</td>
-      </tr>
-      <tr>
-          <td style="text-align: left">LONGTEXT</td>
-          <td style="text-align: left">0-4 294 967 295字节</td>
-          <td style="text-align: left">极大文本数据</td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th style="text-align: left">类型</th>
+					<th style="text-align: left">大小</th>
+					<th style="text-align: left">用途</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td style="text-align: left">CHAR</td>
+					<td style="text-align: left">0-255字节</td>
+					<td style="text-align: left">定长字符串</td>
+			</tr>
+			<tr>
+					<td style="text-align: left">VARCHAR</td>
+					<td style="text-align: left">0-65535 字节</td>
+					<td style="text-align: left">变长字符串</td>
+			</tr>
+			<tr>
+					<td style="text-align: left">TINYBLOB</td>
+					<td style="text-align: left">0-255字节</td>
+					<td style="text-align: left">不超过 255 个字符的二进制字符串</td>
+			</tr>
+			<tr>
+					<td style="text-align: left">TINYTEXT</td>
+					<td style="text-align: left">0-255字节</td>
+					<td style="text-align: left">短文本字符串</td>
+			</tr>
+			<tr>
+					<td style="text-align: left">BLOB</td>
+					<td style="text-align: left">0-65 535字节</td>
+					<td style="text-align: left">二进制形式的长文本数据</td>
+			</tr>
+			<tr>
+					<td style="text-align: left">TEXT</td>
+					<td style="text-align: left">0-65 535字节</td>
+					<td style="text-align: left">长文本数据</td>
+			</tr>
+			<tr>
+					<td style="text-align: left">MEDIUMBLOB</td>
+					<td style="text-align: left">0-16 777 215字节</td>
+					<td style="text-align: left">二进制形式的中等长度文本数据</td>
+			</tr>
+			<tr>
+					<td style="text-align: left">MEDIUMTEXT</td>
+					<td style="text-align: left">0-16 777 215字节</td>
+					<td style="text-align: left">中等长度文本数据</td>
+			</tr>
+			<tr>
+					<td style="text-align: left">LONGBLOB</td>
+					<td style="text-align: left">0-4 294 967 295字节</td>
+					<td style="text-align: left">二进制形式的极大文本数据</td>
+			</tr>
+			<tr>
+					<td style="text-align: left">LONGTEXT</td>
+					<td style="text-align: left">0-4 294 967 295字节</td>
+					<td style="text-align: left">极大文本数据</td>
+			</tr>
+	</tbody>
 </table>
 <p>CHAR 和 VARCHAR 类型类似，但它们保存和检索的方式不同。它们的最大长度和是否尾部空格被保留等方面也不同。在存储或检索过程中不进行大小写转换。</p>
 <p>BINARY 和 VARBINARY 类似于 CHAR 和 VARCHAR，不同的是它们包含二进制字符串而不要非二进制字符串。也就是说，它们包含字节字符串而不是字符字符串。这说明它们没有字符集，并且排序和比较基于列值字节的数值值。</p>

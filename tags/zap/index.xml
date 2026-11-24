@@ -89,119 +89,119 @@
 <p>根据Uber-go Zap的文档，它的性能比类似的结构化日志包更好——也比标准库更快。 以下是Zap发布的基准测试信息</p>
 <p>记录一条消息和10个字段:</p>
 <table>
-  <thead>
-      <tr>
-          <th style="text-align: center">Package</th>
-          <th style="text-align: center">Time</th>
-          <th style="text-align: center">Time % to zap</th>
-          <th style="text-align: center">Objects Allocated</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td style="text-align: center">⚡️ zap</td>
-          <td style="text-align: center">862 ns/op</td>
-          <td style="text-align: center">+0%</td>
-          <td style="text-align: center">5 allocs/op</td>
-      </tr>
-      <tr>
-          <td style="text-align: center">⚡️ zap (sugared)</td>
-          <td style="text-align: center">1250 ns/op</td>
-          <td style="text-align: center">+45%</td>
-          <td style="text-align: center">11 allocs/op</td>
-      </tr>
-      <tr>
-          <td style="text-align: center">zerolog</td>
-          <td style="text-align: center">4021 ns/op</td>
-          <td style="text-align: center">+366%</td>
-          <td style="text-align: center">76 allocs/op</td>
-      </tr>
-      <tr>
-          <td style="text-align: center">go-kit</td>
-          <td style="text-align: center">4542 ns/op</td>
-          <td style="text-align: center">+427%</td>
-          <td style="text-align: center">105 allocs/op</td>
-      </tr>
-      <tr>
-          <td style="text-align: center">apex/log</td>
-          <td style="text-align: center">26785 ns/op</td>
-          <td style="text-align: center">+3007%</td>
-          <td style="text-align: center">115 allocs/op</td>
-      </tr>
-      <tr>
-          <td style="text-align: center">logrus</td>
-          <td style="text-align: center">29501 ns/op</td>
-          <td style="text-align: center">+3322%</td>
-          <td style="text-align: center">125 allocs/op</td>
-      </tr>
-      <tr>
-          <td style="text-align: center">log15</td>
-          <td style="text-align: center">29906 ns/op</td>
-          <td style="text-align: center">+3369%</td>
-          <td style="text-align: center">122 allocs/op</td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th style="text-align: center">Package</th>
+					<th style="text-align: center">Time</th>
+					<th style="text-align: center">Time % to zap</th>
+					<th style="text-align: center">Objects Allocated</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td style="text-align: center">⚡️ zap</td>
+					<td style="text-align: center">862 ns/op</td>
+					<td style="text-align: center">+0%</td>
+					<td style="text-align: center">5 allocs/op</td>
+			</tr>
+			<tr>
+					<td style="text-align: center">⚡️ zap (sugared)</td>
+					<td style="text-align: center">1250 ns/op</td>
+					<td style="text-align: center">+45%</td>
+					<td style="text-align: center">11 allocs/op</td>
+			</tr>
+			<tr>
+					<td style="text-align: center">zerolog</td>
+					<td style="text-align: center">4021 ns/op</td>
+					<td style="text-align: center">+366%</td>
+					<td style="text-align: center">76 allocs/op</td>
+			</tr>
+			<tr>
+					<td style="text-align: center">go-kit</td>
+					<td style="text-align: center">4542 ns/op</td>
+					<td style="text-align: center">+427%</td>
+					<td style="text-align: center">105 allocs/op</td>
+			</tr>
+			<tr>
+					<td style="text-align: center">apex/log</td>
+					<td style="text-align: center">26785 ns/op</td>
+					<td style="text-align: center">+3007%</td>
+					<td style="text-align: center">115 allocs/op</td>
+			</tr>
+			<tr>
+					<td style="text-align: center">logrus</td>
+					<td style="text-align: center">29501 ns/op</td>
+					<td style="text-align: center">+3322%</td>
+					<td style="text-align: center">125 allocs/op</td>
+			</tr>
+			<tr>
+					<td style="text-align: center">log15</td>
+					<td style="text-align: center">29906 ns/op</td>
+					<td style="text-align: center">+3369%</td>
+					<td style="text-align: center">122 allocs/op</td>
+			</tr>
+	</tbody>
 </table>
 <p>记录一个静态字符串，没有任何上下文或printf风格的模板：</p>
 <table>
-  <thead>
-      <tr>
-          <th style="text-align: center">Package</th>
-          <th style="text-align: center">Time</th>
-          <th style="text-align: center">Time % to zap</th>
-          <th style="text-align: center">Objects Allocated</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td style="text-align: center">⚡️ zap</td>
-          <td style="text-align: center">118 ns/op</td>
-          <td style="text-align: center">+0%</td>
-          <td style="text-align: center">0 allocs/op</td>
-      </tr>
-      <tr>
-          <td style="text-align: center">⚡️ zap (sugared)</td>
-          <td style="text-align: center">191 ns/op</td>
-          <td style="text-align: center">+62%</td>
-          <td style="text-align: center">2 allocs/op</td>
-      </tr>
-      <tr>
-          <td style="text-align: center">zerolog</td>
-          <td style="text-align: center">93 ns/op</td>
-          <td style="text-align: center">-21%</td>
-          <td style="text-align: center">0 allocs/op</td>
-      </tr>
-      <tr>
-          <td style="text-align: center">go-kit</td>
-          <td style="text-align: center">280 ns/op</td>
-          <td style="text-align: center">+137%</td>
-          <td style="text-align: center">11 allocs/op</td>
-      </tr>
-      <tr>
-          <td style="text-align: center">standard library</td>
-          <td style="text-align: center">499 ns/op</td>
-          <td style="text-align: center">+323%</td>
-          <td style="text-align: center">2 allocs/op</td>
-      </tr>
-      <tr>
-          <td style="text-align: center">apex/log</td>
-          <td style="text-align: center">1990 ns/op</td>
-          <td style="text-align: center">+1586%</td>
-          <td style="text-align: center">10 allocs/op</td>
-      </tr>
-      <tr>
-          <td style="text-align: center">logrus</td>
-          <td style="text-align: center">3129 ns/op</td>
-          <td style="text-align: center">+2552%</td>
-          <td style="text-align: center">24 allocs/op</td>
-      </tr>
-      <tr>
-          <td style="text-align: center">log15</td>
-          <td style="text-align: center">3887 ns/op</td>
-          <td style="text-align: center">+3194%</td>
-          <td style="text-align: center">23 allocs/op</td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th style="text-align: center">Package</th>
+					<th style="text-align: center">Time</th>
+					<th style="text-align: center">Time % to zap</th>
+					<th style="text-align: center">Objects Allocated</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td style="text-align: center">⚡️ zap</td>
+					<td style="text-align: center">118 ns/op</td>
+					<td style="text-align: center">+0%</td>
+					<td style="text-align: center">0 allocs/op</td>
+			</tr>
+			<tr>
+					<td style="text-align: center">⚡️ zap (sugared)</td>
+					<td style="text-align: center">191 ns/op</td>
+					<td style="text-align: center">+62%</td>
+					<td style="text-align: center">2 allocs/op</td>
+			</tr>
+			<tr>
+					<td style="text-align: center">zerolog</td>
+					<td style="text-align: center">93 ns/op</td>
+					<td style="text-align: center">-21%</td>
+					<td style="text-align: center">0 allocs/op</td>
+			</tr>
+			<tr>
+					<td style="text-align: center">go-kit</td>
+					<td style="text-align: center">280 ns/op</td>
+					<td style="text-align: center">+137%</td>
+					<td style="text-align: center">11 allocs/op</td>
+			</tr>
+			<tr>
+					<td style="text-align: center">standard library</td>
+					<td style="text-align: center">499 ns/op</td>
+					<td style="text-align: center">+323%</td>
+					<td style="text-align: center">2 allocs/op</td>
+			</tr>
+			<tr>
+					<td style="text-align: center">apex/log</td>
+					<td style="text-align: center">1990 ns/op</td>
+					<td style="text-align: center">+1586%</td>
+					<td style="text-align: center">10 allocs/op</td>
+			</tr>
+			<tr>
+					<td style="text-align: center">logrus</td>
+					<td style="text-align: center">3129 ns/op</td>
+					<td style="text-align: center">+2552%</td>
+					<td style="text-align: center">24 allocs/op</td>
+			</tr>
+			<tr>
+					<td style="text-align: center">log15</td>
+					<td style="text-align: center">3887 ns/op</td>
+					<td style="text-align: center">+3194%</td>
+					<td style="text-align: center">23 allocs/op</td>
+			</tr>
+	</tbody>
 </table>
 <h2 id="安装">安装</h2>
 <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>go get -u go.uber.org/zap
@@ -325,8 +325,8 @@ zap 不支持文件归档，如果要支持文件按大小或者时间归档，�
 </span></span><span style="display:flex;"><span>        <span style="color:#75af00">LineEnding</span><span style="color:#111">:</span>     <span style="color:#75af00">zapcore</span><span style="color:#111">.</span><span style="color:#75af00">DefaultLineEnding</span><span style="color:#111">,</span>
 </span></span><span style="display:flex;"><span>        <span style="color:#75af00">EncodeLevel</span><span style="color:#111">:</span>    <span style="color:#75af00">zapcore</span><span style="color:#111">.</span><span style="color:#75af00">LowercaseLevelEncoder</span><span style="color:#111">,</span>  <span style="color:#75715e">// 小写编码器</span>
 </span></span><span style="display:flex;"><span>        <span style="color:#75af00">EncodeTime</span><span style="color:#111">:</span>     <span style="color:#75af00">zapcore</span><span style="color:#111">.</span><span style="color:#75af00">ISO8601TimeEncoder</span><span style="color:#111">,</span>     <span style="color:#75715e">// ISO8601 UTC 时间格式</span>
-</span></span><span style="display:flex;"><span>        <span style="color:#75af00">EncodeDuration</span><span style="color:#111">:</span> <span style="color:#75af00">zapcore</span><span style="color:#111">.</span><span style="color:#75af00">SecondsDurationEncoder</span><span style="color:#111">,</span> <span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">        EncodeCaller:   zapcore.FullCallerEncoder,      // 全路径编码器</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">EncodeDuration</span><span style="color:#111">:</span> <span style="color:#75af00">zapcore</span><span style="color:#111">.</span><span style="color:#75af00">SecondsDurationEncoder</span><span style="color:#111">,</span> <span style="color:#75715e">//</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">EncodeCaller</span><span style="color:#111">:</span>   <span style="color:#75af00">zapcore</span><span style="color:#111">.</span><span style="color:#75af00">FullCallerEncoder</span><span style="color:#111">,</span>      <span style="color:#75715e">// 全路径编码器</span>
 </span></span><span style="display:flex;"><span>        <span style="color:#75af00">EncodeName</span><span style="color:#111">:</span>     <span style="color:#75af00">zapcore</span><span style="color:#111">.</span><span style="color:#75af00">FullNameEncoder</span><span style="color:#111">,</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#111">}</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 设置日志级别</span>
